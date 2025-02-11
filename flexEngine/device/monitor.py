@@ -11,9 +11,10 @@ import socket
 import requests
 from flexEngine.utils.constants import *
 from flexEngine.utils.auxiliary import *
+from flexEngine.communication.matrix import *
 
 class monitor(object):
-    def __init__(self,name="deviceMonitor",period=60,autostart=False,verbose=False):
+    def __init__(self,name="deviceMonitor",period=60,autostart=False,flexCloudConnector=None,verbose=False):
         """Initialize a device monitor component.
 
                 Parameters
@@ -50,6 +51,18 @@ class monitor(object):
         self.t_monitor = perpetualTimer(self._period,self.update)
         if autostart:
             self.t_monitor.start()
+
+        #--- flexCloudConnetion ---
+        self._flexCloudConnection = False
+        self._flexCloudConnector = None
+        if flexCloudConnector is not None:
+            self._flexCloudConnector = flexCloudConnector
+            self._flexCloudConnection = True
+
+        #--- Initialize the device monitor ---
+        self.update()
+
+
 
     @property
     def name(self):
@@ -136,6 +149,10 @@ class monitor(object):
         self._location = self.location
         if self._verbose:
             self.prettyPrint()
+        if self._flexCloudConnection:
+            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.IP_ADDRESS,self._ip_address)
+            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.MAC_ADDRESS,self._mac_address)
+            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.LOCATION,self._location)
 
     #----------------------------------------PRETTY PRINT---------------------------------------------------------
     def prettyPrint(self):
@@ -162,6 +179,28 @@ class monitor(object):
         print(f"  Used: {self._storageUsage.used / (1024 ** 3):.2f} GB")
         print(f"  Free: {self._storageUsage.free / (1024 ** 3):.2f} GB")
         print(f"  Percentage: {self._storageUsage.percent}%")
+
+
+    def start(self):
+        """Start sending device information."""
+        try:
+
+            self.t_monitor.start()
+            #self._logger.info("Heartbeat service started.")
+        except Exception as e:
+            x=1
+            #self._logger.error("Failed to start heartbeat service.")
+
+
+
+    #def stop(self):
+    #    """Stop sending heartbeats."""
+    #    try:
+    #        self._stop_event.set()
+    #        self.thread.join()
+    #        self._logger.info("Heartbeat service stopped.")
+    #    except Exception as e:
+    #        self._logger.error("Failed to stop heartbeat service.")
 
 
 

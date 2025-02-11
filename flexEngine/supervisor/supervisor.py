@@ -10,6 +10,7 @@ import yaml
 import logging
 from flexEngine.cloud.connector import flexCloudConnector
 from flexEngine.device.heartbeat import heartbeat
+from flexEngine.device.monitor import monitor
 from flexEngine.security.security import register_os_variable
 from flexEngine.utils.auxiliary import load_config
 from flexEngine.utils.constants import SECURITY_STORE
@@ -58,6 +59,9 @@ class supervisor(object):
             ttl=self._heartbeat_config.get("ttl", 12),
             logger=self._logger)
 
+        #--- Device monitor ---
+        self._deviceMonitor = monitor(name="testMonitor",flexCloudConnector=self._flexCloudConnector,verbose=verbose)
+
         #--- Register shared_secret ---
         self._isRegistered = register_os_variable(self._device_config.get("shared_secret","UNKNOWN"), env_var_name=SECURITY_STORE.SHARED_SECRET)
         if self._isRegistered:
@@ -94,6 +98,8 @@ class supervisor(object):
 
         # --- start heartbeat service ---
         self._heartbeat.start()
+        # --- start device monitor service ---
+        self._deviceMonitor.start()
 
     def stop(self):
         """Stop the supervisor."""
