@@ -7,6 +7,8 @@
 # * permission of Bert Van Acker
 # *************************************************************************
 from threading import Timer
+import yaml
+
 class perpetualTimer():
 
    def __init__(self,t,hFunction):
@@ -29,3 +31,8 @@ class perpetualTimer():
 
    def isAlive(self):
       return self.thread.is_alive()
+
+
+def load_config(config_file):
+  with open(config_file, 'r') as file:
+      return yaml.safe_load(file)

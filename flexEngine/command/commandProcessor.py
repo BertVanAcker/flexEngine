@@ -38,23 +38,27 @@ class commandProcessor(object):
         self._received_command_ids = set()
         self._command_ids_lock = threading.Lock()
 
+        self._logger.info("Command processor initialized")
+
 
     def process_command(self,command):
         """Process a command """
-        if self._logger is not None:self._logger.syslog(msg="Processing command: {}".format(command), level="INFO")
+        try:
+            #CHECK IF COMMAND IS ALREADY RECEIVED
+            if not self.is_command_already_received(command):
+                if command["cmd"] == COMMAND_TYPE.UNKNOWN:
+                    if self._logger is not None: self._logger.error("UNKNOWN command received. Please verify the command type")
 
-        #CHECK IF COMMAND IS ALREADY RECEIVED
-        if not self.is_command_already_received(command):
-            if command["cmd"] == COMMAND_TYPE.UNKNOWN:
-                if self._logger is not None: self._logger.syslog(msg="Processing command: {}".format(command),level="ERROR")
-            elif command["cmd"] == COMMAND_TYPE.OTA_UPDATE:
-                if self._logger is not None: self._logger.syslog(msg="OTA UPDATE command received.",level="INFO")
-                if self._verbose:print("OTA UPDATE command received.")
-                #TODO: trigger OTA UPDATE
-            elif command["cmd"] == COMMAND_TYPE.PING:
-                if self._logger is not None: self._logger.syslog(msg="PING command received.",level="INFO")
-                if self._verbose: print("PING command received.")
-                #TODO: trigger PING RESPONSE
+                elif command["cmd"] == COMMAND_TYPE.OTA_UPDATE:
+                    if self._logger is not None: self._logger.info(COMMAND_TYPE.OTA_UPDATE+"OTA_UPDATE command received.")
+                    if self._verbose:print("OTA UPDATE command received.")
+                    #TODO: trigger OTA UPDATE
+                elif command["cmd"] == COMMAND_TYPE.PING:
+                    if self._logger is not None: self._logger.info(COMMAND_TYPE.PING+" command received.")
+                    if self._verbose: print("PING command received.")
+                    #TODO: trigger PING RESPONSE
+        except Exception as e:
+            if self._logger is not None: self._logger.error("Failed to process command.")
 
 
     def is_command_already_received(self,command):

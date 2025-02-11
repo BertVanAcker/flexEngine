@@ -9,12 +9,14 @@
 import threading
 import json
 import redis
+
+from flexEngine.security.security import verify_signature
 from flexEngine.utils.constants import *
 from flexEngine.communication.matrix import *
 from flexEngine.command.commandProcessor import *
 from flexEngine.logging.logger import *
 class flexCloudConnector:
-    def __init__(self, name="flexCloudConnector",primaryHardwareID="Oberon-5",projectID="sandbox",key="3fg445",  redis_host='localhost', redis_port=6379, redis_db=0, verbose=False):
+    def __init__(self, name="flexCloudConnector",primaryHardwareID="Oberon-5",projectID="sandbox",key="3fg445",  redis_host='localhost', redis_port=6379, redis_db=0,logger=None, verbose=False):
         """Initialize a device monitor component.
 
                 Parameters
@@ -34,10 +36,13 @@ class flexCloudConnector:
         self._name = name
         self._verbose = verbose
         self.connectorID = primaryHardwareID+"@"+projectID+"-"+key          #devicename@projectname-key
-        self._commandKey = self.connectorID+COMMUNICATIONMATRIX.COMMAND
+        self._commandKey = self.connectorID+COMMUNICATIONMATRIX.COMMAND     #devicename@projectname-key:cmd
 
         # custom logger
-        self._logger = Logger(name="customLogger", verbose=False)
+        if logger is not None:
+            self._logger = logger
+        else:
+            self._logger = Logger(name="customLogger", verbose=False)
 
         #---flexCloud setup---
         self.redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
@@ -69,8 +74,15 @@ class flexCloudConnector:
         except:
             command = GENERIC_STATUS.INCORRECT_CMD
         if self._verbose:print(command)
-        # pass command to command processor
-        self._commandProcessor.process_command(command)
+
+        # CHECK IF COMMAND IS VALID
+        _isValid = verify_signature(command)
+        if _isValid:
+            self._logger.info("Command "+ command["id"]+"is valid.")
+            # pass command to command processor
+            self._commandProcessor.process_command(command)
+        else:
+            self._logger.error("Command " + command["id"] + "is not valid, dropping the command.")
 
     def write(self, key, value):
         """

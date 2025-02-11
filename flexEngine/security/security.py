@@ -73,6 +73,8 @@ def register_os_variable(secret, env_var_name=SECURITY_STORE.SHARED_SECRET):
     # If the secret is provided as bytes, convert it to a hex string for easier storage
     if isinstance(secret, bytes):
         secret = secret.hex()
-
-    os.environ[env_var_name] = secret
-    print(f"Stored shared secret in environment variable '{env_var_name}'.")
+    try:
+        os.environ[env_var_name] = secret
+        return True
+    except:
+        return False

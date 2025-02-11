@@ -1,0 +1,7 @@
+2025-02-11 14:20:34,138 - supervisor - INFO - Command processor initialized
+2025-02-11 14:20:34,139 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-11 14:20:34,139 - supervisor - INFO - Heartbeat service started.
+2025-02-11 14:20:34,142 - supervisor - INFO - Heartbeat sent at 1739280034.1399593.
+2025-02-11 14:20:36,749 - supervisor - INFO - Command f161dcd6-45db-4c5d-9a1f-89779c231bd0is valid.
+2025-02-11 14:20:36,749 - supervisor - INFO - OTA_UPDATEOTA_UPDATE command received.
+2025-02-11 14:20:44,145 - supervisor - INFO - Heartbeat sent at 1739280044.1438246.
