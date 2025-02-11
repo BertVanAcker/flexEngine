@@ -78,11 +78,11 @@ class flexCloudConnector:
         # CHECK IF COMMAND IS VALID
         _isValid = verify_signature(command)
         if _isValid:
-            self._logger.info("Command "+ command["id"]+"is valid.")
+            self._logger.info("Command "+ command["id"]+" is valid.")
             # pass command to command processor
             self._commandProcessor.process_command(command)
         else:
-            self._logger.error("Command " + command["id"] + "is not valid, dropping the command.")
+            self._logger.error("Command " + command["id"] + " invalid, dropping the command.")
 
     def write(self, key, value):
         """

@@ -47,10 +47,10 @@ class commandProcessor(object):
             #CHECK IF COMMAND IS ALREADY RECEIVED
             if not self.is_command_already_received(command):
                 if command["cmd"] == COMMAND_TYPE.UNKNOWN:
-                    if self._logger is not None: self._logger.error("UNKNOWN command received. Please verify the command type")
+                    if self._logger is not None: self._logger.error(COMMAND_TYPE.UNKNOWN+" command received. Please verify the command type")
 
                 elif command["cmd"] == COMMAND_TYPE.OTA_UPDATE:
-                    if self._logger is not None: self._logger.info(COMMAND_TYPE.OTA_UPDATE+"OTA_UPDATE command received.")
+                    if self._logger is not None: self._logger.info(COMMAND_TYPE.OTA_UPDATE+" command received.")
                     if self._verbose:print("OTA UPDATE command received.")
                     #TODO: trigger OTA UPDATE
                 elif command["cmd"] == COMMAND_TYPE.PING:

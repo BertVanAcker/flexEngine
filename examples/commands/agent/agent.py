@@ -10,10 +10,11 @@ import time
 from flexEngine.supervisor.supervisor import supervisor
 
 if __name__ == '__main__':
-    agent = supervisor(config="../configuration/config.yaml",verbose=True)
+    agent = supervisor(config="../configuration/config.yaml",verbose=False)
     agent.start()
     try:
        while True:
            time.sleep(1)
     except:
+       agent.stop()
        exit()

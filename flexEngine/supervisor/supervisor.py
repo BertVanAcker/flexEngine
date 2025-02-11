@@ -94,3 +94,9 @@ class supervisor(object):
 
         # --- start heartbeat service ---
         self._heartbeat.start()
+
+    def stop(self):
+        """Stop the supervisor."""
+
+        # --- start heartbeat service ---
+        self._heartbeat.stop()
