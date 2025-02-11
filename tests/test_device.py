@@ -101,7 +101,7 @@ class TestHeartbeatSenderReal(unittest.TestCase):
         self._primaryHardwareID="Oberon-5"
         self._projectID="sandbox"
         self._key="3fg445"
-        self._heartbeatKey = self._primaryHardwareID+"@"+self._projectID+"-"+self._key+":"+COMMUNICATIONMATRIX.HEARTBEAT
+        self._heartbeatKey = self._primaryHardwareID+"@"+self._projectID+"-"+self._key+COMMUNICATIONMATRIX.HEARTBEAT
         self.redis_client.delete(self._heartbeatKey)
 
     def tearDown(self):
@@ -116,7 +116,7 @@ class TestHeartbeatSenderReal(unittest.TestCase):
         in Redis while the sender is running.
         """
         # Use a short heartbeat interval and a TTL that ensures the key stays alive.
-        sender = HeartbeatSender(self.redis_client, primaryHardwareID=self._primaryHardwareID,projectID=self._projectID,key=self._key, heartbeat_interval=2, ttl=4)
+        sender = heartbeat(self.redis_client, primaryHardwareID=self._primaryHardwareID, projectID=self._projectID, key=self._key, heartbeat_interval=2, ttl=4)
         sender.start()
         # Allow some time for the heartbeat to be set (a few cycles).
         time.sleep(3)
@@ -130,7 +130,7 @@ class TestHeartbeatSenderReal(unittest.TestCase):
         After stopping the HeartbeatSender, the key should eventually expire.
         """
         # Start the sender with a short interval and a TTL.
-        sender = HeartbeatSender(self.redis_client, primaryHardwareID=self._primaryHardwareID,projectID=self._projectID,key=self._key, heartbeat_interval=2, ttl=4)
+        sender = heartbeat(self.redis_client, primaryHardwareID=self._primaryHardwareID, projectID=self._projectID, key=self._key, heartbeat_interval=2, ttl=4)
         sender.start()
         # Wait briefly to ensure the key is set.
         time.sleep(3)

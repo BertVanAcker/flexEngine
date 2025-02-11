@@ -1,0 +1,13 @@
+{
+  "id": "cmd-12345",
+  "cmd": "OTA_UPDATE",
+  "priority": 10,                    // Lower number might be higher priority
+  "expiry": 1700003600,              // Unix timestamp after which the command expires
+  "params": {
+    "version": "1.2.3",
+    "url": "https://updates.example.com/ota.bin"
+  },
+  "timestamp": 1700000000,           // When the command was created
+  "nonce": "random-string-xyz",      // Unique nonce to avoid replays
+  "signature": "HMAC_SIGNATURE_HERE" // HMAC-SHA256 over the selected fields
+}

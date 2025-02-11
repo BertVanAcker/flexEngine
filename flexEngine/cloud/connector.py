@@ -10,6 +10,9 @@ import threading
 import json
 import redis
 from flexEngine.utils.constants import *
+from flexEngine.communication.matrix import *
+from flexEngine.command.commandProcessor import *
+from flexEngine.logging.logger import *
 class flexCloudConnector:
     def __init__(self, name="flexCloudConnector",primaryHardwareID="Oberon-5",projectID="sandbox",key="3fg445",  redis_host='localhost', redis_port=6379, redis_db=0, verbose=False):
         """Initialize a device monitor component.
@@ -31,12 +34,19 @@ class flexCloudConnector:
         self._name = name
         self._verbose = verbose
         self.connectorID = primaryHardwareID+"@"+projectID+"-"+key          #devicename@projectname-key
+        self._commandKey = self.connectorID+COMMUNICATIONMATRIX.COMMAND
+
+        # custom logger
+        self._logger = Logger(name="customLogger", verbose=False)
+
         #---flexCloud setup---
         self.redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
         self.pubsub = self.redis_client.pubsub()
         self.pubsub.subscribe(**{
-            f'{self.connectorID}_cmd': self._on_command
+            self._commandKey: self._on_command
         })
+        #---configure command processor---
+        self._commandProcessor = commandProcessor(name="customCommandProcessor",logger=self._logger,verbose=verbose)
 
         # Start listener thread
         self.listener_thread = threading.Thread(target=self._listen, daemon=True)
@@ -55,11 +65,12 @@ class flexCloudConnector:
         # Callback for 'command' channel
         if self._verbose:print(f"Command received.")
         try:
-            commands = json.loads(message["data"])
+            command = json.loads(message["data"])
         except:
-            commands = GENERIC_STATUS.INCORRECT_CMD
-        if self._verbose:print(commands)
-        # TODO:Add your command processing logic here
+            command = GENERIC_STATUS.INCORRECT_CMD
+        if self._verbose:print(command)
+        # pass command to command processor
+        self._commandProcessor.process_command(command)
 
     def write(self, key, value):
         """
@@ -113,23 +124,4 @@ class flexCloudConnector:
         return list
 
 
-if __name__ == "__main__":
-    # Instantiate RemoteAgent to start listening
-    agent = connector = flexCloudConnector(
-                name="flexCloudConnector",
-                primaryHardwareID="Oberon-5",
-                projectID="sandbox",
-                key="3fg445",
-                redis_host='localhost',
-                redis_port=6379,
-                redis_db=15,
-                verbose=True
-            )
-
-    # Keep the main thread alive
-    try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        print("Shutting down...")
 

@@ -10,7 +10,7 @@ import time
 import threading
 from flexEngine.logging.logger import *
 from flexEngine.communication.matrix import *
-class HeartbeatSender:
+class heartbeat:
     """
     Sends a heartbeat by periodically setting a Redis key with a time-to-live (TTL).
     """
@@ -24,7 +24,7 @@ class HeartbeatSender:
         :param ttl: Time-to-live (in seconds) for the heartbeat key.
         """
         self.redis_client = redis_client
-        self.key = primaryHardwareID+"@"+projectID+"-"+key+":"+COMMUNICATIONMATRIX.HEARTBEAT          #devicename@projectname-key:heartbeat
+        self.key = primaryHardwareID+"@"+projectID+"-"+key+COMMUNICATIONMATRIX.HEARTBEAT          #devicename@projectname-key:heartbeat
         self.heartbeat_interval = heartbeat_interval
         self.ttl = ttl
         self._stop_event = threading.Event()

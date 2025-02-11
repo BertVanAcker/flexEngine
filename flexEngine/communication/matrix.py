@@ -9,4 +9,5 @@
 
 
 class COMMUNICATIONMATRIX:
-    HEARTBEAT = "heartbeat"
+    HEARTBEAT = ":heartbeat"
+    COMMAND = ":cmd"

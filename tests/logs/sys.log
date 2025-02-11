@@ -1,30 +1,129 @@
-2025-02-11 09:09:54,210 INFO HeartbeatSender started.
-2025-02-11 09:09:54,719 INFO HeartbeatSender stopped.
-2025-02-11 09:10:07,710 INFO HeartbeatSender started.
-2025-02-11 09:10:08,219 INFO HeartbeatSender stopped.
-2025-02-11 09:10:27,574 INFO HeartbeatSender started.
-2025-02-11 09:10:32,659 INFO HeartbeatSender stopped.
-2025-02-11 09:10:38,413 INFO HeartbeatSender started.
-2025-02-11 09:10:43,496 INFO HeartbeatSender stopped.
-2025-02-11 09:11:43,095 INFO HeartbeatSender started.
-2025-02-11 09:11:53,100 INFO HeartbeatSender stopped.
-2025-02-11 09:12:06,124 INFO HeartbeatSender started.
-2025-02-11 09:12:12,128 INFO HeartbeatSender stopped.
-2025-02-11 09:12:25,045 INFO HeartbeatSender started.
-2025-02-11 09:12:31,049 INFO HeartbeatSender stopped.
-2025-02-11 09:12:42,429 INFO HeartbeatSender started.
-2025-02-11 09:13:12,428 INFO HeartbeatSender stopped.
-2025-02-11 09:14:09,765 INFO HeartbeatSender started.
-2025-02-11 09:14:13,767 INFO HeartbeatSender stopped.
-2025-02-11 09:14:33,069 INFO HeartbeatSender started.
-2025-02-11 09:14:37,072 INFO HeartbeatSender stopped.
-2025-02-11 09:14:58,748 INFO HeartbeatSender started.
-2025-02-11 09:15:02,752 INFO HeartbeatSender stopped.
-2025-02-11 09:15:18,220 INFO HeartbeatSender started.
-2025-02-11 09:15:22,224 INFO HeartbeatSender stopped.
-2025-02-11 09:15:37,101 INFO HeartbeatSender started.
-2025-02-11 09:15:41,104 INFO HeartbeatSender stopped.
-2025-02-11 09:15:41,113 INFO HeartbeatSender started.
-2025-02-11 09:15:41,113 INFO HeartbeatSender started.
-2025-02-11 09:15:45,116 INFO HeartbeatSender stopped.
-2025-02-11 09:15:45,116 INFO HeartbeatSender stopped.
+2025-02-11 10:57:38,592 INFO Processing command: {'id': '768d1295-449e-48f0-a64f-d1b70ea8297a', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739267978, 'params': {'param1': 'value1'}, 'timestamp': 1739267858, 'nonce': '3ea4cf6e20d74871858d3637d69bed04', 'signature': '8fba40afd49d8532d8c9934b283790906916f1f072d3d0b67b042a3687b2c900'}
+2025-02-11 10:57:38,592 INFO OTA UPDATE command received.
+2025-02-11 10:57:39,009 INFO Processing command: {'id': '054ae8c8-30c9-4796-896c-34858c118e0c', 'cmd': 'PING', 'priority': 3, 'expiry': 1739267979, 'params': {'param1': 'value1'}, 'timestamp': 1739267859, 'nonce': 'cede9b7083d84251824d1687f699a90f', 'signature': '8c5494828813392f24cc7bfde817e13f662b8c1e5c66048da8dc66adf1536589'}
+2025-02-11 10:57:39,009 INFO Processing command: {'id': '054ae8c8-30c9-4796-896c-34858c118e0c', 'cmd': 'PING', 'priority': 3, 'expiry': 1739267979, 'params': {'param1': 'value1'}, 'timestamp': 1739267859, 'nonce': 'cede9b7083d84251824d1687f699a90f', 'signature': '8c5494828813392f24cc7bfde817e13f662b8c1e5c66048da8dc66adf1536589'}
+2025-02-11 10:57:39,010 INFO PING command received.
+2025-02-11 10:57:39,010 INFO PING command received.
+2025-02-11 10:57:39,010 INFO Processing command: {'id': '054ae8c8-30c9-4796-896c-34858c118e0c', 'cmd': 'PING', 'priority': 3, 'expiry': 1739267979, 'params': {'param1': 'value1'}, 'timestamp': 1739267859, 'nonce': 'cede9b7083d84251824d1687f699a90f', 'signature': '8c5494828813392f24cc7bfde817e13f662b8c1e5c66048da8dc66adf1536589'}
+2025-02-11 10:57:39,010 INFO Processing command: {'id': '054ae8c8-30c9-4796-896c-34858c118e0c', 'cmd': 'PING', 'priority': 3, 'expiry': 1739267979, 'params': {'param1': 'value1'}, 'timestamp': 1739267859, 'nonce': 'cede9b7083d84251824d1687f699a90f', 'signature': '8c5494828813392f24cc7bfde817e13f662b8c1e5c66048da8dc66adf1536589'}
+2025-02-11 10:57:39,010 INFO PING command received.
+2025-02-11 10:57:39,010 INFO PING command received.
+2025-02-11 10:58:16,751 INFO Processing command: {'id': '9a9bae9e-521c-4562-9d67-2fa8a51d46df', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268016, 'params': {'param1': 'value1'}, 'timestamp': 1739267896, 'nonce': '2dcffd2acfbd40ef9c3ec644373502a1', 'signature': '486a6a9010d78d8dff937f898da832e254cdc07205f3f638d2aabade9e634707'}
+2025-02-11 10:58:16,751 INFO OTA UPDATE command received.
+2025-02-11 10:58:17,164 INFO Processing command: {'id': '55da23a3-4415-4401-b58c-cb115a07c2d5', 'cmd': 'PING', 'priority': 3, 'expiry': 1739268017, 'params': {'param1': 'value1'}, 'timestamp': 1739267897, 'nonce': '4ef18e216b7049f1981c751f42601cea', 'signature': '86f4da025f5f36861ad439bf387229596a1815457732f1a5b1f055c8d5baeb42'}
+2025-02-11 10:58:17,164 INFO Processing command: {'id': '55da23a3-4415-4401-b58c-cb115a07c2d5', 'cmd': 'PING', 'priority': 3, 'expiry': 1739268017, 'params': {'param1': 'value1'}, 'timestamp': 1739267897, 'nonce': '4ef18e216b7049f1981c751f42601cea', 'signature': '86f4da025f5f36861ad439bf387229596a1815457732f1a5b1f055c8d5baeb42'}
+2025-02-11 10:58:17,164 INFO Processing command: {'id': '55da23a3-4415-4401-b58c-cb115a07c2d5', 'cmd': 'PING', 'priority': 3, 'expiry': 1739268017, 'params': {'param1': 'value1'}, 'timestamp': 1739267897, 'nonce': '4ef18e216b7049f1981c751f42601cea', 'signature': '86f4da025f5f36861ad439bf387229596a1815457732f1a5b1f055c8d5baeb42'}
+2025-02-11 10:58:17,164 INFO Processing command: {'id': '55da23a3-4415-4401-b58c-cb115a07c2d5', 'cmd': 'PING', 'priority': 3, 'expiry': 1739268017, 'params': {'param1': 'value1'}, 'timestamp': 1739267897, 'nonce': '4ef18e216b7049f1981c751f42601cea', 'signature': '86f4da025f5f36861ad439bf387229596a1815457732f1a5b1f055c8d5baeb42'}
+2025-02-11 10:58:17,165 INFO PING command received.
+2025-02-11 10:58:17,165 INFO PING command received.
+2025-02-11 10:58:17,165 INFO PING command received.
+2025-02-11 10:58:17,165 INFO PING command received.
+2025-02-11 10:58:18,590 INFO HeartbeatSender started.
+2025-02-11 10:58:18,590 INFO HeartbeatSender started.
+2025-02-11 10:58:18,590 INFO HeartbeatSender started.
+2025-02-11 10:58:22,594 INFO HeartbeatSender stopped.
+2025-02-11 10:58:22,594 INFO HeartbeatSender stopped.
+2025-02-11 10:58:22,594 INFO HeartbeatSender stopped.
+2025-02-11 10:58:22,606 INFO HeartbeatSender started.
+2025-02-11 10:58:22,606 INFO HeartbeatSender started.
+2025-02-11 10:58:22,606 INFO HeartbeatSender started.
+2025-02-11 10:58:22,606 INFO HeartbeatSender started.
+2025-02-11 10:58:26,609 INFO HeartbeatSender stopped.
+2025-02-11 10:58:26,609 INFO HeartbeatSender stopped.
+2025-02-11 10:58:26,609 INFO HeartbeatSender stopped.
+2025-02-11 10:58:26,609 INFO HeartbeatSender stopped.
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,873 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+1364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,876 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,876 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,876 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,876 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,876 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,876 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,874 INFO Processing command: {'id': 'b51364a5-d618-478b-a0dc-26a702b80f7b', 'cmd': 'OTA_UPDATE', 'priority': 3, 'expiry': 1739268031, 'params': {'param1': 'value1'}, 'timestamp': 1739267911, 'nonce': '10b55a56e7d043c68d12827e6a1b13ac', 'signature': '298a4342c4ad7aac80b4098be8c5555ae546abe8b3231fe39216ce7a04ad87c5'}
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,876 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,876 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.
+2025-02-11 10:58:31,877 INFO OTA UPDATE command received.

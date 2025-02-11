@@ -6,6 +6,10 @@ import io
 import json
 
 from flexEngine.cloud.connector import flexCloudConnector
+from flexEngine.communication.matrix import *
+from flexEngine.utils.constants import *
+from flexEngine.security.security import *
+from flexEngine.communication.composer import *
 
 class TestFlexCloudConnectorRealRedis(unittest.TestCase):
     @classmethod
@@ -24,6 +28,7 @@ class TestFlexCloudConnectorRealRedis(unittest.TestCase):
         # Clean up the test Redis database.
         cls.redis_client.flushdb()
 
+
     def test_receives_and_reacts_to_redis_command(self):
         # Patch sys.stdout to capture printed output.
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
@@ -41,12 +46,23 @@ class TestFlexCloudConnectorRealRedis(unittest.TestCase):
             # Allow time for the listener thread to start and subscribe.
             time.sleep(0.2)
 
+            # Generate and store secret
+            secret = generate_shared_secret(32)
+            register_os_variable(secret, env_var_name=SECURITY_STORE.SHARED_SECRET)
+
             # Prepare a command message as a JSON-encoded byte string.
-            command_payload = {"command": "test"}
-            command_data = json.dumps(command_payload).encode('utf-8')
+            cmd_type = COMMAND_TYPE.OTA_UPDATE
+            params = {"param1": "value1"}
+            priority = 3
+            expiry_seconds = 120
+
+            # Call the function under test.
+            command = compose_command(cmd_type, params, priority, expiry_seconds)
+            command_data = json.dumps(command).encode('utf-8')
 
             # Determine the channel to publish to.
-            channel = f'{connector.connectorID}_cmd'
+            _commandKey = connector.connectorID+COMMUNICATIONMATRIX.COMMAND
+            channel = _commandKey
             # Publish the command message to Redis.
             self.redis_client.publish(channel, command_data)
 
@@ -59,9 +75,9 @@ class TestFlexCloudConnectorRealRedis(unittest.TestCase):
         # Verify that the connector printed that a command was received.
         self.assertIn("Command received.", output,
                       "The connector did not print that a command was received.")
-        # Verify that the command payload was printed.
-        self.assertIn("{'command': 'test'}", output,
-                      "The command payload was not printed as expected.")
+
+        self.assertIn("OTA UPDATE command received.", output,
+                      "The command processor did not receive the OTA UPDATE correclty.")
 
 #------------------------------------------------------------------
 # Unit Tests Using a Real Redis Instance
