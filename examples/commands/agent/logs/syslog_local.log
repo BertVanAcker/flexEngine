@@ -20,3 +20,77 @@
 2025-02-11 15:04:37,078 - supervisor - INFO - Heartbeat sent at 1739282677.0774045.
 2025-02-11 15:04:47,080 - supervisor - INFO - Heartbeat sent at 1739282687.0793219.
 2025-02-11 15:04:57,082 - supervisor - INFO - Heartbeat sent at 1739282697.081322.
+2025-02-11 17:10:04,305 - supervisor - INFO - Command processor initialized
+2025-02-11 17:10:05,535 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-11 17:10:05,536 - supervisor - INFO - Heartbeat service started.
+2025-02-11 17:10:05,536 - supervisor - INFO - Heartbeat sent at 1739290205.5354824.
+2025-02-11 17:10:10,077 - supervisor - INFO - Command 9b2894d9-4989-4614-b238-932a2a945915 is valid.
+2025-02-11 17:10:10,077 - supervisor - INFO - OTA_UPDATE command received.
+2025-02-11 17:10:15,538 - supervisor - INFO - Heartbeat sent at 1739290215.537508.
+2025-02-11 17:10:25,539 - supervisor - INFO - Heartbeat sent at 1739290225.5396528.
+2025-02-11 17:10:35,542 - supervisor - INFO - Heartbeat sent at 1739290235.5410438.
+2025-02-11 17:10:45,543 - supervisor - INFO - Heartbeat sent at 1739290245.5430226.
+2025-02-11 17:10:55,545 - supervisor - INFO - Heartbeat sent at 1739290255.5450957.
+2025-02-11 17:11:05,546 - supervisor - INFO - Heartbeat sent at 1739290265.54631.
+2025-02-11 17:11:15,547 - supervisor - INFO - Heartbeat sent at 1739290275.5477479.
+2025-02-11 17:11:25,550 - supervisor - INFO - Heartbeat sent at 1739290285.5486958.
+2025-02-11 17:11:35,550 - supervisor - INFO - Heartbeat sent at 1739290295.550775.
+2025-02-11 17:11:45,552 - supervisor - INFO - Heartbeat sent at 1739290305.552218.
+2025-02-11 17:11:55,553 - supervisor - INFO - Heartbeat sent at 1739290315.5537949.
+2025-02-11 17:12:05,556 - supervisor - INFO - Heartbeat sent at 1739290325.5552473.
+2025-02-11 17:12:15,557 - supervisor - INFO - Heartbeat sent at 1739290335.5567713.
+2025-02-11 17:12:25,558 - supervisor - INFO - Heartbeat sent at 1739290345.5583968.
+2025-02-11 17:12:35,561 - supervisor - INFO - Heartbeat sent at 1739290355.5600457.
+2025-02-11 17:12:45,561 - supervisor - INFO - Heartbeat sent at 1739290365.5618725.
+2025-02-11 17:12:55,564 - supervisor - INFO - Heartbeat sent at 1739290375.563625.
+2025-02-11 17:13:05,566 - supervisor - INFO - Heartbeat sent at 1739290385.565194.
+2025-02-11 17:13:15,568 - supervisor - INFO - Heartbeat sent at 1739290395.5670702.
+2025-02-11 17:13:25,569 - supervisor - INFO - Heartbeat sent at 1739290405.568657.
+2025-02-11 17:13:35,571 - supervisor - INFO - Heartbeat sent at 1739290415.5703058.
+2025-02-11 17:13:45,573 - supervisor - INFO - Heartbeat sent at 1739290425.5724652.
+2025-02-11 17:13:55,575 - supervisor - INFO - Heartbeat sent at 1739290435.5746765.
+2025-02-11 17:14:05,576 - supervisor - INFO - Heartbeat sent at 1739290445.5762358.
+2025-02-11 17:14:15,578 - supervisor - INFO - Heartbeat sent at 1739290455.5774982.
+2025-02-11 17:14:25,582 - supervisor - INFO - Heartbeat sent at 1739290465.5797133.
+2025-02-11 17:14:35,584 - supervisor - INFO - Heartbeat sent at 1739290475.583421.
+2025-02-11 17:14:45,587 - supervisor - INFO - Heartbeat sent at 1739290485.585689.
+2025-02-11 17:14:55,590 - supervisor - INFO - Heartbeat sent at 1739290495.5881867.
+2025-02-11 17:15:05,593 - supervisor - INFO - Heartbeat sent at 1739290505.5909023.
+2025-02-11 17:15:15,594 - supervisor - INFO - Heartbeat sent at 1739290515.594325.
+2025-02-11 17:15:25,598 - supervisor - INFO - Heartbeat sent at 1739290525.596176.
+2025-02-11 17:15:35,603 - supervisor - INFO - Heartbeat sent at 1739290535.5995789.
+2025-02-11 17:15:45,606 - supervisor - INFO - Heartbeat sent at 1739290545.6041226.
+2025-02-11 17:15:55,610 - supervisor - INFO - Heartbeat sent at 1739290555.6081102.
+2025-02-11 17:16:05,612 - supervisor - INFO - Heartbeat sent at 1739290565.6111162.
+2025-02-11 17:16:15,616 - supervisor - INFO - Heartbeat sent at 1739290575.6136527.
+2025-02-11 17:16:25,620 - supervisor - INFO - Heartbeat sent at 1739290585.617596.
+2025-02-11 17:16:35,623 - supervisor - INFO - Heartbeat sent at 1739290595.6211476.
+2025-02-11 17:16:45,627 - supervisor - INFO - Heartbeat sent at 1739290605.6251497.
+2025-02-11 17:16:55,632 - supervisor - INFO - Heartbeat sent at 1739290615.6285126.
+2025-02-11 17:17:05,636 - supervisor - INFO - Heartbeat sent at 1739290625.6331484.
+2025-02-11 17:17:15,640 - supervisor - INFO - Heartbeat sent at 1739290635.637128.
+2025-02-11 17:17:25,643 - supervisor - INFO - Heartbeat sent at 1739290645.6415184.
+2025-02-11 17:17:35,646 - supervisor - INFO - Heartbeat sent at 1739290655.6445706.
+2025-02-11 17:17:45,651 - supervisor - INFO - Heartbeat sent at 1739290665.64812.
+2025-02-11 17:17:55,655 - supervisor - INFO - Heartbeat sent at 1739290675.6523695.
+2025-02-11 17:18:05,659 - supervisor - INFO - Heartbeat sent at 1739290685.6560535.
+2025-02-11 17:18:15,663 - supervisor - INFO - Heartbeat sent at 1739290695.6603563.
+2025-02-11 17:18:25,666 - supervisor - INFO - Heartbeat sent at 1739290705.664088.
+2025-02-11 17:18:35,669 - supervisor - INFO - Heartbeat sent at 1739290715.6664464.
+2025-02-11 17:18:45,672 - supervisor - INFO - Heartbeat sent at 1739290725.6702044.
+2025-02-11 17:18:55,676 - supervisor - INFO - Heartbeat sent at 1739290735.6741207.
+2025-02-11 17:19:05,679 - supervisor - INFO - Heartbeat sent at 1739290745.6767578.
+2025-02-11 17:19:15,682 - supervisor - INFO - Heartbeat sent at 1739290755.6807446.
+2025-02-11 17:19:25,685 - supervisor - INFO - Heartbeat sent at 1739290765.6840703.
+2025-02-11 17:19:35,685 - supervisor - INFO - Heartbeat service stopped.
+2025-02-11 17:19:37,905 - supervisor - INFO - Command 50757ab1-e3d9-4603-a6d6-0b06015ce6a8 is valid.
+2025-02-11 17:19:37,905 - supervisor - INFO - OTA_UPDATE command received.
+2025-02-11 17:19:44,887 - supervisor - INFO - Command 3dec9ef9-d917-4457-aaa1-2a14e2f05c1d is valid.
+2025-02-11 17:19:44,887 - supervisor - INFO - OTA_UPDATE command received.
+2025-02-11 17:19:56,488 - supervisor - INFO - Command b38f732b-6c29-460f-ba22-543e04e3469b is valid.
+2025-02-11 17:19:56,488 - supervisor - INFO - OTA_UPDATE command received.
+2025-02-11 17:20:18,934 - supervisor - INFO - Command processor initialized
+2025-02-11 17:20:20,175 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-11 17:20:20,176 - supervisor - INFO - Heartbeat service started.
+2025-02-11 17:20:20,176 - supervisor - INFO - Heartbeat sent at 1739290820.1767673.
+2025-02-11 17:20:30,178 - supervisor - INFO - Heartbeat service stopped.

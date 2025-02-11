@@ -24,7 +24,7 @@ register_os_variable(secret, env_var_name=SECURITY_STORE.SHARED_SECRET)
 
 # Prepare a command message as a JSON-encoded byte string.
 cmd_type = COMMAND_TYPE.OTA_UPDATE
-params = {"url": "https://github.com/BertVanAcker/rpio-examples.git"}
+params = {"type": "docker hub", "url": "https://github.com/BertVanAcker/rpio-examples.git"}
 priority = 3
 expiry_seconds = 120
 
