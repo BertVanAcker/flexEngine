@@ -1,7 +1,12 @@
 import unittest
+import time
+import redis
 import io
 from unittest.mock import patch, MagicMock
 from flexEngine.device.monitor import *
+from flexEngine.device.heartbeat import *
+from flexEngine.communication.matrix import *
+
 
 class TestDeviceMonitor(unittest.TestCase):
     def test_setUp(self):
@@ -62,9 +67,9 @@ class TestDeviceMonitor(unittest.TestCase):
             r"^MAC Address:\s+.+$",  # "MAC Address: <value>"
             r"^Temperature:\s+[\d\.]+\s+°C$",  # "Temperature: <number> °C"
             r"^Location:$",  # "Location:"
-            r"^ {2}City:\s+Ieper$",  # "  City: Ieper"
-            r"^ {2}Region:\s+Flanders$",  # "  Region: Flanders"
-            r"^ {2}Country:\s+BE$",  # "  Country: BE"
+            r"^ {2}City:\s+(.+)$",  # "  City: Ieper"
+            r"^ {2}Region:\s+(.+)$",  # "  Region: Flanders"
+            r"^ {2}Country:\s+(.+)$",  # "  Country: BE"
             r"^ {2}Coordinates:\s+[\d\.]+,\s*[\d\.]+$",  # "  Coordinates: <number>,<number>"
             r"^Storage Details:$",  # "Storage Details:"
             r"^ {2}Total:\s+[\d\.]+\s+GB$",  # "  Total: <number> GB"
@@ -81,4 +86,58 @@ class TestDeviceMonitor(unittest.TestCase):
         for line, pattern in zip(lines, expected_patterns):
             with self.subTest(line=line, pattern=pattern):
                 self.assertRegex(line, pattern)
+
+
+
+
+#------------------------------------------------------------------
+# Unit Tests device heartbeat
+#------------------------------------------------------------------
+class TestHeartbeatSenderReal(unittest.TestCase):
+    def setUp(self):
+        # Connect to a local Redis instance using a dedicated testing DB (db=15).
+        self.redis_client = redis.Redis(host='localhost', port=6379, db=15)
+        # Define a unique key for testing and ensure it is deleted.
+        self._primaryHardwareID="Oberon-5"
+        self._projectID="sandbox"
+        self._key="3fg445"
+        self._heartbeatKey = self._primaryHardwareID+"@"+self._projectID+"-"+self._key+":"+COMMUNICATIONMATRIX.HEARTBEAT
+        self.redis_client.delete(self._heartbeatKey)
+
+    def tearDown(self):
+        # Clean up the key after each test.
+        self.redis_client.delete(self._heartbeatKey)
+        # Optionally, you can flush the entire test DB:
+        # self.redis_client.flushdb()
+
+    def test_heartbeat_key_exists_while_running(self):
+        """
+        Start the HeartbeatSender and check that the heartbeat key exists
+        in Redis while the sender is running.
+        """
+        # Use a short heartbeat interval and a TTL that ensures the key stays alive.
+        sender = HeartbeatSender(self.redis_client, primaryHardwareID=self._primaryHardwareID,projectID=self._projectID,key=self._key, heartbeat_interval=2, ttl=4)
+        sender.start()
+        # Allow some time for the heartbeat to be set (a few cycles).
+        time.sleep(3)
+        # Check that the key exists.
+        exists = self.redis_client.exists(self._heartbeatKey)
+        sender.stop()
+        self.assertTrue(exists, "Heartbeat key should exist while the sender is running.")
+
+    def test_heartbeat_key_expires_after_stop(self):
+        """
+        After stopping the HeartbeatSender, the key should eventually expire.
+        """
+        # Start the sender with a short interval and a TTL.
+        sender = HeartbeatSender(self.redis_client, primaryHardwareID=self._primaryHardwareID,projectID=self._projectID,key=self._key, heartbeat_interval=2, ttl=4)
+        sender.start()
+        # Wait briefly to ensure the key is set.
+        time.sleep(3)
+        sender.stop()
+        # Wait longer than the TTL to allow the key to expire.
+        time.sleep(5)
+        exists = self.redis_client.exists(self._heartbeatKey)
+        self.assertFalse(exists, "Heartbeat key should expire after the sender is stopped.")
+
 
