@@ -7,6 +7,7 @@
 # * permission of Bert Van Acker
 # *************************************************************************
 from flexEngine.utils.constants import *
+from flexEngine.application.registry import *
 import threading
 class commandProcessor(object):
     def __init__(self,name="cmdProcessor",logger=None,verbose=False):
@@ -38,11 +39,15 @@ class commandProcessor(object):
         self._received_command_ids = set()
         self._command_ids_lock = threading.Lock()
 
+        #--- Registry manager ---
+        self._registryManager = registryManager(name="registryManager",logger=self._logger,verbose=verbose)
+
         self._logger.info("Command processor initialized")
 
 
     def process_command(self,command):
         """Process a command """
+        #TODO: ADD COMMAND QUEUE AND SORT BY PRIORITY
         try:
             #CHECK IF COMMAND IS ALREADY RECEIVED
             if not self.is_command_already_received(command):
@@ -51,12 +56,18 @@ class commandProcessor(object):
 
                 elif command["cmd"] == COMMAND_TYPE.OTA_UPDATE:
                     if self._logger is not None: self._logger.info(COMMAND_TYPE.OTA_UPDATE+" command received.")
-                    if self._verbose:print("OTA UPDATE command received.")
+                    if self._verbose:print(COMMAND_TYPE.OTA_UPDATE+" command received.")
                     #TODO: trigger OTA UPDATE
                 elif command["cmd"] == COMMAND_TYPE.PING:
                     if self._logger is not None: self._logger.info(COMMAND_TYPE.PING+" command received.")
-                    if self._verbose: print("PING command received.")
+                    if self._verbose: print(COMMAND_TYPE.PING+" command received.")
                     #TODO: trigger PING RESPONSE
+                elif command["cmd"] == COMMAND_TYPE.PUSH:
+                    if self._logger is not None: self._logger.info(COMMAND_TYPE.PUSH + " command received.")
+                    if self._verbose: print(COMMAND_TYPE.PUSH+" command received.")
+
+                    self._registryManager.registerApplication(command=command)
+
         except Exception as e:
             if self._logger is not None: self._logger.error("Failed to process command.")
 

@@ -23,8 +23,8 @@ secret = _device_config.get("shared_secret","UNKNOWN")
 register_os_variable(secret, env_var_name=SECURITY_STORE.SHARED_SECRET)
 
 # Prepare a command message as a JSON-encoded byte string.
-cmd_type = COMMAND_TYPE.OTA_UPDATE
-params = {"type": "docker hub", "url": "https://github.com/BertVanAcker/rpio-examples.git"}
+cmd_type = COMMAND_TYPE.PUSH
+params = {"type": "github", "url": "https://github.com/dockersamples/helloworld-demo-python","branch": "main"}
 priority = 3
 expiry_seconds = 120
 
