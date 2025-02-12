@@ -132,3 +132,6 @@ class applicationEntry(object):
         self._type = type
         self._workspace = workspace
         self._repo_url = repo_url
+        #--- app status ---
+        self._status = APPLICATION_STATUS.REGISTERED
+
