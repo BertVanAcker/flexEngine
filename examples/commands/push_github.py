@@ -24,7 +24,7 @@ register_os_variable(secret, env_var_name=SECURITY_STORE.SHARED_SECRET)
 
 # Prepare a command message as a JSON-encoded byte string.
 cmd_type = COMMAND_TYPE.PUSH
-params = {"type": "github", "url": "https://github.com/dockersamples/helloworld-demo-python","branch": "main"}
+params = {"type": "github", "url": "https://github.com/BertVanAcker/flexia-helloworld.git","branch": "main"}
 priority = 3
 expiry_seconds = 120
 

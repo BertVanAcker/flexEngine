@@ -127,8 +127,9 @@ class registryManager(object):
         return repo_path, _workspace_exists
 
 class applicationEntry(object):
-    def __init__(self,name="applicationName",type="github",workspace="apps/",repo_url=""):
+    def __init__(self,name="applicationName",type="github",workspace="apps/",repo_url="",tag=""):
         self._name = name
+        self._tag = tag
         self._type = type
         self._workspace = workspace
         self._repo_url = repo_url

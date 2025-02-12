@@ -1,0 +1,18 @@
+[flexIA]
+projectID = sandbox
+description = Sandbox project
+
+[PACKAGE]
+name = flexia-helloworld
+tag = flexia_helloworld_001
+
+
+[build:Oberon-5]
+workflow = docker                                   #docker|docker-compose|custom
+workflow_link = "relative/path/to/workflow"
+arguments = ""
+
+[run:Oberon-5]
+workflow = docker                                   #docker|docker-compose|custom
+workflow_link = "relative/path/to/workflow"
+arguments = "-p 8080:8080"

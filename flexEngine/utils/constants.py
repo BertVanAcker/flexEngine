@@ -17,8 +17,10 @@ class SECURITY_STORE:
 class COMMAND_TYPE:
     UNKNOWN = "UNKNOWN"
     OTA_UPDATE = "OTA_UPDATE"
-    PUSH = "PUSH"
     PING = "PING"
+    PUSH = "PUSH"
+    BUILD = "BUILD"
+    RUN = "RUN"
 
 class REGISTRY_TYPE:
     UNKNOWN = "UNKNOWN"
@@ -35,3 +37,8 @@ class APPLICATION_STATUS:
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
     ERROR = "ERROR"
+
+class PACKAGE_TYPE:
+    UNKNOWN = "UNKNOWN"
+    ROBOSAPIENS = "robosapiens"
+    FLEXIA = "flexia"

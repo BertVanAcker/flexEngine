@@ -6,6 +6,7 @@
 # * flexIA can not be copied and/or distributed without the express
 # * permission of Bert Van Acker
 # *************************************************************************
+from flexEngine.application.manager import applicationManager
 from flexEngine.utils.constants import *
 from flexEngine.application.registry import *
 import threading
@@ -41,6 +42,8 @@ class commandProcessor(object):
 
         #--- Registry manager ---
         self._registryManager = registryManager(name="registryManager",logger=self._logger,verbose=verbose)
+        # --- Application manager ---
+        self._applicationManager = applicationManager(name="applicationManager", logger=self._logger, verbose=verbose)
 
         self._logger.info("Command processor initialized")
 
@@ -67,6 +70,12 @@ class commandProcessor(object):
                     if self._verbose: print(COMMAND_TYPE.PUSH+" command received.")
 
                     self._registryManager.registerApplication(command=command)
+
+                elif command["cmd"] == COMMAND_TYPE.BUILD:
+                    if self._logger is not None: self._logger.info(COMMAND_TYPE.BUILD + " command received.")
+                    if self._verbose: print(COMMAND_TYPE.BUILD+" command received.")
+
+                    self._applicationManager.buildApplication(command=command)
 
         except Exception as e:
             if self._logger is not None: self._logger.error("Failed to process command.")

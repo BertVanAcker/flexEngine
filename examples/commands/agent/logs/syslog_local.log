@@ -1,16 +1,22 @@
-2025-02-12 06:46:29,997 - supervisor - INFO - Application registry initialized
-2025-02-12 06:46:29,997 - supervisor - INFO - Command processor initialized
-2025-02-12 06:46:31,325 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
-2025-02-12 06:46:31,325 - supervisor - INFO - Heartbeat service started.
-2025-02-12 06:46:31,326 - supervisor - INFO - Heartbeat sent at 1739339191.3259017.
-2025-02-12 06:46:32,280 - supervisor - INFO - Command 6c671345-f917-49ea-9cec-4aa84308f7a0 is valid.
-2025-02-12 06:46:32,280 - supervisor - INFO - PING command received.
-2025-02-12 06:46:32,280 - supervisor - INFO - Cloning repository 'https://github.com/dockersamples/helloworld-demo-python' into 'apps/helloworld-demo-python'...
-2025-02-12 06:46:33,072 - supervisor - INFO - Application successfully registered
-2025-02-12 06:46:38,784 - supervisor - INFO - Command 61e00be5-d7aa-43ad-ad7b-e1a9f4b730b2 is valid.
-2025-02-12 06:46:38,784 - supervisor - INFO - PING command received.
-2025-02-12 06:46:38,784 - supervisor - INFO - Repository 'helloworld-demo-python' already exists. Pulling latest changes...
-2025-02-12 06:46:39,432 - supervisor - INFO - Application already registered
-2025-02-12 06:46:41,329 - supervisor - INFO - Heartbeat sent at 1739339201.3271158.
-2025-02-12 06:46:51,332 - supervisor - INFO - Heartbeat sent at 1739339211.3300622.
-2025-02-12 06:47:01,334 - supervisor - INFO - Heartbeat sent at 1739339221.3332329.
+2025-02-12 10:07:19,242 - supervisor - INFO - Application registry initialized
+2025-02-12 10:07:19,243 - supervisor - INFO - Command processor initialized
+2025-02-12 10:07:20,659 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-12 10:07:20,660 - supervisor - INFO - Heartbeat service started.
+2025-02-12 10:07:20,660 - supervisor - INFO - Heartbeat sent at 1739351240.660565.
+2025-02-12 10:07:23,654 - supervisor - INFO - Command b851d8b1-cd16-4f1a-b020-bcdf63c6b31e is valid.
+2025-02-12 10:07:23,654 - supervisor - INFO - PUSH command received.
+2025-02-12 10:07:23,654 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-helloworld.git' into 'apps/flexia-helloworld'...
+2025-02-12 10:07:24,548 - supervisor - INFO - Application successfully registered
+2025-02-12 10:07:30,663 - supervisor - INFO - Heartbeat sent at 1739351250.662087.
+2025-02-12 10:07:34,404 - supervisor - INFO - Command e4e24d27-3183-4c41-987a-a8abc1bce3b2 is valid.
+2025-02-12 10:07:34,404 - supervisor - INFO - BUILD command received.
+2025-02-12 10:07:34,404 - supervisor - INFO - Flexia application {name:flexia-helloworld,tag:main}, build request received.
+2025-02-12 10:07:40,665 - supervisor - INFO - Heartbeat sent at 1739351260.6647494.
+2025-02-12 10:07:50,667 - supervisor - INFO - Heartbeat sent at 1739351270.6662314.
+2025-02-12 10:08:00,671 - supervisor - INFO - Heartbeat sent at 1739351280.6687214.
+2025-02-12 10:08:02,374 - supervisor - INFO - Command e7a3ba5d-4b72-4f9b-ad4f-b06714aef9b3 is valid.
+2025-02-12 10:08:02,374 - supervisor - INFO - BUILD command received.
+2025-02-12 10:08:02,374 - supervisor - INFO - Flexia application {name:flexia-helloworld,tag:flexia_helloworld_001}, build request received.
+2025-02-12 10:08:10,675 - supervisor - INFO - Heartbeat sent at 1739351290.6730392.
+2025-02-12 10:08:20,677 - supervisor - INFO - Heartbeat sent at 1739351300.6755226.
+2025-02-12 10:08:30,681 - supervisor - INFO - Heartbeat sent at 1739351310.677801.
