@@ -1,31 +1,21 @@
-2025-02-13 13:16:32,003 - supervisor - INFO - Application registry initialized
-2025-02-13 13:16:32,004 - supervisor - INFO - Command processor initialized
-2025-02-13 13:16:33,409 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
-2025-02-13 13:16:33,409 - supervisor - INFO - Heartbeat service started.
-2025-02-13 13:16:33,410 - supervisor - INFO - Heartbeat sent at 1739448993.4091678.
-2025-02-13 13:16:36,083 - supervisor - INFO - Command 82a4732b-6965-46a5-b459-2f82b679190c is valid.
-2025-02-13 13:16:36,083 - supervisor - INFO - PUSH command received.
-2025-02-13 13:16:36,083 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-helloworld.git' into 'apps/flexia-helloworld'...
-2025-02-13 13:16:37,098 - supervisor - INFO - Application successfully registered
-2025-02-13 13:16:39,109 - supervisor - INFO - Command eb712461-0468-4dd7-945f-b4ed4a56ef95 is valid.
-2025-02-13 13:16:39,109 - supervisor - INFO - BUILD command received.
-2025-02-13 13:16:39,113 - supervisor - INFO - Application {name:flexia-helloworld}, found in the registered applications, proceed with build action.
-2025-02-13 13:16:39,113 - supervisor - INFO - Start building registered flexIA application {name:flexia-helloworld}.
-2025-02-13 13:16:39,114 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-helloworld}.
-2025-02-13 13:16:39,114 - supervisor - INFO - Build configuration for device {Oberon-5} loaded for flexIA application {name:flexia-helloworld}.
-2025-02-13 13:16:39,114 - supervisor - INFO - Docker build workflow for flexIA application {name:flexia-helloworld} started.
-2025-02-13 13:16:43,411 - supervisor - INFO - Heartbeat sent at 1739449003.4110813.
-2025-02-13 13:16:43,824 - supervisor - INFO - Successfully build container for application {name:flexia-helloworld}, with tag: dc8fdb33ac.
-2025-02-13 13:16:53,413 - supervisor - INFO - Heartbeat sent at 1739449013.4123225.
-2025-02-13 13:17:03,415 - supervisor - INFO - Heartbeat sent at 1739449023.4146268.
-2025-02-13 13:17:13,416 - supervisor - INFO - Heartbeat sent at 1739449033.4163213.
-2025-02-13 13:17:23,418 - supervisor - INFO - Heartbeat sent at 1739449043.4175227.
-2025-02-13 13:17:33,420 - supervisor - INFO - Heartbeat sent at 1739449053.4190853.
-2025-02-13 13:17:43,422 - supervisor - INFO - Heartbeat sent at 1739449063.420854.
-2025-02-13 13:17:53,427 - supervisor - INFO - Heartbeat sent at 1739449073.4244213.
-2025-02-13 13:18:03,430 - supervisor - INFO - Heartbeat sent at 1739449083.4278882.
-2025-02-13 13:18:13,432 - supervisor - INFO - Heartbeat sent at 1739449093.4311411.
-2025-02-13 13:18:23,435 - supervisor - INFO - Heartbeat sent at 1739449103.432915.
-2025-02-13 13:18:33,437 - supervisor - INFO - Heartbeat sent at 1739449113.43602.
-2025-02-13 13:18:43,439 - supervisor - INFO - Heartbeat sent at 1739449123.4377127.
-2025-02-13 13:18:53,441 - supervisor - INFO - Heartbeat sent at 1739449133.4401395.
+2025-02-13 13:41:01,843 - supervisor - INFO - Application registry initialized
+2025-02-13 13:41:01,844 - supervisor - INFO - Command processor initialized
+2025-02-13 13:41:03,138 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-13 13:41:03,139 - supervisor - INFO - Heartbeat service started.
+2025-02-13 13:41:03,140 - supervisor - INFO - Heartbeat sent at 1739450463.1397693.
+2025-02-13 13:41:03,847 - supervisor - INFO - Command 4737270a-f3dd-4518-bc29-235484d48767 is valid.
+2025-02-13 13:41:03,847 - supervisor - INFO - BUILD command received.
+2025-02-13 13:41:03,850 - supervisor - INFO - Application {name:flexia-helloworld}, found in the registered applications, proceed with build action.
+2025-02-13 13:41:03,853 - supervisor - INFO - Start building registered flexIA application {name:flexia-helloworld}.
+2025-02-13 13:41:03,854 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-helloworld}.
+2025-02-13 13:41:03,854 - supervisor - INFO - Build configuration for device {Oberon-5} loaded for flexIA application {name:flexia-helloworld}.
+2025-02-13 13:41:03,854 - supervisor - INFO - Docker build workflow for flexIA application {name:flexia-helloworld} started.
+2025-02-13 13:41:05,053 - supervisor - INFO - Successfully build container for application {name:flexia-helloworld}, with tag: aa8a7fb3cf.
+2025-02-13 13:41:13,143 - supervisor - INFO - Heartbeat sent at 1739450473.1412847.
+2025-02-13 13:41:23,145 - supervisor - INFO - Heartbeat sent at 1739450483.143772.
+2025-02-13 13:41:33,148 - supervisor - INFO - Heartbeat sent at 1739450493.1463053.
+2025-02-13 13:41:43,150 - supervisor - INFO - Heartbeat sent at 1739450503.1492143.
+2025-02-13 13:41:53,152 - supervisor - INFO - Heartbeat sent at 1739450513.1510131.
+2025-02-13 13:42:03,154 - supervisor - INFO - Heartbeat sent at 1739450523.154042.
+2025-02-13 13:42:13,158 - supervisor - INFO - Heartbeat sent at 1739450533.1565068.
+2025-02-13 13:42:23,161 - supervisor - INFO - Heartbeat sent at 1739450543.1593738.

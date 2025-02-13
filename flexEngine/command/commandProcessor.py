@@ -77,6 +77,12 @@ class commandProcessor(object):
 
                     self._applicationManager.buildApplication(command=command)
 
+                elif command["cmd"] == COMMAND_TYPE.RUN:
+                    if self._logger is not None: self._logger.info(COMMAND_TYPE.RUN + " command received.")
+                    if self._verbose: print(COMMAND_TYPE.RUN+" command received.")
+
+                    self._applicationManager.runApplication(command=command)
+
         except Exception as e:
             if self._logger is not None: self._logger.error("Failed to process command.")
 
