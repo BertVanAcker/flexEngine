@@ -24,7 +24,7 @@ register_os_variable(secret, env_var_name=SECURITY_STORE.SHARED_SECRET)
 
 # Prepare a command message as a JSON-encoded byte string.
 cmd_type = COMMAND_TYPE.BUILD
-params = {"packageType": "flexia","app": "flexia-helloworld","tag": "flexia_helloworld_001"}
+params = {"packageType": "flexia","app": "flexia-helloworld","tag": ""}
 priority = 3
 expiry_seconds = 120
 

@@ -50,61 +50,62 @@ class applicationManager(object):
         _commandParameters = command["params"]
         _packageType = _commandParameters["packageType"]
         _app = _commandParameters["app"]
-        _appTag = _commandParameters["tag"]
 
         #---------------------------FETCH REGISTERED APPLICATION---------------------
         appDetails = self.get_app_details(appName=_app)
         if not appDetails:
-            if self._logger is not None: self._logger.error("Application {name:" + _app + ",tag:" + _appTag + "}, not found in the registered applications.")
+            if self._logger is not None: self._logger.error("Application {name:" + _app +"}, not found in the registered applications.")
 
         else:
-            if self._logger is not None: self._logger.info("Application {name:" + _app + ",tag:" + _appTag + "}, found in the registered applications, proceed with build action.")
+            if self._logger is not None: self._logger.info("Application {name:" + _app +"}, found in the registered applications, proceed with build action.")
             #----------------------------FLEXIA SPECIFIC PACKAGES-----------------------
             if _packageType==PACKAGE_TYPE.FLEXIA:
-                if self._logger is not None: self._logger.info("Start building registered flexIA application {name:"+_app+",tag:"+_appTag+"}.")
+                if self._logger is not None: self._logger.info("Start building registered flexIA application {name:"+_app +"}.")
 
                 # Fetch flexIA.ini file and interpret
                 try:
                     flexiaConfig = load_flexia_config(config_file=appDetails["workspace"]+"/flexIA.ini")
-                    if self._logger is not None: self._logger.info("flexIA.ini file loaded for flexIA application {name:" + _app + ",tag:" + _appTag + "}.")
+                    if self._logger is not None: self._logger.info("flexIA.ini file loaded for flexIA application {name:" + _app  +"}.")
                 except Exception as e:
-                    if self._logger is not None: self._logger.error("Failed to load flexIA.ini file for flexIA application {name:" + _app + ",tag:" + _appTag + "}.")
+                    if self._logger is not None: self._logger.error("Failed to load flexIA.ini file for flexIA application {name:" + _app  +"}.")
                     flexiaConfig = {}
 
                 # Determine build config for current device
                 _PrimaryHarwareID = self._flexCloudConnector.primaryHardwareID
                 try:
                     _buildConfig = flexiaConfig['build'][_PrimaryHarwareID]
-                    if self._logger is not None: self._logger.info("Build configuration for device {"+_PrimaryHarwareID+"} loaded for flexIA application {name:" + _app + ",tag:" + _appTag + "}.")
+                    if self._logger is not None: self._logger.info("Build configuration for device {"+_PrimaryHarwareID+"} loaded for flexIA application {name:" + _app +"}.")
                 except Exception as e:
-                    if self._logger is not None: self._logger.error("Failed to load build configuration for device {"+_PrimaryHarwareID+"} for flexIA application {name:" + _app + ",tag:" + _appTag + "}.")
+                    if self._logger is not None: self._logger.error("Failed to load build configuration for device {"+_PrimaryHarwareID+"} for flexIA application {name:" + _app  +"}.")
                     _buildConfig = {}
 
                 # Determine build strategy
                 if not _buildConfig:
-                    if self._logger is not None: self._logger.error("No build workflow for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app + ",tag:" + _appTag + "}, canceling build.")
+                    if self._logger is not None: self._logger.error("No build workflow for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app  +"}, canceling build.")
                 else:
                     if _buildConfig["workflow"] == WORKFLOW_TYPE.UNKNOWN:
-                        if self._logger is not None: self._logger.error("Build workflow UNKNOWN for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app + ",tag:" + _appTag + "}, canceling build.")
+                        if self._logger is not None: self._logger.error("Build workflow UNKNOWN for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app +"}, canceling build.")
 
                     elif _buildConfig["workflow"] == WORKFLOW_TYPE.DOCKER:
-                        if self._logger is not None: self._logger.info("Docker build workflow for flexIA application {name:" + _app + ",tag:" + _appTag + "} started.")
+                        if self._logger is not None: self._logger.info("Docker build workflow for flexIA application {name:" + _app +"} started.")
                         #TODO: trigger docker build in given workspace
+                        self.docker_build(appName=_app,tag=appDetails["tag"],workspace=appDetails["workspace"])
+
 
                     elif _buildConfig["workflow"] == WORKFLOW_TYPE.DOCKER_COMPOSE:
-                        if self._logger is not None: self._logger.info("Docker-compose build workflow for flexIA application {name:" + _app + ",tag:" + _appTag + "} started.")
+                        if self._logger is not None: self._logger.info("Docker-compose build workflow for flexIA application {name:" + _app +"} started.")
                         # TODO: trigger docker build in given workspace
 
                     elif _buildConfig["workflow"] == WORKFLOW_TYPE.CUSTOM:
-                        if self._logger is not None: self._logger.info("Custom build workflow for flexIA application {name:" + _app + ",tag:" + _appTag + "} started.")
+                        if self._logger is not None: self._logger.info("Custom build workflow for flexIA application {name:" + _app +"} started.")
 
                     elif _buildConfig["workflow"] == WORKFLOW_TYPE.NONE:
-                        if self._logger is not None: self._logger.info("No build workflow required for flexIA application {name:" + _app + ",tag:" + _appTag + "} started.")
+                        if self._logger is not None: self._logger.info("No build workflow required for flexIA application {name:" + _app +"} started.")
 
 
             # ----------------------------ROBOSAPIENS SPECIFIC PACKAGES-----------------------
             elif _packageType==PACKAGE_TYPE.ROBOSAPIENS:
-                if self._logger is not None: self._logger.info("Start building registered RobosapiensIO application {name:" + _app + ",tag:" + _appTag + "}.")
+                if self._logger is not None: self._logger.info("Start building registered RobosapiensIO application {name:" + _app +"}.")
                 # TODO:FETCH robosapiens.ini file and interpret
                 x = 1
 
@@ -140,3 +141,30 @@ class applicationManager(object):
                 details[prop] = None
 
         return details
+
+
+    #-------------------------------------------------------------------------------------------------------------------
+    #                                    BUILD-IN BUILD WORKFLOWS
+    #-------------------------------------------------------------------------------------------------------------------
+    def docker_build(self,appName="",workspace="apps",tag=""):
+
+        #1. Fetch docker file
+        dockerfile_path = os.path.join(workspace, "Dockerfile")
+        if not os.path.exists(dockerfile_path):
+            if self._logger is not None: self._logger.error("Dockerfile for application {name:"+appName+"} not found in repository "+dockerfile_path+".")
+        else:
+
+        #2. Build docker container with tag
+            result = subprocess.run(
+                ["docker", "build", "-t", tag, "."],
+                cwd=workspace,
+                capture_output=True,
+                text=True,
+            )
+        #3. Check if build was successfull
+            if result.returncode != 0:
+                if self._logger is not None: self._logger.error("Docker build failed for application {name:"+appName+"}.")
+                if self._logger is not None: self._logger.error(result.stderr)
+            else:
+                if self._logger is not None: self._logger.info("Successfully build container for application {name:"+appName+"}, with tag: "+tag+".")
+

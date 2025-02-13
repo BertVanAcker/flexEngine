@@ -80,7 +80,7 @@ def register_os_variable(secret, env_var_name=SECURITY_STORE.SHARED_SECRET):
     except:
         return False
 
-def generate_app_tag(prefix="APP", unique_length=8):
+def generate_app_tag(prefix="APP", unique_length=10):
     """
     Generates a unique tag for an application.
 
@@ -96,5 +96,8 @@ def generate_app_tag(prefix="APP", unique_length=8):
         str: The generated application tag.
     """
     # Generate a UUID and take the first `unique_length` characters of its hex representation
-    unique_part = uuid.uuid4().hex[:unique_length].upper()
-    return f"{prefix}-{unique_part}"
+    unique_part = uuid.uuid4().hex[:unique_length]
+    if prefix is not None:
+        return f"{prefix}-{unique_part}"
+    else:
+        return unique_part

@@ -154,7 +154,7 @@ class applicationEntry(object):
     def __init__(self, name="applicationName", type="github", workspace="apps/", repo_url="", tag=""):
         self._name = name
         if tag == "":
-            self._tag = generate_app_tag(prefix="app",unique_length=8)
+            self._tag = generate_app_tag(prefix=None,unique_length=10)
         else:
             self._tag = tag
         self._type = type
