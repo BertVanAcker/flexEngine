@@ -117,7 +117,7 @@ class applicationManager(object):
 
     def runApplication(self, command):
         """Run an application"""
-        _buildSucceeded = False
+        _launchSucceeded = False
         _commandParameters = command["params"]
         _packageType = _commandParameters["packageType"]
         _app = _commandParameters["app"]
@@ -128,10 +128,10 @@ class applicationManager(object):
             if self._logger is not None: self._logger.error("Application {name:" + _app +"}, not found in the registered applications.")
 
         else:
-            if self._logger is not None: self._logger.info("Application {name:" + _app +"}, found in the registered applications, proceed with build action.")
+            if self._logger is not None: self._logger.info("Application {name:" + _app +"}, found in the registered applications, proceed with run action.")
             #----------------------------FLEXIA SPECIFIC PACKAGES-----------------------
             if _packageType==PACKAGE_TYPE.FLEXIA:
-                if self._logger is not None: self._logger.info("Start building registered flexIA application {name:"+_app +"}.")
+                if self._logger is not None: self._logger.info("Start run workflow for registered flexIA application {name:"+_app +"}.")
 
                 # Fetch flexIA.ini file and interpret
                 try:
@@ -144,33 +144,34 @@ class applicationManager(object):
                 # Determine build config for current device
                 _PrimaryHarwareID = self._flexCloudConnector.primaryHardwareID
                 try:
-                    _buildConfig = flexiaConfig['build'][_PrimaryHarwareID]
-                    if self._logger is not None: self._logger.info("Build configuration for device {"+_PrimaryHarwareID+"} loaded for flexIA application {name:" + _app +"}.")
+                    _runConfig = flexiaConfig['run'][_PrimaryHarwareID]
+                    if self._logger is not None: self._logger.info("Run configuration for device {"+_PrimaryHarwareID+"} loaded for flexIA application {name:" + _app +"}.")
                 except Exception as e:
-                    if self._logger is not None: self._logger.error("Failed to load build configuration for device {"+_PrimaryHarwareID+"} for flexIA application {name:" + _app  +"}.")
-                    _buildConfig = {}
+                    if self._logger is not None: self._logger.error("Failed to load run configuration for device {"+_PrimaryHarwareID+"} for flexIA application {name:" + _app  +"}.")
+                    _runConfig = {}
 
-                # Determine build strategy
-                if not _buildConfig:
-                    if self._logger is not None: self._logger.error("No build workflow for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app  +"}, canceling build.")
+                # Determine run strategy
+                if not _runConfig:
+                    if self._logger is not None: self._logger.error("No run workflow for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app  +"}, canceling build.")
                 else:
-                    if _buildConfig["workflow"] == WORKFLOW_TYPE.UNKNOWN:
-                        if self._logger is not None: self._logger.error("Build workflow UNKNOWN for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app +"}, canceling build.")
+                    if _runConfig["workflow"] == WORKFLOW_TYPE.UNKNOWN:
+                        if self._logger is not None: self._logger.error("Run workflow UNKNOWN for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app +"}, canceling build.")
 
-                    elif _buildConfig["workflow"] == WORKFLOW_TYPE.DOCKER:
-                        if self._logger is not None: self._logger.info("Docker build workflow for flexIA application {name:" + _app +"} started.")
+                    elif _runConfig["workflow"] == WORKFLOW_TYPE.DOCKER:
+                        if self._logger is not None: self._logger.info("Docker run workflow for flexIA application {name:" + _app +"} started.")
                         #TODO: trigger docker RUN in given workspace
+                        _launchSucceeded = self.docker_run(appName=_app,tag=appDetails["tag"],workspace=appDetails["workspace"],additional_run_args=_runConfig["arguments"])
 
 
-                    elif _buildConfig["workflow"] == WORKFLOW_TYPE.DOCKER_COMPOSE:
-                        if self._logger is not None: self._logger.info("Docker-compose build workflow for flexIA application {name:" + _app +"} started.")
-                        # TODO: trigger docker build in given workspace
+                    elif _runConfig["workflow"] == WORKFLOW_TYPE.DOCKER_COMPOSE:
+                        if self._logger is not None: self._logger.info("Docker-compose run workflow for flexIA application {name:" + _app +"} started.")
+                        # TODO: trigger docker run in given workspace
 
-                    elif _buildConfig["workflow"] == WORKFLOW_TYPE.CUSTOM:
-                        if self._logger is not None: self._logger.info("Custom build workflow for flexIA application {name:" + _app +"} started.")
+                    elif _runConfig["workflow"] == WORKFLOW_TYPE.CUSTOM:
+                        if self._logger is not None: self._logger.info("Custom run workflow for flexIA application {name:" + _app +"} started.")
 
-                    elif _buildConfig["workflow"] == WORKFLOW_TYPE.NONE:
-                        if self._logger is not None: self._logger.info("No build workflow required for flexIA application {name:" + _app +"} started.")
+                    elif _runConfig["workflow"] == WORKFLOW_TYPE.NONE:
+                        if self._logger is not None: self._logger.info("No run workflow required for flexIA application {name:" + _app +"} started.")
 
 
             # ----------------------------ROBOSAPIENS SPECIFIC PACKAGES-----------------------
@@ -239,5 +240,31 @@ class applicationManager(object):
 
         return _success
 
+    def docker_run(self,appName="",workspace="apps",tag="",additional_run_args=""):
+        """"Running a build docker application """
+        _success = False
+
+        # 1. Fetch docker file
+        dockerfile_path = os.path.join(workspace, "Dockerfile")
+        if not os.path.exists(dockerfile_path):
+            if self._logger is not None: self._logger.error("Dockerfile for application {name:" + appName + "} not found in repository " + dockerfile_path + ".")
+        else:
+            arguments = additional_run_args.strip('"')
+            # Split the string by whitespace
+            additional_run_args_processes = arguments.split()
+            run_command = ["docker", "run", "--name", appName, "-d"] + additional_run_args_processes + [tag]
+            print(run_command)
+            result = subprocess.run(
+                run_command,
+                cwd=workspace,
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                if self._logger is not None: self._logger.error("Failed to run docker application {name:" + appName + "}.")
+                if self._logger is not None: self._logger.error(result.stderr)
+            else:
+                if self._logger is not None: self._logger.info("Successfully run docker application {name:" + appName + "}.")
 
 
+        return _success

@@ -1,21 +1,17 @@
-2025-02-13 13:41:01,843 - supervisor - INFO - Application registry initialized
-2025-02-13 13:41:01,844 - supervisor - INFO - Command processor initialized
-2025-02-13 13:41:03,138 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
-2025-02-13 13:41:03,139 - supervisor - INFO - Heartbeat service started.
-2025-02-13 13:41:03,140 - supervisor - INFO - Heartbeat sent at 1739450463.1397693.
-2025-02-13 13:41:03,847 - supervisor - INFO - Command 4737270a-f3dd-4518-bc29-235484d48767 is valid.
-2025-02-13 13:41:03,847 - supervisor - INFO - BUILD command received.
-2025-02-13 13:41:03,850 - supervisor - INFO - Application {name:flexia-helloworld}, found in the registered applications, proceed with build action.
-2025-02-13 13:41:03,853 - supervisor - INFO - Start building registered flexIA application {name:flexia-helloworld}.
-2025-02-13 13:41:03,854 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-helloworld}.
-2025-02-13 13:41:03,854 - supervisor - INFO - Build configuration for device {Oberon-5} loaded for flexIA application {name:flexia-helloworld}.
-2025-02-13 13:41:03,854 - supervisor - INFO - Docker build workflow for flexIA application {name:flexia-helloworld} started.
-2025-02-13 13:41:05,053 - supervisor - INFO - Successfully build container for application {name:flexia-helloworld}, with tag: aa8a7fb3cf.
-2025-02-13 13:41:13,143 - supervisor - INFO - Heartbeat sent at 1739450473.1412847.
-2025-02-13 13:41:23,145 - supervisor - INFO - Heartbeat sent at 1739450483.143772.
-2025-02-13 13:41:33,148 - supervisor - INFO - Heartbeat sent at 1739450493.1463053.
-2025-02-13 13:41:43,150 - supervisor - INFO - Heartbeat sent at 1739450503.1492143.
-2025-02-13 13:41:53,152 - supervisor - INFO - Heartbeat sent at 1739450513.1510131.
-2025-02-13 13:42:03,154 - supervisor - INFO - Heartbeat sent at 1739450523.154042.
-2025-02-13 13:42:13,158 - supervisor - INFO - Heartbeat sent at 1739450533.1565068.
-2025-02-13 13:42:23,161 - supervisor - INFO - Heartbeat sent at 1739450543.1593738.
+2025-02-13 14:40:52,817 - supervisor - INFO - Application registry initialized
+2025-02-13 14:40:52,817 - supervisor - INFO - Command processor initialized
+2025-02-13 14:40:54,157 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-13 14:40:54,158 - supervisor - INFO - Heartbeat service started.
+2025-02-13 14:40:54,158 - supervisor - INFO - Heartbeat sent at 1739454054.158529.
+2025-02-13 14:40:55,269 - supervisor - INFO - Command d27bc130-e911-4fea-8047-41ff1662d51a is valid.
+2025-02-13 14:40:55,269 - supervisor - INFO - RUN command received.
+2025-02-13 14:40:55,272 - supervisor - INFO - Application {name:flexia-helloworld}, found in the registered applications, proceed with run action.
+2025-02-13 14:40:55,275 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-helloworld}.
+2025-02-13 14:40:55,275 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-helloworld}.
+2025-02-13 14:40:55,275 - supervisor - INFO - Run configuration for device {Oberon-5} loaded for flexIA application {name:flexia-helloworld}.
+2025-02-13 14:40:55,275 - supervisor - INFO - Docker run workflow for flexIA application {name:flexia-helloworld} started.
+2025-02-13 14:40:55,663 - supervisor - INFO - Successfully run docker application {name:flexia-helloworld}.
+2025-02-13 14:41:04,160 - supervisor - INFO - Heartbeat sent at 1739454064.1598108.
+2025-02-13 14:41:14,162 - supervisor - INFO - Heartbeat sent at 1739454074.1621203.
+2025-02-13 14:41:24,164 - supervisor - INFO - Heartbeat sent at 1739454084.1638002.
+2025-02-13 14:41:34,168 - supervisor - INFO - Heartbeat sent at 1739454094.1657858.
