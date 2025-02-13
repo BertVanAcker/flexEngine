@@ -11,7 +11,7 @@ from flexEngine.utils.constants import *
 from flexEngine.application.registry import *
 import threading
 class commandProcessor(object):
-    def __init__(self,name="cmdProcessor",logger=None,verbose=False):
+    def __init__(self,name="cmdProcessor",registryManager=None,applicationManager=None,logger=None,verbose=False):
         """Initialize a Logger component.
 
                 Parameters
@@ -41,9 +41,9 @@ class commandProcessor(object):
         self._command_ids_lock = threading.Lock()
 
         #--- Registry manager ---
-        self._registryManager = registryManager(name="registryManager",logger=self._logger,verbose=verbose)
+        self._registryManager = registryManager
         # --- Application manager ---
-        self._applicationManager = applicationManager(name="applicationManager", logger=self._logger, verbose=verbose)
+        self._applicationManager = applicationManager
 
         self._logger.info("Command processor initialized")
 

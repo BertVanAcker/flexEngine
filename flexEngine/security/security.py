@@ -7,6 +7,7 @@
 # * permission of Bert Van Acker
 # *************************************************************************
 import os
+import uuid
 import json
 import hmac
 import hashlib
@@ -78,3 +79,22 @@ def register_os_variable(secret, env_var_name=SECURITY_STORE.SHARED_SECRET):
         return True
     except:
         return False
+
+def generate_app_tag(prefix="APP", unique_length=8):
+    """
+    Generates a unique tag for an application.
+
+    The tag is composed of a prefix and a unique identifier generated
+    from a UUID. The unique identifier is taken as the first `unique_length`
+    characters of the hexadecimal representation of a UUID.
+
+    Args:
+        prefix (str): A string to prefix the tag (default is "APP").
+        unique_length (int): Number of characters from the UUID to use (default is 8).
+
+    Returns:
+        str: The generated application tag.
+    """
+    # Generate a UUID and take the first `unique_length` characters of its hex representation
+    unique_part = uuid.uuid4().hex[:unique_length].upper()
+    return f"{prefix}-{unique_part}"

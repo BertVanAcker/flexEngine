@@ -8,7 +8,11 @@
 # *************************************************************************
 import yaml
 import logging
+
+from flexEngine.application.manager import applicationManager
+from flexEngine.application.registry import registryManager
 from flexEngine.cloud.connector import flexCloudConnector
+from flexEngine.command.commandProcessor import commandProcessor
 from flexEngine.device.heartbeat import heartbeat
 from flexEngine.device.monitor import monitor
 from flexEngine.security.security import register_os_variable
@@ -58,6 +62,16 @@ class supervisor(object):
             heartbeat_interval=self._heartbeat_config.get("heartbeat_interval", 10),
             ttl=self._heartbeat_config.get("ttl", 12),
             logger=self._logger)
+
+        # --- Registry manager ---
+        self._registryManager = registryManager(name="registryManager",flexCloudConnector=self._flexCloudConnector, logger=self._logger, verbose=verbose)
+
+        # --- Application manager ---
+        self._applicationManager = applicationManager(name="applicationManager",flexCloudConnector=self._flexCloudConnector, logger=self._logger, verbose=verbose)
+
+        # ---configure command processor---
+        self._commandProcessor = commandProcessor(name="customCommandProcessor", logger=self._logger,registryManager=self._registryManager,applicationManager=self._applicationManager, verbose=verbose)
+        self._flexCloudConnector.commandProcessor = self._commandProcessor
 
         #--- Device monitor ---
         self._deviceMonitor = monitor(name="testMonitor",flexCloudConnector=self._flexCloudConnector,verbose=verbose)

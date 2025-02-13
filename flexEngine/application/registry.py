@@ -7,10 +7,13 @@
 # * permission of Bert Van Acker
 # *************************************************************************
 import os
+
+from flexEngine.communication.matrix import COMMUNICATIONMATRIX
+from flexEngine.security.security import generate_app_tag
 from flexEngine.utils.constants import *
 import subprocess
 class registryManager(object):
-    def __init__(self,name="appRegistryManager",logger=None,verbose=False):
+    def __init__(self,name="appRegistryManager",flexCloudConnector=None,logger=None,verbose=False):
         """Initialize a registry component.
 
                 Parameters
@@ -39,6 +42,13 @@ class registryManager(object):
         #--- registered applications or application collections ---
         self._registry = []
 
+        # --- flexCloudConnetion ---
+        self._flexCloudConnection = False
+        self._flexCloudConnector = None
+        if flexCloudConnector is not None:
+            self._flexCloudConnector = flexCloudConnector
+            self._flexCloudConnection = True
+
 
         self._logger.info("Application registry initialized")
 
@@ -52,13 +62,14 @@ class registryManager(object):
         if _type==REGISTRY_TYPE.GITHUB:
             #--------------------------- CLONE GITHUB REPOSITORY AND REGISTER ----------------------------
             _branch = _commandParameters["branch"]
-            _appName = _url.split("/")[-1]
-            _workspace = REGISTRY_WORKSPACE.BASE
+            _appName = _url.split("/")[-1].split(".git")[0]
+            _workspace = REGISTRY_WORKSPACE.BASE+_appName
             try:
                 _localPath, _exists = self._clone_repo(repo_url=_url,workspace=_workspace,branch=_branch)
                 _app = applicationEntry(name=_appName,type=_type,workspace=_workspace,repo_url=_url)
                 if not _exists:
                     self._registry.append(_app)
+                    self.register_backend(applicationEntry=_app)
                     if self._logger is not None:self._logger.info("Application successfully registered")
                 else:
                     if self._logger is not None: self._logger.info("Application already registered")
@@ -126,13 +137,89 @@ class registryManager(object):
 
         return repo_path, _workspace_exists
 
+    def register_backend(self,applicationEntry = None):
+        if self._flexCloudConnection and applicationEntry is not None:
+            baseKey = self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATION+applicationEntry.name
+            self._flexCloudConnector.write(baseKey+COMMUNICATIONMATRIX.APPLICATION_NAME,applicationEntry.name)
+            self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_TAG, applicationEntry.tag)
+            self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_TYPE, applicationEntry.type)
+            self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_WORKSPACE, applicationEntry.workspace)
+            self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_REMOTE, applicationEntry.repo_url)
+            self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_STATUS, applicationEntry.status)
+
+
+
 class applicationEntry(object):
-    def __init__(self,name="applicationName",type="github",workspace="apps/",repo_url="",tag=""):
+    def __init__(self, name="applicationName", type="github", workspace="apps/", repo_url="", tag=""):
         self._name = name
-        self._tag = tag
+        if tag == "":
+            self._tag = generate_app_tag(prefix="app",unique_length=8)
+        else:
+            self._tag = tag
         self._type = type
         self._workspace = workspace
         self._repo_url = repo_url
-        #--- app status ---
+        # --- app status ---
         self._status = APPLICATION_STATUS.REGISTERED
+
+    @property
+    def name(self):
+        """Get the application name."""
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        """Set the application name."""
+        self._name = value
+
+    @property
+    def tag(self):
+        """Get the tag."""
+        return self._tag
+
+    @tag.setter
+    def tag(self, value):
+        """Set the tag."""
+        self._tag = value
+
+    @property
+    def type(self):
+        """Get the application type."""
+        return self._type
+
+    @type.setter
+    def type(self, value):
+        """Set the application type."""
+        self._type = value
+
+    @property
+    def workspace(self):
+        """Get the workspace."""
+        return self._workspace
+
+    @workspace.setter
+    def workspace(self, value):
+        """Set the workspace."""
+        self._workspace = value
+
+    @property
+    def repo_url(self):
+        """Get the repository URL."""
+        return self._repo_url
+
+    @repo_url.setter
+    def repo_url(self, value):
+        """Set the repository URL."""
+        self._repo_url = value
+
+    @property
+    def status(self):
+        """Get the application status."""
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        """Set the application status."""
+        self._status = value
+
 

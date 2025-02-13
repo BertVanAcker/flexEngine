@@ -16,7 +16,7 @@ from flexEngine.communication.matrix import *
 from flexEngine.command.commandProcessor import *
 from flexEngine.logging.logger import *
 class flexCloudConnector:
-    def __init__(self, name="flexCloudConnector",primaryHardwareID="Oberon-5",projectID="sandbox",key="3fg445",  redis_host='localhost', redis_port=6379, redis_db=0,logger=None, verbose=False):
+    def __init__(self, name="flexCloudConnector",primaryHardwareID="Oberon-5",projectID="sandbox",key="3fg445",  redis_host='localhost', redis_port=6379, redis_db=0,commandProcessor=None,logger=None, verbose=False):
         """Initialize a device monitor component.
 
                 Parameters
@@ -51,11 +51,20 @@ class flexCloudConnector:
             self._commandKey: self._on_command
         })
         #---configure command processor---
-        self._commandProcessor = commandProcessor(name="customCommandProcessor",logger=self._logger,verbose=verbose)
+        self._commandProcessor = commandProcessor
 
         # Start listener thread
         self.listener_thread = threading.Thread(target=self._listen, daemon=True)
         self.listener_thread.start()
+
+    @property
+    def commandProcessor(self):
+        return self._commandProcessor
+
+    @commandProcessor.setter
+    def commandProcessor(self, commandProcessor):
+        self._commandProcessor = commandProcessor
+
 
     #---------------------------------flexCloud handlers--------------------------------------
     def _listen(self):

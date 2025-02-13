@@ -1,22 +1,14 @@
-2025-02-12 10:07:19,242 - supervisor - INFO - Application registry initialized
-2025-02-12 10:07:19,243 - supervisor - INFO - Command processor initialized
-2025-02-12 10:07:20,659 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
-2025-02-12 10:07:20,660 - supervisor - INFO - Heartbeat service started.
-2025-02-12 10:07:20,660 - supervisor - INFO - Heartbeat sent at 1739351240.660565.
-2025-02-12 10:07:23,654 - supervisor - INFO - Command b851d8b1-cd16-4f1a-b020-bcdf63c6b31e is valid.
-2025-02-12 10:07:23,654 - supervisor - INFO - PUSH command received.
-2025-02-12 10:07:23,654 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-helloworld.git' into 'apps/flexia-helloworld'...
-2025-02-12 10:07:24,548 - supervisor - INFO - Application successfully registered
-2025-02-12 10:07:30,663 - supervisor - INFO - Heartbeat sent at 1739351250.662087.
-2025-02-12 10:07:34,404 - supervisor - INFO - Command e4e24d27-3183-4c41-987a-a8abc1bce3b2 is valid.
-2025-02-12 10:07:34,404 - supervisor - INFO - BUILD command received.
-2025-02-12 10:07:34,404 - supervisor - INFO - Flexia application {name:flexia-helloworld,tag:main}, build request received.
-2025-02-12 10:07:40,665 - supervisor - INFO - Heartbeat sent at 1739351260.6647494.
-2025-02-12 10:07:50,667 - supervisor - INFO - Heartbeat sent at 1739351270.6662314.
-2025-02-12 10:08:00,671 - supervisor - INFO - Heartbeat sent at 1739351280.6687214.
-2025-02-12 10:08:02,374 - supervisor - INFO - Command e7a3ba5d-4b72-4f9b-ad4f-b06714aef9b3 is valid.
-2025-02-12 10:08:02,374 - supervisor - INFO - BUILD command received.
-2025-02-12 10:08:02,374 - supervisor - INFO - Flexia application {name:flexia-helloworld,tag:flexia_helloworld_001}, build request received.
-2025-02-12 10:08:10,675 - supervisor - INFO - Heartbeat sent at 1739351290.6730392.
-2025-02-12 10:08:20,677 - supervisor - INFO - Heartbeat sent at 1739351300.6755226.
-2025-02-12 10:08:30,681 - supervisor - INFO - Heartbeat sent at 1739351310.677801.
+2025-02-13 09:50:33,170 - supervisor - INFO - Application registry initialized
+2025-02-13 09:50:33,171 - supervisor - INFO - Command processor initialized
+2025-02-13 09:50:34,533 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-13 09:50:34,533 - supervisor - INFO - Heartbeat service started.
+2025-02-13 09:50:34,534 - supervisor - INFO - Heartbeat sent at 1739436634.5333898.
+2025-02-13 09:50:35,973 - supervisor - INFO - Command 5f2c97fd-26a3-4935-822f-14c10f6b5246 is valid.
+2025-02-13 09:50:35,974 - supervisor - INFO - PUSH command received.
+2025-02-13 09:50:35,974 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-helloworld.git' into 'apps/flexia-helloworld\flexia-helloworld'...
+2025-02-13 09:50:36,899 - supervisor - INFO - Application successfully registered
+2025-02-13 09:50:44,534 - supervisor - INFO - Heartbeat sent at 1739436644.5346007.
+2025-02-13 09:50:54,536 - supervisor - INFO - Heartbeat sent at 1739436654.5351775.
+2025-02-13 09:51:04,537 - supervisor - INFO - Heartbeat sent at 1739436664.5363364.
+2025-02-13 09:51:14,539 - supervisor - INFO - Heartbeat sent at 1739436674.5378935.
+2025-02-13 09:51:24,539 - supervisor - INFO - Heartbeat sent at 1739436684.5388646.

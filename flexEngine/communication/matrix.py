@@ -11,6 +11,7 @@
 class COMMUNICATIONMATRIX:
     HEARTBEAT = ":heartbeat"
     COMMAND = ":cmd"
+    #device status
     CPU_LOAD = ":device_info:cpu_load"
     CPU_TEMPERATURE = ":device_info:cpu_temperature"
     MEMORY_USAGE = ":device_info:memory_usage"
@@ -18,4 +19,13 @@ class COMMUNICATIONMATRIX:
     IP_ADDRESS = ":device_info:ip_address"
     MAC_ADDRESS = ":device_info:mac_address"
     LOCATION = ":device_info:location"
+    #application
+    APPLICATION = ":applications:"
+    APPLICATION_NAME = ":name"
+    APPLICATION_TAG = ":tag"
+    APPLICATION_TYPE = ":type"
+    APPLICATION_REMOTE = ":remote"
+    APPLICATION_STATUS = ":status"
+    APPLICATION_WORKSPACE = ":workspace"
+
 

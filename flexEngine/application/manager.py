@@ -10,7 +10,7 @@ from flexEngine.utils.constants import *
 from flexEngine.application.registry import *
 import threading
 class applicationManager(object):
-    def __init__(self,name="applicationManager",logger=None,verbose=False):
+    def __init__(self,name="applicationManager",logger=None,flexCloudConnector=None,verbose=False):
         """Initialize an application manager component.
 
                 Parameters
@@ -35,6 +35,13 @@ class applicationManager(object):
         self._name = name
         self._verbose = verbose
         self._logger = logger
+
+        # --- flexCloudConnetion ---
+        self._flexCloudConnection = False
+        self._flexCloudConnector = None
+        if flexCloudConnector is not None:
+            self._flexCloudConnector = flexCloudConnector
+            self._flexCloudConnection = True
 
 
     def buildApplication(self, command):
