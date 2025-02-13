@@ -42,3 +42,10 @@ class PACKAGE_TYPE:
     UNKNOWN = "UNKNOWN"
     ROBOSAPIENS = "robosapiens"
     FLEXIA = "flexia"
+
+class WORKFLOW_TYPE:
+    UNKNOWN = "UNKNOWN"
+    DOCKER = "docker"
+    DOCKER_COMPOSE = "docker-compose"
+    CUSTOM = "custom"
+    NONE = "none"

@@ -63,10 +63,10 @@ class registryManager(object):
             #--------------------------- CLONE GITHUB REPOSITORY AND REGISTER ----------------------------
             _branch = _commandParameters["branch"]
             _appName = _url.split("/")[-1].split(".git")[0]
-            _workspace = REGISTRY_WORKSPACE.BASE+_appName
+            _workspace = REGISTRY_WORKSPACE.BASE
             try:
                 _localPath, _exists = self._clone_repo(repo_url=_url,workspace=_workspace,branch=_branch)
-                _app = applicationEntry(name=_appName,type=_type,workspace=_workspace,repo_url=_url)
+                _app = applicationEntry(name=_appName,type=_type,workspace=_workspace+_appName,repo_url=_url)
                 if not _exists:
                     self._registry.append(_app)
                     self.register_backend(applicationEntry=_app)
@@ -139,13 +139,14 @@ class registryManager(object):
 
     def register_backend(self,applicationEntry = None):
         if self._flexCloudConnection and applicationEntry is not None:
-            baseKey = self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATION+applicationEntry.name
+            baseKey = self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + applicationEntry.name
             self._flexCloudConnector.write(baseKey+COMMUNICATIONMATRIX.APPLICATION_NAME,applicationEntry.name)
             self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_TAG, applicationEntry.tag)
             self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_TYPE, applicationEntry.type)
             self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_WORKSPACE, applicationEntry.workspace)
             self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_REMOTE, applicationEntry.repo_url)
             self._flexCloudConnector.write(baseKey + COMMUNICATIONMATRIX.APPLICATION_STATUS, applicationEntry.status)
+
 
 
 

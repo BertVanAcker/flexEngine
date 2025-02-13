@@ -6,6 +6,7 @@
 # * flexIA can not be copied and/or distributed without the express
 # * permission of Bert Van Acker
 # *************************************************************************
+from flexEngine.utils.auxiliary import load_flexia_config
 from flexEngine.utils.constants import *
 from flexEngine.application.registry import *
 import threading
@@ -51,15 +52,91 @@ class applicationManager(object):
         _app = _commandParameters["app"]
         _appTag = _commandParameters["tag"]
 
-        #----------------------------FLEXIA SPECIFIC PACKAGES-----------------------
-        if _packageType==PACKAGE_TYPE.FLEXIA:
-            if self._logger is not None: self._logger.info("Flexia application {name:"+_app+",tag:"+_appTag+"}, build request received.")
-            #TODO:FETCH flexIA.ini file and interpret
-            x=1
+        #---------------------------FETCH REGISTERED APPLICATION---------------------
+        appDetails = self.get_app_details(appName=_app)
+        if not appDetails:
+            if self._logger is not None: self._logger.error("Application {name:" + _app + ",tag:" + _appTag + "}, not found in the registered applications.")
+
+        else:
+            if self._logger is not None: self._logger.info("Application {name:" + _app + ",tag:" + _appTag + "}, found in the registered applications, proceed with build action.")
+            #----------------------------FLEXIA SPECIFIC PACKAGES-----------------------
+            if _packageType==PACKAGE_TYPE.FLEXIA:
+                if self._logger is not None: self._logger.info("Start building registered flexIA application {name:"+_app+",tag:"+_appTag+"}.")
+
+                # Fetch flexIA.ini file and interpret
+                try:
+                    flexiaConfig = load_flexia_config(config_file=appDetails["workspace"]+"/flexIA.ini")
+                    if self._logger is not None: self._logger.info("flexIA.ini file loaded for flexIA application {name:" + _app + ",tag:" + _appTag + "}.")
+                except Exception as e:
+                    if self._logger is not None: self._logger.error("Failed to load flexIA.ini file for flexIA application {name:" + _app + ",tag:" + _appTag + "}.")
+                    flexiaConfig = {}
+
+                # Determine build config for current device
+                _PrimaryHarwareID = self._flexCloudConnector.primaryHardwareID
+                try:
+                    _buildConfig = flexiaConfig['build'][_PrimaryHarwareID]
+                    if self._logger is not None: self._logger.info("Build configuration for device {"+_PrimaryHarwareID+"} loaded for flexIA application {name:" + _app + ",tag:" + _appTag + "}.")
+                except Exception as e:
+                    if self._logger is not None: self._logger.error("Failed to load build configuration for device {"+_PrimaryHarwareID+"} for flexIA application {name:" + _app + ",tag:" + _appTag + "}.")
+                    _buildConfig = {}
+
+                # Determine build strategy
+                if not _buildConfig:
+                    if self._logger is not None: self._logger.error("No build workflow for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app + ",tag:" + _appTag + "}, canceling build.")
+                else:
+                    if _buildConfig["workflow"] == WORKFLOW_TYPE.UNKNOWN:
+                        if self._logger is not None: self._logger.error("Build workflow UNKNOWN for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app + ",tag:" + _appTag + "}, canceling build.")
+
+                    elif _buildConfig["workflow"] == WORKFLOW_TYPE.DOCKER:
+                        if self._logger is not None: self._logger.info("Docker build workflow for flexIA application {name:" + _app + ",tag:" + _appTag + "} started.")
+                        #TODO: trigger docker build in given workspace
+
+                    elif _buildConfig["workflow"] == WORKFLOW_TYPE.DOCKER_COMPOSE:
+                        if self._logger is not None: self._logger.info("Docker-compose build workflow for flexIA application {name:" + _app + ",tag:" + _appTag + "} started.")
+                        # TODO: trigger docker build in given workspace
+
+                    elif _buildConfig["workflow"] == WORKFLOW_TYPE.CUSTOM:
+                        if self._logger is not None: self._logger.info("Custom build workflow for flexIA application {name:" + _app + ",tag:" + _appTag + "} started.")
+
+                    elif _buildConfig["workflow"] == WORKFLOW_TYPE.NONE:
+                        if self._logger is not None: self._logger.info("No build workflow required for flexIA application {name:" + _app + ",tag:" + _appTag + "} started.")
 
 
-        # ----------------------------ROBOSAPIENS SPECIFIC PACKAGES-----------------------
-        elif _packageType==PACKAGE_TYPE.ROBOSAPIENS:
-            if self._logger is not None: self._logger.info("RobosapiensIO application {name:" + _app + ",tag:" + _appTag + "}, build request received.")
-            # TODO:FETCH robosapiens.ini file and interpret
-            x = 1
+            # ----------------------------ROBOSAPIENS SPECIFIC PACKAGES-----------------------
+            elif _packageType==PACKAGE_TYPE.ROBOSAPIENS:
+                if self._logger is not None: self._logger.info("Start building registered RobosapiensIO application {name:" + _app + ",tag:" + _appTag + "}.")
+                # TODO:FETCH robosapiens.ini file and interpret
+                x = 1
+
+
+
+
+    def get_app_details(self,appName =""):
+        """Get application details"""
+        applicationKeys = self._flexCloudConnector.getKeys(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + appName + ":" + "*")
+        property_key_map = {}
+        for key in applicationKeys:
+            # Split the key by ":", assuming the last segment is the application property.
+            parts = key.split(":")
+            if len(parts) >= 4:
+                property_name = parts[-1]
+                property_key_map[property_name] = key
+
+        # Define the properties we expect.
+        properties = ['name', 'tag', 'type', 'remote', 'workspace', 'status']
+
+        # Prepare a dictionary to hold the details.
+        details = {}
+        for prop in properties:
+            key = property_key_map.get(prop)
+            if key:
+                value = self._flexCloudConnector.read(key=key)
+                # If the value exists and is a byte string, decode it.
+                if value and isinstance(value, bytes):
+                    value = value.decode('utf-8')
+                details[prop] = value
+            else:
+                # If a property key is missing, you can either leave it out or set it to None.
+                details[prop] = None
+
+        return details

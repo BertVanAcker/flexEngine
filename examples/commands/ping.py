@@ -37,5 +37,4 @@ _commandKey = _device_config.get("primaryHardwareID", "UNKNOWN")+"@"+_device_con
 
 # Publish the command message to Redis.
 redis_client = redis.StrictRedis(host=_flexCloud_config.get("redis_host", "localhost"), port=_flexCloud_config.get("redis_port", 6379), db=_flexCloud_config.get("redis_db", 15), decode_responses=False)
-redis_client.flushdb()
 redis_client.publish(_commandKey, command_data)

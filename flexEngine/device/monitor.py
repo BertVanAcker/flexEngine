@@ -153,6 +153,7 @@ class monitor(object):
             self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.IP_ADDRESS,self._ip_address)
             self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.MAC_ADDRESS,self._mac_address)
             self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.LOCATION,self._location)
+            #TODO: extend to push all info
 
     #----------------------------------------PRETTY PRINT---------------------------------------------------------
     def prettyPrint(self):

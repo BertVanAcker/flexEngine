@@ -20,7 +20,7 @@ class COMMUNICATIONMATRIX:
     MAC_ADDRESS = ":device_info:mac_address"
     LOCATION = ":device_info:location"
     #application
-    APPLICATION = ":applications:"
+    APPLICATIONS = ":applications:"
     APPLICATION_NAME = ":name"
     APPLICATION_TAG = ":tag"
     APPLICATION_TYPE = ":type"

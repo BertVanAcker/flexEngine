@@ -35,6 +35,9 @@ class flexCloudConnector:
                 """
         self._name = name
         self._verbose = verbose
+        self.primaryHardwareID =primaryHardwareID
+        self.projectID = projectID
+        self.key = key
         self.connectorID = primaryHardwareID+"@"+projectID+"-"+key          #devicename@projectname-key
         self._commandKey = self.connectorID+COMMUNICATIONMATRIX.COMMAND     #devicename@projectname-key:cmd
 
@@ -143,6 +146,9 @@ class flexCloudConnector:
             list = self.redis_client.lrange(key, 0, queueSize)
 
         return list
+
+    def getKeys(self, pattern):
+        return self.redis_client.keys(pattern)
 
 
 
