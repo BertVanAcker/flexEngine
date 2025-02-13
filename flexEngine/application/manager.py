@@ -173,6 +173,11 @@ class applicationManager(object):
                     elif _runConfig["workflow"] == WORKFLOW_TYPE.NONE:
                         if self._logger is not None: self._logger.info("No run workflow required for flexIA application {name:" + _app +"} started.")
 
+                # UPDATE THE STATUS IF BUILD IS SUCCESSFUL
+                if _launchSucceeded:
+                    self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + _app + COMMUNICATIONMATRIX.APPLICATION_STATUS,APPLICATION_STATUS.RUNNING)
+                    # TODO: do we also need to update supervisor registry locally?
+
 
             # ----------------------------ROBOSAPIENS SPECIFIC PACKAGES-----------------------
             elif _packageType==PACKAGE_TYPE.ROBOSAPIENS:
@@ -265,6 +270,6 @@ class applicationManager(object):
                 if self._logger is not None: self._logger.error(result.stderr)
             else:
                 if self._logger is not None: self._logger.info("Successfully run docker application {name:" + appName + "}.")
-
+                _success = True
 
         return _success

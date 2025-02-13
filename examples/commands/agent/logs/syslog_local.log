@@ -15,3 +15,29 @@
 2025-02-13 14:41:14,162 - supervisor - INFO - Heartbeat sent at 1739454074.1621203.
 2025-02-13 14:41:24,164 - supervisor - INFO - Heartbeat sent at 1739454084.1638002.
 2025-02-13 14:41:34,168 - supervisor - INFO - Heartbeat sent at 1739454094.1657858.
+2025-02-13 14:46:06,946 - supervisor - INFO - Application registry initialized
+2025-02-13 14:46:06,946 - supervisor - INFO - Command processor initialized
+2025-02-13 14:46:08,313 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-13 14:46:08,313 - supervisor - INFO - Heartbeat service started.
+2025-02-13 14:46:08,313 - supervisor - INFO - Heartbeat sent at 1739454368.3138566.
+2025-02-13 14:46:08,855 - supervisor - INFO - Command a5107835-b350-4b1b-920e-0e75cd08f736 is valid.
+2025-02-13 14:46:08,855 - supervisor - INFO - RUN command received.
+2025-02-13 14:46:08,858 - supervisor - INFO - Application {name:flexia-helloworld}, found in the registered applications, proceed with run action.
+2025-02-13 14:46:08,858 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-helloworld}.
+2025-02-13 14:46:08,859 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-helloworld}.
+2025-02-13 14:46:08,859 - supervisor - INFO - Run configuration for device {Oberon-5} loaded for flexIA application {name:flexia-helloworld}.
+2025-02-13 14:46:08,859 - supervisor - INFO - Docker run workflow for flexIA application {name:flexia-helloworld} started.
+2025-02-13 14:46:09,257 - supervisor - INFO - Successfully run docker application {name:flexia-helloworld}.
+2025-02-13 14:46:54,020 - supervisor - INFO - Application registry initialized
+2025-02-13 14:46:54,020 - supervisor - INFO - Command processor initialized
+2025-02-13 14:46:55,419 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-13 14:46:55,419 - supervisor - INFO - Heartbeat service started.
+2025-02-13 14:46:55,420 - supervisor - INFO - Heartbeat sent at 1739454415.4193437.
+2025-02-13 14:46:58,550 - supervisor - INFO - Command d943e12b-fe75-4f8a-ab50-86443954e837 is valid.
+2025-02-13 14:46:58,550 - supervisor - INFO - RUN command received.
+2025-02-13 14:46:58,552 - supervisor - INFO - Application {name:flexia-helloworld}, found in the registered applications, proceed with run action.
+2025-02-13 14:46:58,553 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-helloworld}.
+2025-02-13 14:46:58,553 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-helloworld}.
+2025-02-13 14:46:58,553 - supervisor - INFO - Run configuration for device {Oberon-5} loaded for flexIA application {name:flexia-helloworld}.
+2025-02-13 14:46:58,553 - supervisor - INFO - Docker run workflow for flexIA application {name:flexia-helloworld} started.
+2025-02-13 14:46:58,927 - supervisor - INFO - Successfully run docker application {name:flexia-helloworld}.
