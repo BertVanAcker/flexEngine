@@ -1,9 +1,8 @@
-#**************************************************************************
-# * Copyright (C) 2023-present Bert Van Acker (B.MKR) <bva.bmkr@gmail.com>
+# * Copyright (C) 2025-present Bert Van Acker (B.MKR) <bva.bmkr@gmail.com>
 # *
-# * This file is part of the hybridIO project.
+# * This file is part of the flexIA project.
 # *
-# * HybridIO can not be copied and/or distributed without the express
+# * flexIA can not be copied and/or distributed without the express
 # * permission of Bert Van Acker
 # *************************************************************************
 import redis

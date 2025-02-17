@@ -58,3 +58,46 @@
 2025-02-13 14:49:25,454 - supervisor - INFO - Heartbeat sent at 1739454565.453647.
 2025-02-13 14:49:35,458 - supervisor - INFO - Heartbeat sent at 1739454575.4556324.
 2025-02-13 14:49:45,459 - supervisor - INFO - Heartbeat sent at 1739454585.4593682.
+2025-02-13 14:49:55,461 - supervisor - INFO - Heartbeat sent at 1739454595.461122.
+2025-02-13 14:50:05,463 - supervisor - INFO - Heartbeat sent at 1739454605.462766.
+2025-02-14 12:39:44,699 - supervisor - INFO - Application registry initialized
+2025-02-14 12:39:44,700 - supervisor - INFO - Command processor initialized
+2025-02-14 12:39:45,923 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-14 12:39:45,923 - supervisor - INFO - Heartbeat service started.
+2025-02-14 12:39:45,925 - supervisor - INFO - Heartbeat sent at 1739533185.9238405.
+2025-02-14 12:39:55,926 - supervisor - INFO - Heartbeat sent at 1739533195.9259856.
+2025-02-14 12:40:05,928 - supervisor - INFO - Heartbeat sent at 1739533205.9280193.
+2025-02-14 12:40:15,929 - supervisor - INFO - Heartbeat sent at 1739533215.929532.
+2025-02-14 12:40:25,347 - supervisor - INFO - Command 465a077f-6c2b-4ade-b824-35b874ac6ff1 is valid.
+2025-02-14 12:40:25,348 - supervisor - INFO - RUN command received.
+2025-02-14 12:40:25,351 - supervisor - INFO - Application {name:flexia-helloworld}, found in the registered applications, proceed with run action.
+2025-02-14 12:40:25,351 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-helloworld}.
+2025-02-14 12:40:25,356 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-helloworld}.
+2025-02-14 12:40:25,356 - supervisor - INFO - Run configuration for device {Oberon-5} loaded for flexIA application {name:flexia-helloworld}.
+2025-02-14 12:40:25,356 - supervisor - INFO - Docker run workflow for flexIA application {name:flexia-helloworld} started.
+2025-02-14 12:40:25,825 - supervisor - INFO - Successfully run docker application {name:flexia-helloworld}.
+2025-02-14 12:40:25,931 - supervisor - INFO - Heartbeat sent at 1739533225.930696.
+2025-02-14 12:40:35,932 - supervisor - INFO - Heartbeat sent at 1739533235.932209.
+2025-02-14 12:40:45,933 - supervisor - INFO - Heartbeat sent at 1739533245.9334981.
+2025-02-14 12:40:55,934 - supervisor - INFO - Heartbeat sent at 1739533255.9349735.
+2025-02-14 12:41:05,937 - supervisor - INFO - Heartbeat sent at 1739533265.936053.
+2025-02-14 12:41:15,937 - supervisor - INFO - Heartbeat sent at 1739533275.9375012.
+2025-02-14 12:41:25,939 - supervisor - INFO - Heartbeat sent at 1739533285.9387004.
+2025-02-14 12:41:35,941 - supervisor - INFO - Heartbeat sent at 1739533295.940533.
+2025-02-14 12:41:45,943 - supervisor - INFO - Heartbeat sent at 1739533305.942486.
+2025-02-14 12:41:55,945 - supervisor - INFO - Heartbeat sent at 1739533315.9444568.
+2025-02-14 12:42:05,946 - supervisor - INFO - Heartbeat sent at 1739533325.9457018.
+2025-02-14 12:42:15,947 - supervisor - INFO - Heartbeat sent at 1739533335.9471424.
+2025-02-14 12:42:25,948 - supervisor - INFO - Heartbeat sent at 1739533345.9481788.
+2025-02-14 12:42:35,950 - supervisor - INFO - Heartbeat sent at 1739533355.9494932.
+2025-02-14 12:42:45,950 - supervisor - INFO - Heartbeat sent at 1739533365.9507265.
+2025-02-14 12:42:55,953 - supervisor - INFO - Heartbeat sent at 1739533375.9522555.
+2025-02-14 12:43:05,955 - supervisor - INFO - Heartbeat sent at 1739533385.9537423.
+2025-02-14 12:43:15,956 - supervisor - INFO - Heartbeat sent at 1739533395.9555123.
+2025-02-14 12:43:25,957 - supervisor - INFO - Heartbeat sent at 1739533405.9572363.
+2025-02-14 12:43:35,959 - supervisor - INFO - Heartbeat sent at 1739533415.9587924.
+2025-02-14 12:43:45,961 - supervisor - INFO - Heartbeat sent at 1739533425.9600997.
+2025-02-14 12:43:55,961 - supervisor - INFO - Heartbeat sent at 1739533435.9619842.
+2025-02-14 12:44:05,964 - supervisor - INFO - Heartbeat sent at 1739533445.9633188.
+2025-02-14 12:44:15,965 - supervisor - INFO - Heartbeat sent at 1739533455.964686.
+2025-02-14 12:44:25,965 - supervisor - INFO - Heartbeat sent at 1739533465.9659395.
