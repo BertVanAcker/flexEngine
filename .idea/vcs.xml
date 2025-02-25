@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/examples/commands/agent/apps/flexia-compose-example" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/examples/commands/agent/apps/flexia-helloworld" vcs="Git" />
   </component>
 </project>

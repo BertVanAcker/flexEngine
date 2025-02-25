@@ -101,3 +101,45 @@
 2025-02-14 12:44:05,964 - supervisor - INFO - Heartbeat sent at 1739533445.9633188.
 2025-02-14 12:44:15,965 - supervisor - INFO - Heartbeat sent at 1739533455.964686.
 2025-02-14 12:44:25,965 - supervisor - INFO - Heartbeat sent at 1739533465.9659395.
+2025-02-25 09:37:07,116 - supervisor - INFO - Application registry initialized
+2025-02-25 09:37:07,120 - supervisor - INFO - Command processor initialized
+2025-02-25 09:37:08,347 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-25 09:37:08,347 - supervisor - INFO - Heartbeat service started.
+2025-02-25 09:37:08,348 - supervisor - INFO - Heartbeat sent at 1740472628.3470128.
+2025-02-25 09:37:12,294 - supervisor - INFO - Command e69cbe3d-d72e-4b08-9ede-2868ee0a4966 is valid.
+2025-02-25 09:37:12,294 - supervisor - INFO - RUN command received.
+2025-02-25 09:37:12,297 - supervisor - INFO - Application {name:flexia-helloworld}, found in the registered applications, proceed with run action.
+2025-02-25 09:37:12,297 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-helloworld}.
+2025-02-25 09:37:12,304 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-helloworld}.
+2025-02-25 09:37:12,304 - supervisor - INFO - Run configuration for device {Oberon-5} loaded for flexIA application {name:flexia-helloworld}.
+2025-02-25 09:37:12,304 - supervisor - INFO - Docker run workflow for flexIA application {name:flexia-helloworld} started.
+2025-02-25 09:37:12,813 - supervisor - INFO - Successfully run docker application {name:flexia-helloworld}.
+2025-02-25 09:37:18,351 - supervisor - INFO - Heartbeat sent at 1740472638.3495338.
+2025-02-25 09:37:28,353 - supervisor - INFO - Heartbeat sent at 1740472648.3520892.
+2025-02-25 10:52:53,104 - supervisor - INFO - Application registry initialized
+2025-02-25 10:52:53,105 - supervisor - INFO - Command processor initialized
+2025-02-25 10:52:54,314 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-25 10:52:54,314 - supervisor - INFO - Heartbeat service started.
+2025-02-25 10:52:54,315 - supervisor - INFO - Heartbeat sent at 1740477174.3141901.
+2025-02-25 10:52:56,768 - supervisor - INFO - Command 9e73b4ba-5330-418e-a98d-cb48e713aa13 is valid.
+2025-02-25 10:52:56,768 - supervisor - INFO - PUSH command received.
+2025-02-25 10:52:56,768 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-compose-example.git' into 'apps/flexia-compose-example'...
+2025-02-25 10:52:58,092 - supervisor - INFO - Application successfully registered
+2025-02-25 10:53:04,318 - supervisor - INFO - Heartbeat sent at 1740477184.3161876.
+2025-02-25 10:53:14,322 - supervisor - INFO - Heartbeat sent at 1740477194.320135.
+2025-02-25 10:53:24,325 - supervisor - INFO - Heartbeat sent at 1740477204.3237896.
+2025-02-25 10:53:34,329 - supervisor - INFO - Heartbeat sent at 1740477214.326757.
+2025-02-25 10:53:39,533 - supervisor - INFO - Command 0c57f3a7-5bf0-4e55-8ae1-41754c2c0897 is valid.
+2025-02-25 10:53:39,533 - supervisor - INFO - RUN command received.
+2025-02-25 10:53:39,537 - supervisor - INFO - Application {name:flexia-compose-example}, found in the registered applications, proceed with run action.
+2025-02-25 10:53:39,537 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-compose-example}.
+2025-02-25 10:53:39,538 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-compose-example}.
+2025-02-25 10:53:39,538 - supervisor - INFO - Run configuration for device {Oberon-5} loaded for flexIA application {name:flexia-compose-example}.
+2025-02-25 10:53:39,538 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-compose-example} started.
+2025-02-25 10:53:44,331 - supervisor - INFO - Heartbeat sent at 1740477224.3303673.
+2025-02-25 10:53:54,333 - supervisor - INFO - Heartbeat sent at 1740477234.332227.
+2025-02-25 10:54:04,336 - supervisor - INFO - Heartbeat sent at 1740477244.3341794.
+2025-02-25 10:54:14,339 - supervisor - INFO - Heartbeat sent at 1740477254.3377316.
+2025-02-25 10:54:24,342 - supervisor - INFO - Heartbeat sent at 1740477264.3399065.
+2025-02-25 10:54:28,469 - supervisor - INFO - Successfully run docker compose application {name:flexia-compose-example}.
+2025-02-25 10:54:34,345 - supervisor - INFO - Heartbeat sent at 1740477274.3434696.

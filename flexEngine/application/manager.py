@@ -97,6 +97,12 @@ class applicationManager(object):
                         if self._logger is not None: self._logger.info("Docker-compose build workflow for flexIA application {name:" + _app +"} started.")
                         # TODO: trigger docker build in given workspace
 
+                    elif _buildConfig["workflow"] == WORKFLOW_TYPE.APPLICATION_DESCRIPTOR:
+                        if self._logger is not None: self._logger.info("Application descriptor build workflow for flexIA application {name:" + _app + "} started.")
+                        # TODO: trigger application descriptor build workflow in given workspace
+
+                        # TODO: 1. fetch the application descriptor
+
                     elif _buildConfig["workflow"] == WORKFLOW_TYPE.CUSTOM:
                         if self._logger is not None: self._logger.info("Custom build workflow for flexIA application {name:" + _app +"} started.")
 
@@ -165,7 +171,13 @@ class applicationManager(object):
 
                     elif _runConfig["workflow"] == WORKFLOW_TYPE.DOCKER_COMPOSE:
                         if self._logger is not None: self._logger.info("Docker-compose run workflow for flexIA application {name:" + _app +"} started.")
-                        # TODO: trigger docker run in given workspace
+                        _launchSucceeded = self.docker_compose_run(appName=_app,tag=appDetails["tag"],workspace=appDetails["workspace"],additional_run_args=_runConfig["arguments"])
+
+                    elif _runConfig["workflow"] == WORKFLOW_TYPE.APPLICATION_DESCRIPTOR:
+                        if self._logger is not None: self._logger.info("Application descriptor run workflow for flexIA application {name:" + _app +"} started.")
+                        # TODO: trigger application descriptor run workflow in given workspace
+
+                        # TODO: 1. fetch the application descriptor
 
                     elif _runConfig["workflow"] == WORKFLOW_TYPE.CUSTOM:
                         if self._logger is not None: self._logger.info("Custom run workflow for flexIA application {name:" + _app +"} started.")
@@ -258,7 +270,7 @@ class applicationManager(object):
             # Split the string by whitespace
             additional_run_args_processes = arguments.split()
             run_command = ["docker", "run", "--name", appName, "-d"] + additional_run_args_processes + [tag]
-            print(run_command)
+
             result = subprocess.run(
                 run_command,
                 cwd=workspace,
@@ -270,6 +282,35 @@ class applicationManager(object):
                 if self._logger is not None: self._logger.error(result.stderr)
             else:
                 if self._logger is not None: self._logger.info("Successfully run docker application {name:" + appName + "}.")
+                _success = True
+
+        return _success
+
+    def docker_compose_run(self,appName="",workspace="apps",tag="",additional_run_args=""):
+        """Running a docker compose application"""
+        _success = False
+
+        # 1. Fetch docker file
+        composefile_path = os.path.join(workspace, "compose.yaml")
+        if not os.path.exists(composefile_path):
+            if self._logger is not None: self._logger.error("Docker compose file for application {name:" + appName + "} not found in repository " + composefile_path + ".")
+        else:
+            arguments = additional_run_args.strip('"')
+            # Split the string by whitespace
+            additional_run_args_processes = arguments.split()
+            run_command = ["docker", "compose", "up", "--build"] + additional_run_args_processes
+
+            result = subprocess.run(
+                run_command,
+                cwd=workspace,
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                if self._logger is not None: self._logger.error("Failed to run docker compose application {name:" + appName + "}.")
+                if self._logger is not None: self._logger.error(result.stderr)
+            else:
+                if self._logger is not None: self._logger.info("Successfully run docker compose application {name:" + appName + "}.")
                 _success = True
 
         return _success
