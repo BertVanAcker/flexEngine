@@ -1,0 +1,35 @@
+name: <<app-name>>
+description: <<app-description>>
+components:
+  - name: <<component-name>>
+    type: <<component-type>>        //docker|kubernetes|python|c++|...
+    manifests:
+      - name: <<manifest-name>>
+    requirements:
+      architecture: intel               //intel/x86_64|arm64/aarch64|generic
+      os: linux                         //Required os (linux|windows|macos|...)
+      cpu: 0.5                          //number of cpu cores requested.
+      memory: 200Mi                     //Amount of memory requested, the unit can be specified (following K8s syntax)
+      devices: squat.ai/video
+dependencies:
+ # producer/consumer components information
+manifests:
+ # List of manifests in the specified format
+
+
+
+
+Example manifest for docker composeas inspiration
+---------------------------------------------------
+manifests:
+  - name: comp-1-manifest
+    manifest:
+      version: '3.8'
+      services:
+        frontend:
+          image: example/webapp
+          deploy:
+            resources:
+              reservations:
+                cpus: '0.5'
+                memory: 200M

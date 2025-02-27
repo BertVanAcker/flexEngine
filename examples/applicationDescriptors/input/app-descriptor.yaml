@@ -1,0 +1,21 @@
+name: flexIA-helloworld
+description: A first flexIA application using the application descriptor
+components:
+  - name: flexIA-helloworld-runnable
+    type: docker
+    manifests:
+      - name: flexIA-helloworld-manifest
+    requirements:
+      architecture: intel
+      os: linux
+      cpu: 1
+      memory: 100Mi
+      devices: none
+dependencies:
+ # inter application runnable dependencies,e.g. required for startup sequence
+manifests:
+  - name: flexIA-helloworld-manifest
+    manifest:
+      type: docker
+      version: 23.0.3
+      path: root
