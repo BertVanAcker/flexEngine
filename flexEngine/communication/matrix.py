@@ -11,6 +11,7 @@
 class COMMUNICATIONMATRIX:
     HEARTBEAT = ":heartbeat"
     COMMAND = ":cmd"
+    LOG = ":log"
     #device status
     CPU_LOAD = ":device_info:cpu_load"
     CPU_TEMPERATURE = ":device_info:cpu_temperature"

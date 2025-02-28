@@ -12,6 +12,7 @@ import logging
 from flexEngine.application.manager import applicationManager
 from flexEngine.application.registry import registryManager
 from flexEngine.cloud.connector import flexCloudConnector
+from flexEngine.cloud.logger import remoteLogger
 from flexEngine.command.commandProcessor import commandProcessor
 from flexEngine.device.heartbeat import heartbeat
 from flexEngine.device.monitor import monitor
@@ -39,6 +40,7 @@ class supervisor(object):
         self._device_config = self._config.get("deviceCredentials", {})
         self._flexCloud_config = self._config.get("flexCloud", {})
         self._heartbeat_config = self._config.get("heartbeat", {})
+        self._log_config = self._config.get("logging", {})
         #--- Supervisor logger ---
         self._logger = self._initialize_logger()
         #--- flexCloud connector ---
@@ -53,6 +55,16 @@ class supervisor(object):
             logger=self._logger,
             verbose=verbose
         )
+        #--- Enable remote logging ---
+        remoteLogActive = self._log_config.get("remote", False)
+        if remoteLogActive:
+            self._remoteLoggingHandler = remoteLogger(redis_client=self._flexCloudConnector.redis_client,
+                                                      primaryHardwareID=self._device_config.get("primaryHardwareID", "UNKNOWN"),
+                                                      projectID=self._device_config.get("projectID", "UNKNOWN"),
+                                                      key=self._device_config.get("key", "UNKNOWN"),)
+
+            self._enable_remote_logging()
+
         #--- flexCloud heartbeat ---
         self._heartbeat = heartbeat(
             redis_client=self._flexCloudConnector.redis_client,                 #TODO: check if this works or we need to use the cloud connector interface
@@ -86,26 +98,31 @@ class supervisor(object):
 
     def _initialize_logger(self):
         """Initialize the logger (same as before)."""
-        log_config = self._config.get("logging", {})
         logger = logging.getLogger(self.__class__.__name__)
-        log_level = log_config.get("level", "INFO").upper()
+        log_level = self._log_config.get("level", "INFO").upper()
         logger.setLevel(getattr(logging, log_level, logging.INFO))
 
-        log_format = log_config.get("format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        log_file = log_config.get("file", None)
+        log_format = self._log_config.get("format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        log_file = self._log_config.get("file", None)
 
-        formatter = logging.Formatter(log_format)
+        self.formatter = logging.Formatter(log_format)
 
         if log_file:
             file_handler = logging.FileHandler(log_file)
-            file_handler.setFormatter(formatter)
+            file_handler.setFormatter(self.formatter)
             logger.addHandler(file_handler)
         else:
             console_handler = logging.StreamHandler()
-            console_handler.setFormatter(formatter)
+            console_handler.setFormatter(self.formatter)
             logger.addHandler(console_handler)
 
         return logger
+
+    def _enable_remote_logging(self):
+        """Enable remote logging """
+        self._remoteLoggingHandler.setFormatter(self.formatter)
+        self._logger.addHandler(self._remoteLoggingHandler)
+
 
     def start(self):
         """Start the supervisor."""

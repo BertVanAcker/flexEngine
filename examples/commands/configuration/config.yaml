@@ -2,6 +2,7 @@ logging:
   level: "DEBUG"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
   file: "logs/syslog_local.log"
+  remote: True
 
 flexCloud:
   storage_type: "global"

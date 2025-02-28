@@ -90,3 +90,5 @@ class Logger(object):
             self._syslogger.debug(msg)
         elif level == 'ERROR':
             self._syslogger.error(msg)
+
+

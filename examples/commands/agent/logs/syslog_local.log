@@ -200,3 +200,53 @@
 2025-02-25 11:02:24,487 - supervisor - INFO - Heartbeat sent at 1740477744.4855285.
 2025-02-25 11:02:34,489 - supervisor - INFO - Heartbeat sent at 1740477754.4885924.
 2025-02-25 11:02:44,490 - supervisor - INFO - Heartbeat sent at 1740477764.4899232.
+2025-02-28 08:20:48,644 - supervisor - INFO - Application registry initialized
+2025-02-28 08:20:48,652 - supervisor - INFO - Command processor initialized
+2025-02-28 08:20:49,873 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-02-28 08:20:49,874 - supervisor - INFO - Heartbeat service started.
+2025-02-28 08:20:49,875 - supervisor - INFO - Heartbeat sent at 1740727249.8747263.
+2025-02-28 08:20:59,877 - supervisor - INFO - Heartbeat sent at 1740727259.877995.
+2025-02-28 08:21:09,879 - supervisor - INFO - Heartbeat sent at 1740727269.8775487.
+2025-02-28 08:21:19,880 - supervisor - INFO - Heartbeat sent at 1740727279.8783755.
+2025-02-28 08:21:29,882 - supervisor - INFO - Heartbeat sent at 1740727289.8811407.
+2025-02-28 08:21:39,884 - supervisor - INFO - Heartbeat sent at 1740727299.8823516.
+2025-02-28 08:21:49,884 - supervisor - INFO - Heartbeat sent at 1740727309.8837762.
+2025-02-28 08:21:56,606 - supervisor - INFO - Command bd721010-20f3-44aa-a8a4-dcf0a94053c9 is valid.
+2025-02-28 08:21:56,606 - supervisor - INFO - RUN command received.
+2025-02-28 08:21:56,610 - supervisor - INFO - Application {name:flexia-compose-example}, found in the registered applications, proceed with run action.
+2025-02-28 08:21:56,610 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-compose-example}.
+2025-02-28 08:21:56,616 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-compose-example}.
+2025-02-28 08:21:56,617 - supervisor - INFO - Run configuration for device {Oberon-5} loaded for flexIA application {name:flexia-compose-example}.
+2025-02-28 08:21:56,618 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-compose-example} started.
+2025-02-28 08:21:59,885 - supervisor - INFO - Heartbeat sent at 1740727319.883899.
+2025-02-28 08:22:09,885 - supervisor - INFO - Heartbeat sent at 1740727329.8846738.
+2025-02-28 08:22:19,884 - supervisor - INFO - Heartbeat sent at 1740727339.8843513.
+2025-02-28 08:22:29,884 - supervisor - INFO - Heartbeat sent at 1740727349.8843818.
+2025-02-28 08:22:39,885 - supervisor - INFO - Heartbeat sent at 1740727359.8842025.
+2025-02-28 08:22:49,886 - supervisor - INFO - Heartbeat sent at 1740727369.8843427.
+2025-02-28 08:22:59,886 - supervisor - INFO - Heartbeat sent at 1740727379.8856328.
+2025-02-28 08:23:04,853 - supervisor - ERROR - Failed to run docker compose application {name:flexia-compose-example}.
+2025-02-28 08:23:04,854 - supervisor - ERROR - time="2025-02-28T08:21:57+01:00" level=warning msg="D:\\01_UA\\01_Development\\flexIA\\flexEngine\\examples\\commands\\agent\\apps\\flexia-compose-example\\compose.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Network flexia-compose-example_default  Creating
+ Network flexia-compose-example_default  Created
+ Container emqx  Creating
+ Container emqx  Created
+ Container C_publisher  Creating
+ Container C_subscriber  Creating
+ Container C_publisher  Created
+ Container C_subscriber  Created
+C_publisher   | /c:/src/app/publisher.py:9: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+C_publisher   |   client = mqtt.Client()
+C_subscriber  | /c:/src/app/subscriber.py:10: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+C_subscriber  |   client = mqtt.Client()
+emqx          | [os_mon] memory supervisor port (memsup): Erlang has closed
+emqx          | [os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+Gracefully stopping... (press Ctrl+C again to force)
+ Container C_subscriber  Stopping
+ Container C_publisher  Stopping
+ Container C_publisher  Stopped
+ Container C_subscriber  Stopped
+ Container emqx  Stopping
+ Container emqx  Stopped
+canceled
+
