@@ -421,3 +421,6 @@ service "plan" depends on undefined service "emqx-enterprise": invalid compose p
 2025-03-05 15:06:22,233 - supervisor - INFO - Heartbeat sent at 1741183582.2318044.
 2025-03-05 15:06:32,236 - supervisor - INFO - Heartbeat sent at 1741183592.2343895.
 2025-03-05 15:06:42,238 - supervisor - INFO - Heartbeat sent at 1741183602.2376132.
+2025-03-05 15:06:52,242 - supervisor - INFO - Heartbeat sent at 1741183612.2418783.
+2025-03-05 15:07:02,246 - supervisor - INFO - Heartbeat sent at 1741183622.2444193.
+2025-03-05 15:07:12,249 - supervisor - INFO - Heartbeat sent at 1741183632.2491858.
