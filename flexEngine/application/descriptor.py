@@ -35,6 +35,15 @@ class applicationDescriptor(object):
             self._manifests.append(_manifest)
 
         # ---- DEPENDENCIES FOR APPLICATION RUNNABLES -----
+        self._dependecies = []
+        _dep = self._descriptor.get('dependencies', [])
+        for d in _dep:
+            _name = d.get('name', 'N/A')
+            _dependecyBody = d.get('dependencies', None)
+            if _dependecyBody is not None:
+                _component = _dependecyBody.get('depends_on', None)
+                _dependency = dependency(name=_name,type="depends_on",component=_component)     #TODO: only "depends_on" dependencies for now, extend!
+                self._dependecies.append(_dependency)
 
         # ---- RUNNABLES OF THE APPLICATION ----
         self._runnables = []
@@ -50,6 +59,11 @@ class applicationDescriptor(object):
                 for ma in self._manifests:
                     if ma.name == man_name:
                         _runnableManifests.append(ma)
+            # fetch dependencies
+            _runnableDependencies = []
+            for _d in self._dependecies:
+                if _d.name == _name:
+                    _runnableDependencies.append(_d)
 
             #fetch requirements content
             _req = component.get("requirements", None)
@@ -62,7 +76,7 @@ class applicationDescriptor(object):
                 _requirements = requirements(architecture=_architecture, os=_os, cpu=_cpu, memory=_memory, devices=_devices)
             else:
                 _requirements = None
-            _runnable = runnable(name=_name, type=_type,requirements=_requirements,manifest=_runnableManifests)
+            _runnable = runnable(name=_name, type=_type,requirements=_requirements,dependencies=_runnableDependencies,manifest=_runnableManifests)
             self._runnables.append(_runnable)
 
     @property
@@ -96,11 +110,12 @@ class applicationDescriptor(object):
 
 
 class runnable(object):
-    def __init__(self, name=None, type=None, manifest=None, requirements=None):
+    def __init__(self, name=None, type=None, manifest=None,dependencies=None, requirements=None):
         """Initialize the application descriptor component."""
         self._name = name
         self._type = type
         self._manifest = manifest
+        self._dependencies = dependencies
         self._requirements = requirements
 
     # Getter and Setter for name
@@ -129,6 +144,17 @@ class runnable(object):
     @manifest.setter
     def manifest(self, value):
         self._manifest = value
+
+    @property
+    def dependencies(self):
+        return self._dependencies
+
+    @dependencies.setter
+    def dependencies(self, value):
+        self._dependencies = value
+
+    def addDependency(self, dependency):
+        self._dependencies.append(dependency)
 
     # Getter and Setter for requirements
     @property
@@ -238,5 +264,46 @@ class manifest(object):
     @path.setter
     def path(self, value):
         self._path = value
+
+
+class dependency(object):
+    def __init__(self, name=None, type="depends_on", component=None):
+        """Initialize the dependency component"""
+        self._name = name
+        self._type = type
+        self._component = component
+
+    @property
+    def name(self):
+        """Getter for name"""
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        """Setter for name"""
+        self._name = value
+
+    @property
+    def type(self):
+        """Getter for type"""
+        return self._type
+
+    @type.setter
+    def type(self, value):
+        """Setter for type"""
+        self._type = value
+
+    @property
+    def component(self):
+        """Getter for component"""
+        return self._component
+
+    @component.setter
+    def component(self, value):
+        """Setter for component"""
+        self._component = value
+
+
+
 
 

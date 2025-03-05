@@ -10,5 +10,5 @@
 from flexEngine.application.descriptor import applicationDescriptor
 
 
-appDescriptor = applicationDescriptor(descriptor='input/app-descriptor.yaml')
+appDescriptor = applicationDescriptor(descriptor='input/app-descriptor-MAPLE.yaml')
 x = 1

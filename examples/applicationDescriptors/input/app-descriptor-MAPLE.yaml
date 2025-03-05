@@ -1,0 +1,93 @@
+name: flexIA-helloworld
+description: A first flexIA application using the application descriptor
+components:
+  - name: Monitor
+    type: docker
+    manifests:
+      - name: monitor-manifest
+    requirements:
+      architecture: generic
+      os: generic
+      cpu: 1
+      memory: 50Mi
+      devices: none
+  - name: Analysis
+    type: docker
+    manifests:
+      - name: analysis-manifest
+    requirements:
+      architecture: generic
+      os: generic
+      cpu: 1
+      memory: 50Mi
+      devices: none
+  - name: Plan
+    type: docker
+    manifests:
+      - name: plan-manifest
+    requirements:
+      architecture: generic
+      os: generic
+      cpu: 1
+      memory: 50Mi
+      devices: none
+  - name: Legitimate
+    type: docker
+    manifests:
+      - name: legitimate-manifest
+    requirements:
+      architecture: generic
+      os: generic
+      cpu: 1
+      memory: 250Mi
+      devices: none
+  - name: Execute
+    type: docker
+    manifests:
+      - name: execute-manifest
+    requirements:
+      architecture: generic
+      os: generic
+      cpu: 1
+      memory: 50Mi
+      devices: none
+dependencies:
+ # inter application runnable dependencies,e.g. required for startup sequence
+  - name: Analysis
+    dependencies:
+      depends_on: Monitor
+  - name: Plan
+    dependencies:
+      depends_on: Analysis
+  - name: Legitimate
+    dependencies:
+      depends_on: Plan
+  - name: Execute
+    dependencies:
+      depends_on: Legitimate
+manifests:
+  - name: monitor-manifest
+    manifest:
+      type: docker
+      version: 23.0.3
+      path: Monitor/
+  - name: analysis-manifest
+    manifest:
+      type: docker
+      version: 23.0.3
+      path: Analysis/
+  - name: plan-manifest
+    manifest:
+      type: docker
+      version: 23.0.3
+      path: Plan/
+  - name: legitimate-manifest
+    manifest:
+      type: docker
+      version: 23.0.3
+      path: root
+  - name: Legitimate/
+    manifest:
+      type: docker
+      version: 23.0.3
+      path: Execute/
