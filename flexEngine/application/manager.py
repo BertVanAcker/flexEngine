@@ -160,6 +160,7 @@ class applicationManager(object):
                 if not _runConfig:
                     if self._logger is not None: self._logger.error("No run workflow for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app  +"}, canceling build.")
                 else:
+                    _workflow_link = _runConfig["workflow_link"]
                     if _runConfig["workflow"] == WORKFLOW_TYPE.UNKNOWN:
                         if self._logger is not None: self._logger.error("Run workflow UNKNOWN for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app +"}, canceling build.")
 
@@ -171,7 +172,7 @@ class applicationManager(object):
 
                     elif _runConfig["workflow"] == WORKFLOW_TYPE.DOCKER_COMPOSE:
                         if self._logger is not None: self._logger.info("Docker-compose run workflow for flexIA application {name:" + _app +"} started.")
-                        _launchSucceeded = self.docker_compose_run(appName=_app,tag=appDetails["tag"],workspace=appDetails["workspace"],additional_run_args=_runConfig["arguments"])
+                        _launchSucceeded = self.docker_compose_run(appName=_app,tag=appDetails["tag"],workspace=appDetails["workspace"],additional_run_args=_runConfig["arguments"],workflowlink=_workflow_link)
 
                     elif _runConfig["workflow"] == WORKFLOW_TYPE.APPLICATION_DESCRIPTOR:
                         if self._logger is not None: self._logger.info("Application descriptor run workflow for flexIA application {name:" + _app +"} started.")
@@ -286,12 +287,17 @@ class applicationManager(object):
 
         return _success
 
-    def docker_compose_run(self,appName="",workspace="apps",tag="",additional_run_args=""):
+    def docker_compose_run(self,appName="",workspace="apps",workflowlink=None,tag="",additional_run_args=""):
         """Running a docker compose application"""
         _success = False
 
         # 1. Fetch docker file
-        composefile_path = os.path.join(workspace, "compose.yaml")
+        if workflowlink == "":
+            composefile_path = os.path.join(workspace, "compose.yaml")
+        else:
+            composefile_path = os.path.join(workspace, workflowlink)             #TODO: TEST IF WORKS
+            workspace = composefile_path.rsplit('/', 1)[0]
+
         if not os.path.exists(composefile_path):
             if self._logger is not None: self._logger.error("Docker compose file for application {name:" + appName + "} not found in repository " + composefile_path + ".")
         else:

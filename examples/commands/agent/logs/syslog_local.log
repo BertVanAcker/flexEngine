@@ -250,3 +250,383 @@ Gracefully stopping... (press Ctrl+C again to force)
  Container emqx  Stopped
 canceled
 
+2025-03-05 10:35:29,383 - supervisor - INFO - Application registry initialized
+2025-03-05 10:35:29,388 - supervisor - INFO - Command processor initialized
+2025-03-05 10:35:30,644 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-03-05 10:35:30,646 - supervisor - INFO - Heartbeat service started.
+2025-03-05 10:35:30,648 - supervisor - INFO - Heartbeat sent at 1741167330.6467843.
+2025-03-05 10:35:35,388 - supervisor - INFO - Command b77cc2f3-51e6-4fa9-8a0b-017d0402dfba is valid.
+2025-03-05 10:35:35,389 - supervisor - INFO - RUN command received.
+2025-03-05 10:35:35,393 - supervisor - INFO - Application {name:flexia-compose-example}, found in the registered applications, proceed with run action.
+2025-03-05 10:35:35,394 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-compose-example}.
+2025-03-05 10:35:35,399 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-compose-example}.
+2025-03-05 10:35:35,400 - supervisor - INFO - Run configuration for device {Oberon-5} loaded for flexIA application {name:flexia-compose-example}.
+2025-03-05 10:35:35,401 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-compose-example} started.
+2025-03-05 10:35:40,654 - supervisor - INFO - Heartbeat sent at 1741167340.654381.
+2025-03-05 10:35:50,657 - supervisor - INFO - Heartbeat sent at 1741167350.6560118.
+2025-03-05 10:36:00,659 - supervisor - INFO - Heartbeat sent at 1741167360.6592815.
+2025-03-05 10:36:10,663 - supervisor - INFO - Heartbeat sent at 1741167370.6612587.
+2025-03-05 10:36:20,671 - supervisor - INFO - Heartbeat sent at 1741167380.6694229.
+2025-03-05 10:36:30,674 - supervisor - INFO - Heartbeat sent at 1741167390.6734073.
+2025-03-05 10:36:40,677 - supervisor - INFO - Heartbeat sent at 1741167400.6770444.
+2025-03-05 10:36:50,681 - supervisor - INFO - Heartbeat sent at 1741167410.679155.
+2025-03-05 10:37:00,684 - supervisor - INFO - Heartbeat sent at 1741167420.682674.
+2025-03-05 10:37:10,690 - supervisor - INFO - Heartbeat sent at 1741167430.6888301.
+2025-03-05 10:37:20,694 - supervisor - INFO - Heartbeat sent at 1741167440.6924193.
+2025-03-05 10:37:30,698 - supervisor - INFO - Heartbeat sent at 1741167450.6966395.
+2025-03-05 10:37:40,702 - supervisor - INFO - Heartbeat sent at 1741167460.7002604.
+2025-03-05 10:37:50,707 - supervisor - INFO - Heartbeat sent at 1741167470.705483.
+2025-03-05 10:38:00,712 - supervisor - INFO - Heartbeat sent at 1741167480.7108316.
+2025-03-05 10:38:10,717 - supervisor - INFO - Heartbeat sent at 1741167490.7150166.
+2025-03-05 10:38:20,721 - supervisor - INFO - Heartbeat sent at 1741167500.7195132.
+2025-03-05 10:38:30,723 - supervisor - INFO - Heartbeat sent at 1741167510.7226605.
+2025-03-05 10:38:40,726 - supervisor - INFO - Heartbeat sent at 1741167520.7255743.
+2025-03-05 10:38:50,729 - supervisor - INFO - Heartbeat sent at 1741167530.729221.
+2025-03-05 10:39:00,732 - supervisor - INFO - Heartbeat sent at 1741167540.731472.
+2025-03-05 10:39:10,734 - supervisor - INFO - Heartbeat sent at 1741167550.7336679.
+2025-03-05 10:39:20,737 - supervisor - INFO - Heartbeat sent at 1741167560.7367141.
+2025-03-05 10:39:30,740 - supervisor - INFO - Heartbeat sent at 1741167570.739299.
+2025-03-05 10:39:40,742 - supervisor - INFO - Heartbeat sent at 1741167580.7419698.
+2025-03-05 10:39:50,746 - supervisor - INFO - Heartbeat sent at 1741167590.7448351.
+2025-03-05 10:40:00,748 - supervisor - INFO - Heartbeat sent at 1741167600.7474084.
+2025-03-05 10:40:10,750 - supervisor - INFO - Heartbeat sent at 1741167610.750113.
+2025-03-05 10:40:20,753 - supervisor - INFO - Heartbeat sent at 1741167620.751931.
+2025-03-05 10:40:30,757 - supervisor - INFO - Heartbeat sent at 1741167630.7548215.
+2025-03-05 10:40:40,760 - supervisor - INFO - Heartbeat sent at 1741167640.7588246.
+2025-03-05 10:40:50,765 - supervisor - INFO - Heartbeat sent at 1741167650.7639897.
+2025-03-05 10:41:00,767 - supervisor - INFO - Heartbeat sent at 1741167660.7669003.
+2025-03-05 10:41:10,770 - supervisor - INFO - Heartbeat sent at 1741167670.7691693.
+2025-03-05 10:41:20,771 - supervisor - INFO - Heartbeat sent at 1741167680.7715905.
+2025-03-05 10:41:30,775 - supervisor - INFO - Heartbeat sent at 1741167690.7738607.
+2025-03-05 10:41:40,777 - supervisor - INFO - Heartbeat sent at 1741167700.77663.
+2025-03-05 10:41:50,780 - supervisor - INFO - Heartbeat sent at 1741167710.7790132.
+2025-03-05 10:42:00,784 - supervisor - INFO - Heartbeat sent at 1741167720.782954.
+2025-03-05 10:42:10,787 - supervisor - INFO - Heartbeat sent at 1741167730.7857301.
+2025-03-05 10:42:20,790 - supervisor - INFO - Heartbeat sent at 1741167740.7893279.
+2025-03-05 10:42:30,792 - supervisor - INFO - Heartbeat sent at 1741167750.791866.
+2025-03-05 10:42:40,794 - supervisor - INFO - Heartbeat sent at 1741167760.7938483.
+2025-03-05 10:42:50,798 - supervisor - INFO - Heartbeat sent at 1741167770.7967114.
+2025-03-05 10:43:00,800 - supervisor - INFO - Heartbeat sent at 1741167780.7996385.
+2025-03-05 10:43:10,803 - supervisor - INFO - Heartbeat sent at 1741167790.8010716.
+2025-03-05 10:43:20,805 - supervisor - INFO - Heartbeat sent at 1741167800.805258.
+2025-03-05 10:43:30,811 - supervisor - INFO - Heartbeat sent at 1741167810.8088436.
+2025-03-05 10:43:40,816 - supervisor - INFO - Heartbeat sent at 1741167820.8147392.
+2025-03-05 10:43:50,822 - supervisor - INFO - Heartbeat sent at 1741167830.819369.
+2025-03-05 10:44:00,828 - supervisor - INFO - Heartbeat sent at 1741167840.8250482.
+2025-03-05 10:44:10,833 - supervisor - INFO - Heartbeat sent at 1741167850.8307717.
+2025-03-05 10:44:20,836 - supervisor - INFO - Heartbeat sent at 1741167860.8352232.
+2025-03-05 10:44:30,839 - supervisor - INFO - Heartbeat sent at 1741167870.838159.
+2025-03-05 10:44:40,844 - supervisor - INFO - Heartbeat sent at 1741167880.8412766.
+2025-03-05 10:44:50,849 - supervisor - INFO - Heartbeat sent at 1741167890.8469858.
+2025-03-05 10:45:00,850 - supervisor - INFO - Heartbeat sent at 1741167900.8503368.
+2025-03-05 10:45:10,853 - supervisor - INFO - Heartbeat sent at 1741167910.8523612.
+2025-03-05 10:45:20,856 - supervisor - INFO - Heartbeat sent at 1741167920.854931.
+2025-03-05 10:45:30,859 - supervisor - INFO - Heartbeat sent at 1741167930.858148.
+2025-03-05 10:45:40,862 - supervisor - INFO - Heartbeat sent at 1741167940.86054.
+2025-03-05 10:45:50,864 - supervisor - INFO - Heartbeat sent at 1741167950.8642867.
+2025-03-05 10:46:00,869 - supervisor - INFO - Heartbeat sent at 1741167960.8676577.
+2025-03-05 10:46:10,874 - supervisor - INFO - Heartbeat sent at 1741167970.8729503.
+2025-03-05 10:46:20,878 - supervisor - INFO - Heartbeat sent at 1741167980.8765101.
+2025-03-05 10:46:30,884 - supervisor - INFO - Heartbeat sent at 1741167990.881827.
+2025-03-05 10:46:40,890 - supervisor - INFO - Heartbeat sent at 1741168000.8878117.
+2025-03-05 10:46:50,895 - supervisor - INFO - Heartbeat sent at 1741168010.8930502.
+2025-03-05 10:47:00,900 - supervisor - INFO - Heartbeat sent at 1741168020.8980548.
+2025-03-05 10:47:10,904 - supervisor - INFO - Heartbeat sent at 1741168030.9025974.
+2025-03-05 10:47:20,908 - supervisor - INFO - Heartbeat sent at 1741168040.9073267.
+2025-03-05 10:47:30,913 - supervisor - INFO - Heartbeat sent at 1741168050.9116724.
+2025-03-05 10:47:40,919 - supervisor - INFO - Heartbeat sent at 1741168060.9167058.
+2025-03-05 10:47:50,924 - supervisor - INFO - Heartbeat sent at 1741168070.9227564.
+2025-03-05 10:48:00,928 - supervisor - INFO - Heartbeat sent at 1741168080.926742.
+2025-03-05 10:48:10,934 - supervisor - INFO - Heartbeat sent at 1741168090.9320445.
+2025-03-05 10:48:20,938 - supervisor - INFO - Heartbeat sent at 1741168100.9359715.
+2025-03-05 10:48:30,941 - supervisor - INFO - Heartbeat sent at 1741168110.939639.
+2025-03-05 10:48:40,948 - supervisor - INFO - Heartbeat sent at 1741168120.945702.
+2025-03-05 10:48:50,953 - supervisor - INFO - Heartbeat sent at 1741168130.9515958.
+2025-03-05 10:49:00,958 - supervisor - INFO - Heartbeat sent at 1741168140.9567924.
+2025-03-05 10:49:10,964 - supervisor - INFO - Heartbeat sent at 1741168150.9615836.
+2025-03-05 10:49:20,970 - supervisor - INFO - Heartbeat sent at 1741168160.9685054.
+2025-03-05 10:49:30,975 - supervisor - INFO - Heartbeat sent at 1741168170.97191.
+2025-03-05 10:49:40,980 - supervisor - INFO - Heartbeat sent at 1741168180.9773192.
+2025-03-05 10:49:50,986 - supervisor - INFO - Heartbeat sent at 1741168190.9835842.
+2025-03-05 10:50:00,991 - supervisor - INFO - Heartbeat sent at 1741168200.9896092.
+2025-03-05 10:50:10,994 - supervisor - INFO - Heartbeat sent at 1741168210.9932973.
+2025-03-05 10:50:20,999 - supervisor - INFO - Heartbeat sent at 1741168220.9968092.
+2025-03-05 10:50:31,005 - supervisor - INFO - Heartbeat sent at 1741168231.0034337.
+2025-03-05 10:50:41,008 - supervisor - INFO - Heartbeat sent at 1741168241.0069082.
+2025-03-05 10:50:51,013 - supervisor - INFO - Heartbeat sent at 1741168251.0104833.
+2025-03-05 10:51:01,019 - supervisor - INFO - Heartbeat sent at 1741168261.016433.
+2025-03-05 10:51:11,024 - supervisor - INFO - Heartbeat sent at 1741168271.0219789.
+2025-03-05 10:51:21,029 - supervisor - INFO - Heartbeat sent at 1741168281.0268533.
+2025-03-05 10:51:31,036 - supervisor - INFO - Heartbeat sent at 1741168291.0329216.
+2025-03-05 10:51:41,041 - supervisor - INFO - Heartbeat sent at 1741168301.0388947.
+2025-03-05 10:51:51,047 - supervisor - INFO - Heartbeat sent at 1741168311.045048.
+2025-03-05 10:52:01,052 - supervisor - INFO - Heartbeat sent at 1741168321.0501022.
+2025-03-05 10:52:11,058 - supervisor - INFO - Heartbeat sent at 1741168331.0556276.
+2025-03-05 10:52:21,064 - supervisor - INFO - Heartbeat sent at 1741168341.0620441.
+2025-03-05 10:52:31,070 - supervisor - INFO - Heartbeat sent at 1741168351.0679939.
+2025-03-05 10:52:41,075 - supervisor - INFO - Heartbeat sent at 1741168361.07314.
+2025-03-05 10:52:51,078 - supervisor - INFO - Heartbeat sent at 1741168371.076746.
+2025-03-05 10:53:01,083 - supervisor - INFO - Heartbeat sent at 1741168381.08075.
+2025-03-05 10:53:11,086 - supervisor - INFO - Heartbeat sent at 1741168391.0853505.
+2025-03-05 10:53:21,091 - supervisor - INFO - Heartbeat sent at 1741168401.088457.
+2025-03-05 10:53:31,095 - supervisor - INFO - Heartbeat sent at 1741168411.0938492.
+2025-03-05 10:53:41,100 - supervisor - INFO - Heartbeat sent at 1741168421.0987043.
+2025-03-05 10:53:51,104 - supervisor - INFO - Heartbeat sent at 1741168431.1024933.
+2025-03-05 10:54:01,108 - supervisor - INFO - Heartbeat sent at 1741168441.1062682.
+2025-03-05 10:54:11,113 - supervisor - INFO - Heartbeat sent at 1741168451.1111732.
+2025-03-05 10:54:21,117 - supervisor - INFO - Heartbeat sent at 1741168461.115073.
+2025-03-05 10:54:31,121 - supervisor - INFO - Heartbeat sent at 1741168471.1196206.
+2025-03-05 10:54:41,123 - supervisor - INFO - Heartbeat sent at 1741168481.123367.
+2025-03-05 10:54:51,127 - supervisor - INFO - Heartbeat sent at 1741168491.1253378.
+2025-03-05 10:55:01,130 - supervisor - INFO - Heartbeat sent at 1741168501.1285365.
+2025-03-05 10:55:11,133 - supervisor - INFO - Heartbeat sent at 1741168511.132578.
+2025-03-05 10:55:21,136 - supervisor - INFO - Heartbeat sent at 1741168521.134154.
+2025-03-05 10:55:31,141 - supervisor - INFO - Heartbeat sent at 1741168531.1397913.
+2025-03-05 10:55:41,142 - supervisor - INFO - Heartbeat sent at 1741168541.1429887.
+2025-03-05 10:55:51,148 - supervisor - INFO - Heartbeat sent at 1741168551.14507.
+2025-03-05 10:56:01,153 - supervisor - INFO - Heartbeat sent at 1741168561.1513896.
+2025-03-05 10:56:11,158 - supervisor - INFO - Heartbeat sent at 1741168571.156779.
+2025-03-05 10:56:21,163 - supervisor - INFO - Heartbeat sent at 1741168581.1602285.
+2025-03-05 10:56:31,169 - supervisor - INFO - Heartbeat sent at 1741168591.1671915.
+2025-03-05 10:56:41,174 - supervisor - INFO - Heartbeat sent at 1741168601.172008.
+2025-03-05 10:56:51,179 - supervisor - INFO - Heartbeat sent at 1741168611.177276.
+2025-03-05 10:57:01,184 - supervisor - INFO - Heartbeat sent at 1741168621.1828935.
+2025-03-05 10:57:11,187 - supervisor - INFO - Heartbeat sent at 1741168631.1851747.
+2025-03-05 10:57:21,191 - supervisor - INFO - Heartbeat sent at 1741168641.190351.
+2025-03-05 10:57:31,195 - supervisor - INFO - Heartbeat sent at 1741168651.1931233.
+2025-03-05 10:57:41,199 - supervisor - INFO - Heartbeat sent at 1741168661.197513.
+2025-03-05 10:57:51,205 - supervisor - INFO - Heartbeat sent at 1741168671.2031965.
+2025-03-05 10:58:01,209 - supervisor - INFO - Heartbeat sent at 1741168681.207556.
+2025-03-05 10:58:11,216 - supervisor - INFO - Heartbeat sent at 1741168691.213152.
+2025-03-05 10:58:21,221 - supervisor - INFO - Heartbeat sent at 1741168701.2187805.
+2025-03-05 10:58:31,225 - supervisor - INFO - Heartbeat sent at 1741168711.2247145.
+2025-03-05 10:58:41,229 - supervisor - INFO - Heartbeat sent at 1741168721.2266042.
+2025-03-05 10:58:51,232 - supervisor - INFO - Heartbeat sent at 1741168731.231252.
+2025-03-05 10:59:01,236 - supervisor - INFO - Heartbeat sent at 1741168741.2341065.
+2025-03-05 10:59:11,240 - supervisor - INFO - Heartbeat sent at 1741168751.2385702.
+2025-03-05 10:59:21,244 - supervisor - INFO - Heartbeat sent at 1741168761.243082.
+2025-03-05 10:59:31,248 - supervisor - INFO - Heartbeat sent at 1741168771.2460577.
+2025-03-05 10:59:41,251 - supervisor - INFO - Heartbeat sent at 1741168781.250062.
+2025-03-05 10:59:51,254 - supervisor - INFO - Heartbeat sent at 1741168791.2535462.
+2025-03-05 11:00:01,258 - supervisor - INFO - Heartbeat sent at 1741168801.2563827.
+2025-03-05 11:00:11,261 - supervisor - INFO - Heartbeat sent at 1741168811.2602153.
+2025-03-05 11:00:21,264 - supervisor - INFO - Heartbeat sent at 1741168821.2626917.
+2025-03-05 11:00:31,268 - supervisor - INFO - Heartbeat sent at 1741168831.2673264.
+2025-03-05 11:00:41,273 - supervisor - INFO - Heartbeat sent at 1741168841.2706404.
+2025-03-05 11:00:51,277 - supervisor - INFO - Heartbeat sent at 1741168851.2765775.
+2025-03-05 11:01:01,281 - supervisor - INFO - Heartbeat sent at 1741168861.279508.
+2025-03-05 11:01:11,284 - supervisor - INFO - Heartbeat sent at 1741168871.2828236.
+2025-03-05 11:01:21,288 - supervisor - INFO - Heartbeat sent at 1741168881.2864952.
+2025-03-05 11:01:31,291 - supervisor - INFO - Heartbeat sent at 1741168891.2906003.
+2025-03-05 11:01:41,294 - supervisor - INFO - Heartbeat sent at 1741168901.293358.
+2025-03-05 11:01:51,298 - supervisor - INFO - Heartbeat sent at 1741168911.2966194.
+2025-03-05 11:02:01,301 - supervisor - INFO - Heartbeat sent at 1741168921.3006206.
+2025-03-05 11:02:11,304 - supervisor - INFO - Heartbeat sent at 1741168931.3041592.
+2025-03-05 11:02:21,308 - supervisor - INFO - Heartbeat sent at 1741168941.306922.
+2025-03-05 11:02:31,314 - supervisor - INFO - Heartbeat sent at 1741168951.3125176.
+2025-03-05 11:02:41,319 - supervisor - INFO - Heartbeat sent at 1741168961.3172808.
+2025-03-05 11:02:51,322 - supervisor - INFO - Heartbeat sent at 1741168971.3212712.
+2025-03-05 11:03:01,327 - supervisor - INFO - Heartbeat sent at 1741168981.3249211.
+2025-03-05 11:03:11,333 - supervisor - INFO - Heartbeat sent at 1741168991.330539.
+2025-03-05 11:03:21,338 - supervisor - INFO - Heartbeat sent at 1741169001.335756.
+2025-03-05 11:03:31,342 - supervisor - INFO - Heartbeat sent at 1741169011.3411975.
+2025-03-05 11:03:41,346 - supervisor - INFO - Heartbeat sent at 1741169021.3442001.
+2025-03-05 11:03:51,350 - supervisor - INFO - Heartbeat sent at 1741169031.347767.
+2025-03-05 11:04:01,354 - supervisor - INFO - Heartbeat sent at 1741169041.3534226.
+2025-03-05 11:04:11,356 - supervisor - INFO - Heartbeat sent at 1741169051.3552427.
+2025-03-05 11:04:21,358 - supervisor - INFO - Heartbeat sent at 1741169061.3582792.
+2025-03-05 11:04:31,361 - supervisor - INFO - Heartbeat sent at 1741169071.3607266.
+2025-03-05 11:04:41,362 - supervisor - INFO - Heartbeat sent at 1741169081.362276.
+2025-03-05 11:04:51,366 - supervisor - INFO - Heartbeat sent at 1741169091.36423.
+2025-03-05 11:05:01,369 - supervisor - INFO - Heartbeat sent at 1741169101.3676615.
+2025-03-05 11:05:11,372 - supervisor - INFO - Heartbeat sent at 1741169111.3700893.
+2025-03-05 11:05:21,374 - supervisor - INFO - Heartbeat sent at 1741169121.3736737.
+2025-03-05 11:05:31,378 - supervisor - INFO - Heartbeat sent at 1741169131.3769867.
+2025-03-05 11:05:41,381 - supervisor - INFO - Heartbeat sent at 1741169141.3798451.
+2025-03-05 11:05:51,384 - supervisor - INFO - Heartbeat sent at 1741169151.3830779.
+2025-03-05 11:06:01,388 - supervisor - INFO - Heartbeat sent at 1741169161.3873975.
+2025-03-05 11:06:11,392 - supervisor - INFO - Heartbeat sent at 1741169171.3911884.
+2025-03-05 11:06:21,396 - supervisor - INFO - Heartbeat sent at 1741169181.3943918.
+2025-03-05 11:06:31,402 - supervisor - INFO - Heartbeat sent at 1741169191.3999705.
+2025-03-05 11:06:41,403 - supervisor - INFO - Heartbeat sent at 1741169201.4033823.
+2025-03-05 11:06:51,407 - supervisor - INFO - Heartbeat sent at 1741169211.4058902.
+2025-03-05 11:07:01,412 - supervisor - INFO - Heartbeat sent at 1741169221.4106421.
+2025-03-05 11:07:11,415 - supervisor - INFO - Heartbeat sent at 1741169231.4145665.
+2025-03-05 11:07:21,417 - supervisor - INFO - Heartbeat sent at 1741169241.4162333.
+2025-03-05 11:07:31,421 - supervisor - INFO - Heartbeat sent at 1741169251.4205165.
+2025-03-05 11:07:41,423 - supervisor - INFO - Heartbeat sent at 1741169261.4227877.
+2025-03-05 11:07:51,425 - supervisor - INFO - Heartbeat sent at 1741169271.424746.
+2025-03-05 11:08:01,429 - supervisor - INFO - Heartbeat sent at 1741169281.42802.
+2025-03-05 11:08:11,433 - supervisor - INFO - Heartbeat sent at 1741169291.432163.
+2025-03-05 11:08:21,436 - supervisor - INFO - Heartbeat sent at 1741169301.4346561.
+2025-03-05 11:08:31,440 - supervisor - INFO - Heartbeat sent at 1741169311.4387558.
+2025-03-05 11:08:41,443 - supervisor - INFO - Heartbeat sent at 1741169321.4418185.
+2025-03-05 11:08:51,446 - supervisor - INFO - Heartbeat sent at 1741169331.4451041.
+2025-03-05 11:09:01,450 - supervisor - INFO - Heartbeat sent at 1741169341.4485526.
+2025-03-05 11:09:11,454 - supervisor - INFO - Heartbeat sent at 1741169351.453145.
+2025-03-05 11:09:21,457 - supervisor - INFO - Heartbeat sent at 1741169361.4560528.
+2025-03-05 11:09:31,462 - supervisor - INFO - Heartbeat sent at 1741169371.4607368.
+2025-03-05 11:09:41,466 - supervisor - INFO - Heartbeat sent at 1741169381.4643817.
+2025-03-05 11:09:51,471 - supervisor - INFO - Heartbeat sent at 1741169391.4698188.
+2025-03-05 11:10:01,475 - supervisor - INFO - Heartbeat sent at 1741169401.4737017.
+2025-03-05 11:10:11,481 - supervisor - INFO - Heartbeat sent at 1741169411.4789128.
+2025-03-05 11:10:21,485 - supervisor - INFO - Heartbeat sent at 1741169421.4839134.
+2025-03-05 11:10:31,490 - supervisor - INFO - Heartbeat sent at 1741169431.4881957.
+2025-03-05 11:10:41,494 - supervisor - INFO - Heartbeat sent at 1741169441.493153.
+2025-03-05 11:10:51,496 - supervisor - INFO - Heartbeat sent at 1741169451.4957817.
+2025-03-05 11:11:01,499 - supervisor - INFO - Heartbeat sent at 1741169461.4985476.
+2025-03-05 11:11:11,502 - supervisor - INFO - Heartbeat sent at 1741169471.5016801.
+2025-03-05 11:11:21,506 - supervisor - INFO - Heartbeat sent at 1741169481.5047839.
+2025-03-05 11:11:31,508 - supervisor - INFO - Heartbeat sent at 1741169491.5077598.
+2025-03-05 11:11:41,512 - supervisor - INFO - Heartbeat sent at 1741169501.5109081.
+2025-03-05 11:11:51,515 - supervisor - INFO - Heartbeat sent at 1741169511.514915.
+2025-03-05 11:12:01,520 - supervisor - INFO - Heartbeat sent at 1741169521.5185213.
+2025-03-05 11:12:11,524 - supervisor - INFO - Heartbeat sent at 1741169531.5219223.
+2025-03-05 11:12:21,528 - supervisor - INFO - Heartbeat sent at 1741169541.5267446.
+2025-03-05 11:12:31,531 - supervisor - INFO - Heartbeat sent at 1741169551.5293086.
+2025-03-05 11:12:41,536 - supervisor - INFO - Heartbeat sent at 1741169561.5343754.
+2025-03-05 11:12:51,542 - supervisor - INFO - Heartbeat sent at 1741169571.538951.
+2025-03-05 11:13:01,547 - supervisor - INFO - Heartbeat sent at 1741169581.5450263.
+2025-03-05 11:13:11,549 - supervisor - INFO - Heartbeat sent at 1741169591.549026.
+2025-03-05 11:13:21,553 - supervisor - INFO - Heartbeat sent at 1741169601.5511515.
+2025-03-05 11:13:31,559 - supervisor - INFO - Heartbeat sent at 1741169611.5567605.
+2025-03-05 11:13:41,564 - supervisor - INFO - Heartbeat sent at 1741169621.5626645.
+2025-03-05 11:13:51,570 - supervisor - INFO - Heartbeat sent at 1741169631.5673213.
+2025-03-05 11:14:01,576 - supervisor - INFO - Heartbeat sent at 1741169641.5740404.
+2025-03-05 11:14:11,581 - supervisor - INFO - Heartbeat sent at 1741169651.5787318.
+2025-03-05 11:14:21,584 - supervisor - INFO - Heartbeat sent at 1741169661.5840256.
+2025-03-05 11:14:31,587 - supervisor - INFO - Heartbeat sent at 1741169671.586331.
+2025-03-05 11:14:41,591 - supervisor - INFO - Heartbeat sent at 1741169681.5891533.
+2025-03-05 11:14:51,593 - supervisor - INFO - Heartbeat sent at 1741169691.5928357.
+2025-03-05 11:15:01,598 - supervisor - INFO - Heartbeat sent at 1741169701.595743.
+2025-03-05 11:15:11,604 - supervisor - INFO - Heartbeat sent at 1741169711.6015267.
+2025-03-05 11:15:21,608 - supervisor - INFO - Heartbeat sent at 1741169721.6070101.
+2025-03-05 11:15:31,611 - supervisor - INFO - Heartbeat sent at 1741169731.6105492.
+2025-03-05 11:15:41,614 - supervisor - INFO - Heartbeat sent at 1741169741.6128983.
+2025-03-05 11:15:51,619 - supervisor - INFO - Heartbeat sent at 1741169751.6182952.
+2025-03-05 11:16:01,622 - supervisor - INFO - Heartbeat sent at 1741169761.621227.
+2025-03-05 11:16:11,627 - supervisor - INFO - Heartbeat sent at 1741169771.6250134.
+2025-03-05 11:16:21,630 - supervisor - INFO - Heartbeat sent at 1741169781.6280067.
+2025-03-05 11:16:31,633 - supervisor - INFO - Heartbeat sent at 1741169791.6318154.
+2025-03-05 11:16:41,638 - supervisor - INFO - Heartbeat sent at 1741169801.6361105.
+2025-03-05 11:16:51,641 - supervisor - INFO - Heartbeat sent at 1741169811.6398048.
+2025-03-05 11:17:01,645 - supervisor - INFO - Heartbeat sent at 1741169821.643144.
+2025-03-05 11:17:11,649 - supervisor - INFO - Heartbeat sent at 1741169831.6477108.
+2025-03-05 11:17:21,653 - supervisor - INFO - Heartbeat sent at 1741169841.6505966.
+2025-03-05 11:17:31,660 - supervisor - INFO - Heartbeat sent at 1741169851.6577246.
+2025-03-05 11:17:41,667 - supervisor - INFO - Heartbeat sent at 1741169861.6646595.
+2025-03-05 11:17:51,671 - supervisor - INFO - Heartbeat sent at 1741169871.6697187.
+2025-03-05 11:18:01,673 - supervisor - INFO - Heartbeat sent at 1741169881.6733596.
+2025-03-05 11:18:11,676 - supervisor - INFO - Heartbeat sent at 1741169891.675252.
+2025-03-05 11:18:21,679 - supervisor - INFO - Heartbeat sent at 1741169901.6777625.
+2025-03-05 11:18:31,683 - supervisor - INFO - Heartbeat sent at 1741169911.681061.
+2025-03-05 11:18:41,688 - supervisor - INFO - Heartbeat sent at 1741169921.6864343.
+2025-03-05 11:18:51,693 - supervisor - INFO - Heartbeat sent at 1741169931.6906722.
+2025-03-05 11:19:01,699 - supervisor - INFO - Heartbeat sent at 1741169941.6959667.
+2025-03-05 11:19:11,703 - supervisor - INFO - Heartbeat sent at 1741169951.7017257.
+2025-03-05 11:19:21,707 - supervisor - INFO - Heartbeat sent at 1741169961.7055845.
+2025-03-05 11:19:31,713 - supervisor - INFO - Heartbeat sent at 1741169971.7104228.
+2025-03-05 11:19:41,718 - supervisor - INFO - Heartbeat sent at 1741169981.7165747.
+2025-03-05 11:19:51,723 - supervisor - INFO - Heartbeat sent at 1741169991.7205613.
+2025-03-05 11:20:01,730 - supervisor - INFO - Heartbeat sent at 1741170001.7274249.
+2025-03-05 11:20:11,735 - supervisor - INFO - Heartbeat sent at 1741170011.7330925.
+2025-03-05 11:20:21,738 - supervisor - INFO - Heartbeat sent at 1741170021.7370632.
+2025-03-05 11:20:31,743 - supervisor - INFO - Heartbeat sent at 1741170031.7408395.
+2025-03-05 11:20:41,748 - supervisor - INFO - Heartbeat sent at 1741170041.7465773.
+2025-03-05 11:20:51,752 - supervisor - INFO - Heartbeat sent at 1741170051.7514808.
+2025-03-05 11:21:01,756 - supervisor - INFO - Heartbeat sent at 1741170061.7548032.
+2025-03-05 11:21:11,761 - supervisor - INFO - Heartbeat sent at 1741170071.760112.
+2025-03-05 11:21:21,767 - supervisor - INFO - Heartbeat sent at 1741170081.7645926.
+2025-03-05 11:21:31,773 - supervisor - INFO - Heartbeat sent at 1741170091.7708366.
+2025-03-05 11:21:41,779 - supervisor - INFO - Heartbeat sent at 1741170101.7766492.
+2025-03-05 11:21:51,781 - supervisor - INFO - Heartbeat sent at 1741170111.7807071.
+2025-03-05 11:22:01,784 - supervisor - INFO - Heartbeat sent at 1741170121.783763.
+2025-03-05 11:22:11,790 - supervisor - INFO - Heartbeat sent at 1741170131.7870572.
+2025-03-05 11:22:21,792 - supervisor - INFO - Heartbeat sent at 1741170141.791119.
+2025-03-05 11:22:31,795 - supervisor - INFO - Heartbeat sent at 1741170151.7937007.
+2025-03-05 11:22:41,800 - supervisor - INFO - Heartbeat sent at 1741170161.7983518.
+2025-03-05 11:22:51,803 - supervisor - INFO - Heartbeat sent at 1741170171.8019574.
+2025-03-05 11:23:01,807 - supervisor - INFO - Heartbeat sent at 1741170181.8055656.
+2025-03-05 11:23:11,811 - supervisor - INFO - Heartbeat sent at 1741170191.809403.
+2025-03-05 11:23:21,816 - supervisor - INFO - Heartbeat sent at 1741170201.814032.
+2025-03-05 11:23:31,819 - supervisor - INFO - Heartbeat sent at 1741170211.8178823.
+2025-03-05 11:23:41,823 - supervisor - INFO - Heartbeat sent at 1741170221.8217728.
+2025-03-05 11:23:51,827 - supervisor - INFO - Heartbeat sent at 1741170231.8253815.
+2025-03-05 11:24:01,830 - supervisor - INFO - Heartbeat sent at 1741170241.8293805.
+2025-03-05 11:24:11,835 - supervisor - INFO - Heartbeat sent at 1741170251.8327882.
+2025-03-05 11:24:21,840 - supervisor - INFO - Heartbeat sent at 1741170261.8382268.
+2025-03-05 11:24:31,844 - supervisor - INFO - Heartbeat sent at 1741170271.8431535.
+2025-03-05 11:24:41,848 - supervisor - INFO - Heartbeat sent at 1741170281.8465776.
+2025-03-05 11:24:51,851 - supervisor - INFO - Heartbeat sent at 1741170291.8503616.
+2025-03-05 11:25:01,854 - supervisor - INFO - Heartbeat sent at 1741170301.8524532.
+2025-03-05 11:25:11,859 - supervisor - INFO - Heartbeat sent at 1741170311.8574626.
+2025-03-05 11:25:21,864 - supervisor - INFO - Heartbeat sent at 1741170321.8621242.
+2025-03-05 11:25:31,870 - supervisor - INFO - Heartbeat sent at 1741170331.8675447.
+2025-03-05 11:25:41,876 - supervisor - INFO - Heartbeat sent at 1741170341.8740876.
+2025-03-05 11:25:51,882 - supervisor - INFO - Heartbeat sent at 1741170351.8795114.
+2025-03-05 11:26:01,887 - supervisor - INFO - Heartbeat sent at 1741170361.8848135.
+2025-03-05 11:26:11,892 - supervisor - INFO - Heartbeat sent at 1741170371.8907456.
+2025-03-05 11:26:21,896 - supervisor - INFO - Heartbeat sent at 1741170381.8958876.
+2025-03-05 11:26:31,902 - supervisor - INFO - Heartbeat sent at 1741170391.898587.
+2025-03-05 11:26:41,906 - supervisor - INFO - Heartbeat sent at 1741170401.9044929.
+2025-03-05 11:26:51,909 - supervisor - INFO - Heartbeat sent at 1741170411.908493.
+2025-03-05 11:27:01,913 - supervisor - INFO - Heartbeat sent at 1741170421.911231.
+2025-03-05 11:27:11,916 - supervisor - INFO - Heartbeat sent at 1741170431.9153523.
+2025-03-05 11:27:21,919 - supervisor - INFO - Heartbeat sent at 1741170441.9185805.
+2025-03-05 11:27:31,922 - supervisor - INFO - Heartbeat sent at 1741170451.9219124.
+2025-03-05 11:27:41,926 - supervisor - INFO - Heartbeat sent at 1741170461.9254613.
+2025-03-05 11:27:51,931 - supervisor - INFO - Heartbeat sent at 1741170471.9289918.
+2025-03-05 11:28:01,934 - supervisor - INFO - Heartbeat sent at 1741170481.9328897.
+2025-03-05 11:28:11,938 - supervisor - INFO - Heartbeat sent at 1741170491.9367113.
+2025-03-05 11:28:21,942 - supervisor - INFO - Heartbeat sent at 1741170501.9403384.
+2025-03-05 11:28:31,945 - supervisor - INFO - Heartbeat sent at 1741170511.9451528.
+2025-03-05 11:28:41,950 - supervisor - INFO - Heartbeat sent at 1741170521.9478574.
+2025-03-05 11:28:51,955 - supervisor - INFO - Heartbeat sent at 1741170531.9530919.
+2025-03-05 11:29:01,960 - supervisor - INFO - Heartbeat sent at 1741170541.958168.
+2025-03-05 11:29:11,964 - supervisor - INFO - Heartbeat sent at 1741170551.962201.
+2025-03-05 11:29:21,967 - supervisor - INFO - Heartbeat sent at 1741170561.9656627.
+2025-03-05 11:29:31,972 - supervisor - INFO - Heartbeat sent at 1741170571.9709363.
+2025-03-05 11:29:41,977 - supervisor - INFO - Heartbeat sent at 1741170581.9761257.
+2025-03-05 11:29:51,982 - supervisor - INFO - Heartbeat sent at 1741170591.9807532.
+2025-03-05 11:30:01,986 - supervisor - INFO - Heartbeat sent at 1741170601.9850743.
+2025-03-05 11:30:11,991 - supervisor - INFO - Heartbeat sent at 1741170611.9891143.
+2025-03-05 11:30:21,995 - supervisor - INFO - Heartbeat sent at 1741170621.9936476.
+2025-03-05 11:30:32,000 - supervisor - INFO - Heartbeat sent at 1741170631.9982316.
+2025-03-05 11:30:42,004 - supervisor - INFO - Heartbeat sent at 1741170642.0033739.
+2025-03-05 11:30:52,008 - supervisor - INFO - Heartbeat sent at 1741170652.0058248.
+2025-03-05 11:31:02,012 - supervisor - INFO - Heartbeat sent at 1741170662.0108287.
+2025-03-05 11:31:12,016 - supervisor - INFO - Heartbeat sent at 1741170672.0144827.
+2025-03-05 11:31:22,020 - supervisor - INFO - Heartbeat sent at 1741170682.0179653.
+2025-03-05 11:31:32,024 - supervisor - INFO - Heartbeat sent at 1741170692.0235918.
+2025-03-05 11:31:42,028 - supervisor - INFO - Heartbeat sent at 1741170702.0263543.
+2025-03-05 11:31:52,032 - supervisor - INFO - Heartbeat sent at 1741170712.031813.
+2025-03-05 11:32:02,037 - supervisor - INFO - Heartbeat sent at 1741170722.034813.
+2025-03-05 11:32:12,040 - supervisor - INFO - Heartbeat sent at 1741170732.0398424.
+2025-03-05 11:32:22,044 - supervisor - INFO - Heartbeat sent at 1741170742.0421562.
+2025-03-05 11:32:32,049 - supervisor - INFO - Heartbeat sent at 1741170752.046287.
+2025-03-05 11:32:34,928 - supervisor - INFO - Successfully run docker compose application {name:flexia-compose-example}.
+2025-03-05 11:32:42,053 - supervisor - INFO - Heartbeat sent at 1741170762.0517085.
+2025-03-05 11:32:56,155 - supervisor - ERROR - Failed to send heartbeat at 1741170772.054696.
+2025-03-05 11:33:14,401 - supervisor - ERROR - Failed to send heartbeat at 1741170790.3035135.
+2025-03-05 11:33:32,583 - supervisor - ERROR - Failed to send heartbeat at 1741170808.4982238.
+2025-03-05 11:33:50,722 - supervisor - ERROR - Failed to send heartbeat at 1741170826.652621.
+2025-03-05 11:34:08,910 - supervisor - ERROR - Failed to send heartbeat at 1741170844.8210182.
+2025-03-05 11:34:27,096 - supervisor - ERROR - Failed to send heartbeat at 1741170863.003587.
+2025-03-05 11:34:45,285 - supervisor - ERROR - Failed to send heartbeat at 1741170881.1969042.
+2025-03-05 11:35:03,462 - supervisor - ERROR - Failed to send heartbeat at 1741170899.3845148.
+2025-03-05 11:35:21,632 - supervisor - ERROR - Failed to send heartbeat at 1741170917.553344.
+2025-03-05 11:35:39,816 - supervisor - ERROR - Failed to send heartbeat at 1741170935.7303896.
+2025-03-05 11:35:58,005 - supervisor - ERROR - Failed to send heartbeat at 1741170953.905119.
+2025-03-05 11:36:16,197 - supervisor - ERROR - Failed to send heartbeat at 1741170972.1062317.
+2025-03-05 11:36:34,352 - supervisor - ERROR - Failed to send heartbeat at 1741170990.281543.
+2025-03-05 11:36:52,518 - supervisor - ERROR - Failed to send heartbeat at 1741171008.43748.
+2025-03-05 11:37:10,697 - supervisor - ERROR - Failed to send heartbeat at 1741171026.6199872.
+2025-03-05 11:37:28,868 - supervisor - ERROR - Failed to send heartbeat at 1741171044.7872581.
+2025-03-05 11:37:47,013 - supervisor - ERROR - Failed to send heartbeat at 1741171062.957006.
+2025-03-05 11:38:05,211 - supervisor - ERROR - Failed to send heartbeat at 1741171081.1167977.
+2025-03-05 11:38:23,371 - supervisor - ERROR - Failed to send heartbeat at 1741171099.3128476.
+2025-03-05 11:38:41,560 - supervisor - ERROR - Failed to send heartbeat at 1741171117.4786048.
+2025-03-05 11:38:59,688 - supervisor - ERROR - Failed to send heartbeat at 1741171135.6138847.
+2025-03-05 11:39:17,862 - supervisor - ERROR - Failed to send heartbeat at 1741171153.791155.
+2025-03-05 11:39:36,001 - supervisor - ERROR - Failed to send heartbeat at 1741171171.9481912.
+2025-03-05 11:39:54,186 - supervisor - ERROR - Failed to send heartbeat at 1741171190.0973926.

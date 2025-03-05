@@ -32,7 +32,7 @@ expiry_seconds = 120
 command = compose_command(cmd_type, params, priority, expiry_seconds)
 command_data = json.dumps(command).encode('utf-8')
 
-# Send command to flexEngine running on device (agent.py)
+# Send command to flexEngine running on device (agents.py)
 _commandKey = _device_config.get("primaryHardwareID", "UNKNOWN")+"@"+_device_config.get("projectID", "UNKNOWN")+"-"+_device_config.get("key", "UNKNOWN")+COMMUNICATIONMATRIX.COMMAND
 
 # Publish the command message to Redis.
