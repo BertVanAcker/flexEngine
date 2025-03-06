@@ -39,6 +39,7 @@ def load_config(config_file):
       return yaml.safe_load(file)
 
 
+
 def load_flexia_config(config_file):
    # read the configuration file
    config = configparser.ConfigParser()

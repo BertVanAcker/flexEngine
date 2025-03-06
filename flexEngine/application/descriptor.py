@@ -6,7 +6,9 @@
 # * flexIA can not be copied and/or distributed without the express
 # * permission of Bert Van Acker
 # *************************************************************************
-from flexEngine.utils.auxiliary import load_config
+import json
+
+from flexEngine.utils.auxiliary import load_config, load_flexia_config
 
 
 class applicationDescriptor(object):
@@ -107,6 +109,150 @@ class applicationDescriptor(object):
             self._runnables = value
         else:
             raise ValueError("Runnables must be a list of Runnable instances")
+
+
+
+class flexIADescriptor(object):
+    def __init__(self,descriptor='flexIA.ini',verbose=False):
+        """Initialize the application descriptor component."""
+
+        self._descriptor = load_flexia_config(config_file=descriptor)
+
+        # ---- PROJECT DESCRIPTION ----
+        self._projectID = self._descriptor['flexIA']['projectID']
+        self._projectDescription = self._descriptor['flexIA']['description']
+
+        # ---- PACKAGE DESCRIPTION ----
+        self._packageName = self._descriptor['PACKAGE']['name']
+        self._packageTag = self._descriptor['PACKAGE']['tag']
+
+        # ---- DEPLOYMENT OPTIONS DESCRIPTION ----
+        try:
+            self._deploymentOptions = []
+            for d in self._descriptor['DEPLOYMENT']:
+                _devices = self._descriptor['DEPLOYMENT'][d]['devices'].split(',')
+                _option = deploymentOption(devices=_devices)
+                self._deploymentOptions.append(_option)
+        except:
+            self._deploymentOptions = []
+        # ---- DEVICE DESCRIPTION ----
+        try:
+            self._devices = []
+
+            # DEVICE
+            for d in self._descriptor['build']:
+                _device = deviceDescription(name=d)
+                self._devices.append(_device)
+
+            # BUILD
+            _buildDescriptor = None
+            for d in self._descriptor['build']:
+                _workflow = self._descriptor['build'][d]['workflow']
+                _workflowLink = self._descriptor['build'][d]['workflow_link']
+                _arguments = self._descriptor['build'][d]['arguments']
+                _buildDescriptor = buildDescription(workflow=_workflow,workflowLink=_workflowLink,arguments=_arguments)
+                for device in self._devices:
+                    if device.name == d:
+                        device.buildDescription = _buildDescriptor
+
+            # RUN
+            _runDescriptor = None
+            for d in self._descriptor['run']:
+                _workflow = self._descriptor['run'][d]['workflow']
+                _workflowLink = self._descriptor['run'][d]['workflow_link']
+                _arguments = self._descriptor['run'][d]['arguments']
+                _runDescriptor = runDescription(workflow=_workflow, workflowLink=_workflowLink,arguments=_arguments)
+                for device in self._devices:
+                    if device.name == d:
+                        device.runDescription = _runDescriptor
+
+            # DEPENDENCIES
+            _dependecyDescription = None
+            for d in self._descriptor['DEPENDENCIES']:
+                try:
+                    _depends_on = self._descriptor['DEPENDENCIES'][d]['depends_on'].split(',')
+                except:
+                    _depends_on = []
+                try:
+                    _lib_deps = self._descriptor['DEPENDENCIES'][d]['lib_deps'].split(',')
+                except:
+                    _lib_deps = None
+                _dependecyDescription = dependencyDescription(depends_on=_depends_on,lib_deps=_lib_deps)
+                for device in self._devices:
+                    if device.name == d:
+                        device.dependencyDescription = _dependecyDescription
+
+            # REQUIREMENTS
+            _requirementsDescription = None
+            for d in self._descriptor['REQUIREMENTS']:
+                try:
+                    _architecture = self._descriptor['REQUIREMENTS'][d]['architecture']
+                except:
+                    _architecture = "generic"
+                try:
+                    _os = self._descriptor['REQUIREMENTS'][d]['os']
+                except:
+                    _os = "generic"
+                try:
+                    _cpu = self._descriptor['REQUIREMENTS'][d]['cpu']
+                except:
+                    _cpu = 1
+                try:
+                    _memory = self._descriptor['REQUIREMENTS'][d]['memory']
+                except:
+                    _memory = 0
+                try:
+                    _devices = self._descriptor['REQUIREMENTS'][d]['devices'].split(',')
+                except:
+                    _devices = []
+
+                _requirementsDescription = requirements(architecture=_architecture,os=_os,cpu=_cpu,memory=_memory,devices=_devices)
+
+                for device in self._devices:
+                    if device.name == d:
+                        device.requirements = _requirementsDescription
+
+        except:
+            self._devices = []
+
+    @property
+    def projectID(self):
+        return self._projectID
+    @property
+    def projectDescription(self):
+        return self._projectDescription
+
+    @property
+    def packageName(self):
+        return self._packageName
+
+    @property
+    def packageTag(self):
+        return self._packageTag
+
+    @property
+    def deploymentOptions(self):
+        return self._deploymentOptions
+
+    @property
+    def devices(self):
+        return self._devices
+
+
+
+
+class deploymentOption(object):
+    def __init__(self,devices=[]):
+
+        self._devices = devices
+
+    @property
+    def devices(self):
+        return self._devices
+
+    @devices.setter
+    def devices(self, value):
+        self._devices = value
 
 
 class runnable(object):
@@ -303,7 +449,126 @@ class dependency(object):
         """Setter for component"""
         self._component = value
 
+class deviceDescription(object):
+    def __init__(self, name=None, buildDescription=None,runDescription=None,manifest=None,dependencies=None, requirements=None):
+        """Initialize the application descriptor component."""
+        self._name = name
+        self._buildDescription = buildDescription
+        self._runDescription = runDescription
+        self._manifest = manifest
+        self._dependencies = dependencies
+        self._requirements = requirements
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    # Getter and Setter for manifest
+    @property
+    def manifest(self):
+        return self._manifest
+
+    @manifest.setter
+    def manifest(self, value):
+        self._manifest = value
+
+    @property
+    def dependencyDescription(self):
+        return self._dependencies
+
+    @dependencyDescription.setter
+    def dependencyDescription(self, value):
+        self._dependencies = value
+
+    def addDependency(self, dependency):
+        self._dependencies.append(dependency)
+
+    # Getter and Setter for requirements
+    @property
+    def requirements(self):
+        return self._requirements
+
+    @requirements.setter
+    def requirements(self, value):
+        self._requirements = value
+
+    @property
+    def buildDescription(self):
+        return self._buildDescription
+
+    @buildDescription.setter
+    def buildDescription(self, value):
+        self._buildDescription = value
+
+    @property
+    def runDescription(self):
+        return self._runDescription
+
+    @runDescription.setter
+    def runDescription(self, value):
+        self._runDescription = value
 
 
+class buildDescription(object):
+    def __init__(self, workflow=None, workflowLink=None, arguments=None):
+        """Initialize the dependency component"""
+        self._workflow = workflow
+        self._workflowLink = workflowLink
+        self._arguments = arguments
+
+    @property
+    def workflow(self):
+        return self._workflow
+
+    @property
+    def workflowLink(self):
+        return self._workflowLink
+
+    @property
+    def arguments(self):
+        return self._arguments
 
 
+class runDescription(object):
+    def __init__(self, workflow=None, workflowLink=None, arguments=None):
+        """Initialize the dependency component"""
+        self._workflow = workflow
+        self._workflowLink = workflowLink
+        self._arguments = arguments
+
+    @property
+    def workflow(self):
+        return self._workflow
+
+    @property
+    def workflowLink(self):
+        return self._workflowLink
+
+    @property
+    def arguments(self):
+        return self._arguments
+
+class dependencyDescription(object):
+    def __init__(self, depends_on=None, lib_deps="depends_on"):
+        """Initialize the dependency component"""
+        self._depends_on = depends_on
+        self._lib_deps = lib_deps
+
+    @property
+    def depends_on(self):
+        return self._depends_on
+    @depends_on.setter
+    def depends_on(self, value):
+        self._depends_on = value
+
+    @property
+    def lib_deps(self):
+        return self._lib_deps
+
+    @lib_deps.setter
+    def lib_deps(self, value):
+        self._lib_deps = value
