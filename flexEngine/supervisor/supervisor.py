@@ -94,6 +94,13 @@ class supervisor(object):
             self._logger.info("Stored shared secret in environment variable "+ SECURITY_STORE.SHARED_SECRET)
         else:
             self._logger.error("Failed to store shared secret in environment variable " + SECURITY_STORE.SHARED_SECRET)
+        # --- Register connectorID ---  TODO: TEST IF WORKS
+        connectorID = self._flexCloudConnector.connectorID
+        self._isRegistered = register_os_variable(secret=connectorID,env_var_name=SECURITY_STORE.FLEXCLOUD_CONNECTORID_SECRET)
+        if self._isRegistered:
+            self._logger.info("Stored connectorID in environment variable "+ SECURITY_STORE.FLEXCLOUD_CONNECTORID_SECRET)
+        else:
+            self._logger.error("Failed to store connectorID in environment variable " + SECURITY_STORE.FLEXCLOUD_CONNECTORID_SECRET)
 
 
     def _initialize_logger(self):

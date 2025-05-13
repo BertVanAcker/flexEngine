@@ -630,3 +630,155 @@ canceled
 2025-03-05 11:39:17,862 - supervisor - ERROR - Failed to send heartbeat at 1741171153.791155.
 2025-03-05 11:39:36,001 - supervisor - ERROR - Failed to send heartbeat at 1741171171.9481912.
 2025-03-05 11:39:54,186 - supervisor - ERROR - Failed to send heartbeat at 1741171190.0973926.
+2025-03-13 15:51:47,052 - supervisor - INFO - Application registry initialized
+2025-03-13 15:51:47,060 - supervisor - INFO - Command processor initialized
+2025-03-13 15:51:48,267 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-03-13 15:51:48,269 - supervisor - INFO - Heartbeat service started.
+2025-03-13 15:51:48,271 - supervisor - INFO - Heartbeat sent at 1741877508.2693954.
+2025-03-13 15:51:56,851 - supervisor - ERROR - Command e3ab83cd-e805-45a0-8734-e58706682565 invalid, dropping the command.
+2025-03-13 15:51:58,276 - supervisor - INFO - Heartbeat sent at 1741877518.2752385.
+2025-03-13 15:52:08,277 - supervisor - INFO - Heartbeat sent at 1741877528.2775345.
+2025-03-13 15:52:18,281 - supervisor - INFO - Heartbeat sent at 1741877538.2797246.
+2025-03-13 15:52:28,286 - supervisor - INFO - Heartbeat sent at 1741877548.2846735.
+2025-03-13 15:52:38,291 - supervisor - INFO - Heartbeat sent at 1741877558.2885697.
+2025-03-13 15:52:48,297 - supervisor - INFO - Heartbeat sent at 1741877568.2953513.
+2025-03-13 15:52:58,301 - supervisor - INFO - Heartbeat sent at 1741877578.3002455.
+2025-03-13 15:53:08,303 - supervisor - INFO - Heartbeat sent at 1741877588.3026507.
+2025-03-13 15:53:18,308 - supervisor - INFO - Heartbeat sent at 1741877598.3063219.
+2025-03-13 15:53:28,314 - supervisor - INFO - Heartbeat sent at 1741877608.3118246.
+2025-03-13 15:53:38,318 - supervisor - INFO - Heartbeat sent at 1741877618.3171866.
+2025-03-13 15:53:48,323 - supervisor - INFO - Heartbeat sent at 1741877628.3210163.
+2025-03-13 15:53:58,325 - supervisor - INFO - Heartbeat sent at 1741877638.3241174.
+2025-03-13 15:54:08,328 - supervisor - INFO - Heartbeat sent at 1741877648.3263524.
+2025-03-13 15:54:18,330 - supervisor - INFO - Heartbeat sent at 1741877658.329543.
+2025-03-13 15:54:28,334 - supervisor - INFO - Heartbeat sent at 1741877668.332491.
+2025-03-13 15:54:38,336 - supervisor - INFO - Heartbeat sent at 1741877678.3360972.
+2025-03-13 15:54:48,338 - supervisor - INFO - Heartbeat sent at 1741877688.338397.
+2025-03-13 15:54:58,341 - supervisor - INFO - Heartbeat sent at 1741877698.3406794.
+2025-03-13 15:55:08,347 - supervisor - INFO - Heartbeat sent at 1741877708.3450522.
+2025-03-13 15:55:18,350 - supervisor - INFO - Heartbeat sent at 1741877718.3488984.
+2025-03-13 15:55:28,353 - supervisor - INFO - Heartbeat sent at 1741877728.3517253.
+2025-03-13 15:55:38,357 - supervisor - INFO - Heartbeat sent at 1741877738.3548923.
+2025-03-13 15:55:51,505 - supervisor - INFO - Application registry initialized
+2025-03-13 15:55:51,508 - supervisor - INFO - Command processor initialized
+2025-03-13 15:55:52,758 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-03-13 15:55:52,759 - supervisor - INFO - Heartbeat service started.
+2025-03-13 15:55:52,759 - supervisor - INFO - Heartbeat sent at 1741877752.7584598.
+2025-03-13 15:56:02,765 - supervisor - INFO - Heartbeat sent at 1741877762.7635646.
+2025-03-13 15:56:12,771 - supervisor - INFO - Heartbeat sent at 1741877772.7693317.
+2025-03-13 15:56:22,775 - supervisor - INFO - Heartbeat sent at 1741877782.7737336.
+2025-03-13 15:56:32,780 - supervisor - INFO - Heartbeat sent at 1741877792.7787676.
+2025-03-13 15:56:42,784 - supervisor - INFO - Heartbeat sent at 1741877802.7826686.
+2025-03-13 15:56:52,788 - supervisor - INFO - Heartbeat sent at 1741877812.7872717.
+2025-03-13 15:57:02,794 - supervisor - INFO - Heartbeat sent at 1741877822.7901814.
+2025-03-13 15:57:12,799 - supervisor - INFO - Heartbeat sent at 1741877832.7979405.
+2025-03-13 15:57:22,805 - supervisor - INFO - Heartbeat sent at 1741877842.8027074.
+2025-03-13 15:57:32,808 - supervisor - INFO - Heartbeat sent at 1741877852.8078315.
+2025-03-13 15:57:42,813 - supervisor - INFO - Heartbeat sent at 1741877862.8113837.
+2025-03-13 15:57:52,818 - supervisor - INFO - Heartbeat sent at 1741877872.8167052.
+2025-03-13 15:58:02,823 - supervisor - INFO - Heartbeat sent at 1741877882.8214703.
+2025-03-13 15:58:12,830 - supervisor - INFO - Heartbeat sent at 1741877892.8283327.
+2025-03-13 15:58:22,833 - supervisor - INFO - Heartbeat sent at 1741877902.8322856.
+2025-03-13 15:58:32,838 - supervisor - INFO - Heartbeat sent at 1741877912.836314.
+2025-03-13 15:58:42,844 - supervisor - INFO - Heartbeat sent at 1741877922.8410175.
+2025-03-13 15:58:52,847 - supervisor - INFO - Heartbeat sent at 1741877932.8460593.
+2025-03-13 15:59:02,850 - supervisor - INFO - Heartbeat sent at 1741877942.8486679.
+2025-03-13 15:59:12,855 - supervisor - INFO - Heartbeat sent at 1741877952.852868.
+2025-03-13 15:59:22,862 - supervisor - INFO - Heartbeat sent at 1741877962.8599455.
+2025-03-13 15:59:27,782 - supervisor - ERROR - Command 7a3f50d9-4bea-413a-8f2d-05a1b989f1c9 invalid, dropping the command.
+2025-03-13 15:59:32,868 - supervisor - INFO - Heartbeat sent at 1741877972.8663545.
+2025-03-13 15:59:42,873 - supervisor - INFO - Heartbeat sent at 1741877982.8714752.
+2025-03-13 15:59:52,878 - supervisor - INFO - Heartbeat sent at 1741877992.8766043.
+2025-03-13 16:00:02,882 - supervisor - INFO - Heartbeat sent at 1741878002.8804462.
+2025-03-13 16:00:12,885 - supervisor - INFO - Heartbeat sent at 1741878012.8838346.
+2025-03-13 16:00:22,889 - supervisor - INFO - Heartbeat sent at 1741878022.8876917.
+2025-03-13 16:00:32,892 - supervisor - INFO - Heartbeat sent at 1741878032.8909194.
+2025-03-13 16:00:36,557 - supervisor - INFO - Application registry initialized
+2025-03-13 16:00:36,562 - supervisor - INFO - Command processor initialized
+2025-03-13 16:00:39,734 - supervisor - INFO - Application registry initialized
+2025-03-13 16:00:39,738 - supervisor - INFO - Command processor initialized
+2025-03-13 16:00:40,964 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-03-13 16:00:40,965 - supervisor - INFO - Heartbeat service started.
+2025-03-13 16:00:40,966 - supervisor - INFO - Heartbeat sent at 1741878040.9652135.
+2025-03-13 16:00:50,972 - supervisor - INFO - Heartbeat sent at 1741878050.9714549.
+2025-03-13 16:00:55,785 - supervisor - ERROR - Command 7e5232a3-c6a8-41a4-a6b2-c125a81374ee invalid, dropping the command.
+2025-03-13 16:01:00,976 - supervisor - INFO - Heartbeat sent at 1741878060.9748266.
+2025-03-13 16:02:08,717 - supervisor - INFO - Application registry initialized
+2025-03-13 16:02:08,723 - supervisor - INFO - Command processor initialized
+2025-03-13 16:02:09,945 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-03-13 16:02:09,947 - supervisor - INFO - Heartbeat service started.
+2025-03-13 16:02:09,949 - supervisor - INFO - Heartbeat sent at 1741878129.946369.
+2025-03-13 16:02:12,001 - supervisor - ERROR - Command 2d03d69d-6f65-4b82-804d-b672b3417f89 invalid, dropping the command.
+2025-03-13 16:02:17,616 - supervisor - ERROR - Command 9da68647-b7df-40a5-9df2-808ca8e66d2d invalid, dropping the command.
+2025-03-13 16:02:19,957 - supervisor - INFO - Heartbeat sent at 1741878139.955607.
+2025-03-13 16:02:29,961 - supervisor - INFO - Heartbeat service stopped.
+2025-03-13 16:02:37,968 - supervisor - INFO - Application registry initialized
+2025-03-13 16:02:37,985 - supervisor - INFO - Command processor initialized
+2025-03-13 16:02:39,190 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-03-13 16:02:39,192 - supervisor - INFO - Heartbeat service started.
+2025-03-13 16:02:39,193 - supervisor - INFO - Heartbeat sent at 1741878159.192017.
+2025-03-13 16:02:49,199 - supervisor - INFO - Heartbeat sent at 1741878169.1983147.
+2025-03-13 16:02:59,204 - supervisor - INFO - Heartbeat sent at 1741878179.2020087.
+2025-03-13 16:03:09,209 - supervisor - INFO - Heartbeat sent at 1741878189.2064116.
+2025-03-13 16:03:19,212 - supervisor - INFO - Heartbeat sent at 1741878199.212055.
+2025-03-13 16:03:29,217 - supervisor - INFO - Heartbeat sent at 1741878209.2144291.
+2025-03-13 16:03:39,220 - supervisor - INFO - Heartbeat sent at 1741878219.2199621.
+2025-03-13 16:03:49,226 - supervisor - INFO - Heartbeat sent at 1741878229.2230043.
+2025-03-13 16:03:59,231 - supervisor - INFO - Heartbeat sent at 1741878239.2298868.
+2025-03-13 16:04:09,236 - supervisor - INFO - Heartbeat sent at 1741878249.2334428.
+2025-03-13 16:04:19,240 - supervisor - INFO - Heartbeat sent at 1741878259.2390003.
+2025-03-13 16:04:29,243 - supervisor - INFO - Heartbeat sent at 1741878269.2416205.
+2025-03-13 16:04:39,247 - supervisor - INFO - Heartbeat sent at 1741878279.2442677.
+2025-03-13 16:04:49,253 - supervisor - INFO - Heartbeat sent at 1741878289.2497966.
+2025-03-13 16:04:59,259 - supervisor - INFO - Heartbeat sent at 1741878299.2575274.
+2025-03-13 16:05:09,263 - supervisor - INFO - Heartbeat sent at 1741878309.2623787.
+2025-03-13 16:05:19,267 - supervisor - INFO - Heartbeat sent at 1741878319.2661016.
+2025-03-13 16:05:29,268 - supervisor - INFO - Heartbeat sent at 1741878329.2684846.
+2025-03-13 16:05:39,272 - supervisor - INFO - Heartbeat sent at 1741878339.2708101.
+2025-03-13 16:05:49,276 - supervisor - INFO - Heartbeat sent at 1741878349.2755892.
+2025-03-13 16:05:59,281 - supervisor - INFO - Heartbeat sent at 1741878359.2784543.
+2025-03-13 16:06:09,286 - supervisor - INFO - Heartbeat sent at 1741878369.2844453.
+2025-03-13 16:06:19,291 - supervisor - INFO - Heartbeat sent at 1741878379.289224.
+2025-03-13 16:06:28,917 - supervisor - INFO - Application registry initialized
+2025-03-13 16:06:28,923 - supervisor - INFO - Command processor initialized
+2025-03-13 16:06:30,142 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-03-13 16:06:30,143 - supervisor - INFO - Heartbeat service started.
+2025-03-13 16:06:30,144 - supervisor - INFO - Heartbeat sent at 1741878390.1434424.
+2025-03-13 16:06:40,156 - supervisor - INFO - Heartbeat sent at 1741878400.1550326.
+2025-03-13 16:06:50,160 - supervisor - INFO - Heartbeat sent at 1741878410.1582558.
+2025-03-13 16:07:00,163 - supervisor - INFO - Heartbeat sent at 1741878420.1622615.
+2025-03-13 16:07:10,167 - supervisor - INFO - Heartbeat sent at 1741878430.1656659.
+2025-03-13 16:07:20,170 - supervisor - INFO - Heartbeat sent at 1741878440.1690018.
+2025-03-13 16:07:30,172 - supervisor - INFO - Heartbeat sent at 1741878450.171977.
+2025-03-13 16:07:40,175 - supervisor - INFO - Heartbeat sent at 1741878460.174928.
+2025-03-13 16:07:50,179 - supervisor - INFO - Heartbeat sent at 1741878470.1778693.
+2025-03-13 16:08:00,182 - supervisor - INFO - Heartbeat sent at 1741878480.1806731.
+2025-03-13 16:08:10,186 - supervisor - INFO - Heartbeat sent at 1741878490.1846387.
+2025-03-13 16:08:20,188 - supervisor - INFO - Heartbeat sent at 1741878500.1874378.
+2025-03-13 16:08:30,192 - supervisor - INFO - Heartbeat sent at 1741878510.1902235.
+2025-03-13 16:08:40,196 - supervisor - INFO - Heartbeat sent at 1741878520.1946938.
+2025-03-13 16:08:50,202 - supervisor - INFO - Heartbeat sent at 1741878530.2003396.
+2025-03-13 16:09:00,207 - supervisor - INFO - Heartbeat sent at 1741878540.2049136.
+2025-03-13 16:09:10,211 - supervisor - INFO - Heartbeat sent at 1741878550.2089581.
+2025-03-13 16:09:20,214 - supervisor - INFO - Heartbeat sent at 1741878560.21268.
+2025-03-13 16:09:30,220 - supervisor - INFO - Heartbeat sent at 1741878570.218038.
+2025-03-13 16:09:40,222 - supervisor - INFO - Heartbeat sent at 1741878580.2212393.
+2025-03-13 16:09:50,224 - supervisor - INFO - Heartbeat sent at 1741878590.2235785.
+2025-03-13 16:10:00,228 - supervisor - INFO - Heartbeat sent at 1741878600.226593.
+2025-03-13 16:10:10,233 - supervisor - INFO - Heartbeat sent at 1741878610.2322705.
+2025-03-13 16:10:16,247 - supervisor - INFO - Application registry initialized
+2025-03-13 16:10:16,251 - supervisor - INFO - Command processor initialized
+2025-03-13 16:10:17,432 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-03-13 16:10:17,433 - supervisor - INFO - Heartbeat service started.
+2025-03-13 16:10:17,434 - supervisor - INFO - Heartbeat sent at 1741878617.4330122.
+2025-03-13 16:10:42,424 - supervisor - INFO - Application registry initialized
+2025-03-13 16:10:42,430 - supervisor - INFO - Command processor initialized
+2025-03-13 16:10:43,687 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-03-13 16:10:43,688 - supervisor - INFO - Heartbeat service started.
+2025-03-13 16:10:43,689 - supervisor - INFO - Heartbeat sent at 1741878643.688617.
+2025-03-13 16:10:50,572 - supervisor - INFO - Command 1cde4838-f878-4be9-8c11-7fc2f02dc0e7 is valid.
+2025-03-13 16:10:50,573 - supervisor - INFO - PUSH command received.
+2025-03-13 16:10:50,574 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-compose-example.git' into 'apps/flexia-compose-example'...
+2025-03-13 16:10:52,010 - supervisor - INFO - Application successfully registered
+2025-03-13 16:10:53,695 - supervisor - INFO - Heartbeat sent at 1741878653.6938167.
+2025-03-13 16:11:03,699 - supervisor - INFO - Heartbeat sent at 1741878663.6984177.
