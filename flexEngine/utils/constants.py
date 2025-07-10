@@ -48,6 +48,7 @@ class WORKFLOW_TYPE:
     UNKNOWN = "UNKNOWN"
     DOCKER = "docker"
     DOCKER_COMPOSE = "docker-compose"
+    DOCKER_CUSTOM_COMPOSE = "docker-custom-compose"
     CUSTOM = "custom"
     NONE = "none"
     APPLICATION_DESCRIPTOR = "application-descriptor"

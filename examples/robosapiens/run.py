@@ -12,11 +12,11 @@ from flexEngine.communication.composer import *
 from flexEngine.communication.matrix import *
 from flexEngine.utils.auxiliary import load_config
 
-#fetch configuration of xeon1
+#fetch configuration of lattepandaD3_2
 _config_xeon1 = load_config("agents/xeon1/configuration/config.yaml")
 _device_config_xeon1 = _config_xeon1.get("deviceCredentials", {})
 
-#fetch configuration of lattepandaD3
+#fetch configuration of lattepandaD3_1
 _config_lattepanda = load_config("agents/lattepandaD3/configuration/config.yaml")
 _device_config_lattepanda = _config_lattepanda.get("deviceCredentials", {})
 
@@ -40,7 +40,7 @@ command = compose_command(cmd_type, params, priority, expiry_seconds)
 command_data = json.dumps(command).encode('utf-8')
 
 
-# Send command to flexEngine running on xeon1
+# Send command to flexEngine running on lattepandaD3_2
 _commandKey = _device_config_xeon1.get("primaryHardwareID", "UNKNOWN")+"@"+_device_config_xeon1.get("projectID", "UNKNOWN")+"-"+_device_config_xeon1.get("key", "UNKNOWN")+COMMUNICATIONMATRIX.COMMAND
 redis_client = redis.StrictRedis(host=_flexCloud_config.get("redis_host", "localhost"), port=_flexCloud_config.get("redis_port", 6379), db=_flexCloud_config.get("redis_db", 15), decode_responses=False)
 redis_client.publish(_commandKey, command_data)

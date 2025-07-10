@@ -180,6 +180,16 @@ class applicationManager(object):
 
                         # TODO: 1. fetch the application descriptor
 
+                    elif _runConfig["workflow"] == WORKFLOW_TYPE.DOCKER_CUSTOM_COMPOSE:
+                        if self._logger is not None: self._logger.info("Docker-custom-compose run workflow for flexIA application {name:" + _app +"} started.")
+
+                        #TODO SAHAR: 1. generate docker compose file + put docker compose in root
+
+                        _launchSucceeded = self.docker_compose_run(appName=_app, tag=appDetails["tag"],
+                                                                   workspace=appDetails["workspace"],
+                                                                   additional_run_args=_runConfig["arguments"],
+                                                                   workflowlink=_workflow_link)
+
                     elif _runConfig["workflow"] == WORKFLOW_TYPE.CUSTOM:
                         if self._logger is not None: self._logger.info("Custom run workflow for flexIA application {name:" + _app +"} started.")
 
