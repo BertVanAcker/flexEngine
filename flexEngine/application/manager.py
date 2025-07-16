@@ -273,14 +273,20 @@ class applicationManager(object):
                                 _componentList = _components.split(';')
                                 for comp in _componentList:
                                     print("docker-compose-stop for: "+comp)
-                                    #TODO: shutdown all given components
-                                    # _stopSucceeded = self.docker_run(appName=_app,tag=appDetails["tag"],workspace=appDetails["workspace"],additional_run_args=_stopConfig["arguments"])
+                                    _stopSucceeded = self.docker_compose_stop_component(appName=_app,
+                                                                              workspace=appDetails["workspace"],
+                                                                              workflowlink=_workflow_link,
+                                                                              componentName = comp,
+                                                                              additional_stop_args=_stopConfig[
+                                                                                  "arguments"])
                             except:
                                 if self._logger is not None: self._logger.error("Failed to stop components {list:" + _components + "} flexIA application {name:" + _app + "} started.")
                         else:
                             try:
-                                # TODO: shutdown complete docker compose
-                                print("docker-compose-stop for full application: ")
+                                _stopSucceeded = self.docker_compose_stop(appName=_app,
+                                                                 workspace=appDetails["workspace"],
+                                                                 workflowlink=_workflow_link,
+                                                                 additional_stop_args=_stopConfig["arguments"])
                             except:
                                 if self._logger is not None: self._logger.error("Failed to stop flexIA application {name:" + _app + "} started.")
 
