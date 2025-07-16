@@ -440,14 +440,26 @@ class applicationManager(object):
             arguments = additional_run_args.strip('"')
             # Split the string by whitespace
             additional_run_args_processes = arguments.split()
-            run_command = ["docker", "compose", "up", "--build"] + additional_run_args_processes
+            run_command = ["docker", "compose", "up", "-d","--build"] + additional_run_args_processes
 
-            result = subprocess.run(
-                run_command,
-                cwd=workspace,
-                capture_output=True,
-                text=True,
-            )
+            #result = subprocess.run(
+            #    run_command,
+            #    cwd=workspace,
+            #    capture_output=True,
+            #    text=True,
+            #    stdin=subprocess.DEVNULL,
+            #)
+            try:
+                result = subprocess.run(
+                    run_command,
+                    cwd=workspace,
+                    capture_output=True,
+                    text=True,
+                    timeout=300,  # seconds
+                )
+            except subprocess.TimeoutExpired as e:
+                print(f"Command timed out after {e.timeout} seconds")
+
             if result.returncode != 0:
                 if self._logger is not None: self._logger.error("Failed to run docker compose application {name:" + appName + "}.")
                 if self._logger is not None: self._logger.error(result.stderr)

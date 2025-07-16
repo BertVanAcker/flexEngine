@@ -1431,3 +1431,347 @@ Error response from daemon: No such container: 6a735db7cc12661d5a6859a826846a06f
 2025-07-16 15:48:33,480 - supervisor - INFO - Heartbeat sent at 1752673713.480338.
 2025-07-16 15:48:43,483 - supervisor - INFO - Heartbeat sent at 1752673723.4828608.
 2025-07-16 15:48:53,488 - supervisor - INFO - Heartbeat sent at 1752673733.4865143.
+2025-07-16 16:00:09,776 - supervisor - INFO - Application registry initialized
+2025-07-16 16:00:09,780 - supervisor - INFO - Command processor initialized
+2025-07-16 16:00:10,991 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:00:10,992 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:00:10,992 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:00:10,993 - supervisor - INFO - Heartbeat sent at 1752674410.992913.
+2025-07-16 16:00:21,000 - supervisor - INFO - Heartbeat sent at 1752674420.9992113.
+2025-07-16 16:00:31,003 - supervisor - INFO - Heartbeat sent at 1752674431.0021634.
+2025-07-16 16:00:32,159 - supervisor - INFO - Command 5b74d40b-61c0-455f-916a-d2a351ffc0e0 is valid.
+2025-07-16 16:00:32,160 - supervisor - INFO - RUN command received.
+2025-07-16 16:00:32,165 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:00:32,166 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:00:32,167 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:00:32,167 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:00:32,168 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:00:41,005 - supervisor - INFO - Heartbeat sent at 1752674441.0054371.
+2025-07-16 16:00:51,008 - supervisor - INFO - Heartbeat sent at 1752674451.0076144.
+2025-07-16 16:02:05,116 - supervisor - INFO - Application registry initialized
+2025-07-16 16:02:05,120 - supervisor - INFO - Command processor initialized
+2025-07-16 16:02:06,356 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:02:06,357 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:02:06,357 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:02:06,358 - supervisor - INFO - Heartbeat sent at 1752674526.35771.
+2025-07-16 16:02:15,347 - supervisor - INFO - Command e206df29-7362-445e-8c4e-3ac5feeb88a3 is valid.
+2025-07-16 16:02:15,348 - supervisor - INFO - RUN command received.
+2025-07-16 16:02:15,352 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:02:15,353 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:02:15,354 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:02:15,354 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:02:15,355 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:02:16,363 - supervisor - INFO - Heartbeat sent at 1752674536.3631635.
+2025-07-16 16:02:26,365 - supervisor - INFO - Heartbeat sent at 1752674546.3656352.
+2025-07-16 16:02:36,367 - supervisor - INFO - Heartbeat sent at 1752674556.3674889.
+2025-07-16 16:02:46,370 - supervisor - INFO - Heartbeat sent at 1752674566.36951.
+2025-07-16 16:02:56,372 - supervisor - INFO - Heartbeat sent at 1752674576.3721607.
+2025-07-16 16:03:06,374 - supervisor - INFO - Heartbeat sent at 1752674586.3739681.
+2025-07-16 16:03:16,377 - supervisor - INFO - Heartbeat sent at 1752674596.3762348.
+2025-07-16 16:03:26,380 - supervisor - INFO - Heartbeat sent at 1752674606.3785431.
+2025-07-16 16:03:36,382 - supervisor - INFO - Heartbeat sent at 1752674616.3820758.
+2025-07-16 16:03:46,383 - supervisor - INFO - Heartbeat sent at 1752674626.3838515.
+2025-07-16 16:03:56,387 - supervisor - INFO - Heartbeat sent at 1752674636.3857214.
+2025-07-16 16:04:06,390 - supervisor - INFO - Heartbeat sent at 1752674646.390216.
+2025-07-16 16:04:16,393 - supervisor - INFO - Heartbeat sent at 1752674656.3924763.
+2025-07-16 16:04:26,398 - supervisor - INFO - Heartbeat sent at 1752674666.395704.
+2025-07-16 16:04:36,402 - supervisor - INFO - Heartbeat sent at 1752674676.4010973.
+2025-07-16 16:04:46,406 - supervisor - INFO - Heartbeat sent at 1752674686.404111.
+2025-07-16 16:04:56,410 - supervisor - INFO - Heartbeat sent at 1752674696.409579.
+2025-07-16 16:05:06,414 - supervisor - INFO - Heartbeat sent at 1752674706.4131656.
+2025-07-16 16:05:16,416 - supervisor - INFO - Heartbeat sent at 1752674716.4159086.
+2025-07-16 16:05:26,420 - supervisor - INFO - Heartbeat sent at 1752674726.418752.
+2025-07-16 16:05:36,422 - supervisor - INFO - Heartbeat sent at 1752674736.4216053.
+2025-07-16 16:05:50,412 - supervisor - INFO - Application registry initialized
+2025-07-16 16:05:50,417 - supervisor - INFO - Command processor initialized
+2025-07-16 16:05:51,629 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:05:51,630 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:05:51,631 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:05:51,632 - supervisor - INFO - Heartbeat sent at 1752674751.631538.
+2025-07-16 16:05:53,651 - supervisor - INFO - Command 9289ec5d-16ff-475e-8096-edbe8a86f8d8 is valid.
+2025-07-16 16:05:53,651 - supervisor - INFO - STOP command received.
+2025-07-16 16:05:53,656 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-07-16 16:05:53,657 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:05:53,658 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:05:53,659 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:05:53,659 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:05:55,855 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2025-07-16 16:06:01,638 - supervisor - INFO - Heartbeat sent at 1752674761.6375237.
+2025-07-16 16:06:11,640 - supervisor - INFO - Heartbeat sent at 1752674771.639834.
+2025-07-16 16:06:21,643 - supervisor - INFO - Heartbeat sent at 1752674781.6424966.
+2025-07-16 16:06:31,645 - supervisor - INFO - Heartbeat sent at 1752674791.6450686.
+2025-07-16 16:06:41,647 - supervisor - INFO - Heartbeat service stopped.
+2025-07-16 16:07:55,449 - supervisor - INFO - Application registry initialized
+2025-07-16 16:07:55,453 - supervisor - INFO - Command processor initialized
+2025-07-16 16:07:56,724 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:07:56,725 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:07:56,725 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:07:56,726 - supervisor - INFO - Heartbeat sent at 1752674876.7256653.
+2025-07-16 16:08:06,732 - supervisor - INFO - Heartbeat sent at 1752674886.7319844.
+2025-07-16 16:08:16,735 - supervisor - INFO - Heartbeat sent at 1752674896.7342625.
+2025-07-16 16:08:26,738 - supervisor - INFO - Heartbeat sent at 1752674906.7371247.
+2025-07-16 16:08:36,742 - supervisor - INFO - Heartbeat sent at 1752674916.7402654.
+2025-07-16 16:08:42,277 - supervisor - INFO - Command 2fc078b7-6b54-4100-8409-964569538589 is valid.
+2025-07-16 16:08:42,278 - supervisor - INFO - RUN command received.
+2025-07-16 16:08:42,282 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:08:42,283 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:08:42,284 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:08:42,284 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:08:42,285 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:08:46,744 - supervisor - INFO - Heartbeat sent at 1752674926.74394.
+2025-07-16 16:08:56,747 - supervisor - INFO - Heartbeat sent at 1752674936.7466006.
+2025-07-16 16:09:06,750 - supervisor - INFO - Heartbeat sent at 1752674946.7493558.
+2025-07-16 16:09:16,754 - supervisor - INFO - Heartbeat sent at 1752674956.752383.
+2025-07-16 16:09:26,757 - supervisor - INFO - Heartbeat sent at 1752674966.756797.
+2025-07-16 16:09:36,761 - supervisor - INFO - Heartbeat sent at 1752674976.7594168.
+2025-07-16 16:09:46,765 - supervisor - INFO - Heartbeat sent at 1752674986.7635875.
+2025-07-16 16:09:56,770 - supervisor - INFO - Heartbeat sent at 1752674996.768992.
+2025-07-16 16:10:06,773 - supervisor - INFO - Heartbeat sent at 1752675006.7715518.
+2025-07-16 16:10:16,776 - supervisor - INFO - Heartbeat sent at 1752675016.7760432.
+2025-07-16 16:10:26,779 - supervisor - INFO - Heartbeat sent at 1752675026.7778478.
+2025-07-16 16:10:36,783 - supervisor - INFO - Heartbeat sent at 1752675036.7816055.
+2025-07-16 16:10:46,786 - supervisor - INFO - Heartbeat sent at 1752675046.7852135.
+2025-07-16 16:11:05,094 - supervisor - INFO - Application registry initialized
+2025-07-16 16:11:05,099 - supervisor - INFO - Command processor initialized
+2025-07-16 16:11:06,338 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:11:06,339 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:11:06,340 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:11:06,342 - supervisor - INFO - Heartbeat sent at 1752675066.34035.
+2025-07-16 16:11:16,349 - supervisor - INFO - Heartbeat sent at 1752675076.3471715.
+2025-07-16 16:11:23,329 - supervisor - INFO - Command 96e292fc-6ddd-4740-8c06-e831d0417f2e is valid.
+2025-07-16 16:11:23,330 - supervisor - INFO - STOP command received.
+2025-07-16 16:11:23,335 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-07-16 16:11:23,335 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:11:23,336 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:11:23,337 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:11:23,338 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:11:23,981 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2025-07-16 16:11:26,351 - supervisor - INFO - Heartbeat sent at 1752675086.3506944.
+2025-07-16 16:11:36,354 - supervisor - INFO - Heartbeat sent at 1752675096.3528898.
+2025-07-16 16:11:43,947 - supervisor - INFO - Command 44a8edda-aee1-49a0-900a-813593f03206 is valid.
+2025-07-16 16:11:43,947 - supervisor - INFO - RUN command received.
+2025-07-16 16:11:43,952 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:11:43,952 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:11:43,953 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:11:43,954 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:11:43,954 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:11:46,356 - supervisor - INFO - Heartbeat sent at 1752675106.356153.
+2025-07-16 16:11:56,358 - supervisor - INFO - Heartbeat sent at 1752675116.358361.
+2025-07-16 16:12:06,361 - supervisor - INFO - Heartbeat sent at 1752675126.360388.
+2025-07-16 16:12:16,364 - supervisor - INFO - Heartbeat service stopped.
+2025-07-16 16:16:08,122 - supervisor - INFO - Application registry initialized
+2025-07-16 16:16:08,126 - supervisor - INFO - Command processor initialized
+2025-07-16 16:16:09,343 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:16:09,344 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:16:09,344 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:16:09,345 - supervisor - INFO - Heartbeat sent at 1752675369.3441634.
+2025-07-16 16:16:19,350 - supervisor - INFO - Heartbeat sent at 1752675379.34936.
+2025-07-16 16:16:22,545 - supervisor - INFO - Command c14c9858-555c-4c4e-a908-435e37b343d7 is valid.
+2025-07-16 16:16:22,546 - supervisor - INFO - RUN command received.
+2025-07-16 16:16:22,551 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:16:22,552 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:16:22,553 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:16:22,554 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:16:22,554 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:16:29,354 - supervisor - INFO - Heartbeat sent at 1752675389.3529453.
+2025-07-16 16:16:39,356 - supervisor - INFO - Heartbeat sent at 1752675399.3559995.
+2025-07-16 16:16:49,359 - supervisor - INFO - Heartbeat sent at 1752675409.3583543.
+2025-07-16 16:16:59,361 - supervisor - INFO - Heartbeat sent at 1752675419.3601768.
+2025-07-16 16:17:09,363 - supervisor - INFO - Heartbeat sent at 1752675429.3626122.
+2025-07-16 16:17:19,365 - supervisor - INFO - Heartbeat sent at 1752675439.3645363.
+2025-07-16 16:17:29,367 - supervisor - INFO - Heartbeat sent at 1752675449.366664.
+2025-07-16 16:17:39,370 - supervisor - INFO - Heartbeat sent at 1752675459.3703682.
+2025-07-16 16:17:49,373 - supervisor - INFO - Heartbeat sent at 1752675469.3724189.
+2025-07-16 16:18:12,834 - supervisor - INFO - Application registry initialized
+2025-07-16 16:18:12,838 - supervisor - INFO - Command processor initialized
+2025-07-16 16:18:14,063 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:18:14,064 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:18:14,064 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:18:14,065 - supervisor - INFO - Heartbeat sent at 1752675494.0648718.
+2025-07-16 16:18:24,071 - supervisor - INFO - Heartbeat sent at 1752675504.0700736.
+2025-07-16 16:18:25,809 - supervisor - INFO - Command 695cbc9d-1b45-41ff-af18-f8029f6e543e is valid.
+2025-07-16 16:18:25,810 - supervisor - INFO - RUN command received.
+2025-07-16 16:18:25,814 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:18:25,814 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:18:25,815 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:18:25,816 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:18:25,816 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:18:34,075 - supervisor - INFO - Heartbeat sent at 1752675514.073056.
+2025-07-16 16:18:44,077 - supervisor - INFO - Heartbeat sent at 1752675524.0763817.
+2025-07-16 16:18:54,080 - supervisor - INFO - Heartbeat sent at 1752675534.0794275.
+2025-07-16 16:19:04,084 - supervisor - INFO - Heartbeat sent at 1752675544.0819492.
+2025-07-16 16:19:14,089 - supervisor - INFO - Heartbeat sent at 1752675554.0877426.
+2025-07-16 16:19:24,093 - supervisor - INFO - Heartbeat sent at 1752675564.0921285.
+2025-07-16 16:19:37,876 - supervisor - INFO - Application registry initialized
+2025-07-16 16:19:37,880 - supervisor - INFO - Command processor initialized
+2025-07-16 16:19:39,086 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:19:39,086 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:19:39,087 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:19:39,088 - supervisor - INFO - Heartbeat sent at 1752675579.0874531.
+2025-07-16 16:19:49,093 - supervisor - INFO - Heartbeat sent at 1752675589.0922515.
+2025-07-16 16:19:49,878 - supervisor - INFO - Command ecd8231e-7067-44bf-90ef-15d4ae1555f6 is valid.
+2025-07-16 16:19:49,879 - supervisor - INFO - RUN command received.
+2025-07-16 16:19:49,883 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:19:49,883 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:19:49,884 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:19:49,885 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:19:49,885 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:19:59,097 - supervisor - INFO - Heartbeat sent at 1752675599.09531.
+2025-07-16 16:20:09,101 - supervisor - INFO - Heartbeat sent at 1752675609.1002192.
+2025-07-16 16:20:19,104 - supervisor - INFO - Heartbeat sent at 1752675619.1037047.
+2025-07-16 16:22:03,156 - supervisor - INFO - Application registry initialized
+2025-07-16 16:22:03,160 - supervisor - INFO - Command processor initialized
+2025-07-16 16:22:04,400 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:22:04,401 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:22:04,402 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:22:04,402 - supervisor - INFO - Heartbeat sent at 1752675724.4024067.
+2025-07-16 16:22:11,216 - supervisor - INFO - Command 43fb3c70-1291-4bfe-aaa1-564811a3a7f9 is valid.
+2025-07-16 16:22:11,217 - supervisor - INFO - RUN command received.
+2025-07-16 16:22:11,220 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:22:11,221 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:22:11,222 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:22:11,222 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:22:11,223 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:22:14,408 - supervisor - INFO - Heartbeat sent at 1752675734.4071808.
+2025-07-16 16:22:24,410 - supervisor - INFO - Heartbeat sent at 1752675744.410218.
+2025-07-16 16:22:34,413 - supervisor - INFO - Heartbeat sent at 1752675754.4124277.
+2025-07-16 16:22:44,416 - supervisor - INFO - Heartbeat sent at 1752675764.4157512.
+2025-07-16 16:22:54,420 - supervisor - INFO - Heartbeat sent at 1752675774.4185426.
+2025-07-16 16:23:04,423 - supervisor - INFO - Heartbeat sent at 1752675784.4224102.
+2025-07-16 16:23:14,426 - supervisor - INFO - Heartbeat sent at 1752675794.4257877.
+2025-07-16 16:23:24,430 - supervisor - INFO - Heartbeat sent at 1752675804.4291744.
+2025-07-16 16:23:34,434 - supervisor - INFO - Heartbeat sent at 1752675814.4324987.
+2025-07-16 16:23:44,438 - supervisor - INFO - Heartbeat sent at 1752675824.4366624.
+2025-07-16 16:23:54,440 - supervisor - INFO - Heartbeat sent at 1752675834.439702.
+2025-07-16 16:24:04,444 - supervisor - INFO - Heartbeat sent at 1752675844.4423854.
+2025-07-16 16:24:14,450 - supervisor - INFO - Heartbeat sent at 1752675854.4477909.
+2025-07-16 16:24:24,454 - supervisor - INFO - Heartbeat sent at 1752675864.452782.
+2025-07-16 16:24:34,459 - supervisor - INFO - Heartbeat sent at 1752675874.4571073.
+2025-07-16 16:24:44,463 - supervisor - INFO - Heartbeat sent at 1752675884.4616654.
+2025-07-16 16:24:54,468 - supervisor - INFO - Heartbeat sent at 1752675894.4670866.
+2025-07-16 16:25:04,474 - supervisor - INFO - Heartbeat sent at 1752675904.471807.
+2025-07-16 16:25:14,479 - supervisor - INFO - Heartbeat sent at 1752675914.4771142.
+2025-07-16 16:25:24,484 - supervisor - INFO - Heartbeat sent at 1752675924.4821622.
+2025-07-16 16:25:34,487 - supervisor - INFO - Heartbeat sent at 1752675934.4866529.
+2025-07-16 16:25:44,491 - supervisor - INFO - Heartbeat sent at 1752675944.4891448.
+2025-07-16 16:25:54,494 - supervisor - INFO - Heartbeat sent at 1752675954.4939826.
+2025-07-16 16:26:04,499 - supervisor - INFO - Heartbeat sent at 1752675964.4966173.
+2025-07-16 16:26:14,504 - supervisor - INFO - Heartbeat sent at 1752675974.5026066.
+2025-07-16 16:26:24,508 - supervisor - INFO - Heartbeat sent at 1752675984.5076683.
+2025-07-16 16:26:34,513 - supervisor - INFO - Heartbeat sent at 1752675994.5105429.
+2025-07-16 16:26:44,518 - supervisor - INFO - Heartbeat sent at 1752676004.5159326.
+2025-07-16 16:26:54,523 - supervisor - INFO - Heartbeat sent at 1752676014.5217178.
+2025-07-16 16:27:04,527 - supervisor - INFO - Heartbeat sent at 1752676024.5250094.
+2025-07-16 16:27:14,532 - supervisor - INFO - Heartbeat sent at 1752676034.530169.
+2025-07-16 16:27:24,533 - supervisor - INFO - Heartbeat sent at 1752676044.5334594.
+2025-07-16 16:27:34,536 - supervisor - INFO - Heartbeat sent at 1752676054.535513.
+2025-07-16 16:27:44,538 - supervisor - INFO - Heartbeat sent at 1752676064.5377326.
+2025-07-16 16:27:46,235 - supervisor - ERROR - Failed to process command.
+2025-07-16 16:27:54,541 - supervisor - INFO - Heartbeat sent at 1752676074.5401025.
+2025-07-16 16:28:04,385 - supervisor - INFO - Application registry initialized
+2025-07-16 16:28:04,388 - supervisor - INFO - Command processor initialized
+2025-07-16 16:28:05,594 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:28:05,594 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:28:05,595 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:28:05,595 - supervisor - INFO - Heartbeat sent at 1752676085.5950963.
+2025-07-16 16:28:09,593 - supervisor - INFO - Command 0ee52f7a-2ec3-438d-91b1-c327acbf006e is valid.
+2025-07-16 16:28:09,594 - supervisor - INFO - RUN command received.
+2025-07-16 16:28:09,598 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:28:09,599 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:28:09,600 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:28:09,601 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:28:09,602 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:28:15,601 - supervisor - INFO - Heartbeat sent at 1752676095.6002223.
+2025-07-16 16:28:25,605 - supervisor - INFO - Heartbeat sent at 1752676105.603051.
+2025-07-16 16:28:35,610 - supervisor - INFO - Heartbeat sent at 1752676115.6083086.
+2025-07-16 16:28:45,613 - supervisor - INFO - Heartbeat sent at 1752676125.6134644.
+2025-07-16 16:28:55,616 - supervisor - INFO - Heartbeat sent at 1752676135.615673.
+2025-07-16 16:29:04,406 - supervisor - INFO - Application registry initialized
+2025-07-16 16:29:04,410 - supervisor - INFO - Command processor initialized
+2025-07-16 16:29:05,623 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:29:05,624 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:29:05,625 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:29:05,625 - supervisor - INFO - Heartbeat sent at 1752676145.62535.
+2025-07-16 16:29:15,602 - supervisor - INFO - Command 7ac2c6c7-57f6-4e36-957b-d51a0f1edc1e is valid.
+2025-07-16 16:29:15,603 - supervisor - INFO - RUN command received.
+2025-07-16 16:29:15,607 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:29:15,607 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:29:15,608 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:29:15,609 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:29:15,610 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:29:15,631 - supervisor - INFO - Heartbeat sent at 1752676155.63072.
+2025-07-16 16:29:16,478 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-07-16 16:29:25,633 - supervisor - INFO - Heartbeat sent at 1752676165.6327648.
+2025-07-16 16:29:35,635 - supervisor - INFO - Heartbeat sent at 1752676175.635211.
+2025-07-16 16:29:45,639 - supervisor - INFO - Heartbeat sent at 1752676185.637676.
+2025-07-16 16:29:54,197 - supervisor - INFO - Command f344dee7-46af-4438-87ce-4b16276e28e3 is valid.
+2025-07-16 16:29:54,198 - supervisor - INFO - STOP command received.
+2025-07-16 16:29:54,203 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-07-16 16:29:54,203 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:29:54,204 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:29:54,205 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:29:54,206 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:29:55,641 - supervisor - INFO - Heartbeat sent at 1752676195.6410112.
+2025-07-16 16:30:04,793 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2025-07-16 16:30:05,645 - supervisor - INFO - Heartbeat sent at 1752676205.6436126.
+2025-07-16 16:30:15,647 - supervisor - INFO - Heartbeat sent at 1752676215.6470962.
+2025-07-16 16:30:36,842 - supervisor - INFO - Application registry initialized
+2025-07-16 16:30:36,846 - supervisor - INFO - Command processor initialized
+2025-07-16 16:30:38,064 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 16:30:38,065 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 16:30:38,066 - supervisor - INFO - Heartbeat service started.
+2025-07-16 16:30:38,067 - supervisor - INFO - Heartbeat sent at 1752676238.0662267.
+2025-07-16 16:30:47,830 - supervisor - INFO - Command 787d02bd-4a52-4447-b6eb-2b46209ee3ef is valid.
+2025-07-16 16:30:47,830 - supervisor - INFO - RUN command received.
+2025-07-16 16:30:47,836 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:30:47,836 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:30:47,837 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:30:47,838 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:30:47,839 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:30:48,072 - supervisor - INFO - Heartbeat sent at 1752676248.0715659.
+2025-07-16 16:30:49,465 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-07-16 16:30:58,074 - supervisor - INFO - Heartbeat sent at 1752676258.0733974.
+2025-07-16 16:31:01,708 - supervisor - INFO - Command ab4f42d6-ab9b-41fa-8085-7fdf506041b5 is valid.
+2025-07-16 16:31:01,709 - supervisor - INFO - STOP command received.
+2025-07-16 16:31:01,713 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-07-16 16:31:01,713 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:01,714 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:01,715 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:01,715 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:31:08,078 - supervisor - INFO - Heartbeat sent at 1752676268.077467.
+2025-07-16 16:31:12,837 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:17,937 - supervisor - INFO - Command baa0dbb1-82e9-4d85-b7dc-124792ac15cb is valid.
+2025-07-16 16:31:17,938 - supervisor - INFO - RUN command received.
+2025-07-16 16:31:17,942 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-07-16 16:31:17,943 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:17,944 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:17,944 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:17,945 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:31:18,080 - supervisor - INFO - Heartbeat sent at 1752676278.080014.
+2025-07-16 16:31:19,362 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:28,083 - supervisor - INFO - Heartbeat sent at 1752676288.0814574.
+2025-07-16 16:31:36,857 - supervisor - INFO - Command 5b1865d2-86ae-4812-9daf-edc7ec715fcd is valid.
+2025-07-16 16:31:36,858 - supervisor - INFO - STOP command received.
+2025-07-16 16:31:36,862 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-07-16 16:31:36,863 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:36,864 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:36,864 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:36,865 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:31:37,041 - supervisor - ERROR - Failed to stop component 'execute' of application {name:flexia-robosapiens-example}.
+2025-07-16 16:31:37,042 - supervisor - ERROR - time="2025-07-16T16:31:37+02:00" level=warning msg="D:\\01_UA\\01_Development\\flexIA\\flexEngine\\examples\\Demos\\M18_RoboSAPIENS\\agents\\lattepandaD3_1\\apps\\flexia-robosapiens-example\\Realization\\ManagingSystem\\Platform\\lattepandaD3_1\\compose.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+no such service: execute
+
+2025-07-16 16:31:38,087 - supervisor - INFO - Heartbeat sent at 1752676298.0856538.
+2025-07-16 16:31:48,089 - supervisor - INFO - Heartbeat sent at 1752676308.089003.
+2025-07-16 16:31:58,091 - supervisor - INFO - Heartbeat sent at 1752676318.0908637.
+2025-07-16 16:32:07,458 - supervisor - INFO - Command 723161f5-b9a7-4e2e-a62c-1ba191c5a9c0 is valid.
+2025-07-16 16:32:07,459 - supervisor - INFO - STOP command received.
+2025-07-16 16:32:07,463 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-07-16 16:32:07,463 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:32:07,465 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:32:07,465 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-07-16 16:32:07,466 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-07-16 16:32:08,094 - supervisor - INFO - Heartbeat sent at 1752676328.0931778.
+2025-07-16 16:32:18,096 - supervisor - INFO - Heartbeat sent at 1752676338.0964446.
+2025-07-16 16:32:19,039 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2025-07-16 16:32:28,099 - supervisor - INFO - Heartbeat sent at 1752676348.097985.
