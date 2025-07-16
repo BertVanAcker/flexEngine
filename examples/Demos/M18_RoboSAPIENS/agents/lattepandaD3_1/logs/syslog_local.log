@@ -769,3 +769,135 @@ Error response from daemon: No such container: 6a735db7cc12661d5a6859a826846a06f
 2025-07-10 19:48:50,549 - supervisor - INFO - Heartbeat sent at 1752169730.54878.
 2025-07-10 19:49:00,551 - supervisor - INFO - Heartbeat sent at 1752169740.5506086.
 2025-07-10 19:49:10,555 - supervisor - INFO - Heartbeat sent at 1752169750.5535247.
+2025-07-10 19:49:20,557 - supervisor - INFO - Heartbeat sent at 1752169760.556952.
+2025-07-10 19:49:30,560 - supervisor - INFO - Heartbeat sent at 1752169770.559389.
+2025-07-10 19:51:51,625 - supervisor - INFO - Application registry initialized
+2025-07-10 19:51:51,628 - supervisor - INFO - Command processor initialized
+2025-07-10 19:51:52,834 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-10 19:51:52,834 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-10 19:51:52,835 - supervisor - INFO - Heartbeat service started.
+2025-07-10 19:51:52,836 - supervisor - INFO - Heartbeat sent at 1752169912.835711.
+2025-07-10 19:52:02,843 - supervisor - INFO - Heartbeat sent at 1752169922.8413482.
+2025-07-10 19:52:12,845 - supervisor - INFO - Heartbeat sent at 1752169932.844383.
+2025-07-10 19:52:22,849 - supervisor - INFO - Heartbeat sent at 1752169942.8479755.
+2025-07-10 19:52:32,851 - supervisor - INFO - Heartbeat sent at 1752169952.8509195.
+2025-07-10 19:52:42,855 - supervisor - INFO - Heartbeat sent at 1752169962.8547983.
+2025-07-10 19:52:52,859 - supervisor - INFO - Heartbeat sent at 1752169972.8579764.
+2025-07-10 19:53:02,863 - supervisor - INFO - Heartbeat sent at 1752169982.8613818.
+2025-07-10 19:53:12,869 - supervisor - INFO - Heartbeat sent at 1752169992.8666549.
+2025-07-10 19:53:22,871 - supervisor - INFO - Heartbeat sent at 1752170002.8703284.
+2025-07-10 19:53:32,874 - supervisor - INFO - Heartbeat sent at 1752170012.8736868.
+2025-07-10 19:53:42,877 - supervisor - INFO - Heartbeat sent at 1752170022.8768666.
+2025-07-10 19:53:52,882 - supervisor - INFO - Heartbeat sent at 1752170032.880234.
+2025-07-10 19:54:02,886 - supervisor - INFO - Heartbeat sent at 1752170042.884418.
+2025-07-10 19:54:12,889 - supervisor - INFO - Heartbeat sent at 1752170052.8881536.
+2025-07-10 19:54:22,894 - supervisor - INFO - Heartbeat sent at 1752170062.8920388.
+2025-07-10 19:54:32,899 - supervisor - INFO - Heartbeat sent at 1752170072.8973706.
+2025-07-10 19:54:42,906 - supervisor - INFO - Heartbeat sent at 1752170082.9033802.
+2025-07-10 19:54:52,909 - supervisor - INFO - Heartbeat sent at 1752170092.9082608.
+2025-07-10 19:55:02,914 - supervisor - INFO - Heartbeat sent at 1752170102.9118607.
+2025-07-10 19:55:12,920 - supervisor - INFO - Heartbeat sent at 1752170112.9174802.
+2025-07-10 19:55:22,926 - supervisor - INFO - Heartbeat sent at 1752170122.9240737.
+2025-07-10 19:55:32,933 - supervisor - INFO - Heartbeat sent at 1752170132.9298542.
+2025-07-10 19:55:42,939 - supervisor - INFO - Heartbeat sent at 1752170142.9367926.
+2025-07-10 19:55:52,945 - supervisor - INFO - Heartbeat sent at 1752170152.9424834.
+2025-07-10 19:56:02,950 - supervisor - INFO - Heartbeat sent at 1752170162.9479897.
+2025-07-10 19:56:12,954 - supervisor - INFO - Heartbeat sent at 1752170172.9523122.
+2025-07-10 19:56:22,959 - supervisor - INFO - Heartbeat sent at 1752170182.9577148.
+2025-07-10 19:56:32,964 - supervisor - INFO - Heartbeat sent at 1752170192.9624896.
+2025-07-10 19:56:42,969 - supervisor - INFO - Heartbeat sent at 1752170202.966761.
+2025-07-10 19:56:52,973 - supervisor - INFO - Heartbeat sent at 1752170212.971817.
+2025-07-10 19:57:02,977 - supervisor - INFO - Heartbeat sent at 1752170222.9766512.
+2025-07-10 19:57:12,980 - supervisor - INFO - Heartbeat sent at 1752170232.9796753.
+2025-07-10 19:57:22,983 - supervisor - INFO - Heartbeat sent at 1752170242.9823167.
+2025-07-10 19:57:32,986 - supervisor - INFO - Heartbeat sent at 1752170252.9854877.
+2025-07-10 19:57:42,989 - supervisor - INFO - Heartbeat sent at 1752170262.9889395.
+2025-07-10 19:57:52,994 - supervisor - INFO - Heartbeat sent at 1752170272.9927206.
+2025-07-10 19:58:02,999 - supervisor - INFO - Heartbeat sent at 1752170282.997548.
+2025-07-10 19:58:13,004 - supervisor - INFO - Heartbeat sent at 1752170293.002755.
+2025-07-10 19:58:23,010 - supervisor - INFO - Heartbeat sent at 1752170303.0089765.
+2025-07-10 19:58:33,015 - supervisor - INFO - Heartbeat sent at 1752170313.0147965.
+2025-07-10 19:58:43,020 - supervisor - INFO - Heartbeat sent at 1752170323.0186849.
+2025-07-14 20:46:04,524 - supervisor - INFO - Application registry initialized
+2025-07-14 20:46:04,530 - supervisor - INFO - Command processor initialized
+2025-07-14 20:46:05,827 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-14 20:46:05,831 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-14 20:46:05,832 - supervisor - INFO - Heartbeat service started.
+2025-07-14 20:46:05,834 - supervisor - INFO - Heartbeat sent at 1752518765.8328795.
+2025-07-14 20:46:15,840 - supervisor - INFO - Heartbeat sent at 1752518775.8403523.
+2025-07-14 20:46:25,844 - supervisor - INFO - Heartbeat sent at 1752518785.843682.
+2025-07-14 20:46:35,847 - supervisor - INFO - Heartbeat sent at 1752518795.8464267.
+2025-07-14 20:46:45,850 - supervisor - INFO - Heartbeat sent at 1752518805.8492823.
+2025-07-14 20:46:55,854 - supervisor - INFO - Heartbeat sent at 1752518815.8534307.
+2025-07-14 20:47:05,857 - supervisor - INFO - Heartbeat sent at 1752518825.8564162.
+2025-07-14 20:47:15,859 - supervisor - INFO - Heartbeat sent at 1752518835.8593843.
+2025-07-14 20:47:25,863 - supervisor - INFO - Heartbeat sent at 1752518845.8624067.
+2025-07-14 20:47:35,865 - supervisor - INFO - Heartbeat sent at 1752518855.8648553.
+2025-07-14 20:47:45,868 - supervisor - INFO - Heartbeat sent at 1752518865.867681.
+2025-07-14 20:47:55,872 - supervisor - INFO - Heartbeat sent at 1752518875.8708353.
+2025-07-14 20:48:05,875 - supervisor - INFO - Heartbeat sent at 1752518885.8736835.
+2025-07-14 20:48:15,879 - supervisor - INFO - Heartbeat sent at 1752518895.8773856.
+2025-07-14 20:48:25,884 - supervisor - INFO - Heartbeat sent at 1752518905.881155.
+2025-07-14 20:48:35,888 - supervisor - INFO - Heartbeat sent at 1752518915.8878357.
+2025-07-14 20:48:45,892 - supervisor - INFO - Heartbeat sent at 1752518925.8913596.
+2025-07-14 20:48:55,896 - supervisor - INFO - Heartbeat sent at 1752518935.8953986.
+2025-07-14 20:49:05,899 - supervisor - INFO - Heartbeat sent at 1752518945.8984938.
+2025-07-14 20:49:15,902 - supervisor - INFO - Heartbeat sent at 1752518955.901736.
+2025-07-14 20:49:25,906 - supervisor - INFO - Heartbeat sent at 1752518965.9047463.
+2025-07-14 20:49:35,909 - supervisor - INFO - Heartbeat sent at 1752518975.908626.
+2025-07-14 20:49:45,914 - supervisor - INFO - Heartbeat sent at 1752518985.9121404.
+2025-07-14 20:49:55,916 - supervisor - INFO - Heartbeat sent at 1752518995.9162965.
+2025-07-14 20:50:05,920 - supervisor - INFO - Heartbeat sent at 1752519005.9194388.
+2025-07-14 20:50:15,924 - supervisor - INFO - Heartbeat sent at 1752519015.9231057.
+2025-07-14 20:50:25,927 - supervisor - INFO - Heartbeat sent at 1752519025.9273593.
+2025-07-14 20:50:35,932 - supervisor - INFO - Heartbeat sent at 1752519035.9310079.
+2025-07-14 20:50:45,935 - supervisor - INFO - Heartbeat sent at 1752519045.934554.
+2025-07-14 20:50:55,938 - supervisor - INFO - Heartbeat sent at 1752519055.9376802.
+2025-07-14 20:51:05,941 - supervisor - INFO - Heartbeat sent at 1752519065.9407449.
+2025-07-14 20:51:15,946 - supervisor - INFO - Heartbeat sent at 1752519075.9441056.
+2025-07-14 20:51:25,948 - supervisor - INFO - Heartbeat sent at 1752519085.9475167.
+2025-07-14 20:51:35,951 - supervisor - INFO - Heartbeat sent at 1752519095.9506898.
+2025-07-14 20:51:45,955 - supervisor - INFO - Heartbeat sent at 1752519105.9538443.
+2025-07-14 20:51:55,959 - supervisor - INFO - Heartbeat sent at 1752519115.9579308.
+2025-07-14 20:52:05,962 - supervisor - INFO - Heartbeat sent at 1752519125.9614542.
+2025-07-14 20:52:15,966 - supervisor - INFO - Heartbeat sent at 1752519135.9650025.
+2025-07-14 20:52:25,969 - supervisor - INFO - Heartbeat sent at 1752519145.9682534.
+2025-07-14 20:52:35,972 - supervisor - INFO - Heartbeat sent at 1752519155.9709454.
+2025-07-16 13:07:15,976 - supervisor - INFO - Application registry initialized
+2025-07-16 13:07:15,980 - supervisor - INFO - Command processor initialized
+2025-07-16 13:07:17,266 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 13:07:17,266 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 13:07:17,269 - supervisor - INFO - Heartbeat service started.
+2025-07-16 13:07:17,269 - supervisor - INFO - Heartbeat sent at 1752664037.2690752.
+2025-07-16 13:07:27,276 - supervisor - INFO - Heartbeat sent at 1752664047.275485.
+2025-07-16 13:07:37,279 - supervisor - INFO - Heartbeat sent at 1752664057.2783682.
+2025-07-16 13:07:47,283 - supervisor - INFO - Heartbeat sent at 1752664067.2816231.
+2025-07-16 13:07:57,286 - supervisor - INFO - Heartbeat sent at 1752664077.2851908.
+2025-07-16 13:08:07,288 - supervisor - INFO - Heartbeat sent at 1752664087.2873266.
+2025-07-16 13:08:17,290 - supervisor - INFO - Heartbeat sent at 1752664097.289331.
+2025-07-16 13:08:27,293 - supervisor - INFO - Heartbeat sent at 1752664107.2919858.
+2025-07-16 13:08:37,295 - supervisor - INFO - Heartbeat sent at 1752664117.2947874.
+2025-07-16 13:08:47,298 - supervisor - INFO - Heartbeat sent at 1752664127.2974925.
+2025-07-16 13:08:57,299 - supervisor - INFO - Heartbeat sent at 1752664137.299405.
+2025-07-16 13:09:07,302 - supervisor - INFO - Heartbeat sent at 1752664147.3013504.
+2025-07-16 13:09:17,304 - supervisor - INFO - Heartbeat sent at 1752664157.3038552.
+2025-07-16 13:09:27,306 - supervisor - INFO - Heartbeat sent at 1752664167.3061833.
+2025-07-16 13:09:37,309 - supervisor - INFO - Heartbeat sent at 1752664177.3085048.
+2025-07-16 13:09:47,311 - supervisor - INFO - Heartbeat sent at 1752664187.3115027.
+2025-07-16 13:09:57,315 - supervisor - INFO - Heartbeat sent at 1752664197.3137498.
+2025-07-16 13:10:07,319 - supervisor - INFO - Heartbeat sent at 1752664207.3184216.
+2025-07-16 13:10:17,322 - supervisor - INFO - Heartbeat sent at 1752664217.3220334.
+2025-07-16 13:10:27,325 - supervisor - INFO - Heartbeat sent at 1752664227.3247862.
+2025-07-16 13:10:37,328 - supervisor - INFO - Heartbeat sent at 1752664237.3271167.
+2025-07-16 13:10:47,332 - supervisor - INFO - Heartbeat sent at 1752664247.3316529.
+2025-07-16 13:10:57,336 - supervisor - INFO - Heartbeat sent at 1752664257.3349612.
+2025-07-16 13:11:07,339 - supervisor - INFO - Heartbeat sent at 1752664267.3379169.
+2025-07-16 13:11:17,342 - supervisor - INFO - Heartbeat sent at 1752664277.3415284.
+2025-07-16 13:11:27,936 - supervisor - INFO - Application registry initialized
+2025-07-16 13:11:27,940 - supervisor - INFO - Command processor initialized
+2025-07-16 13:11:29,134 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-07-16 13:11:29,134 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-07-16 13:11:29,135 - supervisor - INFO - Heartbeat service started.
+2025-07-16 13:11:29,136 - supervisor - INFO - Heartbeat sent at 1752664289.1357977.
+2025-07-16 13:11:39,143 - supervisor - INFO - Heartbeat sent at 1752664299.1415474.
+2025-07-16 13:11:49,145 - supervisor - INFO - Heartbeat sent at 1752664309.1453247.

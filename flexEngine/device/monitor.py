@@ -60,6 +60,7 @@ class monitor(object):
             self._flexCloudConnection = True
 
         #--- Initialize the device monitor ---
+        self._update_statics = True
         self.update()
 
 
@@ -150,10 +151,17 @@ class monitor(object):
         if self._verbose:
             self.prettyPrint()
         if self._flexCloudConnection:
-            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.IP_ADDRESS,self._ip_address)
-            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.MAC_ADDRESS,self._mac_address)
-            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.LOCATION,self._location)
-            #TODO: extend to push all info
+            # static properties, no need to continously update
+            if self._update_statics:
+                self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.IP_ADDRESS,self._ip_address)
+                self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.MAC_ADDRESS,self._mac_address)
+                self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.LOCATION,self._location)
+                self._update_statics = False
+
+            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.CPU_LOAD,self._cpuLoad)
+            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.CPU_TEMPERATURE,self._cpuTemperature)
+            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.MEMORY_USAGE,self._memoryUsage)
+            self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.STORAGE_USAGE,self._storageUsage)
 
     #----------------------------------------PRETTY PRINT---------------------------------------------------------
     def prettyPrint(self):

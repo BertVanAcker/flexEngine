@@ -55,7 +55,7 @@ _commandKey = _device_config_lattepandaD3_2.get("primaryHardwareID", "UNKNOWN")+
 redis_client = redis.StrictRedis(host=_flexCloud_config.get("redis_host", "localhost"), port=_flexCloud_config.get("redis_port", 6379), db=_flexCloud_config.get("redis_db", 15), decode_responses=False)
 redis_client.publish(_commandKey, command_data)
 
-# Send command to flexEngine running on Lattepanda
+# Send command to flexEngine running on Lattepanda_3
 _commandKey = _device_config_lattepandaD3_3.get("primaryHardwareID", "UNKNOWN")+"@"+_device_config_lattepandaD3_3.get("projectID", "UNKNOWN")+"-"+_device_config_lattepandaD3_3.get("key", "UNKNOWN")+COMMUNICATIONMATRIX.COMMAND
 redis_client = redis.StrictRedis(host=_flexCloud_config.get("redis_host", "localhost"), port=_flexCloud_config.get("redis_port", 6379), db=_flexCloud_config.get("redis_db", 15), decode_responses=False)
 redis_client.publish(_commandKey, command_data)
