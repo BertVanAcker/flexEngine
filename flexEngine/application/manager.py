@@ -208,6 +208,94 @@ class applicationManager(object):
                 # TODO:FETCH robosapiens.ini file and interpret
                 x = 1
 
+    def stopApplication(self, command):
+        """Stop an application or application component"""
+        _stopSucceeded = False
+        _commandParameters = command["params"]
+        _packageType = _commandParameters["packageType"]
+        _app = _commandParameters["app"]
+        _components = _commandParameters["components"]
+
+        #---------------------------FETCH REGISTERED APPLICATION---------------------
+        appDetails = self.get_app_details(appName=_app)
+        if not appDetails:
+            if self._logger is not None: self._logger.error("Application {name:" + _app +"}, not found in the registered applications.")
+
+        else:
+            if self._logger is not None: self._logger.info("Application {name:" + _app +"}, found in the registered applications, proceed with stop action.")
+            #----------------------------FLEXIA SPECIFIC PACKAGES-----------------------
+            if _packageType==PACKAGE_TYPE.FLEXIA:
+                if self._logger is not None: self._logger.info("Start stop workflow for running flexIA application {name:"+_app +"}.")
+
+                # Fetch flexIA.ini file and interpret
+                try:
+                    flexiaConfig = load_flexia_config(config_file=appDetails["workspace"]+"/flexIA.ini")
+                    if self._logger is not None: self._logger.info("flexIA.ini file loaded for flexIA application {name:" + _app  +"}.")
+                except Exception as e:
+                    if self._logger is not None: self._logger.error("Failed to load flexIA.ini file for flexIA application {name:" + _app  +"}.")
+                    flexiaConfig = {}
+
+                # Determine build config for current device
+                _PrimaryHarwareID = self._flexCloudConnector.primaryHardwareID
+                try:
+                    _stopConfig = flexiaConfig['run'][_PrimaryHarwareID]
+                    if self._logger is not None: self._logger.info("Run configuration for device {"+_PrimaryHarwareID+"} loaded for flexIA application {name:" + _app +"}.")
+                except Exception as e:
+                    if self._logger is not None: self._logger.error("Failed to load run configuration for device {"+_PrimaryHarwareID+"} for flexIA application {name:" + _app  +"}.")
+                    _stopConfig = {}
+
+                # Determine stop strategy
+                if not _stopConfig:
+                    if self._logger is not None: self._logger.error("No stop workflow for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app  +"}, canceling build.")
+                else:
+                    _workflow_link = _stopConfig["workflow_link"]
+                    if _stopConfig["workflow"] == WORKFLOW_TYPE.UNKNOWN:
+                        if self._logger is not None: self._logger.error("Stop workflow UNKNOWN for device {" + _PrimaryHarwareID + "} for flexIA application {name:" + _app +"}, canceling build.")
+
+                    elif _stopConfig["workflow"] == WORKFLOW_TYPE.DOCKER:
+                        if self._logger is not None: self._logger.info("Docker stop workflow for flexIA application {name:" + _app +"} started.")
+                        #TODO: trigger docker STOP in given workspace
+                        if _components != "-":
+                            try:
+                                _componentList = _components.split(';')
+                                for comp in _componentList:
+                                    print("docker-stop for: "+comp)
+                                    # TODO: shutdown all given components
+                                    #_stopSucceeded = self.docker_run(appName=_app,tag=appDetails["tag"],workspace=appDetails["workspace"],additional_run_args=_stopConfig["arguments"])
+                            except:
+                                if self._logger is not None: self._logger.error("Failed to stop components {list:" + _components +"} flexIA application {name:" + _app +"} started.")
+
+
+                    elif _stopConfig["workflow"] == WORKFLOW_TYPE.DOCKER_COMPOSE:
+                        if self._logger is not None: self._logger.info("Docker-compose stop workflow for flexIA application {name:" + _app +"} started.")
+                        if _components != "-":
+                            try:
+                                _componentList = _components.split(';')
+                                for comp in _componentList:
+                                    print("docker-compose-stop for: "+comp)
+                                    #TODO: shutdown all given components
+                                    # _stopSucceeded = self.docker_run(appName=_app,tag=appDetails["tag"],workspace=appDetails["workspace"],additional_run_args=_stopConfig["arguments"])
+                            except:
+                                if self._logger is not None: self._logger.error("Failed to stop components {list:" + _components + "} flexIA application {name:" + _app + "} started.")
+                        else:
+                            try:
+                                # TODO: shutdown complete docker compose
+                                print("docker-compose-stop for full application: ")
+                            except:
+                                if self._logger is not None: self._logger.error("Failed to stop flexIA application {name:" + _app + "} started.")
+
+
+                    elif _stopConfig["workflow"] == WORKFLOW_TYPE.CUSTOM:
+                        if self._logger is not None: self._logger.info("Custom stop workflow for flexIA application {name:" + _app +"} not implemented.")
+
+                    elif _stopConfig["workflow"] == WORKFLOW_TYPE.NONE:
+                        if self._logger is not None: self._logger.info("No stop workflow required for flexIA application {name:" + _app +"}.")
+
+                # UPDATE THE STATUS IF STOP IS SUCCESSFUL
+                if _stopSucceeded:
+                    self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + _app + COMMUNICATIONMATRIX.APPLICATION_STATUS,APPLICATION_STATUS.STOPPED)
+                    # TODO: do we also need to update supervisor registry locally?
+
 
     def get_app_details(self,appName =""):
         """Get application details"""
@@ -297,6 +385,38 @@ class applicationManager(object):
 
         return _success
 
+    def docker_stop_standalone(self, containerName="", additional_stop_args=""):
+        """Stop a standalone Docker container by name"""
+        _success = False
+
+        # 1. Validate container name
+        if not containerName:
+            if self._logger:
+                self._logger.error("No containerName provided for standalone Docker stop.")
+            return False
+
+        # 2. Build the stop command
+        args = additional_stop_args.strip('"')
+        extra = args.split() if args else []
+        stop_command = ["docker", "stop"] + extra + [containerName]
+
+        # 3. Execute
+        result = subprocess.run(
+            stop_command,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            if self._logger:
+                self._logger.error(f"Failed to stop standalone container {{name:{containerName}}}.")
+                self._logger.error(result.stderr)
+        else:
+            if self._logger:
+                self._logger.info(f"Successfully stopped standalone container {{name:{containerName}}}.")
+            _success = True
+
+        return _success
+
     def docker_compose_run(self,appName="",workspace="apps",workflowlink=None,tag="",additional_run_args=""):
         """Running a docker compose application"""
         _success = False
@@ -330,3 +450,95 @@ class applicationManager(object):
                 _success = True
 
         return _success
+
+    def docker_compose_stop(self, appName="", workspace="apps", workflowlink=None, additional_stop_args=""):
+        """Stopping a docker compose application"""
+        _success = False
+
+        # 1. Determine compose file path
+        if not workflowlink:
+            composefile_path = os.path.join(workspace, "compose.yaml")
+        else:
+            composefile_path = os.path.join(workspace, workflowlink)
+            workspace = os.path.dirname(composefile_path)
+
+        # 2. Check existence
+        if not os.path.exists(composefile_path):
+            if self._logger:
+                self._logger.error(f"Docker compose file for application {{name:{appName}}} not found at {composefile_path}.")
+            return False
+
+        # 3. Build the down command
+        args = additional_stop_args.strip('"')
+        additional_args = args.split() if args else []
+        stop_command = ["docker", "compose", "down"] + additional_args
+
+        # 4. Execute
+        result = subprocess.run(
+            stop_command,
+            cwd=workspace,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            if self._logger:
+                self._logger.error(f"Failed to stop docker compose application {{name:{appName}}}.")
+                self._logger.error(result.stderr)
+        else:
+            if self._logger:
+                self._logger.info(f"Successfully stopped docker compose application {{name:{appName}}}.")
+            _success = True
+
+        return _success
+
+    import os
+    import subprocess
+
+    def docker_compose_stop_component(self, appName="", workspace="apps", workflowlink=None, componentName="",additional_stop_args=""):
+        """Stopping one component of a docker compose application by service name"""
+        _success = False
+
+        # 1. Determine compose file path
+        if not workflowlink:
+            composefile_path = os.path.join(workspace, "compose.yaml")
+        else:
+            composefile_path = os.path.join(workspace, workflowlink)
+            workspace = os.path.dirname(composefile_path)
+
+        # 2. Validate inputs
+        if not componentName:
+            if self._logger:
+                self._logger.error(f"No componentName provided for application {{name:{appName}}}.")
+            return False
+
+        if not os.path.exists(composefile_path):
+            if self._logger:
+                self._logger.error(f"Docker compose file for application {{name:{appName}}} not found at {composefile_path}.")
+            return False
+
+        # 3. Build the stop command
+        args = additional_stop_args.strip('"')
+        extra = args.split() if args else []
+        stop_command = ["docker", "compose", "stop", componentName] + extra
+
+        # 4. Execute
+        result = subprocess.run(
+            stop_command,
+            cwd=workspace,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            if self._logger:
+                self._logger.error(f"Failed to stop component '{componentName}' of application {{name:{appName}}}.")
+                self._logger.error(result.stderr)
+        else:
+            if self._logger:
+                self._logger.info(
+                    f"Successfully stopped component '{componentName}' of application {{name:{appName}}}.")
+            _success = True
+
+        return _success
+
+
+

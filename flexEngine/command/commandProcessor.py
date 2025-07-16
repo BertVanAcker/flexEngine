@@ -83,6 +83,14 @@ class commandProcessor(object):
 
                     self._applicationManager.runApplication(command=command)
 
+                elif command["cmd"] == COMMAND_TYPE.STOP:
+                    if self._logger is not None: self._logger.info(COMMAND_TYPE.STOP + " command received.")
+                    if self._verbose: print(COMMAND_TYPE.STOP+" command received.")
+
+                    #TODO: implement stop function
+
+                    self._applicationManager.stopApplication(command=command)
+
         except Exception as e:
             if self._logger is not None: self._logger.error("Failed to process command.")
 
