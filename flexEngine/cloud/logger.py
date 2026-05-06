@@ -20,7 +20,7 @@ class remoteLogger(logging.Handler):
         """
         super().__init__(level)
         self.redis = redis_client
-        self.key = primaryHardwareID+"@"+projectID+"-"+key+COMMUNICATIONMATRIX.LOG
+        self.key = projectID + "-" + key + ":devices:" + primaryHardwareID+COMMUNICATIONMATRIX.LOG # projectname-key:devices:devicename:logs
 
     def emit(self, record):
         try:

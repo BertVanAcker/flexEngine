@@ -117,7 +117,7 @@ class monitor(object):
         try:
             for interface in psutil.net_if_addrs():
                 # Check if the interface has a valid MAC address
-                if psutil.net_if_addrs()[interface][1].address == self.ipAddress:
+                if psutil.net_if_addrs()[interface][0].address == self.ipAddress:
                     mac_address = psutil.net_if_addrs()[interface][0].address
                     break
         except AttributeError:
@@ -177,7 +177,7 @@ class monitor(object):
         print(f"Temperature: {self._cpuTemperature} °C" if self._cpuTemperature is not GENERIC_STATUS.UNKNOWN else "Temperature: Not available")
         if self._location is not GENERIC_STATUS.UNKNOWN:
             print("Location:")
-            print(f"  City: {self._location["city"]}")
+            print(f"  City: {self._location['city']}")
             print(f"  Region: {self._location['region']}")
             print(f"  Country: {self._location['country']}")
             print(f"  Coordinates: {self._location['coordinates']}")

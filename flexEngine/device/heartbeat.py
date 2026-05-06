@@ -24,7 +24,8 @@ class heartbeat:
         :param ttl: Time-to-live (in seconds) for the heartbeat key.
         """
         self.redis_client = redis_client
-        self.key = primaryHardwareID+"@"+projectID+"-"+key+COMMUNICATIONMATRIX.HEARTBEAT          #devicename@projectname-key:heartbeat
+        self.key = projectID + "-" + key + ":devices:" + primaryHardwareID + COMMUNICATIONMATRIX.HEARTBEAT  # projectname-key:devices:devicename:logs
+
         self.heartbeat_interval = heartbeat_interval
         self.ttl = ttl
         self._stop_event = threading.Event()
