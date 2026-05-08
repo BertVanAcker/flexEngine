@@ -28,5 +28,7 @@ class COMMUNICATIONMATRIX:
     APPLICATION_REMOTE = ":remote"
     APPLICATION_STATUS = ":status"
     APPLICATION_WORKSPACE = ":workspace"
+    #devices
+    DEVICES = ":devices:"
 
 

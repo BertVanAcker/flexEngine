@@ -27,7 +27,9 @@ def push_appliction(type="github",url = "https://github.com/BertVanAcker/flexia-
 
     # ------------- Send command to devices ------------- #NOTE: this push is orchatrated by flexCloud in real implementation
     for device in devices:
-        _commandKey = device.get("primaryHardwareID","UNKNOWN") + "@" + device.get("projectID","UNKNOWN") + "-" + device.get("key", "UNKNOWN") + COMMUNICATIONMATRIX.COMMAND        #TODO: this needs to be updated!
+          # devicename@projectname-key:cmd
+        #_commandKey = device.get("primaryHardwareID","UNKNOWN") + "@" + device.get("projectID","UNKNOWN") + "-" + device.get("key", "UNKNOWN") + COMMUNICATIONMATRIX.COMMAND        #TODO: this needs to be updated!
+        _commandKey = device.get("projectID","UNKNOWN") + "-" + device.get("key", "UNKNOWN") +COMMUNICATIONMATRIX.DEVICES+ device.get("primaryHardwareID", "UNKNOWN") +  COMMUNICATIONMATRIX.COMMAND
         redis_client = redis.StrictRedis(host=flexCloud_config.get("redis_host", "localhost"),port=flexCloud_config.get("redis_port", 6379),db=flexCloud_config.get("redis_db", 15), decode_responses=False)
         redis_client.publish(_commandKey, command_data)
 
@@ -47,7 +49,8 @@ def run_appliction(packageType="flexia",applicationName = "flexia-robosapiens-ex
 
     # ------------- Send command to devices ------------- #NOTE: this push is orchatrated by flexCloud in real implementation
     for device in devices:
-        _commandKey = device.get("primaryHardwareID","UNKNOWN") + "@" + device.get("projectID","UNKNOWN") + "-" + device.get("key", "UNKNOWN") + COMMUNICATIONMATRIX.COMMAND
+        #_commandKey = device.get("primaryHardwareID","UNKNOWN") + "@" + device.get("projectID","UNKNOWN") + "-" + device.get("key", "UNKNOWN") + COMMUNICATIONMATRIX.COMMAND
+        _commandKey = device.get("projectID", "UNKNOWN") + "-" + device.get("key","UNKNOWN") + COMMUNICATIONMATRIX.DEVICES + device.get("primaryHardwareID", "UNKNOWN") + COMMUNICATIONMATRIX.COMMAND
         redis_client = redis.StrictRedis(host=flexCloud_config.get("redis_host", "localhost"),port=flexCloud_config.get("redis_port", 6379),db=flexCloud_config.get("redis_db", 15), decode_responses=False)
         redis_client.publish(_commandKey, command_data)
 
@@ -67,6 +70,7 @@ def stop_appliction(packageType="flexia",applicationName = "flexia-robosapiens-e
 
     # ------------- Send command to devices ------------- #NOTE: this push is orchatrated by flexCloud in real implementation
     for device in devices:
-        _commandKey = device.get("primaryHardwareID","UNKNOWN") + "@" + device.get("projectID","UNKNOWN") + "-" + device.get("key", "UNKNOWN") + COMMUNICATIONMATRIX.COMMAND
+        #_commandKey = device.get("primaryHardwareID","UNKNOWN") + "@" + device.get("projectID","UNKNOWN") + "-" + device.get("key", "UNKNOWN") + COMMUNICATIONMATRIX.COMMAND
+        _commandKey = device.get("projectID", "UNKNOWN") + "-" + device.get("key","UNKNOWN") + COMMUNICATIONMATRIX.DEVICES + device.get("primaryHardwareID", "UNKNOWN") + COMMUNICATIONMATRIX.COMMAND
         redis_client = redis.StrictRedis(host=flexCloud_config.get("redis_host", "localhost"),port=flexCloud_config.get("redis_port", 6379),db=flexCloud_config.get("redis_db", 15), decode_responses=False)
         redis_client.publish(_commandKey, command_data)

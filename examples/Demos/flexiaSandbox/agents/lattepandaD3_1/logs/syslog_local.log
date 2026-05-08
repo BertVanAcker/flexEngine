@@ -1,0 +1,954 @@
+2025-11-27 10:31:50,470 - supervisor - INFO - Application registry initialized
+2025-11-27 10:31:50,474 - supervisor - INFO - Command processor initialized
+2025-11-27 10:31:51,816 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-11-27 10:31:51,817 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-11-27 10:31:51,818 - supervisor - INFO - Heartbeat service started.
+2025-11-27 10:31:51,819 - supervisor - INFO - Heartbeat sent at 1764235911.8182058.
+2025-11-27 10:32:01,824 - supervisor - INFO - Heartbeat sent at 1764235921.8236284.
+2025-11-27 10:32:11,827 - supervisor - INFO - Heartbeat sent at 1764235931.8263245.
+2025-11-27 10:32:21,832 - supervisor - INFO - Heartbeat sent at 1764235941.8299243.
+2025-11-27 10:39:14,063 - supervisor - INFO - Application registry initialized
+2025-11-27 10:39:14,068 - supervisor - INFO - Command processor initialized
+2025-11-27 10:39:15,401 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-11-27 10:39:15,401 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-11-27 10:39:15,402 - supervisor - INFO - Heartbeat service started.
+2025-11-27 10:39:15,403 - supervisor - INFO - Heartbeat sent at 1764236355.4021502.
+2025-11-27 10:39:25,408 - supervisor - INFO - Heartbeat sent at 1764236365.4076226.
+2025-11-27 10:39:35,413 - supervisor - INFO - Heartbeat sent at 1764236375.4101558.
+2025-11-27 10:39:45,420 - supervisor - INFO - Heartbeat sent at 1764236385.416491.
+2025-11-27 10:39:49,307 - supervisor - INFO - Command 19f3add6-456b-451c-a41c-237be13d652f is valid.
+2025-11-27 10:39:49,309 - supervisor - INFO - PUSH command received.
+2025-11-27 10:39:49,309 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2025-11-27 10:39:50,470 - supervisor - INFO - Application successfully registered
+2025-11-27 10:39:55,424 - supervisor - INFO - Heartbeat sent at 1764236395.4233658.
+2025-11-27 10:40:05,427 - supervisor - INFO - Heartbeat sent at 1764236405.4260786.
+2025-11-27 10:40:15,429 - supervisor - INFO - Heartbeat sent at 1764236415.4291465.
+2025-11-27 10:40:25,432 - supervisor - INFO - Heartbeat sent at 1764236425.4310348.
+2025-11-27 10:40:35,433 - supervisor - INFO - Heartbeat sent at 1764236435.433743.
+2025-11-27 10:40:45,437 - supervisor - INFO - Heartbeat sent at 1764236445.4356754.
+2025-11-27 10:40:55,441 - supervisor - INFO - Heartbeat sent at 1764236455.4404302.
+2025-11-27 10:41:05,444 - supervisor - INFO - Heartbeat sent at 1764236465.442981.
+2025-11-27 10:41:15,445 - supervisor - INFO - Heartbeat sent at 1764236475.4451919.
+2025-11-27 10:41:25,447 - supervisor - INFO - Heartbeat sent at 1764236485.4474502.
+2025-11-27 10:41:35,450 - supervisor - INFO - Heartbeat sent at 1764236495.4494507.
+2025-11-27 10:41:45,452 - supervisor - INFO - Heartbeat sent at 1764236505.4520786.
+2025-11-27 10:41:55,455 - supervisor - INFO - Heartbeat sent at 1764236515.4543252.
+2025-11-27 10:42:05,459 - supervisor - INFO - Heartbeat sent at 1764236525.4568212.
+2025-11-27 10:42:15,460 - supervisor - INFO - Heartbeat sent at 1764236535.460751.
+2025-11-27 10:42:25,464 - supervisor - INFO - Heartbeat sent at 1764236545.462791.
+2025-11-27 10:42:35,469 - supervisor - INFO - Heartbeat sent at 1764236555.4680636.
+2025-11-27 10:42:45,469 - supervisor - INFO - Heartbeat sent at 1764236565.4699097.
+2025-11-27 10:42:55,473 - supervisor - INFO - Heartbeat sent at 1764236575.4723835.
+2025-11-27 10:43:05,475 - supervisor - INFO - Heartbeat sent at 1764236585.4744654.
+2025-11-27 10:43:15,479 - supervisor - INFO - Heartbeat sent at 1764236595.4771667.
+2025-11-27 10:43:25,482 - supervisor - INFO - Heartbeat sent at 1764236605.4818225.
+2025-11-27 10:43:35,484 - supervisor - INFO - Heartbeat sent at 1764236615.4836826.
+2025-11-27 10:43:45,488 - supervisor - INFO - Heartbeat sent at 1764236625.4860404.
+2025-11-27 10:43:55,491 - supervisor - INFO - Heartbeat sent at 1764236635.489707.
+2025-11-27 10:44:05,496 - supervisor - INFO - Heartbeat sent at 1764236645.493152.
+2025-11-27 10:44:15,498 - supervisor - INFO - Heartbeat sent at 1764236655.4988863.
+2025-11-27 10:44:25,501 - supervisor - INFO - Heartbeat sent at 1764236665.5009346.
+2025-11-27 10:44:35,503 - supervisor - INFO - Heartbeat sent at 1764236675.5024643.
+2025-11-27 10:44:45,506 - supervisor - INFO - Heartbeat sent at 1764236685.5050805.
+2025-11-27 10:44:55,507 - supervisor - INFO - Heartbeat sent at 1764236695.5068774.
+2025-11-27 10:45:05,510 - supervisor - INFO - Heartbeat sent at 1764236705.509183.
+2025-11-27 10:45:15,512 - supervisor - INFO - Heartbeat sent at 1764236715.512267.
+2025-11-27 10:45:25,514 - supervisor - INFO - Heartbeat sent at 1764236725.513629.
+2025-11-27 10:45:35,518 - supervisor - INFO - Heartbeat sent at 1764236735.5160968.
+2025-11-27 10:45:45,520 - supervisor - INFO - Heartbeat sent at 1764236745.5196173.
+2025-11-27 10:45:55,523 - supervisor - INFO - Heartbeat sent at 1764236755.5217414.
+2025-11-27 10:46:05,524 - supervisor - INFO - Heartbeat sent at 1764236765.5237775.
+2025-11-27 10:46:15,527 - supervisor - INFO - Heartbeat sent at 1764236775.526395.
+2025-11-27 10:46:20,232 - supervisor - INFO - Command 2fc187f3-7129-48e1-9967-f85ffb72e2dd is valid.
+2025-11-27 10:46:20,232 - supervisor - INFO - RUN command received.
+2025-11-27 10:46:20,236 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 10:46:20,237 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 10:46:20,238 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 10:46:20,238 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 10:46:20,239 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 10:46:25,528 - supervisor - INFO - Heartbeat sent at 1764236785.5282922.
+2025-11-27 10:46:35,529 - supervisor - INFO - Heartbeat sent at 1764236795.529784.
+2025-11-27 10:46:45,533 - supervisor - INFO - Heartbeat sent at 1764236805.5320108.
+2025-11-27 10:46:55,536 - supervisor - INFO - Heartbeat sent at 1764236815.5353777.
+2025-11-27 10:47:05,537 - supervisor - INFO - Heartbeat sent at 1764236825.537106.
+2025-11-27 10:47:15,538 - supervisor - INFO - Heartbeat sent at 1764236835.5384429.
+2025-11-27 10:47:16,568 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 10:47:25,540 - supervisor - INFO - Heartbeat sent at 1764236845.539958.
+2025-11-27 10:47:35,542 - supervisor - INFO - Heartbeat sent at 1764236855.5414667.
+2025-11-27 10:47:45,544 - supervisor - INFO - Heartbeat sent at 1764236865.5442827.
+2025-11-27 10:47:55,546 - supervisor - INFO - Heartbeat sent at 1764236875.5462372.
+2025-11-27 10:48:05,547 - supervisor - INFO - Heartbeat sent at 1764236885.5477242.
+2025-11-27 10:48:15,551 - supervisor - INFO - Heartbeat sent at 1764236895.5494447.
+2025-11-27 10:48:25,552 - supervisor - INFO - Heartbeat sent at 1764236905.5521762.
+2025-11-27 10:48:35,554 - supervisor - INFO - Heartbeat sent at 1764236915.5539403.
+2025-11-27 10:48:45,556 - supervisor - INFO - Heartbeat sent at 1764236925.5561826.
+2025-11-27 10:48:55,559 - supervisor - INFO - Heartbeat sent at 1764236935.5579734.
+2025-11-27 10:49:05,563 - supervisor - INFO - Heartbeat sent at 1764236945.5619318.
+2025-11-27 10:49:15,564 - supervisor - INFO - Heartbeat sent at 1764236955.5642653.
+2025-11-27 10:49:25,566 - supervisor - INFO - Heartbeat sent at 1764236965.565933.
+2025-11-27 10:49:35,568 - supervisor - INFO - Heartbeat sent at 1764236975.5678341.
+2025-11-27 10:59:35,429 - supervisor - INFO - Application registry initialized
+2025-11-27 10:59:35,435 - supervisor - INFO - Command processor initialized
+2025-11-27 10:59:36,866 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-11-27 10:59:36,866 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-11-27 10:59:36,867 - supervisor - INFO - Heartbeat service started.
+2025-11-27 10:59:36,868 - supervisor - INFO - Heartbeat sent at 1764237576.867916.
+2025-11-27 10:59:46,873 - supervisor - INFO - Heartbeat sent at 1764237586.8729825.
+2025-11-27 10:59:54,698 - supervisor - INFO - Command de927def-aef9-4494-b0a6-0d2f69589b3d is valid.
+2025-11-27 10:59:54,698 - supervisor - INFO - PUSH command received.
+2025-11-27 10:59:54,699 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2025-11-27 10:59:55,700 - supervisor - INFO - Application successfully registered
+2025-11-27 10:59:56,874 - supervisor - INFO - Heartbeat sent at 1764237596.8748531.
+2025-11-27 11:00:06,879 - supervisor - INFO - Heartbeat sent at 1764237606.8767624.
+2025-11-27 11:00:09,988 - supervisor - INFO - Command 65644a7c-a6cc-4a9b-84ba-a30364e04db8 is valid.
+2025-11-27 11:00:09,988 - supervisor - INFO - RUN command received.
+2025-11-27 11:00:09,992 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 11:00:09,993 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:00:09,995 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:00:09,995 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:00:09,996 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:00:16,883 - supervisor - INFO - Heartbeat sent at 1764237616.8825784.
+2025-11-27 11:00:26,884 - supervisor - INFO - Heartbeat sent at 1764237626.8844068.
+2025-11-27 11:00:36,886 - supervisor - INFO - Heartbeat sent at 1764237636.8860323.
+2025-11-27 11:00:38,454 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:00:46,887 - supervisor - INFO - Heartbeat sent at 1764237646.8875585.
+2025-11-27 11:00:56,890 - supervisor - INFO - Heartbeat sent at 1764237656.8893898.
+2025-11-27 11:01:06,892 - supervisor - INFO - Heartbeat sent at 1764237666.8917587.
+2025-11-27 11:01:16,894 - supervisor - INFO - Heartbeat sent at 1764237676.893647.
+2025-11-27 11:01:26,896 - supervisor - INFO - Heartbeat sent at 1764237686.895165.
+2025-11-27 11:01:36,898 - supervisor - INFO - Heartbeat sent at 1764237696.89779.
+2025-11-27 11:01:46,899 - supervisor - INFO - Heartbeat sent at 1764237706.8993397.
+2025-11-27 11:01:56,902 - supervisor - INFO - Heartbeat sent at 1764237716.9012058.
+2025-11-27 11:02:06,904 - supervisor - INFO - Heartbeat sent at 1764237726.9030688.
+2025-11-27 11:02:16,906 - supervisor - INFO - Heartbeat sent at 1764237736.905664.
+2025-11-27 11:02:26,907 - supervisor - INFO - Heartbeat sent at 1764237746.9074252.
+2025-11-27 11:02:36,909 - supervisor - INFO - Heartbeat sent at 1764237756.908582.
+2025-11-27 11:02:46,911 - supervisor - INFO - Heartbeat sent at 1764237766.910132.
+2025-11-27 11:02:56,914 - supervisor - INFO - Heartbeat sent at 1764237776.9129372.
+2025-11-27 11:03:06,916 - supervisor - INFO - Heartbeat sent at 1764237786.916088.
+2025-11-27 11:03:16,918 - supervisor - INFO - Heartbeat sent at 1764237796.9176404.
+2025-11-27 11:03:26,921 - supervisor - INFO - Heartbeat sent at 1764237806.919871.
+2025-11-27 11:03:31,735 - supervisor - INFO - Command 631dbb34-9e09-4d1b-a30a-57236f2f63ac is valid.
+2025-11-27 11:03:31,735 - supervisor - INFO - RUN command received.
+2025-11-27 11:03:31,739 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 11:03:31,740 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:03:31,742 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:03:31,743 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:03:31,743 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:03:34,353 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:03:36,925 - supervisor - INFO - Heartbeat sent at 1764237816.9245389.
+2025-11-27 11:03:46,926 - supervisor - INFO - Heartbeat sent at 1764237826.9268997.
+2025-11-27 11:03:56,931 - supervisor - INFO - Heartbeat sent at 1764237836.929239.
+2025-11-27 11:04:06,934 - supervisor - INFO - Heartbeat sent at 1764237846.9332697.
+2025-11-27 11:04:16,937 - supervisor - INFO - Heartbeat sent at 1764237856.935335.
+2025-11-27 11:04:26,941 - supervisor - INFO - Heartbeat sent at 1764237866.9400542.
+2025-11-27 11:04:36,942 - supervisor - INFO - Heartbeat sent at 1764237876.9421976.
+2025-11-27 11:04:46,945 - supervisor - INFO - Heartbeat sent at 1764237886.9442198.
+2025-11-27 11:04:56,948 - supervisor - INFO - Heartbeat sent at 1764237896.9476044.
+2025-11-27 11:05:06,951 - supervisor - INFO - Heartbeat sent at 1764237906.9509308.
+2025-11-27 11:05:16,954 - supervisor - INFO - Heartbeat sent at 1764237916.953214.
+2025-11-27 11:05:24,575 - supervisor - INFO - Command 3895f0d3-d694-4d0a-bdd7-7b9a0c85e984 is valid.
+2025-11-27 11:05:24,576 - supervisor - INFO - RUN command received.
+2025-11-27 11:05:24,579 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 11:05:24,580 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:05:24,581 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:05:24,581 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:05:24,582 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:05:26,957 - supervisor - INFO - Heartbeat sent at 1764237926.9560523.
+2025-11-27 11:05:36,957 - supervisor - INFO - Heartbeat sent at 1764237936.957958.
+2025-11-27 11:05:45,856 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:05:46,960 - supervisor - INFO - Heartbeat sent at 1764237946.959681.
+2025-11-27 11:05:56,962 - supervisor - INFO - Heartbeat sent at 1764237956.961537.
+2025-11-27 11:06:06,964 - supervisor - INFO - Heartbeat sent at 1764237966.9639118.
+2025-11-27 11:06:16,966 - supervisor - INFO - Heartbeat sent at 1764237976.965382.
+2025-11-27 11:06:26,968 - supervisor - INFO - Heartbeat sent at 1764237986.967493.
+2025-11-27 11:06:36,970 - supervisor - INFO - Heartbeat sent at 1764237996.9690733.
+2025-11-27 11:06:46,972 - supervisor - INFO - Heartbeat sent at 1764238006.9719396.
+2025-11-27 11:06:56,974 - supervisor - INFO - Heartbeat sent at 1764238016.9746015.
+2025-11-27 11:07:03,523 - supervisor - INFO - Command e25609a4-8c08-4094-afe8-6f99e584421c is valid.
+2025-11-27 11:07:03,524 - supervisor - INFO - RUN command received.
+2025-11-27 11:07:03,527 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 11:07:03,528 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:07:03,530 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:07:03,530 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:07:03,531 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:07:05,274 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:07:06,978 - supervisor - INFO - Heartbeat sent at 1764238026.9767222.
+2025-11-27 11:07:16,980 - supervisor - INFO - Heartbeat sent at 1764238036.9796615.
+2025-11-27 11:07:26,983 - supervisor - INFO - Heartbeat sent at 1764238046.9826794.
+2025-11-27 11:07:36,985 - supervisor - INFO - Heartbeat sent at 1764238056.9852533.
+2025-11-27 11:07:46,988 - supervisor - INFO - Heartbeat sent at 1764238066.98751.
+2025-11-27 11:07:56,989 - supervisor - INFO - Heartbeat sent at 1764238076.9898598.
+2025-11-27 11:08:06,993 - supervisor - INFO - Heartbeat sent at 1764238086.9915626.
+2025-11-27 11:08:16,995 - supervisor - INFO - Heartbeat sent at 1764238096.9944305.
+2025-11-27 11:08:22,913 - supervisor - INFO - Command 6bf70385-622c-474e-8ef2-a76847418f22 is valid.
+2025-11-27 11:08:22,914 - supervisor - INFO - RUN command received.
+2025-11-27 11:08:22,918 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 11:08:22,918 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:08:22,919 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:08:22,920 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:08:22,920 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:08:26,996 - supervisor - INFO - Heartbeat sent at 1764238106.9964755.
+2025-11-27 11:08:36,999 - supervisor - INFO - Heartbeat sent at 1764238116.9983692.
+2025-11-27 11:08:41,943 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:08:47,002 - supervisor - INFO - Heartbeat sent at 1764238127.0010672.
+2025-11-27 11:08:57,003 - supervisor - INFO - Heartbeat sent at 1764238137.0033734.
+2025-11-27 11:09:07,006 - supervisor - INFO - Heartbeat sent at 1764238147.0051413.
+2025-11-27 11:09:17,008 - supervisor - INFO - Heartbeat sent at 1764238157.007487.
+2025-11-27 11:09:27,009 - supervisor - INFO - Heartbeat sent at 1764238167.009095.
+2025-11-27 11:09:37,010 - supervisor - INFO - Heartbeat sent at 1764238177.010485.
+2025-11-27 11:09:47,014 - supervisor - INFO - Heartbeat sent at 1764238187.0126662.
+2025-11-27 11:09:57,017 - supervisor - INFO - Heartbeat sent at 1764238197.0163946.
+2025-11-27 11:10:07,019 - supervisor - INFO - Heartbeat sent at 1764238207.0182428.
+2025-11-27 11:10:17,022 - supervisor - INFO - Heartbeat sent at 1764238217.0214014.
+2025-11-27 11:10:27,024 - supervisor - INFO - Heartbeat sent at 1764238227.0238197.
+2025-11-27 11:10:37,026 - supervisor - INFO - Heartbeat sent at 1764238237.0265644.
+2025-11-27 11:10:47,028 - supervisor - INFO - Heartbeat sent at 1764238247.0283093.
+2025-11-27 11:10:57,031 - supervisor - INFO - Heartbeat sent at 1764238257.0300891.
+2025-11-27 11:11:07,032 - supervisor - INFO - Heartbeat sent at 1764238267.032139.
+2025-11-27 11:11:17,035 - supervisor - INFO - Heartbeat sent at 1764238277.0346003.
+2025-11-27 11:11:27,037 - supervisor - INFO - Heartbeat sent at 1764238287.0366323.
+2025-11-27 11:11:37,039 - supervisor - INFO - Heartbeat sent at 1764238297.0385065.
+2025-11-27 11:11:47,040 - supervisor - INFO - Heartbeat sent at 1764238307.0403945.
+2025-11-27 11:13:16,523 - supervisor - INFO - Application registry initialized
+2025-11-27 11:13:16,527 - supervisor - INFO - Command processor initialized
+2025-11-27 11:13:17,828 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2025-11-27 11:13:17,829 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2025-11-27 11:13:17,830 - supervisor - INFO - Heartbeat service started.
+2025-11-27 11:13:17,830 - supervisor - INFO - Heartbeat sent at 1764238397.8290784.
+2025-11-27 11:13:27,836 - supervisor - INFO - Heartbeat sent at 1764238407.8347068.
+2025-11-27 11:13:35,355 - supervisor - INFO - Command 07c858e7-914d-4835-a7b8-8a0feafe3c2d is valid.
+2025-11-27 11:13:35,356 - supervisor - INFO - PUSH command received.
+2025-11-27 11:13:35,357 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2025-11-27 11:13:36,378 - supervisor - INFO - Application successfully registered
+2025-11-27 11:13:37,838 - supervisor - INFO - Heartbeat sent at 1764238417.838012.
+2025-11-27 11:13:47,841 - supervisor - INFO - Heartbeat sent at 1764238427.8401828.
+2025-11-27 11:13:48,390 - supervisor - INFO - Command 1b190fd9-4ad2-47f8-9260-74c2a7f3cc0b is valid.
+2025-11-27 11:13:48,391 - supervisor - INFO - RUN command received.
+2025-11-27 11:13:48,395 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 11:13:48,396 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:13:48,397 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:13:48,398 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:13:48,398 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:13:51,247 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:13:57,844 - supervisor - INFO - Heartbeat sent at 1764238437.8434818.
+2025-11-27 11:14:07,846 - supervisor - INFO - Heartbeat sent at 1764238447.8456795.
+2025-11-27 11:14:17,849 - supervisor - INFO - Heartbeat sent at 1764238457.8481512.
+2025-11-27 11:14:27,851 - supervisor - INFO - Heartbeat sent at 1764238467.8507087.
+2025-11-27 11:14:37,853 - supervisor - INFO - Heartbeat sent at 1764238477.8530061.
+2025-11-27 11:14:47,856 - supervisor - INFO - Heartbeat sent at 1764238487.8553965.
+2025-11-27 11:14:57,858 - supervisor - INFO - Heartbeat sent at 1764238497.8579817.
+2025-11-27 11:15:07,859 - supervisor - INFO - Heartbeat sent at 1764238507.8594346.
+2025-11-27 11:15:17,861 - supervisor - INFO - Heartbeat sent at 1764238517.8614597.
+2025-11-27 11:15:27,863 - supervisor - INFO - Heartbeat sent at 1764238527.8631809.
+2025-11-27 11:15:37,866 - supervisor - INFO - Heartbeat sent at 1764238537.8654876.
+2025-11-27 11:15:47,867 - supervisor - INFO - Heartbeat sent at 1764238547.867349.
+2025-11-27 11:15:57,870 - supervisor - INFO - Heartbeat sent at 1764238557.869271.
+2025-11-27 11:16:07,872 - supervisor - INFO - Heartbeat sent at 1764238567.8711376.
+2025-11-27 11:16:17,873 - supervisor - INFO - Heartbeat sent at 1764238577.873235.
+2025-11-27 11:16:27,876 - supervisor - INFO - Heartbeat sent at 1764238587.8756516.
+2025-11-27 11:16:37,878 - supervisor - INFO - Heartbeat sent at 1764238597.8780541.
+2025-11-27 11:16:47,880 - supervisor - INFO - Heartbeat sent at 1764238607.8797333.
+2025-11-27 11:16:57,881 - supervisor - INFO - Heartbeat sent at 1764238617.881894.
+2025-11-27 11:17:07,884 - supervisor - INFO - Heartbeat sent at 1764238627.8836904.
+2025-11-27 11:17:17,886 - supervisor - INFO - Heartbeat sent at 1764238637.8859496.
+2025-11-27 11:17:27,889 - supervisor - INFO - Heartbeat sent at 1764238647.8881762.
+2025-11-27 11:17:37,890 - supervisor - INFO - Heartbeat sent at 1764238657.8899815.
+2025-11-27 11:17:47,893 - supervisor - INFO - Heartbeat sent at 1764238667.8917832.
+2025-11-27 11:17:57,895 - supervisor - INFO - Heartbeat sent at 1764238677.8952186.
+2025-11-27 11:18:07,898 - supervisor - INFO - Heartbeat sent at 1764238687.8971891.
+2025-11-27 11:18:17,902 - supervisor - INFO - Heartbeat sent at 1764238697.9000287.
+2025-11-27 11:18:27,906 - supervisor - INFO - Heartbeat sent at 1764238707.9056346.
+2025-11-27 11:18:37,910 - supervisor - INFO - Heartbeat sent at 1764238717.9093184.
+2025-11-27 11:18:47,913 - supervisor - INFO - Heartbeat sent at 1764238727.912521.
+2025-11-27 11:18:50,459 - supervisor - INFO - Command d81eb2ab-006e-43f5-8339-973437c5fe7c is valid.
+2025-11-27 11:18:50,459 - supervisor - INFO - STOP command received.
+2025-11-27 11:18:50,460 - supervisor - ERROR - Failed to process command.
+2025-11-27 11:18:57,919 - supervisor - INFO - Heartbeat sent at 1764238737.9160903.
+2025-11-27 11:19:07,923 - supervisor - INFO - Heartbeat sent at 1764238747.9218209.
+2025-11-27 11:19:17,927 - supervisor - INFO - Heartbeat sent at 1764238757.9259238.
+2025-11-27 11:19:27,932 - supervisor - INFO - Heartbeat sent at 1764238767.9301043.
+2025-11-27 11:19:37,935 - supervisor - INFO - Heartbeat sent at 1764238777.9350283.
+2025-11-27 11:19:47,937 - supervisor - INFO - Heartbeat sent at 1764238787.9366732.
+2025-11-27 11:19:57,940 - supervisor - INFO - Heartbeat sent at 1764238797.9395394.
+2025-11-27 11:20:07,942 - supervisor - INFO - Heartbeat sent at 1764238807.9423904.
+2025-11-27 11:20:17,945 - supervisor - INFO - Heartbeat sent at 1764238817.9444554.
+2025-11-27 11:20:27,948 - supervisor - INFO - Heartbeat sent at 1764238827.9471786.
+2025-11-27 11:20:37,951 - supervisor - INFO - Heartbeat sent at 1764238837.950671.
+2025-11-27 11:20:47,955 - supervisor - INFO - Heartbeat sent at 1764238847.9532526.
+2025-11-27 11:20:57,958 - supervisor - INFO - Heartbeat sent at 1764238857.957147.
+2025-11-27 11:21:07,959 - supervisor - INFO - Heartbeat sent at 1764238867.9588563.
+2025-11-27 11:21:17,962 - supervisor - INFO - Heartbeat sent at 1764238877.9606733.
+2025-11-27 11:21:27,966 - supervisor - INFO - Heartbeat sent at 1764238887.9652858.
+2025-11-27 11:21:37,969 - supervisor - INFO - Heartbeat sent at 1764238897.968.
+2025-11-27 11:21:47,970 - supervisor - INFO - Heartbeat sent at 1764238907.970059.
+2025-11-27 11:21:57,972 - supervisor - INFO - Heartbeat sent at 1764238917.9715676.
+2025-11-27 11:22:07,976 - supervisor - INFO - Heartbeat sent at 1764238927.9750519.
+2025-11-27 11:22:11,797 - supervisor - INFO - Command a95822f7-ce89-4040-902a-d7752c2eac2e is valid.
+2025-11-27 11:22:11,797 - supervisor - INFO - STOP command received.
+2025-11-27 11:22:11,801 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-11-27 11:22:11,802 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:11,807 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:11,807 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:11,808 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:22:17,980 - supervisor - INFO - Heartbeat sent at 1764238937.9782138.
+2025-11-27 11:22:23,396 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:27,985 - supervisor - INFO - Heartbeat sent at 1764238947.9834085.
+2025-11-27 11:22:37,989 - supervisor - INFO - Heartbeat sent at 1764238957.9889045.
+2025-11-27 11:22:39,777 - supervisor - INFO - Command e3c08ce2-07a6-43bf-bf64-d541c80070f3 is valid.
+2025-11-27 11:22:39,778 - supervisor - INFO - RUN command received.
+2025-11-27 11:22:39,781 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 11:22:39,782 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:39,783 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:39,783 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:39,784 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:22:43,187 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:47,994 - supervisor - INFO - Heartbeat sent at 1764238967.9912684.
+2025-11-27 11:22:51,753 - supervisor - INFO - Command 35a1171d-201b-430f-8242-80da0c94aad9 is valid.
+2025-11-27 11:22:51,753 - supervisor - INFO - STOP command received.
+2025-11-27 11:22:51,757 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-11-27 11:22:51,757 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:51,758 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:51,759 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:22:51,759 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:22:57,999 - supervisor - INFO - Heartbeat sent at 1764238977.9968455.
+2025-11-27 11:23:03,122 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:23:08,004 - supervisor - INFO - Heartbeat sent at 1764238988.0025198.
+2025-11-27 11:23:16,348 - supervisor - INFO - Command 7a0ef150-1c3e-4126-89d9-7d69358b1c11 is valid.
+2025-11-27 11:23:16,348 - supervisor - INFO - RUN command received.
+2025-11-27 11:23:16,352 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 11:23:16,352 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:23:16,353 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:23:16,353 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:23:16,354 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:23:18,007 - supervisor - INFO - Heartbeat sent at 1764238998.006631.
+2025-11-27 11:23:18,714 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:23:28,010 - supervisor - INFO - Heartbeat sent at 1764239008.0084293.
+2025-11-27 11:23:38,014 - supervisor - INFO - Heartbeat sent at 1764239018.0130858.
+2025-11-27 11:23:42,987 - supervisor - INFO - Command 817e887c-04c1-4353-9ce9-b09a46ad4b57 is valid.
+2025-11-27 11:23:42,988 - supervisor - INFO - STOP command received.
+2025-11-27 11:23:42,991 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-11-27 11:23:42,992 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:23:42,993 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:23:42,993 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:23:42,994 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:23:48,017 - supervisor - INFO - Heartbeat sent at 1764239028.0160086.
+2025-11-27 11:23:53,988 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:23:58,020 - supervisor - INFO - Heartbeat sent at 1764239038.0198264.
+2025-11-27 11:24:08,024 - supervisor - INFO - Heartbeat sent at 1764239048.022697.
+2025-11-27 11:24:11,376 - supervisor - INFO - Command 396d17b6-e4fa-47ce-b29f-5eaa6d707b71 is valid.
+2025-11-27 11:24:11,376 - supervisor - INFO - RUN command received.
+2025-11-27 11:24:11,379 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2025-11-27 11:24:11,381 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:24:11,382 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:24:11,382 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:24:11,382 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:24:12,964 - supervisor - INFO - Successfully run docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:24:18,028 - supervisor - INFO - Heartbeat sent at 1764239058.0276084.
+2025-11-27 11:24:28,030 - supervisor - INFO - Heartbeat sent at 1764239068.0300288.
+2025-11-27 11:24:38,032 - supervisor - INFO - Heartbeat sent at 1764239078.0314221.
+2025-11-27 11:24:48,008 - supervisor - INFO - Command 9790885a-b556-447f-912b-5895e3007bc6 is valid.
+2025-11-27 11:24:48,009 - supervisor - INFO - STOP command received.
+2025-11-27 11:24:48,013 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2025-11-27 11:24:48,014 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:24:48,015 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:24:48,016 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2025-11-27 11:24:48,016 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2025-11-27 11:24:48,035 - supervisor - INFO - Heartbeat sent at 1764239088.034576.
+2025-11-27 11:24:58,036 - supervisor - INFO - Heartbeat sent at 1764239098.03621.
+2025-11-27 11:24:59,077 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2025-11-27 11:25:08,039 - supervisor - INFO - Heartbeat sent at 1764239108.0383952.
+2025-11-27 11:25:18,042 - supervisor - INFO - Heartbeat sent at 1764239118.0418036.
+2025-11-27 11:25:28,044 - supervisor - INFO - Heartbeat sent at 1764239128.0441718.
+2026-05-06 09:04:27,888 - supervisor - INFO - Application registry initialized
+2026-05-06 09:04:27,889 - supervisor - INFO - Command processor initialized
+2026-05-06 09:05:10,210 - supervisor - INFO - Application registry initialized
+2026-05-06 09:05:10,212 - supervisor - INFO - Command processor initialized
+2026-05-06 09:05:32,981 - supervisor - INFO - Application registry initialized
+2026-05-06 09:05:32,983 - supervisor - INFO - Command processor initialized
+2026-05-06 09:06:39,042 - supervisor - INFO - Application registry initialized
+2026-05-06 09:06:39,044 - supervisor - INFO - Command processor initialized
+2026-05-06 09:06:40,329 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-06 09:06:40,330 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-06 09:06:40,330 - supervisor - INFO - Heartbeat service started.
+2026-05-06 09:06:40,330 - supervisor - INFO - Heartbeat sent at 1778051200.330614.
+2026-05-06 09:06:50,338 - supervisor - INFO - Heartbeat sent at 1778051210.3365362.
+2026-05-06 09:07:00,346 - supervisor - INFO - Heartbeat sent at 1778051220.344414.
+2026-05-06 09:07:10,353 - supervisor - INFO - Heartbeat sent at 1778051230.352027.
+2026-05-06 09:07:20,357 - supervisor - INFO - Heartbeat sent at 1778051240.356878.
+2026-05-06 09:10:22,297 - supervisor - INFO - Application registry initialized
+2026-05-06 09:10:22,299 - supervisor - INFO - Command processor initialized
+2026-05-06 09:10:23,565 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-06 09:10:23,565 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-06 09:10:23,566 - supervisor - INFO - Heartbeat service started.
+2026-05-06 09:10:23,566 - supervisor - INFO - Heartbeat sent at 1778051423.566113.
+2026-05-06 09:10:33,575 - supervisor - INFO - Heartbeat sent at 1778051433.5738811.
+2026-05-06 09:10:43,578 - supervisor - INFO - Heartbeat sent at 1778051443.577162.
+2026-05-06 09:10:53,583 - supervisor - INFO - Heartbeat sent at 1778051453.582224.
+2026-05-06 09:11:03,589 - supervisor - INFO - Heartbeat sent at 1778051463.587757.
+2026-05-06 09:11:13,595 - supervisor - INFO - Heartbeat sent at 1778051473.594404.
+2026-05-06 09:11:23,600 - supervisor - INFO - Heartbeat sent at 1778051483.599749.
+2026-05-06 09:11:33,604 - supervisor - INFO - Heartbeat sent at 1778051493.60365.
+2026-05-06 09:11:43,611 - supervisor - INFO - Heartbeat sent at 1778051503.609848.
+2026-05-06 09:11:53,618 - supervisor - INFO - Heartbeat sent at 1778051513.616649.
+2026-05-06 09:12:03,623 - supervisor - INFO - Heartbeat sent at 1778051523.62216.
+2026-05-06 09:12:13,630 - supervisor - INFO - Heartbeat sent at 1778051533.62912.
+2026-05-06 09:12:23,638 - supervisor - INFO - Heartbeat sent at 1778051543.6363761.
+2026-05-06 09:12:33,641 - supervisor - INFO - Heartbeat sent at 1778051553.640297.
+2026-05-06 09:12:43,646 - supervisor - INFO - Heartbeat sent at 1778051563.645247.
+2026-05-06 09:12:53,651 - supervisor - INFO - Heartbeat sent at 1778051573.650274.
+2026-05-06 09:13:03,658 - supervisor - INFO - Heartbeat sent at 1778051583.65714.
+2026-05-06 09:13:13,664 - supervisor - INFO - Heartbeat sent at 1778051593.663459.
+2026-05-06 09:13:32,512 - supervisor - INFO - Application registry initialized
+2026-05-06 09:13:32,513 - supervisor - INFO - Command processor initialized
+2026-05-06 09:13:33,769 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-06 09:13:33,770 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-06 09:13:33,770 - supervisor - INFO - Heartbeat service started.
+2026-05-06 09:13:33,771 - supervisor - INFO - Heartbeat sent at 1778051613.770612.
+2026-05-06 09:13:43,777 - supervisor - INFO - Heartbeat sent at 1778051623.776135.
+2026-05-06 09:19:53,338 - supervisor - INFO - Application registry initialized
+2026-05-06 09:19:53,340 - supervisor - INFO - Command processor initialized
+2026-05-06 09:19:54,597 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-06 09:19:54,597 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-06 09:19:54,598 - supervisor - INFO - Heartbeat service started.
+2026-05-06 09:19:54,598 - supervisor - INFO - Heartbeat sent at 1778051994.5980139.
+2026-05-06 09:20:04,606 - supervisor - INFO - Heartbeat sent at 1778052004.6054258.
+2026-05-06 09:20:14,614 - supervisor - INFO - Heartbeat sent at 1778052014.612894.
+2026-05-06 09:20:24,621 - supervisor - INFO - Heartbeat sent at 1778052024.61987.
+2026-05-06 09:20:34,625 - supervisor - INFO - Heartbeat sent at 1778052034.624204.
+2026-05-06 09:20:44,630 - supervisor - INFO - Heartbeat sent at 1778052044.62909.
+2026-05-06 09:20:54,636 - supervisor - INFO - Heartbeat sent at 1778052054.635773.
+2026-05-06 09:28:20,104 - supervisor - INFO - Application registry initialized
+2026-05-06 09:28:20,106 - supervisor - INFO - Command processor initialized
+2026-05-06 09:28:21,374 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-06 09:28:21,375 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-06 09:28:21,375 - supervisor - INFO - Heartbeat service started.
+2026-05-06 09:28:21,375 - supervisor - INFO - Heartbeat sent at 1778052501.375614.
+2026-05-06 09:28:31,381 - supervisor - INFO - Heartbeat sent at 1778052511.380658.
+2026-05-06 09:28:41,387 - supervisor - INFO - Heartbeat sent at 1778052521.386015.
+2026-05-06 09:28:51,392 - supervisor - INFO - Heartbeat sent at 1778052531.3909812.
+2026-05-06 09:29:01,399 - supervisor - INFO - Heartbeat sent at 1778052541.398268.
+2026-05-06 09:29:11,407 - supervisor - INFO - Heartbeat sent at 1778052551.405962.
+2026-05-06 09:29:21,415 - supervisor - INFO - Heartbeat sent at 1778052561.413719.
+2026-05-06 09:30:28,226 - supervisor - INFO - Application registry initialized
+2026-05-06 09:30:28,228 - supervisor - INFO - Command processor initialized
+2026-05-06 09:30:29,487 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-06 09:30:29,488 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-06 09:30:29,488 - supervisor - INFO - Heartbeat service started.
+2026-05-06 09:30:29,489 - supervisor - INFO - Heartbeat sent at 1778052629.4886642.
+2026-05-06 09:30:39,495 - supervisor - INFO - Heartbeat sent at 1778052639.493703.
+2026-05-06 09:30:49,501 - supervisor - INFO - Heartbeat sent at 1778052649.500098.
+2026-05-06 09:30:59,507 - supervisor - INFO - Heartbeat sent at 1778052659.5053.
+2026-05-06 09:31:09,514 - supervisor - INFO - Heartbeat sent at 1778052669.5132842.
+2026-05-06 09:31:19,522 - supervisor - INFO - Heartbeat sent at 1778052679.5206988.
+2026-05-06 09:31:29,529 - supervisor - INFO - Heartbeat sent at 1778052689.527909.
+2026-05-06 09:31:39,537 - supervisor - INFO - Heartbeat sent at 1778052699.5363572.
+2026-05-06 09:31:49,542 - supervisor - INFO - Heartbeat sent at 1778052709.540771.
+2026-05-06 09:31:59,545 - supervisor - INFO - Heartbeat sent at 1778052719.5439098.
+2026-05-06 09:32:09,552 - supervisor - INFO - Heartbeat sent at 1778052729.550808.
+2026-05-06 09:32:19,559 - supervisor - INFO - Heartbeat sent at 1778052739.5577118.
+2026-05-06 09:32:29,566 - supervisor - INFO - Heartbeat sent at 1778052749.565485.
+2026-05-06 09:32:39,572 - supervisor - INFO - Heartbeat sent at 1778052759.570803.
+2026-05-06 09:32:49,579 - supervisor - INFO - Heartbeat sent at 1778052769.578271.
+2026-05-06 09:32:59,587 - supervisor - INFO - Heartbeat sent at 1778052779.585432.
+2026-05-06 09:33:09,593 - supervisor - INFO - Heartbeat sent at 1778052789.592215.
+2026-05-06 09:33:19,601 - supervisor - INFO - Heartbeat sent at 1778052799.599923.
+2026-05-06 09:33:29,608 - supervisor - INFO - Heartbeat sent at 1778052809.6072829.
+2026-05-06 09:33:39,615 - supervisor - INFO - Heartbeat sent at 1778052819.613919.
+2026-05-06 09:33:49,623 - supervisor - INFO - Heartbeat sent at 1778052829.621529.
+2026-05-06 09:33:59,629 - supervisor - INFO - Heartbeat sent at 1778052839.627755.
+2026-05-06 09:34:09,634 - supervisor - INFO - Heartbeat sent at 1778052849.6325388.
+2026-05-06 09:34:19,641 - supervisor - INFO - Heartbeat sent at 1778052859.639799.
+2026-05-06 09:34:29,645 - supervisor - INFO - Heartbeat sent at 1778052869.643529.
+2026-05-06 09:34:39,650 - supervisor - INFO - Heartbeat sent at 1778052879.648471.
+2026-05-06 09:34:49,658 - supervisor - INFO - Heartbeat sent at 1778052889.656832.
+2026-05-06 09:34:59,666 - supervisor - INFO - Heartbeat sent at 1778052899.664314.
+2026-05-06 09:35:09,674 - supervisor - INFO - Heartbeat sent at 1778052909.672641.
+2026-05-06 09:35:19,678 - supervisor - INFO - Heartbeat sent at 1778052919.677695.
+2026-05-06 09:35:29,682 - supervisor - INFO - Heartbeat sent at 1778052929.681383.
+2026-05-06 09:35:39,687 - supervisor - INFO - Heartbeat sent at 1778052939.686612.
+2026-05-06 09:35:49,693 - supervisor - INFO - Heartbeat sent at 1778052949.6916711.
+2026-05-06 09:35:59,696 - supervisor - INFO - Heartbeat sent at 1778052959.6949818.
+2026-05-06 09:36:09,703 - supervisor - INFO - Heartbeat sent at 1778052969.7022378.
+2026-05-06 09:36:19,705 - supervisor - INFO - Heartbeat sent at 1778052979.704492.
+2026-05-06 09:36:29,709 - supervisor - INFO - Heartbeat sent at 1778052989.707829.
+2026-05-06 09:36:39,714 - supervisor - INFO - Heartbeat service stopped.
+2026-05-07 05:55:20,941 - supervisor - INFO - Application registry initialized
+2026-05-07 05:55:20,942 - supervisor - INFO - Command processor initialized
+2026-05-07 05:55:22,191 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-07 05:55:22,191 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-07 05:55:22,192 - supervisor - INFO - Heartbeat service started.
+2026-05-07 05:55:22,192 - supervisor - INFO - Heartbeat sent at 1778126122.192226.
+2026-05-07 05:55:32,200 - supervisor - INFO - Heartbeat sent at 1778126132.1989179.
+2026-05-07 05:55:42,207 - supervisor - INFO - Heartbeat sent at 1778126142.206209.
+2026-05-07 05:55:52,212 - supervisor - INFO - Heartbeat sent at 1778126152.2109451.
+2026-05-07 05:56:02,216 - supervisor - INFO - Heartbeat sent at 1778126162.2148411.
+2026-05-07 05:56:12,220 - supervisor - INFO - Heartbeat sent at 1778126172.219152.
+2026-05-07 05:56:22,227 - supervisor - INFO - Heartbeat sent at 1778126182.226037.
+2026-05-07 05:56:32,233 - supervisor - INFO - Heartbeat sent at 1778126192.2320452.
+2026-05-07 05:56:42,241 - supervisor - INFO - Heartbeat sent at 1778126202.2395608.
+2026-05-07 05:56:52,244 - supervisor - INFO - Heartbeat sent at 1778126212.2426019.
+2026-05-07 05:57:02,249 - supervisor - INFO - Heartbeat sent at 1778126222.248394.
+2026-05-07 05:57:12,256 - supervisor - INFO - Heartbeat sent at 1778126232.255413.
+2026-05-07 05:57:22,264 - supervisor - INFO - Heartbeat sent at 1778126242.262754.
+2026-05-07 05:57:32,271 - supervisor - INFO - Heartbeat sent at 1778126252.270447.
+2026-05-07 05:57:42,279 - supervisor - INFO - Heartbeat sent at 1778126262.277698.
+2026-05-07 05:57:52,286 - supervisor - INFO - Heartbeat sent at 1778126272.285045.
+2026-05-07 05:58:02,294 - supervisor - INFO - Heartbeat sent at 1778126282.292505.
+2026-05-07 05:58:12,301 - supervisor - INFO - Heartbeat sent at 1778126292.29999.
+2026-05-07 05:58:22,305 - supervisor - INFO - Heartbeat sent at 1778126302.304162.
+2026-05-07 05:58:32,313 - supervisor - INFO - Heartbeat sent at 1778126312.3116171.
+2026-05-07 05:58:42,319 - supervisor - INFO - Heartbeat sent at 1778126322.3177228.
+2026-05-07 05:58:52,323 - supervisor - INFO - Heartbeat sent at 1778126332.321582.
+2026-05-07 05:59:02,329 - supervisor - INFO - Heartbeat sent at 1778126342.327959.
+2026-05-07 05:59:12,335 - supervisor - INFO - Heartbeat sent at 1778126352.3336241.
+2026-05-07 05:59:22,342 - supervisor - INFO - Heartbeat sent at 1778126362.341108.
+2026-05-07 05:59:32,346 - supervisor - INFO - Heartbeat sent at 1778126372.34499.
+2026-05-07 05:59:42,351 - supervisor - INFO - Heartbeat sent at 1778126382.3496451.
+2026-05-07 05:59:52,356 - supervisor - INFO - Heartbeat sent at 1778126392.355615.
+2026-05-07 06:00:02,359 - supervisor - INFO - Heartbeat sent at 1778126402.358331.
+2026-05-07 06:00:12,363 - supervisor - INFO - Heartbeat sent at 1778126412.3622541.
+2026-05-07 06:00:22,367 - supervisor - INFO - Heartbeat sent at 1778126422.366077.
+2026-05-07 06:00:32,374 - supervisor - INFO - Heartbeat sent at 1778126432.373399.
+2026-05-07 06:00:42,382 - supervisor - INFO - Heartbeat sent at 1778126442.381026.
+2026-05-07 06:00:52,388 - supervisor - INFO - Heartbeat sent at 1778126452.387008.
+2026-05-07 06:01:02,398 - supervisor - INFO - Heartbeat sent at 1778126462.396946.
+2026-05-07 06:01:12,405 - supervisor - INFO - Heartbeat sent at 1778126472.4039512.
+2026-05-07 06:01:22,408 - supervisor - INFO - Heartbeat sent at 1778126482.407437.
+2026-05-07 06:01:32,414 - supervisor - INFO - Heartbeat sent at 1778126492.412802.
+2026-05-07 06:01:42,421 - supervisor - INFO - Heartbeat sent at 1778126502.4203289.
+2026-05-07 06:01:52,429 - supervisor - INFO - Heartbeat sent at 1778126512.427634.
+2026-05-07 06:02:02,436 - supervisor - INFO - Heartbeat sent at 1778126522.435264.
+2026-05-07 06:02:12,443 - supervisor - INFO - Heartbeat sent at 1778126532.4415302.
+2026-05-07 06:02:22,448 - supervisor - INFO - Heartbeat sent at 1778126542.446868.
+2026-05-07 06:02:32,452 - supervisor - INFO - Heartbeat sent at 1778126552.450506.
+2026-05-07 06:02:42,459 - supervisor - INFO - Heartbeat sent at 1778126562.4579399.
+2026-05-07 06:02:52,466 - supervisor - INFO - Heartbeat sent at 1778126572.465508.
+2026-05-07 06:03:02,471 - supervisor - INFO - Heartbeat sent at 1778126582.469352.
+2026-05-07 06:03:12,478 - supervisor - INFO - Heartbeat sent at 1778126592.476811.
+2026-05-07 06:03:22,485 - supervisor - INFO - Heartbeat sent at 1778126602.4840698.
+2026-05-07 06:03:32,491 - supervisor - INFO - Heartbeat sent at 1778126612.490335.
+2026-05-07 06:03:42,496 - supervisor - INFO - Heartbeat sent at 1778126622.495073.
+2026-05-07 06:03:52,499 - supervisor - INFO - Heartbeat sent at 1778126632.498424.
+2026-05-07 06:04:02,504 - supervisor - INFO - Heartbeat sent at 1778126642.503335.
+2026-05-07 06:04:12,509 - supervisor - INFO - Heartbeat sent at 1778126652.508199.
+2026-05-07 06:04:22,517 - supervisor - INFO - Heartbeat sent at 1778126662.5156229.
+2026-05-07 06:04:32,524 - supervisor - INFO - Heartbeat sent at 1778126672.522937.
+2026-05-07 06:04:42,527 - supervisor - INFO - Heartbeat sent at 1778126682.525728.
+2026-05-07 06:04:52,534 - supervisor - INFO - Heartbeat sent at 1778126692.533134.
+2026-05-07 06:05:02,538 - supervisor - INFO - Heartbeat sent at 1778126702.5366669.
+2026-05-07 06:05:12,545 - supervisor - INFO - Heartbeat sent at 1778126712.5437849.
+2026-05-07 06:05:22,552 - supervisor - INFO - Heartbeat sent at 1778126722.5510972.
+2026-05-07 06:05:32,560 - supervisor - INFO - Heartbeat sent at 1778126732.558547.
+2026-05-07 06:05:42,567 - supervisor - INFO - Heartbeat sent at 1778126742.5658371.
+2026-05-07 06:05:52,573 - supervisor - INFO - Heartbeat sent at 1778126752.5715141.
+2026-05-07 06:06:02,578 - supervisor - INFO - Heartbeat sent at 1778126762.576284.
+2026-05-07 06:06:12,583 - supervisor - INFO - Heartbeat sent at 1778126772.581857.
+2026-05-07 06:06:22,590 - supervisor - INFO - Heartbeat sent at 1778126782.589233.
+2026-05-07 06:06:32,597 - supervisor - INFO - Heartbeat sent at 1778126792.5960472.
+2026-05-07 06:06:42,604 - supervisor - INFO - Heartbeat sent at 1778126802.603116.
+2026-05-07 06:06:52,607 - supervisor - INFO - Heartbeat sent at 1778126812.606292.
+2026-05-07 06:07:02,611 - supervisor - INFO - Heartbeat sent at 1778126822.610232.
+2026-05-07 06:07:12,618 - supervisor - INFO - Heartbeat sent at 1778126832.617244.
+2026-05-07 06:07:22,625 - supervisor - INFO - Heartbeat sent at 1778126842.6245341.
+2026-05-07 06:07:32,630 - supervisor - INFO - Heartbeat sent at 1778126852.628793.
+2026-05-07 06:07:42,633 - supervisor - INFO - Heartbeat sent at 1778126862.632142.
+2026-05-07 06:07:52,640 - supervisor - INFO - Heartbeat sent at 1778126872.639369.
+2026-05-07 06:08:02,643 - supervisor - INFO - Heartbeat sent at 1778126882.64219.
+2026-05-07 06:08:12,651 - supervisor - INFO - Heartbeat sent at 1778126892.6500769.
+2026-05-07 06:08:22,654 - supervisor - INFO - Heartbeat sent at 1778126902.6529632.
+2026-05-07 06:08:32,663 - supervisor - INFO - Heartbeat sent at 1778126912.661074.
+2026-05-07 06:08:42,671 - supervisor - INFO - Heartbeat sent at 1778126922.6691241.
+2026-05-07 06:08:52,679 - supervisor - INFO - Heartbeat sent at 1778126932.677166.
+2026-05-07 06:09:02,685 - supervisor - INFO - Heartbeat sent at 1778126942.6834419.
+2026-05-07 06:09:12,693 - supervisor - INFO - Heartbeat sent at 1778126952.6912901.
+2026-05-07 06:09:22,699 - supervisor - INFO - Heartbeat sent at 1778126962.6979961.
+2026-05-07 06:09:32,707 - supervisor - INFO - Heartbeat sent at 1778126972.7056918.
+2026-05-07 06:09:42,715 - supervisor - INFO - Heartbeat sent at 1778126982.7134268.
+2026-05-07 06:09:52,717 - supervisor - INFO - Heartbeat sent at 1778126992.716033.
+2026-05-07 06:10:02,725 - supervisor - INFO - Heartbeat sent at 1778127002.72371.
+2026-05-07 06:10:12,733 - supervisor - INFO - Heartbeat sent at 1778127012.731348.
+2026-05-07 06:10:22,737 - supervisor - INFO - Heartbeat sent at 1778127022.735376.
+2026-05-07 06:10:32,740 - supervisor - INFO - Heartbeat sent at 1778127032.738676.
+2026-05-07 06:10:42,745 - supervisor - INFO - Heartbeat sent at 1778127042.744492.
+2026-05-07 06:10:52,752 - supervisor - INFO - Heartbeat sent at 1778127052.7503219.
+2026-05-07 06:11:02,755 - supervisor - INFO - Heartbeat sent at 1778127062.754295.
+2026-05-07 06:11:12,763 - supervisor - INFO - Heartbeat sent at 1778127072.761638.
+2026-05-07 06:11:22,766 - supervisor - INFO - Heartbeat sent at 1778127082.765119.
+2026-05-07 06:11:32,771 - supervisor - INFO - Heartbeat sent at 1778127092.77052.
+2026-05-07 06:11:42,776 - supervisor - INFO - Heartbeat sent at 1778127102.7755158.
+2026-05-07 06:11:52,784 - supervisor - INFO - Heartbeat sent at 1778127112.782367.
+2026-05-07 06:12:02,791 - supervisor - INFO - Heartbeat sent at 1778127122.7901518.
+2026-05-07 06:12:12,797 - supervisor - INFO - Heartbeat sent at 1778127132.795905.
+2026-05-07 06:12:22,802 - supervisor - INFO - Heartbeat sent at 1778127142.8015082.
+2026-05-07 06:12:32,810 - supervisor - INFO - Heartbeat sent at 1778127152.80882.
+2026-05-07 06:12:42,813 - supervisor - INFO - Heartbeat sent at 1778127162.812383.
+2026-05-07 06:12:52,816 - supervisor - INFO - Heartbeat sent at 1778127172.81485.
+2026-05-07 06:13:02,823 - supervisor - INFO - Heartbeat sent at 1778127182.821228.
+2026-05-07 06:13:12,829 - supervisor - INFO - Heartbeat sent at 1778127192.8283808.
+2026-05-07 06:13:22,837 - supervisor - INFO - Heartbeat sent at 1778127202.8359559.
+2026-05-07 06:13:32,844 - supervisor - INFO - Heartbeat sent at 1778127212.84263.
+2026-05-07 06:13:42,850 - supervisor - INFO - Heartbeat sent at 1778127222.848865.
+2026-05-07 06:13:52,857 - supervisor - INFO - Heartbeat sent at 1778127232.856163.
+2026-05-07 06:14:02,859 - supervisor - INFO - Heartbeat sent at 1778127242.8587341.
+2026-05-07 06:14:12,866 - supervisor - INFO - Heartbeat sent at 1778127252.864724.
+2026-05-07 06:14:22,870 - supervisor - INFO - Heartbeat sent at 1778127262.868969.
+2026-05-07 06:14:32,878 - supervisor - INFO - Heartbeat sent at 1778127272.876499.
+2026-05-07 06:14:42,881 - supervisor - INFO - Heartbeat sent at 1778127282.880953.
+2026-05-07 06:14:52,887 - supervisor - INFO - Heartbeat sent at 1778127292.885569.
+2026-05-07 06:15:02,894 - supervisor - INFO - Heartbeat sent at 1778127302.892355.
+2026-05-07 06:15:12,899 - supervisor - INFO - Heartbeat sent at 1778127312.8972611.
+2026-05-07 06:15:22,902 - supervisor - INFO - Heartbeat sent at 1778127322.9011.
+2026-05-07 06:15:32,910 - supervisor - INFO - Heartbeat sent at 1778127332.908766.
+2026-05-07 06:15:42,917 - supervisor - INFO - Heartbeat sent at 1778127342.915991.
+2026-05-07 06:15:52,924 - supervisor - INFO - Heartbeat sent at 1778127352.923512.
+2026-05-07 06:16:02,931 - supervisor - INFO - Heartbeat sent at 1778127362.930835.
+2026-05-07 06:16:12,934 - supervisor - INFO - Heartbeat sent at 1778127372.933419.
+2026-05-07 06:16:22,941 - supervisor - INFO - Heartbeat sent at 1778127382.939807.
+2026-05-07 06:16:32,949 - supervisor - INFO - Heartbeat sent at 1778127392.947652.
+2026-05-07 06:16:42,956 - supervisor - INFO - Heartbeat sent at 1778127402.9553201.
+2026-05-07 06:16:52,959 - supervisor - INFO - Heartbeat sent at 1778127412.958524.
+2026-05-07 06:17:02,963 - supervisor - INFO - Heartbeat sent at 1778127422.9622679.
+2026-05-07 06:17:12,966 - supervisor - INFO - Heartbeat sent at 1778127432.9653928.
+2026-05-07 06:17:22,972 - supervisor - INFO - Heartbeat sent at 1778127442.971664.
+2026-05-07 06:17:32,979 - supervisor - INFO - Heartbeat sent at 1778127452.977611.
+2026-05-07 06:17:42,986 - supervisor - INFO - Heartbeat sent at 1778127462.98536.
+2026-05-07 06:17:52,993 - supervisor - INFO - Heartbeat sent at 1778127472.9922261.
+2026-05-07 06:18:03,000 - supervisor - INFO - Heartbeat sent at 1778127482.998191.
+2026-05-07 06:18:13,005 - supervisor - INFO - Heartbeat sent at 1778127493.003926.
+2026-05-07 06:18:23,010 - supervisor - INFO - Heartbeat sent at 1778127503.008279.
+2026-05-07 06:18:33,015 - supervisor - INFO - Heartbeat sent at 1778127513.0148711.
+2026-05-07 06:18:43,023 - supervisor - INFO - Heartbeat sent at 1778127523.021815.
+2026-05-07 06:18:53,030 - supervisor - INFO - Heartbeat sent at 1778127533.029336.
+2026-05-07 06:19:03,037 - supervisor - INFO - Heartbeat sent at 1778127543.0360792.
+2026-05-07 06:19:13,040 - supervisor - INFO - Heartbeat sent at 1778127553.0392761.
+2026-05-07 06:19:23,047 - supervisor - INFO - Heartbeat sent at 1778127563.0465002.
+2026-05-07 06:19:33,052 - supervisor - INFO - Heartbeat sent at 1778127573.050295.
+2026-05-07 06:19:43,056 - supervisor - INFO - Heartbeat sent at 1778127583.055155.
+2026-05-07 06:19:53,061 - supervisor - INFO - Heartbeat sent at 1778127593.059777.
+2026-05-07 06:20:03,068 - supervisor - INFO - Heartbeat sent at 1778127603.067025.
+2026-05-07 06:20:13,075 - supervisor - INFO - Heartbeat sent at 1778127613.074157.
+2026-05-07 06:20:23,081 - supervisor - INFO - Heartbeat sent at 1778127623.0802271.
+2026-05-07 06:20:33,084 - supervisor - INFO - Heartbeat sent at 1778127633.083549.
+2026-05-07 06:20:43,092 - supervisor - INFO - Heartbeat sent at 1778127643.09082.
+2026-05-07 06:20:53,099 - supervisor - INFO - Heartbeat sent at 1778127653.0982.
+2026-05-07 06:21:03,106 - supervisor - INFO - Heartbeat sent at 1778127663.104855.
+2026-05-07 06:21:13,112 - supervisor - INFO - Heartbeat sent at 1778127673.111053.
+2026-05-07 06:21:23,116 - supervisor - INFO - Heartbeat sent at 1778127683.115047.
+2026-05-07 06:21:33,123 - supervisor - INFO - Heartbeat sent at 1778127693.122178.
+2026-05-07 06:21:43,130 - supervisor - INFO - Heartbeat sent at 1778127703.129421.
+2026-05-07 06:21:53,137 - supervisor - INFO - Heartbeat sent at 1778127713.136213.
+2026-05-07 06:22:03,141 - supervisor - INFO - Heartbeat sent at 1778127723.13986.
+2026-05-07 06:22:13,147 - supervisor - INFO - Heartbeat sent at 1778127733.146034.
+2026-05-07 06:22:23,155 - supervisor - INFO - Heartbeat sent at 1778127743.1529238.
+2026-05-07 06:22:33,161 - supervisor - INFO - Heartbeat sent at 1778127753.160358.
+2026-05-07 06:22:43,169 - supervisor - INFO - Heartbeat sent at 1778127763.167616.
+2026-05-07 06:22:53,175 - supervisor - INFO - Heartbeat sent at 1778127773.174258.
+2026-05-07 06:23:03,178 - supervisor - INFO - Heartbeat sent at 1778127783.177092.
+2026-05-07 06:23:13,183 - supervisor - INFO - Heartbeat sent at 1778127793.181453.
+2026-05-07 06:23:23,193 - supervisor - INFO - Heartbeat sent at 1778127803.1920588.
+2026-05-07 06:23:33,201 - supervisor - INFO - Heartbeat sent at 1778127813.2002041.
+2026-05-07 06:23:43,210 - supervisor - INFO - Heartbeat sent at 1778127823.2082958.
+2026-05-07 06:23:53,216 - supervisor - INFO - Heartbeat sent at 1778127833.215196.
+2026-05-07 06:24:03,222 - supervisor - INFO - Heartbeat sent at 1778127843.2212548.
+2026-05-07 06:24:13,226 - supervisor - INFO - Heartbeat sent at 1778127853.225054.
+2026-05-07 06:24:23,232 - supervisor - INFO - Heartbeat sent at 1778127863.230749.
+2026-05-07 06:24:33,239 - supervisor - INFO - Heartbeat sent at 1778127873.23738.
+2026-05-07 06:24:43,245 - supervisor - INFO - Heartbeat sent at 1778127883.244211.
+2026-05-07 06:24:53,252 - supervisor - INFO - Heartbeat sent at 1778127893.250885.
+2026-05-07 06:25:03,259 - supervisor - INFO - Heartbeat sent at 1778127903.258322.
+2026-05-07 06:25:13,267 - supervisor - INFO - Heartbeat sent at 1778127913.265847.
+2026-05-07 06:25:23,270 - supervisor - INFO - Heartbeat sent at 1778127923.268681.
+2026-05-07 06:25:33,274 - supervisor - INFO - Heartbeat sent at 1778127933.27284.
+2026-05-07 06:25:43,281 - supervisor - INFO - Heartbeat sent at 1778127943.2802198.
+2026-05-07 06:25:53,288 - supervisor - INFO - Heartbeat sent at 1778127953.287594.
+2026-05-07 06:26:03,293 - supervisor - INFO - Heartbeat sent at 1778127963.292562.
+2026-05-07 06:26:13,297 - supervisor - INFO - Heartbeat sent at 1778127973.29634.
+2026-05-07 06:26:23,295 - supervisor - INFO - Heartbeat sent at 1778127983.294107.
+2026-05-07 06:26:33,299 - supervisor - INFO - Heartbeat sent at 1778127993.298202.
+2026-05-07 06:26:43,304 - supervisor - INFO - Heartbeat sent at 1778128003.303114.
+2026-05-07 06:26:53,305 - supervisor - INFO - Heartbeat sent at 1778128013.304502.
+2026-05-07 06:27:03,312 - supervisor - INFO - Heartbeat sent at 1778128023.310694.
+2026-05-07 06:27:13,319 - supervisor - INFO - Heartbeat sent at 1778128033.31759.
+2026-05-07 06:27:23,326 - supervisor - INFO - Heartbeat sent at 1778128043.323742.
+2026-05-07 06:27:33,333 - supervisor - INFO - Heartbeat sent at 1778128053.332254.
+2026-05-07 06:27:43,340 - supervisor - INFO - Heartbeat sent at 1778128063.3392608.
+2026-05-07 06:27:53,346 - supervisor - INFO - Heartbeat sent at 1778128073.345325.
+2026-05-07 06:28:03,352 - supervisor - INFO - Heartbeat sent at 1778128083.35124.
+2026-05-07 06:28:13,358 - supervisor - INFO - Heartbeat sent at 1778128093.357026.
+2026-05-07 06:28:23,362 - supervisor - INFO - Heartbeat sent at 1778128103.36114.
+2026-05-07 06:28:33,370 - supervisor - INFO - Heartbeat sent at 1778128113.368321.
+2026-05-07 06:28:43,378 - supervisor - INFO - Heartbeat sent at 1778128123.3762949.
+2026-05-07 06:28:53,383 - supervisor - INFO - Heartbeat sent at 1778128133.382674.
+2026-05-07 06:29:03,387 - supervisor - INFO - Heartbeat sent at 1778128143.3860328.
+2026-05-07 06:29:13,393 - supervisor - INFO - Heartbeat sent at 1778128153.392542.
+2026-05-07 06:29:23,401 - supervisor - INFO - Heartbeat sent at 1778128163.3997812.
+2026-05-07 06:29:33,406 - supervisor - INFO - Heartbeat sent at 1778128173.404703.
+2026-05-07 06:29:43,408 - supervisor - INFO - Heartbeat sent at 1778128183.407138.
+2026-05-07 06:29:53,414 - supervisor - INFO - Heartbeat sent at 1778128193.413995.
+2026-05-07 06:30:03,422 - supervisor - INFO - Heartbeat sent at 1778128203.420285.
+2026-05-07 06:30:13,429 - supervisor - INFO - Heartbeat sent at 1778128213.427906.
+2026-05-07 06:30:23,437 - supervisor - INFO - Heartbeat sent at 1778128223.435568.
+2026-05-07 06:30:33,439 - supervisor - INFO - Heartbeat sent at 1778128233.4384372.
+2026-05-07 06:30:43,445 - supervisor - INFO - Heartbeat sent at 1778128243.443956.
+2026-05-07 06:30:53,449 - supervisor - INFO - Heartbeat sent at 1778128253.448389.
+2026-05-07 06:31:03,455 - supervisor - INFO - Heartbeat sent at 1778128263.453944.
+2026-05-07 06:31:13,461 - supervisor - INFO - Heartbeat sent at 1778128273.4605708.
+2026-05-07 06:31:23,469 - supervisor - INFO - Heartbeat sent at 1778128283.467798.
+2026-05-07 06:31:33,477 - supervisor - INFO - Heartbeat sent at 1778128293.4756951.
+2026-05-07 06:31:43,482 - supervisor - INFO - Heartbeat sent at 1778128303.4805288.
+2026-05-07 06:31:53,489 - supervisor - INFO - Heartbeat sent at 1778128313.4879649.
+2026-05-07 06:32:03,495 - supervisor - INFO - Heartbeat sent at 1778128323.494315.
+2026-05-07 06:32:13,500 - supervisor - INFO - Heartbeat sent at 1778128333.499282.
+2026-05-07 06:32:23,507 - supervisor - INFO - Heartbeat sent at 1778128343.505882.
+2026-05-07 06:32:33,510 - supervisor - INFO - Heartbeat sent at 1778128353.509566.
+2026-05-07 06:32:43,518 - supervisor - INFO - Heartbeat sent at 1778128363.516661.
+2026-05-07 06:32:53,525 - supervisor - INFO - Heartbeat sent at 1778128373.5240908.
+2026-05-07 06:33:03,533 - supervisor - INFO - Heartbeat sent at 1778128383.531562.
+2026-05-07 06:33:13,539 - supervisor - INFO - Heartbeat sent at 1778128393.5377889.
+2026-05-07 06:33:23,544 - supervisor - INFO - Heartbeat sent at 1778128403.5430121.
+2026-05-07 06:33:33,551 - supervisor - INFO - Heartbeat sent at 1778128413.550268.
+2026-05-07 06:33:43,559 - supervisor - INFO - Heartbeat sent at 1778128423.5578392.
+2026-05-07 06:33:53,566 - supervisor - INFO - Heartbeat sent at 1778128433.565008.
+2026-05-07 06:34:03,571 - supervisor - INFO - Heartbeat sent at 1778128443.570056.
+2026-05-07 06:34:13,577 - supervisor - INFO - Heartbeat sent at 1778128453.5765362.
+2026-05-07 06:34:23,582 - supervisor - INFO - Heartbeat sent at 1778128463.5810099.
+2026-05-07 06:34:33,587 - supervisor - INFO - Heartbeat sent at 1778128473.585556.
+2026-05-07 06:34:43,594 - supervisor - INFO - Heartbeat sent at 1778128483.5934741.
+2026-05-07 06:34:53,599 - supervisor - INFO - Heartbeat sent at 1778128493.597997.
+2026-05-07 06:35:03,606 - supervisor - INFO - Heartbeat sent at 1778128503.605025.
+2026-05-07 06:35:13,613 - supervisor - INFO - Heartbeat sent at 1778128513.612438.
+2026-05-07 06:35:23,617 - supervisor - INFO - Heartbeat sent at 1778128523.61622.
+2026-05-07 06:35:33,624 - supervisor - INFO - Heartbeat sent at 1778128533.623332.
+2026-05-07 06:35:43,632 - supervisor - INFO - Heartbeat sent at 1778128543.630831.
+2026-05-07 06:35:53,638 - supervisor - INFO - Heartbeat sent at 1778128553.637291.
+2026-05-07 06:36:03,642 - supervisor - INFO - Heartbeat sent at 1778128563.641362.
+2026-05-07 06:36:13,650 - supervisor - INFO - Heartbeat sent at 1778128573.64876.
+2026-05-07 06:36:23,657 - supervisor - INFO - Heartbeat sent at 1778128583.6559.
+2026-05-07 06:36:33,661 - supervisor - INFO - Heartbeat sent at 1778128593.65996.
+2026-05-07 06:36:43,667 - supervisor - INFO - Heartbeat sent at 1778128603.6659899.
+2026-05-07 06:36:53,672 - supervisor - INFO - Heartbeat sent at 1778128613.671356.
+2026-05-07 06:37:03,679 - supervisor - INFO - Heartbeat sent at 1778128623.678114.
+2026-05-07 06:37:13,684 - supervisor - INFO - Heartbeat sent at 1778128633.6825879.
+2026-05-07 06:37:23,691 - supervisor - INFO - Heartbeat sent at 1778128643.689485.
+2026-05-07 06:37:33,697 - supervisor - INFO - Heartbeat sent at 1778128653.69607.
+2026-05-07 06:37:43,705 - supervisor - INFO - Heartbeat sent at 1778128663.703596.
+2026-05-07 06:37:53,711 - supervisor - INFO - Heartbeat sent at 1778128673.7107751.
+2026-05-07 06:38:03,718 - supervisor - INFO - Heartbeat sent at 1778128683.716952.
+2026-05-07 06:38:13,726 - supervisor - INFO - Heartbeat sent at 1778128693.725287.
+2026-05-07 06:38:23,729 - supervisor - INFO - Heartbeat sent at 1778128703.728174.
+2026-05-07 06:38:33,736 - supervisor - INFO - Heartbeat sent at 1778128713.734997.
+2026-05-07 06:38:43,742 - supervisor - INFO - Heartbeat sent at 1778128723.7413309.
+2026-05-07 06:38:53,745 - supervisor - INFO - Heartbeat sent at 1778128733.744422.
+2026-05-07 06:39:03,752 - supervisor - INFO - Heartbeat sent at 1778128743.751589.
+2026-05-07 06:39:13,756 - supervisor - INFO - Heartbeat sent at 1778128753.754914.
+2026-05-07 06:39:23,761 - supervisor - INFO - Heartbeat sent at 1778128763.760364.
+2026-05-07 06:39:33,767 - supervisor - INFO - Heartbeat sent at 1778128773.766034.
+2026-05-07 06:39:43,774 - supervisor - INFO - Heartbeat sent at 1778128783.772424.
+2026-05-07 06:39:53,780 - supervisor - INFO - Heartbeat sent at 1778128793.778956.
+2026-05-07 06:40:03,786 - supervisor - INFO - Heartbeat sent at 1778128803.7847319.
+2026-05-07 06:40:13,793 - supervisor - INFO - Heartbeat sent at 1778128813.791517.
+2026-05-07 06:40:23,800 - supervisor - INFO - Heartbeat sent at 1778128823.798484.
+2026-05-07 06:40:33,806 - supervisor - INFO - Heartbeat sent at 1778128833.805074.
+2026-05-07 06:40:43,809 - supervisor - INFO - Heartbeat sent at 1778128843.8075688.
+2026-05-07 06:40:53,816 - supervisor - INFO - Heartbeat sent at 1778128853.81516.
+2026-05-07 06:41:03,820 - supervisor - INFO - Heartbeat sent at 1778128863.819403.
+2026-05-07 06:41:13,824 - supervisor - INFO - Heartbeat sent at 1778128873.824008.
+2026-05-07 06:41:23,829 - supervisor - INFO - Heartbeat sent at 1778128883.8276732.
+2026-05-07 06:41:33,835 - supervisor - INFO - Heartbeat sent at 1778128893.8352.
+2026-05-07 06:41:43,841 - supervisor - INFO - Heartbeat sent at 1778128903.840183.
+2026-05-07 06:41:53,846 - supervisor - INFO - Heartbeat sent at 1778128913.845031.
+2026-05-07 06:42:03,853 - supervisor - INFO - Heartbeat sent at 1778128923.852345.
+2026-05-07 06:42:13,857 - supervisor - INFO - Heartbeat sent at 1778128933.856042.
+2026-05-07 06:42:23,864 - supervisor - INFO - Heartbeat sent at 1778128943.863183.
+2026-05-07 06:42:33,871 - supervisor - INFO - Heartbeat sent at 1778128953.869627.
+2026-05-07 06:42:43,878 - supervisor - INFO - Heartbeat sent at 1778128963.876297.
+2026-05-07 06:42:53,885 - supervisor - INFO - Heartbeat sent at 1778128973.883666.
+2026-05-07 06:43:03,889 - supervisor - INFO - Heartbeat sent at 1778128983.8874738.
+2026-05-07 06:43:13,896 - supervisor - INFO - Heartbeat sent at 1778128993.895102.
+2026-05-07 06:43:23,902 - supervisor - INFO - Heartbeat sent at 1778129003.900256.
+2026-05-07 06:43:33,908 - supervisor - INFO - Heartbeat sent at 1778129013.907923.
+2026-05-07 06:43:43,914 - supervisor - INFO - Heartbeat sent at 1778129023.912798.
+2026-05-07 06:43:53,917 - supervisor - INFO - Heartbeat sent at 1778129033.916539.
+2026-05-07 06:44:03,921 - supervisor - INFO - Heartbeat sent at 1778129043.920105.
+2026-05-07 06:44:13,927 - supervisor - INFO - Heartbeat sent at 1778129053.926197.
+2026-05-07 06:44:23,935 - supervisor - INFO - Heartbeat sent at 1778129063.933894.
+2026-05-07 06:44:33,942 - supervisor - INFO - Heartbeat sent at 1778129073.9411578.
+2026-05-07 06:44:43,949 - supervisor - INFO - Heartbeat sent at 1778129083.948305.
+2026-05-07 06:44:53,955 - supervisor - INFO - Heartbeat sent at 1778129093.9545531.
+2026-05-07 06:45:03,960 - supervisor - INFO - Heartbeat sent at 1778129103.959093.
+2026-05-07 06:45:13,967 - supervisor - INFO - Heartbeat sent at 1778129113.965856.
+2026-05-07 06:45:23,974 - supervisor - INFO - Heartbeat sent at 1778129123.9729679.
+2026-05-07 06:45:33,982 - supervisor - INFO - Heartbeat sent at 1778129133.9805288.
+2026-05-07 06:45:43,988 - supervisor - INFO - Heartbeat sent at 1778129143.986847.
+2026-05-07 06:45:53,994 - supervisor - INFO - Heartbeat sent at 1778129153.992557.
+2026-05-07 06:46:03,998 - supervisor - INFO - Heartbeat sent at 1778129163.9969091.
+2026-05-07 06:46:14,002 - supervisor - INFO - Heartbeat sent at 1778129174.001336.
+2026-05-07 06:46:24,006 - supervisor - INFO - Heartbeat sent at 1778129184.005056.
+2026-05-07 06:46:34,011 - supervisor - INFO - Heartbeat sent at 1778129194.0100539.
+2026-05-07 06:46:44,018 - supervisor - INFO - Heartbeat sent at 1778129204.01743.
+2026-05-07 06:46:54,026 - supervisor - INFO - Heartbeat sent at 1778129214.024745.
+2026-05-07 06:47:04,031 - supervisor - INFO - Heartbeat sent at 1778129224.029223.
+2026-05-07 06:47:14,037 - supervisor - INFO - Heartbeat sent at 1778129234.036608.
+2026-05-07 06:47:24,045 - supervisor - INFO - Heartbeat sent at 1778129244.043746.
+2026-05-07 06:47:34,051 - supervisor - INFO - Heartbeat sent at 1778129254.0501068.
+2026-05-07 06:47:44,058 - supervisor - INFO - Heartbeat sent at 1778129264.0569532.
+2026-05-07 06:47:54,065 - supervisor - INFO - Heartbeat sent at 1778129274.063941.
+2026-05-07 06:48:04,073 - supervisor - INFO - Heartbeat sent at 1778129284.072036.
+2026-05-07 06:48:14,079 - supervisor - INFO - Heartbeat sent at 1778129294.077823.
+2026-05-07 06:48:24,087 - supervisor - INFO - Heartbeat sent at 1778129304.085442.
+2026-05-07 06:48:34,091 - supervisor - INFO - Heartbeat sent at 1778129314.090026.
+2026-05-07 06:48:44,098 - supervisor - INFO - Heartbeat sent at 1778129324.096264.
+2026-05-07 06:48:54,105 - supervisor - INFO - Heartbeat sent at 1778129334.1040618.
+2026-05-07 06:49:04,111 - supervisor - INFO - Heartbeat sent at 1778129344.109814.
+2026-05-07 06:49:14,119 - supervisor - INFO - Heartbeat sent at 1778129354.117801.
+2026-05-07 06:49:24,124 - supervisor - INFO - Heartbeat sent at 1778129364.1226938.
+2026-05-07 06:49:34,131 - supervisor - INFO - Heartbeat sent at 1778129374.129694.
+2026-05-07 06:49:44,138 - supervisor - INFO - Heartbeat sent at 1778129384.1373498.
+2026-05-07 06:49:54,146 - supervisor - INFO - Heartbeat sent at 1778129394.145108.
+2026-05-07 06:50:04,151 - supervisor - INFO - Heartbeat sent at 1778129404.150107.
+2026-05-07 06:50:14,153 - supervisor - INFO - Heartbeat sent at 1778129414.152423.
+2026-05-07 06:50:24,160 - supervisor - INFO - Heartbeat sent at 1778129424.159116.
+2026-05-07 06:50:34,168 - supervisor - INFO - Heartbeat sent at 1778129434.166553.
+2026-05-07 06:50:44,173 - supervisor - INFO - Heartbeat sent at 1778129444.171532.
+2026-05-07 06:50:54,179 - supervisor - INFO - Heartbeat sent at 1778129454.177648.
+2026-05-07 06:51:04,186 - supervisor - INFO - Heartbeat sent at 1778129464.184489.
+2026-05-07 06:51:14,190 - supervisor - INFO - Heartbeat sent at 1778129474.1887622.
+2026-05-07 06:51:24,197 - supervisor - INFO - Heartbeat sent at 1778129484.1961899.
+2026-05-07 06:51:34,204 - supervisor - INFO - Heartbeat sent at 1778129494.20304.
+2026-05-07 06:51:44,211 - supervisor - INFO - Heartbeat sent at 1778129504.210392.
+2026-05-07 06:51:54,217 - supervisor - INFO - Heartbeat sent at 1778129514.2160819.
+2026-05-07 06:52:04,223 - supervisor - INFO - Heartbeat sent at 1778129524.222699.
+2026-05-07 06:52:14,228 - supervisor - INFO - Heartbeat sent at 1778129534.2272031.
+2026-05-07 06:52:24,235 - supervisor - INFO - Heartbeat sent at 1778129544.2336352.
+2026-05-07 06:52:34,238 - supervisor - INFO - Heartbeat sent at 1778129554.236681.
+2026-05-07 06:52:44,243 - supervisor - INFO - Heartbeat sent at 1778129564.241817.
+2026-05-07 06:52:54,250 - supervisor - INFO - Heartbeat sent at 1778129574.2492428.
+2026-05-07 06:53:04,264 - supervisor - INFO - Heartbeat sent at 1778129584.263243.
+2026-05-07 06:53:14,280 - supervisor - INFO - Heartbeat sent at 1778129594.278589.
+2026-05-07 06:53:24,286 - supervisor - INFO - Heartbeat sent at 1778129604.2851682.
+2026-05-07 06:53:34,294 - supervisor - INFO - Heartbeat sent at 1778129614.293371.
+2026-05-07 06:53:44,301 - supervisor - INFO - Heartbeat sent at 1778129624.299389.
+2026-05-07 06:53:54,309 - supervisor - INFO - Heartbeat sent at 1778129634.3075619.
+2026-05-07 06:54:04,315 - supervisor - INFO - Heartbeat sent at 1778129644.313974.
+2026-05-07 06:54:14,323 - supervisor - INFO - Heartbeat sent at 1778129654.3218188.
+2026-05-07 06:54:24,327 - supervisor - INFO - Heartbeat sent at 1778129664.325719.
+2026-05-07 06:54:34,332 - supervisor - INFO - Heartbeat sent at 1778129674.330573.
+2026-05-07 06:54:44,339 - supervisor - INFO - Heartbeat sent at 1778129684.337547.
+2026-05-07 06:54:54,342 - supervisor - INFO - Heartbeat sent at 1778129694.340725.
+2026-05-07 06:55:04,348 - supervisor - INFO - Heartbeat sent at 1778129704.3467891.
+2026-05-07 06:55:14,353 - supervisor - INFO - Heartbeat sent at 1778129714.352913.
+2026-05-07 06:55:24,359 - supervisor - INFO - Heartbeat sent at 1778129724.358437.
+2026-05-07 06:55:34,365 - supervisor - INFO - Heartbeat sent at 1778129734.364554.
+2026-05-07 06:55:44,370 - supervisor - INFO - Heartbeat sent at 1778129744.369248.
+2026-05-07 06:55:54,376 - supervisor - INFO - Heartbeat sent at 1778129754.375264.
+2026-05-07 06:56:04,382 - supervisor - INFO - Heartbeat sent at 1778129764.381069.
+2026-05-07 06:56:14,388 - supervisor - INFO - Heartbeat sent at 1778129774.3870249.
+2026-05-07 06:56:24,396 - supervisor - INFO - Heartbeat sent at 1778129784.394568.
+2026-05-07 06:56:34,403 - supervisor - INFO - Heartbeat sent at 1778129794.402292.
+2026-05-07 06:56:44,411 - supervisor - INFO - Heartbeat sent at 1778129804.409986.
+2026-05-07 06:56:54,415 - supervisor - INFO - Heartbeat sent at 1778129814.413749.
+2026-05-07 06:57:04,420 - supervisor - INFO - Heartbeat sent at 1778129824.419255.
+2026-05-07 06:57:14,426 - supervisor - INFO - Heartbeat sent at 1778129834.4254029.
+2026-05-07 06:57:24,432 - supervisor - INFO - Heartbeat sent at 1778129844.4311922.
+2026-05-07 06:57:40,479 - supervisor - ERROR - Failed to send heartbeat at 1778129854.4372659.
+2026-05-07 07:47:41,695 - supervisor - ERROR - Failed to send heartbeat at 1778130902.962392.
+2026-05-07 08:29:36,126 - supervisor - ERROR - Failed to send heartbeat at 1778135371.324676.
+2026-05-07 08:30:31,932 - supervisor - ERROR - Failed to send heartbeat at 1778135422.4757261.
+2026-05-07 08:30:44,751 - supervisor - ERROR - Failed to send heartbeat at 1778135443.372284.
+2026-05-07 08:35:44,129 - supervisor - ERROR - Failed to send heartbeat at 1778135460.6150122.
+2026-05-07 08:36:13,660 - supervisor - ERROR - Failed to send heartbeat at 1778135762.5843709.
+2026-05-07 08:36:38,361 - supervisor - ERROR - Failed to send heartbeat at 1778135786.62482.
+2026-05-07 08:37:03,801 - supervisor - ERROR - Failed to send heartbeat at 1778135817.039983.
+2026-05-07 08:37:24,811 - supervisor - ERROR - Failed to send heartbeat at 1778135839.073445.
+2026-05-07 08:37:59,719 - supervisor - ERROR - Failed to send heartbeat at 1778135867.442533.
+2026-05-08 07:11:06,277 - supervisor - INFO - Application registry initialized
+2026-05-08 07:11:06,279 - supervisor - INFO - Command processor initialized
+2026-05-08 07:11:07,690 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-08 07:11:07,691 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-08 07:11:07,691 - supervisor - INFO - Heartbeat service started.
+2026-05-08 07:11:07,692 - supervisor - INFO - Heartbeat sent at 1778217067.691875.
+2026-05-08 07:11:17,702 - supervisor - INFO - Heartbeat sent at 1778217077.700624.
+2026-05-08 07:11:27,709 - supervisor - INFO - Heartbeat sent at 1778217087.708395.
+2026-05-08 07:11:37,714 - supervisor - INFO - Heartbeat sent at 1778217097.713303.
+2026-05-08 07:11:47,717 - supervisor - INFO - Heartbeat sent at 1778217107.7158191.
+2026-05-08 07:11:53,098 - supervisor - INFO - Command bc1c5544-4e21-4a48-b2d9-fa1348fcfe3d is valid.
+2026-05-08 07:11:53,098 - supervisor - INFO - PUSH command received.
+2026-05-08 07:11:53,099 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-08 07:11:54,410 - supervisor - INFO - Application successfully registered
+2026-05-08 07:11:57,722 - supervisor - INFO - Heartbeat sent at 1778217117.7214458.
+2026-05-08 07:12:07,724 - supervisor - INFO - Heartbeat sent at 1778217127.723615.
+2026-05-08 07:12:17,727 - supervisor - INFO - Heartbeat sent at 1778217137.7262342.
+2026-05-08 07:12:27,733 - supervisor - INFO - Heartbeat sent at 1778217147.731961.
+2026-05-08 07:12:37,740 - supervisor - INFO - Heartbeat sent at 1778217157.73913.
+2026-05-08 07:12:47,747 - supervisor - INFO - Heartbeat sent at 1778217167.7462778.
+2026-05-08 07:12:57,749 - supervisor - INFO - Heartbeat sent at 1778217177.7482839.
+2026-05-08 07:13:07,756 - supervisor - INFO - Heartbeat sent at 1778217187.755402.
+2026-05-08 07:13:17,762 - supervisor - INFO - Heartbeat sent at 1778217197.761492.
+2026-05-08 07:13:27,767 - supervisor - INFO - Heartbeat sent at 1778217207.7669199.
+2026-05-08 07:13:37,773 - supervisor - INFO - Heartbeat sent at 1778217217.773074.
+2026-05-08 07:13:47,780 - supervisor - INFO - Heartbeat sent at 1778217227.779295.
+2026-05-08 07:13:57,786 - supervisor - INFO - Heartbeat sent at 1778217237.784535.
+2026-05-08 07:14:07,792 - supervisor - INFO - Heartbeat sent at 1778217247.791007.
+2026-05-08 07:14:17,795 - supervisor - INFO - Heartbeat sent at 1778217257.794188.
+2026-05-08 07:14:27,800 - supervisor - INFO - Heartbeat sent at 1778217267.7997818.
+2026-05-08 07:14:37,802 - supervisor - INFO - Heartbeat sent at 1778217277.801994.
+2026-05-08 07:14:47,804 - supervisor - INFO - Heartbeat sent at 1778217287.8035572.
+2026-05-08 07:14:57,808 - supervisor - INFO - Heartbeat sent at 1778217297.807677.
+2026-05-08 07:15:07,815 - supervisor - INFO - Heartbeat sent at 1778217307.814249.
+2026-05-08 07:15:17,819 - supervisor - INFO - Heartbeat sent at 1778217317.8176582.
+2026-05-08 07:15:27,826 - supervisor - INFO - Heartbeat sent at 1778217327.8246028.
+2026-05-08 07:15:37,832 - supervisor - INFO - Heartbeat sent at 1778217337.8308039.
+2026-05-08 07:15:47,838 - supervisor - INFO - Heartbeat sent at 1778217347.8368928.
+2026-05-08 07:15:57,843 - supervisor - INFO - Heartbeat sent at 1778217357.841902.
+2026-05-08 07:16:07,850 - supervisor - INFO - Heartbeat sent at 1778217367.8488882.
+2026-05-08 07:16:17,855 - supervisor - INFO - Heartbeat sent at 1778217377.853803.
+2026-05-08 07:16:27,863 - supervisor - INFO - Heartbeat sent at 1778217387.861907.
+2026-05-08 07:16:37,867 - supervisor - INFO - Heartbeat sent at 1778217397.8660748.
+2026-05-08 07:16:47,875 - supervisor - INFO - Heartbeat sent at 1778217407.873599.
+2026-05-08 07:16:57,882 - supervisor - INFO - Heartbeat sent at 1778217417.88138.
+2026-05-08 07:17:07,884 - supervisor - INFO - Heartbeat sent at 1778217427.883571.
+2026-05-08 07:17:17,891 - supervisor - INFO - Heartbeat sent at 1778217437.890481.
+2026-05-08 07:17:27,898 - supervisor - INFO - Heartbeat sent at 1778217447.897409.
+2026-05-08 07:17:37,901 - supervisor - INFO - Heartbeat sent at 1778217457.9002082.
+2026-05-08 07:17:47,905 - supervisor - INFO - Heartbeat sent at 1778217467.903755.
+2026-05-08 07:17:57,912 - supervisor - INFO - Heartbeat sent at 1778217477.910569.
+2026-05-08 07:18:07,919 - supervisor - INFO - Heartbeat sent at 1778217487.918167.
+2026-05-08 07:18:17,923 - supervisor - INFO - Heartbeat sent at 1778217497.922863.
+2026-05-08 07:18:27,930 - supervisor - INFO - Heartbeat sent at 1778217507.929448.
+2026-05-08 07:18:37,935 - supervisor - INFO - Heartbeat sent at 1778217517.934178.
+2026-05-08 07:18:47,938 - supervisor - INFO - Heartbeat sent at 1778217527.937564.
+2026-05-08 07:18:57,946 - supervisor - INFO - Heartbeat sent at 1778217537.9447439.
+2026-05-08 07:19:07,953 - supervisor - INFO - Heartbeat sent at 1778217547.951584.
+2026-05-08 07:19:17,956 - supervisor - INFO - Heartbeat sent at 1778217557.954792.
+2026-05-08 07:19:27,963 - supervisor - INFO - Heartbeat sent at 1778217567.962378.
+2026-05-08 07:19:37,967 - supervisor - INFO - Heartbeat sent at 1778217577.9665291.
+2026-05-08 07:19:47,970 - supervisor - INFO - Heartbeat sent at 1778217587.968878.
+2026-05-08 07:19:57,977 - supervisor - INFO - Heartbeat sent at 1778217597.975955.
+2026-05-08 07:20:07,982 - supervisor - INFO - Heartbeat sent at 1778217607.981524.
+2026-05-08 07:20:17,990 - supervisor - INFO - Heartbeat sent at 1778217617.988755.
+2026-05-08 07:20:27,997 - supervisor - INFO - Heartbeat sent at 1778217627.996147.
+2026-05-08 07:20:38,000 - supervisor - INFO - Heartbeat sent at 1778217637.999423.
+2026-05-08 07:20:48,008 - supervisor - INFO - Heartbeat sent at 1778217648.006519.
+2026-05-08 07:20:58,015 - supervisor - INFO - Heartbeat sent at 1778217658.014034.
+2026-05-08 07:21:08,019 - supervisor - INFO - Heartbeat sent at 1778217668.0181298.
+2026-05-08 07:21:18,026 - supervisor - INFO - Heartbeat sent at 1778217678.024564.
+2026-05-08 07:21:28,029 - supervisor - INFO - Heartbeat sent at 1778217688.0288918.
+2026-05-08 07:21:38,032 - supervisor - INFO - Heartbeat sent at 1778217698.031584.
+2026-05-08 07:21:48,039 - supervisor - INFO - Heartbeat sent at 1778217708.038594.
+2026-05-08 07:21:58,046 - supervisor - INFO - Heartbeat sent at 1778217718.0454888.
+2026-05-08 07:22:08,051 - supervisor - INFO - Heartbeat sent at 1778217728.049718.
+2026-05-08 07:22:18,057 - supervisor - INFO - Heartbeat sent at 1778217738.055511.
+2026-05-08 07:22:28,064 - supervisor - INFO - Heartbeat sent at 1778217748.063287.
+2026-05-08 07:22:38,067 - supervisor - INFO - Heartbeat sent at 1778217758.066686.
+2026-05-08 07:22:48,074 - supervisor - INFO - Heartbeat sent at 1778217768.073171.
+2026-05-08 07:22:58,080 - supervisor - INFO - Heartbeat sent at 1778217778.079825.
+2026-05-08 07:23:08,088 - supervisor - INFO - Heartbeat sent at 1778217788.086158.
+2026-05-08 07:23:18,094 - supervisor - INFO - Heartbeat sent at 1778217798.093651.
+2026-05-08 07:23:28,101 - supervisor - INFO - Heartbeat sent at 1778217808.1005561.
+2026-05-08 07:23:38,109 - supervisor - INFO - Heartbeat sent at 1778217818.107705.
+2026-05-08 07:23:48,116 - supervisor - INFO - Heartbeat sent at 1778217828.114939.
+2026-05-08 07:23:58,123 - supervisor - INFO - Heartbeat sent at 1778217838.121848.
+2026-05-08 07:24:08,130 - supervisor - INFO - Heartbeat sent at 1778217848.128949.
+2026-05-08 07:24:18,136 - supervisor - INFO - Heartbeat sent at 1778217858.134824.
+2026-05-08 07:24:28,143 - supervisor - INFO - Heartbeat sent at 1778217868.142596.

@@ -39,7 +39,7 @@ class flexCloudConnector:
         self.projectID = projectID
         self.key = key
         #self.connectorID = primaryHardwareID+"@"+projectID+"-"+key          #devicename@projectname-key
-        self.connectorID = projectID + "-" + key +":devices:"+primaryHardwareID     #projectname-key:devices:devicename
+        self.connectorID = projectID + "-" + key +COMMUNICATIONMATRIX.DEVICES+primaryHardwareID     #projectname-key:devices:devicename
         self._commandKey = self.connectorID+COMMUNICATIONMATRIX.COMMAND     #devicename@projectname-key:cmd
 
         # custom logger

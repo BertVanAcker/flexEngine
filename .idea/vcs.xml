@@ -8,6 +8,7 @@
     <mapping directory="$PROJECT_DIR$/examples/Demos/flexiaDemonstrator/agents/lattepandaD3_1/apps/flexia-robosapiens-example" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/examples/Demos/flexiaDemonstrator/agents/lattepandaD3_2/apps/flexia-robosapiens-example" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/examples/Demos/flexiaDemonstrator/agents/lattepandaD3_3/apps/flexia-robosapiens-example" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/examples/Demos/flexiaSandbox/agents/lattepandaD3_1/apps/flexia-robosapiens-example" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/examples/commands/agent/apps/flexia-compose-example" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/examples/commands/agent/apps/flexia-helloworld" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/examples/robosapiens/agents/lattepandaD3/apps/flexia-robosapiens-example" vcs="Git" />
