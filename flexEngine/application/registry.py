@@ -84,6 +84,8 @@ class registryManager(object):
                         #5A. Version does not exist in flexCloud -> fresh application registry
                         self._registry.append(_app)
                         self.register_backend(applicationEntry=_app)
+                        #6. register version as tag on remote + push
+                        self._create_git_version_tag(repo_path=_localPath,version=_version,commit_sha=_commit_sha,push=True)
                         if self._logger is not None: self._logger.info("Application successfully registered")
                     else:
                         # 5B. Version does exist in flexCloud -> fetch application snapshot + register
@@ -109,6 +111,8 @@ class registryManager(object):
                         # 6. register updated application and activate in local repo
                         self._registry.append(_app)
                         self.register_backend(applicationEntry=_app)
+                        # 6. register version as tag on remote + push
+                        self._create_git_version_tag(repo_path=_localPath, version=_version, commit_sha=_commit_sha,push=True)
                         if self._logger is not None: self._logger.info("New version of the application registered and activated")
 
                     else:
@@ -321,9 +325,6 @@ class registryManager(object):
 
         return repo_path, _workspace_exists
 
-    import os
-    import subprocess
-
     def _fetch_repo_snapshot(
             self,
             repo_url: str,
@@ -410,6 +411,134 @@ class registryManager(object):
             raise Exception("Git checkout failed")
 
         return repo_path, _workspace_exists
+
+
+    def _create_git_version_tag(
+            self,
+            repo_path: str,
+            version: str,
+            commit_sha: str,
+            push: bool = True,
+    ) -> bool:
+        """
+        Create an annotated Git tag for a backend version and attach it to a commit SHA.
+
+        If the tag already exists locally or remotely, it will not be created or pushed again.
+
+        :param repo_path: Path to the local Git repository.
+        :param version: Version tag, for example 'v0.0.1'.
+        :param commit_sha: Commit SHA to tag.
+        :param push: If True, push the tag to origin.
+        :return: True if a new tag was created, False if the tag already existed.
+        :raises Exception: If Git commands fail.
+        """
+
+        # Make sure we know about remote tags.
+        fetch_tags_result = subprocess.run(
+            ["git", "-C", repo_path, "fetch", "origin", "--tags"],
+            capture_output=True,
+            text=True,
+        )
+
+        if fetch_tags_result.returncode != 0:
+            if self._logger is not None:
+                self._logger.error(
+                    f"Error fetching Git tags: {fetch_tags_result.stderr}"
+                )
+            raise Exception("Git fetch tags failed")
+
+        # Check if tag exists locally.
+        local_tag_result = subprocess.run(
+            ["git", "-C", repo_path, "tag", "--list", version],
+            capture_output=True,
+            text=True,
+        )
+
+        if local_tag_result.returncode != 0:
+            if self._logger is not None:
+                self._logger.error(
+                    f"Error checking local Git tag '{version}': {local_tag_result.stderr}"
+                )
+            raise Exception("Git local tag check failed")
+
+        if local_tag_result.stdout.strip() == version:
+            if self._logger is not None:
+                self._logger.info(
+                    f"Git tag '{version}' already exists locally. Skipping tag creation and push."
+                )
+            return False
+
+        # Check if tag exists remotely.
+        remote_tag_result = subprocess.run(
+            ["git", "-C", repo_path, "ls-remote", "--tags", "origin", version],
+            capture_output=True,
+            text=True,
+        )
+
+        if remote_tag_result.returncode != 0:
+            if self._logger is not None:
+                self._logger.error(
+                    f"Error checking remote Git tag '{version}': {remote_tag_result.stderr}"
+                )
+            raise Exception("Git remote tag check failed")
+
+        if remote_tag_result.stdout.strip():
+            if self._logger is not None:
+                self._logger.info(
+                    f"Git tag '{version}' already exists on remote. Skipping tag creation and push."
+                )
+            return False
+
+        tag_message = f"Backend version {version}\nCommit SHA: {commit_sha}"
+
+        tag_result = subprocess.run(
+            [
+                "git",
+                "-C",
+                repo_path,
+                "tag",
+                "-a",
+                version,
+                commit_sha,
+                "-m",
+                tag_message,
+            ],
+            capture_output=True,
+            text=True,
+        )
+
+        if tag_result.returncode != 0:
+            if self._logger is not None:
+                self._logger.error(
+                    f"Error creating Git tag '{version}': {tag_result.stderr}"
+                )
+            raise Exception("Git tag creation failed")
+
+        if self._logger is not None:
+            self._logger.info(
+                f"Created Git tag '{version}' for commit '{commit_sha}'."
+            )
+
+        if push:
+            push_result = subprocess.run(
+                ["git", "-C", repo_path, "push", "origin", version],
+                capture_output=True,
+                text=True,
+            )
+
+            if push_result.returncode != 0:
+                if self._logger is not None:
+                    self._logger.error(
+                        f"Error pushing Git tag '{version}': {push_result.stderr}"
+                    )
+                raise Exception("Git tag push failed")
+
+            if self._logger is not None:
+                self._logger.info(
+                    f"Pushed Git tag '{version}' to origin."
+                )
+
+        return True
 
     def _get_commit_sha(self, repo_path: str) -> str:
 
