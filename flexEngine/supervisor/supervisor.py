@@ -41,6 +41,7 @@ class supervisor(object):
         self._flexCloud_config = self._config.get("flexCloud", {})
         self._heartbeat_config = self._config.get("heartbeat", {})
         self._log_config = self._config.get("logging", {})
+        self._deviceMonitor_config = self._config.get("deviceMonitor", {"period":60,"autostart":False})
         #--- Supervisor logger ---
         self._logger = self._initialize_logger()
         #--- flexCloud connector ---
@@ -86,7 +87,9 @@ class supervisor(object):
         self._flexCloudConnector.commandProcessor = self._commandProcessor
 
         #--- Device monitor ---
-        self._deviceMonitor = monitor(name="testMonitor",flexCloudConnector=self._flexCloudConnector,verbose=verbose)
+        self._deviceMonitor = monitor(name="testMonitor", flexCloudConnector=self._flexCloudConnector,
+                                      period=self._deviceMonitor_config.get("period", 60),
+                                      autostart=self._deviceMonitor_config.get("autostart", False), verbose=verbose)
 
         #--- Register shared_secret ---
         self._isRegistered = register_os_variable(self._device_config.get("shared_secret","UNKNOWN"), env_var_name=SECURITY_STORE.SHARED_SECRET)

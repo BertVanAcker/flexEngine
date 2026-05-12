@@ -493,3 +493,7 @@ failed to solve: failed to fetch oauth token: Post "https://auth.docker.io/token
 2026-05-12 07:03:55,628 - supervisor - INFO - Heartbeat sent at 1778562235.626786.
 2026-05-12 07:04:05,636 - supervisor - INFO - Heartbeat sent at 1778562245.6346738.
 2026-05-12 07:04:15,640 - supervisor - INFO - Heartbeat sent at 1778562255.6394198.
+2026-05-12 07:12:59,840 - supervisor - INFO - Application registry initialized
+2026-05-12 07:12:59,841 - supervisor - INFO - Command processor initialized
+2026-05-12 07:15:43,278 - supervisor - INFO - Application registry initialized
+2026-05-12 07:15:43,280 - supervisor - INFO - Command processor initialized
