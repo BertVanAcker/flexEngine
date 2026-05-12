@@ -497,3 +497,16 @@ failed to solve: failed to fetch oauth token: Post "https://auth.docker.io/token
 2026-05-12 07:12:59,841 - supervisor - INFO - Command processor initialized
 2026-05-12 07:15:43,278 - supervisor - INFO - Application registry initialized
 2026-05-12 07:15:43,280 - supervisor - INFO - Command processor initialized
+2026-05-12 07:18:13,711 - supervisor - INFO - Application registry initialized
+2026-05-12 07:18:13,713 - supervisor - INFO - Command processor initialized
+2026-05-12 07:18:15,064 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 07:18:15,064 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 07:18:15,065 - supervisor - INFO - Heartbeat service started.
+2026-05-12 07:18:15,065 - supervisor - INFO - Heartbeat sent at 1778563095.065372.
+2026-05-12 07:18:25,072 - supervisor - INFO - Heartbeat sent at 1778563105.0703669.
+2026-05-12 07:18:35,079 - supervisor - INFO - Heartbeat sent at 1778563115.078468.
+2026-05-12 07:18:45,085 - supervisor - INFO - Heartbeat sent at 1778563125.083915.
+2026-05-12 07:18:55,094 - supervisor - INFO - Heartbeat sent at 1778563135.0929742.
+2026-05-12 07:19:05,099 - supervisor - INFO - Heartbeat sent at 1778563145.097953.
+2026-05-12 07:19:15,103 - supervisor - INFO - Heartbeat sent at 1778563155.1016839.
+2026-05-12 07:19:25,109 - supervisor - INFO - Heartbeat sent at 1778563165.108347.

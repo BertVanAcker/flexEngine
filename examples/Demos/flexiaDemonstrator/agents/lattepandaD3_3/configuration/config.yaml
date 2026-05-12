@@ -21,3 +21,7 @@ deviceCredentials:
 heartbeat:
   heartbeat_interval: 10          #Heartbeat renewal every x seconds
   ttl: 12                         #Heartbeat time-to-live in x seconds
+
+deviceMonitor:
+  period: 60                      #Device monitor renewal every x seconds
+  autostart: True                 #Enable continous monitoring
