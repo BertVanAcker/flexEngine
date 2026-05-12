@@ -418,3 +418,78 @@
 2026-05-06 09:20:34,625 - supervisor - INFO - Heartbeat sent at 1778052034.624204.
 2026-05-06 09:20:44,630 - supervisor - INFO - Heartbeat sent at 1778052044.62909.
 2026-05-06 09:20:54,636 - supervisor - INFO - Heartbeat sent at 1778052054.635773.
+2026-05-12 06:59:59,116 - supervisor - INFO - Application registry initialized
+2026-05-12 06:59:59,118 - supervisor - INFO - Command processor initialized
+2026-05-12 07:00:00,872 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 07:00:00,873 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 07:00:00,873 - supervisor - INFO - Heartbeat service started.
+2026-05-12 07:00:00,873 - supervisor - INFO - Heartbeat sent at 1778562000.873365.
+2026-05-12 07:00:10,884 - supervisor - INFO - Heartbeat sent at 1778562010.8824189.
+2026-05-12 07:00:20,893 - supervisor - INFO - Heartbeat sent at 1778562020.8923469.
+2026-05-12 07:00:30,898 - supervisor - INFO - Heartbeat sent at 1778562030.896551.
+2026-05-12 07:00:40,904 - supervisor - INFO - Heartbeat sent at 1778562040.9036002.
+2026-05-12 07:00:50,911 - supervisor - INFO - Heartbeat sent at 1778562050.9098969.
+2026-05-12 07:00:57,684 - supervisor - INFO - Command d3b0c3b6-3e2d-4905-95f8-1ba613e7ebcc is valid.
+2026-05-12 07:00:57,684 - supervisor - INFO - PUSH command received.
+2026-05-12 07:00:57,685 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 07:00:59,087 - supervisor - INFO - Application successfully registered
+2026-05-12 07:01:00,915 - supervisor - INFO - Heartbeat sent at 1778562060.91429.
+2026-05-12 07:01:10,922 - supervisor - INFO - Heartbeat sent at 1778562070.9213812.
+2026-05-12 07:01:20,930 - supervisor - INFO - Heartbeat sent at 1778562080.928766.
+2026-05-12 07:01:30,938 - supervisor - INFO - Heartbeat sent at 1778562090.936716.
+2026-05-12 07:01:35,964 - supervisor - INFO - Command f17463f1-235f-49ce-9f90-9cce6d8a044d is valid.
+2026-05-12 07:01:35,964 - supervisor - INFO - RUN command received.
+2026-05-12 07:01:35,967 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with run action.
+2026-05-12 07:01:35,967 - supervisor - INFO - Start run workflow for registered flexIA application {name:flexia-robosapiens-example}.
+2026-05-12 07:01:35,967 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2026-05-12 07:01:35,968 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2026-05-12 07:01:35,968 - supervisor - INFO - Docker-compose run workflow for flexIA application {name:flexia-robosapiens-example} started.
+2026-05-12 07:01:40,946 - supervisor - INFO - Heartbeat sent at 1778562100.944383.
+2026-05-12 07:01:50,950 - supervisor - INFO - Heartbeat sent at 1778562110.94924.
+2026-05-12 07:01:56,002 - supervisor - ERROR - Failed to run docker compose application {name:flexia-robosapiens-example}.
+2026-05-12 07:01:56,003 - supervisor - ERROR - time="2026-05-12T07:01:35+02:00" level=warning msg="/Users/bertvanacker/Documents/01_Development/UAntwerp/Projects/FlexIA/flexEngine/examples/Demos/flexiaDemonstrator/agents/lattepandaD3_1/apps/flexia-robosapiens-example/Realization/ManagingSystem/Platform/lattepandaD3_1/compose.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Image lattepandad3_1-monitor Building 
+Dockerfile:1
+
+--------------------
+
+   1 | >>> FROM python:3.10
+
+   2 |     ENV PYTHONUNBUFFERED 1
+
+   3 |     
+
+--------------------
+
+failed to solve: failed to fetch oauth token: Post "https://auth.docker.io/token": unexpected EOF
+
+
+2026-05-12 07:02:00,958 - supervisor - INFO - Heartbeat sent at 1778562120.956817.
+2026-05-12 07:02:10,965 - supervisor - INFO - Heartbeat sent at 1778562130.964226.
+2026-05-12 07:02:20,972 - supervisor - INFO - Heartbeat sent at 1778562140.970648.
+2026-05-12 07:02:30,978 - supervisor - INFO - Heartbeat sent at 1778562150.977325.
+2026-05-12 07:02:40,986 - supervisor - INFO - Heartbeat sent at 1778562160.985054.
+2026-05-12 07:03:13,896 - supervisor - INFO - Application registry initialized
+2026-05-12 07:03:13,898 - supervisor - INFO - Command processor initialized
+2026-05-12 07:03:15,596 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 07:03:15,596 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 07:03:15,597 - supervisor - INFO - Heartbeat service started.
+2026-05-12 07:03:15,597 - supervisor - INFO - Heartbeat sent at 1778562195.597515.
+2026-05-12 07:03:25,607 - supervisor - INFO - Heartbeat sent at 1778562205.605458.
+2026-05-12 07:03:28,343 - supervisor - INFO - Command 2de8e219-f408-4401-b96b-d5789001b5ad is valid.
+2026-05-12 07:03:28,344 - supervisor - INFO - STOP command received.
+2026-05-12 07:03:28,347 - supervisor - INFO - Application {name:flexia-robosapiens-example}, found in the registered applications, proceed with stop action.
+2026-05-12 07:03:28,347 - supervisor - INFO - Start stop workflow for running flexIA application {name:flexia-robosapiens-example}.
+2026-05-12 07:03:28,348 - supervisor - INFO - flexIA.ini file loaded for flexIA application {name:flexia-robosapiens-example}.
+2026-05-12 07:03:28,348 - supervisor - INFO - Run configuration for device {lattepandaD3_1} loaded for flexIA application {name:flexia-robosapiens-example}.
+2026-05-12 07:03:28,348 - supervisor - INFO - Docker-compose stop workflow for flexIA application {name:flexia-robosapiens-example} started.
+2026-05-12 07:03:28,390 - supervisor - INFO - Successfully stopped docker compose application {name:flexia-robosapiens-example}.
+2026-05-12 07:03:35,614 - supervisor - INFO - Heartbeat sent at 1778562215.6134331.
+2026-05-12 07:03:39,088 - supervisor - INFO - Command 82334837-c1fb-4838-8e65-9f4fb5f9e132 is valid.
+2026-05-12 07:03:39,089 - supervisor - INFO - PUSH command received.
+2026-05-12 07:03:39,089 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 07:03:44,439 - supervisor - INFO - Application already registered
+2026-05-12 07:03:45,621 - supervisor - INFO - Heartbeat sent at 1778562225.6208699.
+2026-05-12 07:03:55,628 - supervisor - INFO - Heartbeat sent at 1778562235.626786.
+2026-05-12 07:04:05,636 - supervisor - INFO - Heartbeat sent at 1778562245.6346738.
+2026-05-12 07:04:15,640 - supervisor - INFO - Heartbeat sent at 1778562255.6394198.

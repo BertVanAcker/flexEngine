@@ -111,7 +111,8 @@ class applicationManager(object):
 
                 #UPDATE THE STATUS IF BUILD IS SUCCESSFUL
                 if _buildSucceeded:
-                    self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + _app + COMMUNICATIONMATRIX.APPLICATION_STATUS,APPLICATION_STATUS.BUILD)
+                    self.set_app_status(appName=_app,status=APPLICATION_STATUS.BUILD)
+                    #self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + _app + COMMUNICATIONMATRIX.APPLICATION_STATUS,APPLICATION_STATUS.BUILD)
                     # TODO: do we also need to update supervisor registry locally?
 
             # ----------------------------ROBOSAPIENS SPECIFIC PACKAGES-----------------------
@@ -198,7 +199,8 @@ class applicationManager(object):
 
                 # UPDATE THE STATUS IF BUILD IS SUCCESSFUL
                 if _launchSucceeded:
-                    self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + _app + COMMUNICATIONMATRIX.APPLICATION_STATUS,APPLICATION_STATUS.RUNNING)
+                    self.set_app_status(appName=_app, status=APPLICATION_STATUS.RUNNING)
+                    #self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + _app + COMMUNICATIONMATRIX.APPLICATION_STATUS,APPLICATION_STATUS.RUNNING)
                     # TODO: do we also need to update supervisor registry locally?
 
 
@@ -299,7 +301,8 @@ class applicationManager(object):
 
                 # UPDATE THE STATUS IF STOP IS SUCCESSFUL
                 if _stopSucceeded:
-                    self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + _app + COMMUNICATIONMATRIX.APPLICATION_STATUS,APPLICATION_STATUS.STOPPED)
+                    self.set_app_status(appName=_app, status=APPLICATION_STATUS.STOPPED)
+                    #self._flexCloudConnector.write(self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + _app + COMMUNICATIONMATRIX.APPLICATION_STATUS,APPLICATION_STATUS.STOPPED)
                     # TODO: do we also need to update supervisor registry locally?
 
 
@@ -333,6 +336,13 @@ class applicationManager(object):
 
         return details
 
+    def set_app_status(self,appName ="",status=APPLICATION_STATUS.UNKNOWN):
+        """Set application status"""
+        _applicationStatusKey = self._flexCloudConnector.connectorID + COMMUNICATIONMATRIX.APPLICATIONS + appName + COMMUNICATIONMATRIX.APPLICATION_STATUS
+        try:
+            self._flexCloudConnector.write(key=_applicationStatusKey, value=status)
+        except:
+            if self._logger is not None: self._logger.info("Failed to update status of flexIA application {name:" + appName +"}.")
 
     #-------------------------------------------------------------------------------------------------------------------
     #                                    BUILD-IN BUILD WORKFLOWS
