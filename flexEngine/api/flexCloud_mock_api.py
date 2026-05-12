@@ -12,12 +12,12 @@ from flexEngine.communication.composer import *
 from flexEngine.communication.matrix import *
 
 
-def push_appliction(type="github",url = "https://github.com/BertVanAcker/flexia-robosapiens-example.git",branche="main",devices=None,flexCloud_config=None):
+def push_appliction(type="github",url = "https://github.com/BertVanAcker/flexia-robosapiens-example.git",branche="main",version="v0.0.1",devices=None,flexCloud_config=None):
     """ Mock-up of the flexCloud API for pushing applications to devices"""
 
     # ------------- Format command -------------
     cmd_type = COMMAND_TYPE.PUSH
-    params = {"type": type, "url": url,"branch": branche}
+    params = {"type": type, "url": url,"version":version,"branch": branche}
     priority = 3
     expiry_seconds = 120
 

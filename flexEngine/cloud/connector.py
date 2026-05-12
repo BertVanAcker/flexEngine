@@ -112,6 +112,16 @@ class flexCloudConnector:
         # signal new data
         self.redis_client.publish(self.connectorID+"_update", "new data")
 
+    def write_history(self, key, value):
+        """
+        Store a key-value pair in the data platform. If the value is a dictionary, it will be serialized.
+        :param key: The key for storing the data
+        :param value: The value to store (can be a dict, str, int, etc.)
+        """
+        if isinstance(value, dict):
+            value = json.dumps(value)  # Serialize the dictionary to a JSON string
+        self.redis_client.lpush(key,value)
+
     def write_storage(self, key, value):
         """
         Store a key-value pair in the data platform. If the value is a dictionary, it will be serialized.

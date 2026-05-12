@@ -1931,3 +1931,771 @@
 2026-05-08 19:06:22,825 - supervisor - INFO - Heartbeat sent at 1778259982.823972.
 2026-05-08 19:06:32,828 - supervisor - INFO - Heartbeat sent at 1778259992.8270268.
 2026-05-08 19:06:42,834 - supervisor - INFO - Heartbeat sent at 1778260002.833431.
+2026-05-12 07:36:21,062 - supervisor - INFO - Application registry initialized
+2026-05-12 07:36:21,065 - supervisor - INFO - Command processor initialized
+2026-05-12 07:36:28,362 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 07:36:28,362 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 07:36:28,363 - supervisor - INFO - Heartbeat service started.
+2026-05-12 07:36:28,363 - supervisor - INFO - Heartbeat sent at 1778564188.3633122.
+2026-05-12 07:36:38,368 - supervisor - INFO - Heartbeat sent at 1778564198.366613.
+2026-05-12 07:36:48,372 - supervisor - INFO - Heartbeat sent at 1778564208.371028.
+2026-05-12 07:36:58,378 - supervisor - INFO - Heartbeat sent at 1778564218.377137.
+2026-05-12 07:37:08,385 - supervisor - INFO - Heartbeat sent at 1778564228.3836002.
+2026-05-12 07:37:18,391 - supervisor - INFO - Heartbeat sent at 1778564238.38974.
+2026-05-12 07:37:28,397 - supervisor - INFO - Heartbeat sent at 1778564248.3960268.
+2026-05-12 07:37:38,402 - supervisor - INFO - Heartbeat sent at 1778564258.400175.
+2026-05-12 07:37:48,405 - supervisor - INFO - Heartbeat sent at 1778564268.403572.
+2026-05-12 07:37:58,412 - supervisor - INFO - Heartbeat sent at 1778564278.410919.
+2026-05-12 07:38:08,420 - supervisor - INFO - Heartbeat sent at 1778564288.419167.
+2026-05-12 07:38:18,427 - supervisor - INFO - Heartbeat sent at 1778564298.426247.
+2026-05-12 07:38:28,430 - supervisor - INFO - Heartbeat sent at 1778564308.428999.
+2026-05-12 07:38:38,438 - supervisor - INFO - Heartbeat sent at 1778564318.4367712.
+2026-05-12 07:38:48,445 - supervisor - INFO - Heartbeat sent at 1778564328.4440808.
+2026-05-12 07:38:58,449 - supervisor - INFO - Heartbeat sent at 1778564338.4473212.
+2026-05-12 07:41:25,367 - supervisor - INFO - Application registry initialized
+2026-05-12 07:41:25,371 - supervisor - INFO - Command processor initialized
+2026-05-12 07:41:27,224 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 07:41:27,224 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 07:41:27,225 - supervisor - INFO - Heartbeat service started.
+2026-05-12 07:41:27,225 - supervisor - INFO - Heartbeat sent at 1778564487.225146.
+2026-05-12 07:41:37,234 - supervisor - INFO - Heartbeat sent at 1778564497.233268.
+2026-05-12 07:41:40,653 - supervisor - INFO - Command 25ddb37e-e2b8-486f-bd05-fb0ffe61d309 is valid.
+2026-05-12 07:41:40,653 - supervisor - INFO - PUSH command received.
+2026-05-12 07:41:40,654 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 07:41:41,368 - supervisor - INFO - Application already registered
+2026-05-12 07:41:47,240 - supervisor - INFO - Heartbeat sent at 1778564507.238815.
+2026-05-12 07:41:57,248 - supervisor - INFO - Heartbeat sent at 1778564517.246809.
+2026-05-12 07:52:04,858 - supervisor - INFO - Application registry initialized
+2026-05-12 07:52:04,860 - supervisor - INFO - Command processor initialized
+2026-05-12 07:52:06,503 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 07:52:06,504 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 07:52:06,504 - supervisor - INFO - Heartbeat service started.
+2026-05-12 07:52:06,504 - supervisor - INFO - Heartbeat sent at 1778565126.5045462.
+2026-05-12 07:52:16,514 - supervisor - INFO - Heartbeat sent at 1778565136.5123992.
+2026-05-12 07:52:16,832 - supervisor - INFO - Command c2af9361-bcc4-4a0d-9ab9-88a00de5f37a is valid.
+2026-05-12 07:52:16,832 - supervisor - INFO - PUSH command received.
+2026-05-12 07:52:16,832 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 07:52:17,978 - supervisor - INFO - Application already registered
+2026-05-12 07:52:26,521 - supervisor - INFO - Heartbeat sent at 1778565146.520075.
+2026-05-12 07:52:36,529 - supervisor - INFO - Heartbeat sent at 1778565156.527661.
+2026-05-12 07:52:46,536 - supervisor - INFO - Heartbeat sent at 1778565166.5352142.
+2026-05-12 07:52:56,543 - supervisor - INFO - Heartbeat sent at 1778565176.541413.
+2026-05-12 07:53:06,548 - supervisor - INFO - Heartbeat sent at 1778565186.547519.
+2026-05-12 07:53:12,846 - supervisor - INFO - Command 2b582028-5142-43d8-a3c7-09772167a8c8 is valid.
+2026-05-12 07:53:12,847 - supervisor - INFO - PUSH command received.
+2026-05-12 07:53:12,847 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 07:53:13,977 - supervisor - INFO - Application successfully registered
+2026-05-12 07:53:16,553 - supervisor - INFO - Heartbeat sent at 1778565196.5528588.
+2026-05-12 07:53:26,558 - supervisor - INFO - Heartbeat sent at 1778565206.55735.
+2026-05-12 07:53:36,565 - supervisor - INFO - Heartbeat sent at 1778565216.5645702.
+2026-05-12 07:53:46,571 - supervisor - INFO - Heartbeat sent at 1778565226.570251.
+2026-05-12 07:53:56,575 - supervisor - INFO - Heartbeat sent at 1778565236.574602.
+2026-05-12 07:54:06,583 - supervisor - INFO - Heartbeat sent at 1778565246.582032.
+2026-05-12 07:54:16,588 - supervisor - INFO - Heartbeat sent at 1778565256.5868108.
+2026-05-12 07:54:26,595 - supervisor - INFO - Heartbeat sent at 1778565266.5941691.
+2026-05-12 07:54:36,602 - supervisor - INFO - Heartbeat sent at 1778565276.6011362.
+2026-05-12 07:54:46,610 - supervisor - INFO - Heartbeat sent at 1778565286.608927.
+2026-05-12 07:54:56,199 - supervisor - INFO - Application registry initialized
+2026-05-12 07:54:56,202 - supervisor - INFO - Command processor initialized
+2026-05-12 07:54:57,603 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 07:54:57,603 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 07:54:57,604 - supervisor - INFO - Heartbeat service started.
+2026-05-12 07:54:57,604 - supervisor - INFO - Heartbeat sent at 1778565297.6044009.
+2026-05-12 07:55:07,612 - supervisor - INFO - Heartbeat sent at 1778565307.610949.
+2026-05-12 07:55:17,622 - supervisor - INFO - Heartbeat sent at 1778565317.62093.
+2026-05-12 07:55:23,671 - supervisor - INFO - Command 1c9e8e5c-e3a2-4a71-81cc-256cf724ee16 is valid.
+2026-05-12 07:55:23,671 - supervisor - INFO - PUSH command received.
+2026-05-12 07:55:23,671 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 07:55:24,407 - supervisor - INFO - Application already registered
+2026-05-12 07:55:27,627 - supervisor - INFO - Heartbeat sent at 1778565327.6259751.
+2026-05-12 07:55:37,636 - supervisor - INFO - Heartbeat sent at 1778565337.634701.
+2026-05-12 07:55:47,639 - supervisor - INFO - Heartbeat sent at 1778565347.6385632.
+2026-05-12 07:55:57,647 - supervisor - INFO - Heartbeat sent at 1778565357.645783.
+2026-05-12 07:56:16,379 - supervisor - INFO - Application registry initialized
+2026-05-12 07:56:16,382 - supervisor - INFO - Command processor initialized
+2026-05-12 07:56:19,105 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 07:56:19,106 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 07:56:19,106 - supervisor - INFO - Heartbeat service started.
+2026-05-12 07:56:19,107 - supervisor - INFO - Heartbeat sent at 1778565379.1067379.
+2026-05-12 07:56:28,208 - supervisor - INFO - Command 2df4bb56-f9dc-4519-90ca-3023ce530c76 is valid.
+2026-05-12 07:56:28,208 - supervisor - INFO - PUSH command received.
+2026-05-12 07:56:28,208 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 07:56:29,115 - supervisor - INFO - Heartbeat sent at 1778565389.11402.
+2026-05-12 07:56:29,373 - supervisor - INFO - Application successfully registered
+2026-05-12 07:56:39,120 - supervisor - INFO - Heartbeat sent at 1778565399.118996.
+2026-05-12 07:56:49,123 - supervisor - INFO - Heartbeat sent at 1778565409.12257.
+2026-05-12 07:56:59,130 - supervisor - INFO - Heartbeat sent at 1778565419.1289442.
+2026-05-12 07:57:31,788 - supervisor - INFO - Application registry initialized
+2026-05-12 07:57:31,790 - supervisor - INFO - Command processor initialized
+2026-05-12 07:57:33,092 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 07:57:33,093 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 07:57:33,093 - supervisor - INFO - Heartbeat service started.
+2026-05-12 07:57:33,093 - supervisor - INFO - Heartbeat sent at 1778565453.093556.
+2026-05-12 07:57:43,101 - supervisor - INFO - Heartbeat sent at 1778565463.099781.
+2026-05-12 07:57:53,106 - supervisor - INFO - Heartbeat sent at 1778565473.105372.
+2026-05-12 07:58:03,113 - supervisor - INFO - Heartbeat sent at 1778565483.111794.
+2026-05-12 07:58:13,116 - supervisor - INFO - Heartbeat sent at 1778565493.1151092.
+2026-05-12 07:58:13,737 - supervisor - INFO - Command 550aeea2-13d0-4567-b676-675460805035 is valid.
+2026-05-12 07:58:13,738 - supervisor - INFO - PUSH command received.
+2026-05-12 07:58:13,738 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 07:58:14,738 - supervisor - INFO - Application successfully registered
+2026-05-12 07:58:23,124 - supervisor - INFO - Heartbeat sent at 1778565503.122622.
+2026-05-12 07:58:33,133 - supervisor - INFO - Heartbeat sent at 1778565513.130782.
+2026-05-12 07:58:43,137 - supervisor - INFO - Heartbeat sent at 1778565523.136522.
+2026-05-12 07:58:53,144 - supervisor - INFO - Heartbeat sent at 1778565533.143295.
+2026-05-12 07:59:03,152 - supervisor - INFO - Heartbeat sent at 1778565543.150742.
+2026-05-12 07:59:13,157 - supervisor - INFO - Heartbeat sent at 1778565553.156236.
+2026-05-12 07:59:23,164 - supervisor - INFO - Heartbeat sent at 1778565563.163541.
+2026-05-12 07:59:33,167 - supervisor - INFO - Heartbeat sent at 1778565573.165771.
+2026-05-12 07:59:43,173 - supervisor - INFO - Heartbeat sent at 1778565583.171641.
+2026-05-12 07:59:53,178 - supervisor - INFO - Heartbeat sent at 1778565593.176692.
+2026-05-12 08:00:03,185 - supervisor - INFO - Heartbeat sent at 1778565603.184312.
+2026-05-12 08:00:13,188 - supervisor - INFO - Heartbeat sent at 1778565613.187257.
+2026-05-12 08:00:23,194 - supervisor - INFO - Heartbeat sent at 1778565623.1936781.
+2026-05-12 08:00:33,202 - supervisor - INFO - Heartbeat sent at 1778565633.200793.
+2026-05-12 08:00:43,205 - supervisor - INFO - Heartbeat sent at 1778565643.2044642.
+2026-05-12 08:01:15,934 - supervisor - INFO - Application registry initialized
+2026-05-12 08:01:15,935 - supervisor - INFO - Command processor initialized
+2026-05-12 08:01:17,236 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 08:01:17,237 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 08:01:17,237 - supervisor - INFO - Heartbeat service started.
+2026-05-12 08:01:17,237 - supervisor - INFO - Heartbeat sent at 1778565677.237448.
+2026-05-12 08:01:21,618 - supervisor - INFO - Command b0f31091-15f3-4f40-bb3d-e72ab10542e2 is valid.
+2026-05-12 08:01:21,619 - supervisor - INFO - PUSH command received.
+2026-05-12 08:01:21,619 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 08:01:22,485 - supervisor - ERROR - Application not successfully registered
+2026-05-12 08:01:27,246 - supervisor - INFO - Heartbeat sent at 1778565687.2449431.
+2026-05-12 08:01:37,253 - supervisor - INFO - Heartbeat sent at 1778565697.251858.
+2026-05-12 08:01:47,261 - supervisor - INFO - Heartbeat sent at 1778565707.259514.
+2026-05-12 08:01:57,267 - supervisor - INFO - Heartbeat sent at 1778565717.266359.
+2026-05-12 08:49:48,504 - supervisor - INFO - Application registry initialized
+2026-05-12 08:49:48,506 - supervisor - INFO - Command processor initialized
+2026-05-12 08:49:49,695 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 08:49:49,695 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 08:49:49,696 - supervisor - INFO - Heartbeat service started.
+2026-05-12 08:49:49,697 - supervisor - INFO - Heartbeat sent at 1778568589.696509.
+2026-05-12 08:49:59,707 - supervisor - INFO - Heartbeat sent at 1778568599.705516.
+2026-05-12 08:50:09,710 - supervisor - INFO - Heartbeat sent at 1778568609.7096782.
+2026-05-12 08:50:19,718 - supervisor - INFO - Heartbeat sent at 1778568619.716331.
+2026-05-12 08:50:29,722 - supervisor - INFO - Heartbeat sent at 1778568629.720991.
+2026-05-12 08:50:36,642 - supervisor - INFO - Command 6e2ad1d3-d609-46fb-ab00-6350e9589828 is valid.
+2026-05-12 08:50:36,643 - supervisor - INFO - PUSH command received.
+2026-05-12 08:50:36,643 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 08:50:37,229 - supervisor - INFO - Application successfully registered
+2026-05-12 08:50:39,726 - supervisor - INFO - Heartbeat sent at 1778568639.726062.
+2026-05-12 08:50:49,733 - supervisor - INFO - Heartbeat sent at 1778568649.732518.
+2026-05-12 08:50:59,741 - supervisor - INFO - Heartbeat sent at 1778568659.740135.
+2026-05-12 08:51:09,746 - supervisor - INFO - Heartbeat sent at 1778568669.744742.
+2026-05-12 08:51:19,750 - supervisor - INFO - Heartbeat sent at 1778568679.7487621.
+2026-05-12 08:51:29,757 - supervisor - INFO - Heartbeat sent at 1778568689.75591.
+2026-05-12 08:51:39,764 - supervisor - INFO - Heartbeat sent at 1778568699.7637582.
+2026-05-12 08:51:49,767 - supervisor - INFO - Heartbeat sent at 1778568709.766494.
+2026-05-12 08:51:59,774 - supervisor - INFO - Heartbeat sent at 1778568719.773165.
+2026-05-12 08:52:09,782 - supervisor - INFO - Heartbeat sent at 1778568729.7807648.
+2026-05-12 08:52:19,785 - supervisor - INFO - Heartbeat sent at 1778568739.78384.
+2026-05-12 09:08:26,225 - supervisor - INFO - Application registry initialized
+2026-05-12 09:08:26,233 - supervisor - INFO - Command processor initialized
+2026-05-12 09:08:27,424 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 09:08:27,424 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 09:08:27,425 - supervisor - INFO - Heartbeat service started.
+2026-05-12 09:08:27,426 - supervisor - INFO - Heartbeat sent at 1778569707.4254432.
+2026-05-12 09:08:37,434 - supervisor - INFO - Heartbeat sent at 1778569717.433815.
+2026-05-12 09:08:37,523 - supervisor - INFO - Command 52a51e8b-828b-4651-8ca8-a2f941ecc33e is valid.
+2026-05-12 09:08:37,523 - supervisor - INFO - PUSH command received.
+2026-05-12 09:08:37,524 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 09:08:38,102 - supervisor - INFO - Application successfully registered
+2026-05-12 09:08:47,442 - supervisor - INFO - Heartbeat sent at 1778569727.440586.
+2026-05-12 09:08:57,447 - supervisor - INFO - Heartbeat sent at 1778569737.4452639.
+2026-05-12 09:09:07,454 - supervisor - INFO - Heartbeat sent at 1778569747.453196.
+2026-05-12 09:09:16,871 - supervisor - INFO - Command f2fc1b7d-27c1-4a22-9ade-732d7bec0bbf is valid.
+2026-05-12 09:09:16,871 - supervisor - INFO - PUSH command received.
+2026-05-12 09:09:16,872 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 09:09:17,251 - supervisor - INFO - Application already registered
+2026-05-12 09:09:17,461 - supervisor - INFO - Heartbeat sent at 1778569757.460006.
+2026-05-12 09:09:27,464 - supervisor - INFO - Heartbeat sent at 1778569767.4627872.
+2026-05-12 09:09:37,472 - supervisor - INFO - Heartbeat sent at 1778569777.470027.
+2026-05-12 09:09:47,479 - supervisor - INFO - Heartbeat sent at 1778569787.4784808.
+2026-05-12 09:09:57,486 - supervisor - INFO - Heartbeat sent at 1778569797.4854689.
+2026-05-12 09:10:07,491 - supervisor - INFO - Heartbeat sent at 1778569807.489633.
+2026-05-12 09:10:17,493 - supervisor - INFO - Heartbeat sent at 1778569817.492196.
+2026-05-12 09:10:27,500 - supervisor - INFO - Heartbeat sent at 1778569827.499248.
+2026-05-12 09:10:37,505 - supervisor - INFO - Heartbeat sent at 1778569837.5041049.
+2026-05-12 09:10:47,512 - supervisor - INFO - Heartbeat sent at 1778569847.51162.
+2026-05-12 09:10:57,516 - supervisor - INFO - Heartbeat sent at 1778569857.515553.
+2026-05-12 09:11:07,523 - supervisor - INFO - Heartbeat sent at 1778569867.522502.
+2026-05-12 09:11:17,527 - supervisor - INFO - Heartbeat sent at 1778569877.526717.
+2026-05-12 09:11:27,533 - supervisor - INFO - Heartbeat sent at 1778569887.531682.
+2026-05-12 09:11:37,540 - supervisor - INFO - Heartbeat sent at 1778569897.539469.
+2026-05-12 09:11:47,547 - supervisor - INFO - Heartbeat sent at 1778569907.546462.
+2026-05-12 09:11:57,552 - supervisor - INFO - Heartbeat sent at 1778569917.551293.
+2026-05-12 09:12:07,559 - supervisor - INFO - Heartbeat sent at 1778569927.5583549.
+2026-05-12 09:12:17,566 - supervisor - INFO - Heartbeat sent at 1778569937.565079.
+2026-05-12 09:12:27,574 - supervisor - INFO - Heartbeat sent at 1778569947.5726662.
+2026-05-12 09:12:37,578 - supervisor - INFO - Heartbeat sent at 1778569957.576981.
+2026-05-12 09:12:47,585 - supervisor - INFO - Heartbeat sent at 1778569967.583745.
+2026-05-12 09:12:57,590 - supervisor - INFO - Heartbeat sent at 1778569977.5892138.
+2026-05-12 09:13:07,599 - supervisor - INFO - Heartbeat sent at 1778569987.598376.
+2026-05-12 09:13:17,602 - supervisor - INFO - Heartbeat sent at 1778569997.601195.
+2026-05-12 09:13:27,605 - supervisor - INFO - Heartbeat sent at 1778570007.6043808.
+2026-05-12 09:13:37,613 - supervisor - INFO - Heartbeat sent at 1778570017.612044.
+2026-05-12 09:13:47,620 - supervisor - INFO - Heartbeat sent at 1778570027.6190872.
+2026-05-12 09:13:57,627 - supervisor - INFO - Heartbeat sent at 1778570037.626425.
+2026-05-12 09:14:07,635 - supervisor - INFO - Heartbeat sent at 1778570047.6338408.
+2026-05-12 09:14:17,639 - supervisor - INFO - Heartbeat sent at 1778570057.638008.
+2026-05-12 09:14:27,646 - supervisor - INFO - Heartbeat sent at 1778570067.645046.
+2026-05-12 09:14:37,653 - supervisor - INFO - Heartbeat sent at 1778570077.652076.
+2026-05-12 09:14:47,660 - supervisor - INFO - Heartbeat sent at 1778570087.659571.
+2026-05-12 09:14:57,664 - supervisor - INFO - Heartbeat sent at 1778570097.6634738.
+2026-05-12 09:15:07,671 - supervisor - INFO - Heartbeat sent at 1778570107.670242.
+2026-05-12 09:15:17,674 - supervisor - INFO - Heartbeat sent at 1778570117.6731899.
+2026-05-12 09:15:27,680 - supervisor - INFO - Heartbeat sent at 1778570127.678619.
+2026-05-12 09:15:37,688 - supervisor - INFO - Heartbeat sent at 1778570137.686676.
+2026-05-12 09:15:47,690 - supervisor - INFO - Heartbeat sent at 1778570147.689218.
+2026-05-12 09:15:57,695 - supervisor - INFO - Heartbeat sent at 1778570157.6932218.
+2026-05-12 09:16:07,698 - supervisor - INFO - Heartbeat sent at 1778570167.697491.
+2026-05-12 09:16:17,703 - supervisor - INFO - Heartbeat sent at 1778570177.702326.
+2026-05-12 09:16:27,706 - supervisor - INFO - Heartbeat sent at 1778570187.705291.
+2026-05-12 09:16:37,714 - supervisor - INFO - Heartbeat sent at 1778570197.7125618.
+2026-05-12 09:16:47,719 - supervisor - INFO - Heartbeat sent at 1778570207.718561.
+2026-05-12 09:16:57,726 - supervisor - INFO - Heartbeat sent at 1778570217.725309.
+2026-05-12 09:17:07,732 - supervisor - INFO - Heartbeat sent at 1778570227.731209.
+2026-05-12 09:17:17,738 - supervisor - INFO - Heartbeat sent at 1778570237.737424.
+2026-05-12 09:17:27,743 - supervisor - INFO - Heartbeat sent at 1778570247.741973.
+2026-05-12 09:17:37,745 - supervisor - INFO - Heartbeat sent at 1778570257.744748.
+2026-05-12 09:17:47,752 - supervisor - INFO - Heartbeat sent at 1778570267.7511349.
+2026-05-12 09:17:57,760 - supervisor - INFO - Heartbeat sent at 1778570277.758944.
+2026-05-12 09:18:07,767 - supervisor - INFO - Heartbeat sent at 1778570287.766338.
+2026-05-12 09:18:17,775 - supervisor - INFO - Heartbeat sent at 1778570297.7738419.
+2026-05-12 09:18:27,782 - supervisor - INFO - Heartbeat sent at 1778570307.780961.
+2026-05-12 09:18:37,789 - supervisor - INFO - Heartbeat sent at 1778570317.7879958.
+2026-05-12 09:18:47,792 - supervisor - INFO - Heartbeat sent at 1778570327.7916028.
+2026-05-12 09:18:57,796 - supervisor - INFO - Heartbeat sent at 1778570337.795043.
+2026-05-12 09:19:07,800 - supervisor - INFO - Heartbeat sent at 1778570347.798879.
+2026-05-12 09:19:17,807 - supervisor - INFO - Heartbeat sent at 1778570357.806368.
+2026-05-12 09:19:27,813 - supervisor - INFO - Heartbeat sent at 1778570367.8125901.
+2026-05-12 09:19:37,818 - supervisor - INFO - Heartbeat sent at 1778570377.8177679.
+2026-05-12 09:19:47,823 - supervisor - INFO - Heartbeat sent at 1778570387.822238.
+2026-05-12 09:19:57,830 - supervisor - INFO - Heartbeat sent at 1778570397.828835.
+2026-05-12 09:20:10,124 - supervisor - INFO - Application registry initialized
+2026-05-12 09:20:10,127 - supervisor - INFO - Command processor initialized
+2026-05-12 09:20:11,296 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 09:20:11,296 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 09:20:11,297 - supervisor - INFO - Heartbeat service started.
+2026-05-12 09:20:11,297 - supervisor - INFO - Heartbeat sent at 1778570411.297336.
+2026-05-12 09:20:15,037 - supervisor - INFO - Command c3eb7d31-3d6c-4e52-937f-7b5208fb2e6f is valid.
+2026-05-12 09:20:15,038 - supervisor - INFO - PUSH command received.
+2026-05-12 09:20:15,038 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 09:20:15,436 - supervisor - INFO - Application already registered
+2026-05-12 09:20:15,437 - supervisor - ERROR - Application not successfully registered
+2026-05-12 09:20:21,307 - supervisor - INFO - Heartbeat sent at 1778570421.3053288.
+2026-05-12 09:20:31,313 - supervisor - INFO - Heartbeat sent at 1778570431.3123.
+2026-05-12 09:20:41,321 - supervisor - INFO - Heartbeat sent at 1778570441.31986.
+2026-05-12 09:20:45,325 - supervisor - INFO - Application registry initialized
+2026-05-12 09:20:45,327 - supervisor - INFO - Command processor initialized
+2026-05-12 09:20:46,519 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 09:20:46,522 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 09:20:46,523 - supervisor - INFO - Heartbeat service started.
+2026-05-12 09:20:46,524 - supervisor - INFO - Heartbeat sent at 1778570446.523442.
+2026-05-12 09:20:51,861 - supervisor - INFO - Command 7d42345d-0e86-4787-a754-ebe388adae87 is valid.
+2026-05-12 09:20:51,862 - supervisor - INFO - PUSH command received.
+2026-05-12 09:20:51,862 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 09:20:52,282 - supervisor - INFO - Application already registered
+2026-05-12 09:20:56,534 - supervisor - INFO - Heartbeat sent at 1778570456.532794.
+2026-05-12 09:21:06,543 - supervisor - INFO - Heartbeat sent at 1778570466.5414631.
+2026-05-12 09:21:15,613 - supervisor - INFO - Application registry initialized
+2026-05-12 09:21:15,616 - supervisor - INFO - Command processor initialized
+2026-05-12 09:21:16,800 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 09:21:16,801 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 09:21:16,802 - supervisor - INFO - Heartbeat service started.
+2026-05-12 09:21:16,803 - supervisor - INFO - Heartbeat sent at 1778570476.8025799.
+2026-05-12 09:21:21,633 - supervisor - INFO - Command 5754e583-6143-45bb-8d19-ff48f33b21de is valid.
+2026-05-12 09:21:21,633 - supervisor - INFO - PUSH command received.
+2026-05-12 09:21:21,634 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 09:21:22,034 - supervisor - INFO - Application already registered
+2026-05-12 09:21:26,812 - supervisor - INFO - Heartbeat sent at 1778570486.810975.
+2026-05-12 09:21:36,816 - supervisor - INFO - Heartbeat service stopped.
+2026-05-12 09:21:41,339 - supervisor - INFO - Application registry initialized
+2026-05-12 09:21:41,341 - supervisor - INFO - Command processor initialized
+2026-05-12 09:21:42,524 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 09:21:42,525 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 09:21:42,526 - supervisor - INFO - Heartbeat service started.
+2026-05-12 09:21:42,526 - supervisor - INFO - Heartbeat sent at 1778570502.525929.
+2026-05-12 09:21:45,014 - supervisor - INFO - Command f0990e46-8247-49e8-9391-b4559177d53f is valid.
+2026-05-12 09:21:45,015 - supervisor - INFO - PUSH command received.
+2026-05-12 09:21:45,015 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 09:21:45,382 - supervisor - INFO - Application already registered
+2026-05-12 09:21:52,534 - supervisor - INFO - Heartbeat sent at 1778570512.533233.
+2026-05-12 09:22:02,540 - supervisor - INFO - Heartbeat sent at 1778570522.538938.
+2026-05-12 09:22:12,544 - supervisor - INFO - Heartbeat sent at 1778570532.5425868.
+2026-05-12 09:22:26,112 - supervisor - INFO - Application registry initialized
+2026-05-12 09:22:26,115 - supervisor - INFO - Command processor initialized
+2026-05-12 09:22:27,317 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 09:22:27,317 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 09:22:27,318 - supervisor - INFO - Heartbeat service started.
+2026-05-12 09:22:27,319 - supervisor - INFO - Heartbeat sent at 1778570547.3186991.
+2026-05-12 09:22:28,932 - supervisor - INFO - Command 1634f017-9811-4c9a-a661-1fb6478699c2 is valid.
+2026-05-12 09:22:28,933 - supervisor - INFO - PUSH command received.
+2026-05-12 09:22:28,933 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 09:22:29,303 - supervisor - INFO - Application already registered
+2026-05-12 09:22:37,326 - supervisor - INFO - Heartbeat sent at 1778570557.3247402.
+2026-05-12 09:22:47,333 - supervisor - INFO - Heartbeat sent at 1778570567.331868.
+2026-05-12 09:22:57,337 - supervisor - INFO - Heartbeat sent at 1778570577.33535.
+2026-05-12 09:23:07,340 - supervisor - INFO - Heartbeat sent at 1778570587.33853.
+2026-05-12 09:23:17,348 - supervisor - INFO - Heartbeat sent at 1778570597.346715.
+2026-05-12 09:23:27,353 - supervisor - INFO - Heartbeat sent at 1778570607.351627.
+2026-05-12 09:23:37,360 - supervisor - INFO - Heartbeat sent at 1778570617.35979.
+2026-05-12 09:23:47,368 - supervisor - INFO - Heartbeat sent at 1778570627.366418.
+2026-05-12 09:23:57,370 - supervisor - INFO - Heartbeat sent at 1778570637.369508.
+2026-05-12 09:24:07,377 - supervisor - INFO - Heartbeat sent at 1778570647.37676.
+2026-05-12 09:24:17,385 - supervisor - INFO - Heartbeat sent at 1778570657.383564.
+2026-05-12 09:24:27,393 - supervisor - INFO - Heartbeat sent at 1778570667.3921752.
+2026-05-12 09:24:37,401 - supervisor - INFO - Heartbeat sent at 1778570677.3996081.
+2026-05-12 09:24:47,407 - supervisor - INFO - Heartbeat sent at 1778570687.405813.
+2026-05-12 09:24:57,414 - supervisor - INFO - Heartbeat sent at 1778570697.4130602.
+2026-05-12 09:25:07,418 - supervisor - INFO - Heartbeat sent at 1778570707.416935.
+2026-05-12 09:25:17,425 - supervisor - INFO - Heartbeat sent at 1778570717.423979.
+2026-05-12 09:25:27,433 - supervisor - INFO - Heartbeat sent at 1778570727.4317849.
+2026-05-12 09:25:37,439 - supervisor - INFO - Heartbeat sent at 1778570737.438007.
+2026-05-12 09:25:47,446 - supervisor - INFO - Heartbeat sent at 1778570747.445197.
+2026-05-12 09:25:57,452 - supervisor - INFO - Heartbeat sent at 1778570757.451169.
+2026-05-12 09:26:04,894 - supervisor - INFO - Application registry initialized
+2026-05-12 09:26:04,896 - supervisor - INFO - Command processor initialized
+2026-05-12 09:26:06,058 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 09:26:06,060 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 09:26:06,061 - supervisor - INFO - Heartbeat service started.
+2026-05-12 09:26:06,062 - supervisor - INFO - Heartbeat sent at 1778570766.0614479.
+2026-05-12 09:26:15,097 - supervisor - INFO - Command c35755b2-b1c5-4614-b6a7-841f42b4bbf5 is valid.
+2026-05-12 09:26:15,098 - supervisor - INFO - PUSH command received.
+2026-05-12 09:26:15,098 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 09:26:16,071 - supervisor - INFO - Heartbeat sent at 1778570776.0703318.
+2026-05-12 09:26:26,079 - supervisor - INFO - Heartbeat sent at 1778570786.077548.
+2026-05-12 09:26:36,085 - supervisor - INFO - Heartbeat sent at 1778570796.083413.
+2026-05-12 09:26:42,196 - supervisor - INFO - Application already registered
+2026-05-12 09:26:46,092 - supervisor - INFO - Heartbeat sent at 1778570806.090524.
+2026-05-12 09:26:58,405 - supervisor - INFO - Application registry initialized
+2026-05-12 09:26:58,407 - supervisor - INFO - Command processor initialized
+2026-05-12 09:26:59,587 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 09:26:59,588 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 09:26:59,588 - supervisor - INFO - Heartbeat service started.
+2026-05-12 09:26:59,588 - supervisor - INFO - Heartbeat sent at 1778570819.588614.
+2026-05-12 09:27:00,763 - supervisor - INFO - Command f6c2c31e-76fa-4a58-8429-0793508ec1c1 is valid.
+2026-05-12 09:27:00,764 - supervisor - INFO - PUSH command received.
+2026-05-12 09:27:00,764 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 09:27:01,142 - supervisor - INFO - Application already registered
+2026-05-12 09:27:09,595 - supervisor - INFO - Heartbeat sent at 1778570829.593905.
+2026-05-12 09:27:19,603 - supervisor - INFO - Heartbeat sent at 1778570839.60197.
+2026-05-12 09:27:29,606 - supervisor - INFO - Heartbeat sent at 1778570849.605178.
+2026-05-12 09:27:39,613 - supervisor - INFO - Heartbeat sent at 1778570859.6122508.
+2026-05-12 09:27:49,620 - supervisor - INFO - Heartbeat sent at 1778570869.619781.
+2026-05-12 09:27:59,628 - supervisor - INFO - Heartbeat sent at 1778570879.627108.
+2026-05-12 09:28:09,635 - supervisor - INFO - Heartbeat sent at 1778570889.633999.
+2026-05-12 09:28:19,642 - supervisor - INFO - Heartbeat sent at 1778570899.641629.
+2026-05-12 09:28:29,650 - supervisor - INFO - Heartbeat sent at 1778570909.648798.
+2026-05-12 09:28:39,658 - supervisor - INFO - Heartbeat sent at 1778570919.6565518.
+2026-05-12 09:28:49,661 - supervisor - INFO - Heartbeat sent at 1778570929.659821.
+2026-05-12 09:28:59,667 - supervisor - INFO - Heartbeat sent at 1778570939.666163.
+2026-05-12 09:29:09,675 - supervisor - INFO - Heartbeat sent at 1778570949.6738591.
+2026-05-12 09:29:19,682 - supervisor - INFO - Heartbeat sent at 1778570959.681419.
+2026-05-12 09:29:29,689 - supervisor - INFO - Heartbeat sent at 1778570969.688256.
+2026-05-12 09:29:39,693 - supervisor - INFO - Heartbeat sent at 1778570979.692372.
+2026-05-12 09:29:49,701 - supervisor - INFO - Heartbeat sent at 1778570989.699326.
+2026-05-12 09:29:59,708 - supervisor - INFO - Heartbeat sent at 1778570999.707006.
+2026-05-12 09:30:09,714 - supervisor - INFO - Heartbeat sent at 1778571009.713469.
+2026-05-12 09:30:19,722 - supervisor - INFO - Heartbeat sent at 1778571019.7211258.
+2026-05-12 09:30:29,730 - supervisor - INFO - Heartbeat sent at 1778571029.729033.
+2026-05-12 09:30:39,733 - supervisor - INFO - Heartbeat sent at 1778571039.7324958.
+2026-05-12 09:30:49,740 - supervisor - INFO - Heartbeat sent at 1778571049.739378.
+2026-05-12 09:30:59,748 - supervisor - INFO - Heartbeat sent at 1778571059.746864.
+2026-05-12 09:31:09,756 - supervisor - INFO - Heartbeat sent at 1778571069.754975.
+2026-05-12 09:31:19,762 - supervisor - INFO - Heartbeat sent at 1778571079.7610948.
+2026-05-12 09:31:29,768 - supervisor - INFO - Heartbeat sent at 1778571089.766637.
+2026-05-12 09:31:39,771 - supervisor - INFO - Heartbeat sent at 1778571099.770337.
+2026-05-12 09:31:49,779 - supervisor - INFO - Heartbeat sent at 1778571109.777332.
+2026-05-12 09:31:59,785 - supervisor - INFO - Heartbeat sent at 1778571119.7839732.
+2026-05-12 09:32:09,787 - supervisor - INFO - Heartbeat sent at 1778571129.786098.
+2026-05-12 09:32:19,794 - supervisor - INFO - Heartbeat sent at 1778571139.7933922.
+2026-05-12 09:32:29,798 - supervisor - INFO - Heartbeat sent at 1778571149.7972538.
+2026-05-12 09:32:39,801 - supervisor - INFO - Heartbeat sent at 1778571159.800663.
+2026-05-12 09:32:49,807 - supervisor - INFO - Heartbeat sent at 1778571169.806138.
+2026-05-12 09:32:59,812 - supervisor - INFO - Heartbeat sent at 1778571179.811383.
+2026-05-12 09:33:09,815 - supervisor - INFO - Heartbeat sent at 1778571189.813901.
+2026-05-12 09:33:19,822 - supervisor - INFO - Heartbeat sent at 1778571199.8208141.
+2026-05-12 09:33:29,829 - supervisor - INFO - Heartbeat sent at 1778571209.827873.
+2026-05-12 09:33:39,837 - supervisor - INFO - Heartbeat sent at 1778571219.8356721.
+2026-05-12 09:33:49,842 - supervisor - INFO - Heartbeat sent at 1778571229.840974.
+2026-05-12 09:33:59,849 - supervisor - INFO - Heartbeat sent at 1778571239.847415.
+2026-05-12 09:34:09,855 - supervisor - INFO - Heartbeat sent at 1778571249.854733.
+2026-05-12 09:34:19,863 - supervisor - INFO - Heartbeat sent at 1778571259.861737.
+2026-05-12 09:34:29,870 - supervisor - INFO - Heartbeat sent at 1778571269.869072.
+2026-05-12 09:34:39,877 - supervisor - INFO - Heartbeat sent at 1778571279.8755279.
+2026-05-12 09:34:49,879 - supervisor - INFO - Heartbeat sent at 1778571289.8784268.
+2026-05-12 09:34:59,885 - supervisor - INFO - Heartbeat sent at 1778571299.8842409.
+2026-05-12 09:35:09,889 - supervisor - INFO - Heartbeat sent at 1778571309.889059.
+2026-05-12 09:35:19,893 - supervisor - INFO - Heartbeat sent at 1778571319.891955.
+2026-05-12 09:35:29,900 - supervisor - INFO - Heartbeat sent at 1778571329.89934.
+2026-05-12 09:35:39,902 - supervisor - INFO - Heartbeat sent at 1778571339.9015622.
+2026-05-12 09:35:49,906 - supervisor - INFO - Heartbeat sent at 1778571349.905014.
+2026-05-12 09:35:59,911 - supervisor - INFO - Heartbeat sent at 1778571359.90963.
+2026-05-12 09:36:09,917 - supervisor - INFO - Heartbeat sent at 1778571369.9167411.
+2026-05-12 09:36:19,906 - supervisor - INFO - Heartbeat sent at 1778571379.905259.
+2026-05-12 09:36:29,904 - supervisor - INFO - Heartbeat sent at 1778571389.902752.
+2026-05-12 09:36:39,905 - supervisor - INFO - Heartbeat sent at 1778571399.904194.
+2026-05-12 09:36:49,906 - supervisor - INFO - Heartbeat sent at 1778571409.90518.
+2026-05-12 09:36:59,910 - supervisor - INFO - Heartbeat sent at 1778571419.9086878.
+2026-05-12 09:37:09,916 - supervisor - INFO - Heartbeat sent at 1778571429.915503.
+2026-05-12 09:37:19,922 - supervisor - INFO - Heartbeat sent at 1778571439.920931.
+2026-05-12 09:37:29,926 - supervisor - INFO - Heartbeat sent at 1778571449.92511.
+2026-05-12 09:37:39,932 - supervisor - INFO - Heartbeat sent at 1778571459.9311092.
+2026-05-12 09:37:49,936 - supervisor - INFO - Heartbeat sent at 1778571469.9346318.
+2026-05-12 09:37:59,942 - supervisor - INFO - Heartbeat sent at 1778571479.941268.
+2026-05-12 09:38:09,944 - supervisor - INFO - Heartbeat sent at 1778571489.943946.
+2026-05-12 09:38:19,948 - supervisor - INFO - Heartbeat sent at 1778571499.947725.
+2026-05-12 09:38:29,952 - supervisor - INFO - Heartbeat sent at 1778571509.951096.
+2026-05-12 09:38:39,956 - supervisor - INFO - Heartbeat sent at 1778571519.9547231.
+2026-05-12 09:38:49,959 - supervisor - INFO - Heartbeat sent at 1778571529.958726.
+2026-05-12 09:38:59,967 - supervisor - INFO - Heartbeat sent at 1778571539.96577.
+2026-05-12 09:39:09,970 - supervisor - INFO - Heartbeat sent at 1778571549.969078.
+2026-05-12 09:39:19,976 - supervisor - INFO - Heartbeat sent at 1778571559.975285.
+2026-05-12 09:39:29,983 - supervisor - INFO - Heartbeat sent at 1778571569.982112.
+2026-05-12 09:39:39,989 - supervisor - INFO - Heartbeat sent at 1778571579.9883.
+2026-05-12 09:39:49,993 - supervisor - INFO - Heartbeat sent at 1778571589.9919848.
+2026-05-12 09:40:00,000 - supervisor - INFO - Heartbeat sent at 1778571599.998662.
+2026-05-12 09:40:10,004 - supervisor - INFO - Heartbeat sent at 1778571610.0037591.
+2026-05-12 09:40:20,012 - supervisor - INFO - Heartbeat sent at 1778571620.010839.
+2026-05-12 09:40:30,015 - supervisor - INFO - Heartbeat sent at 1778571630.0148082.
+2026-05-12 09:40:40,021 - supervisor - INFO - Heartbeat sent at 1778571640.0205061.
+2026-05-12 09:40:50,027 - supervisor - INFO - Heartbeat sent at 1778571650.0264802.
+2026-05-12 09:41:00,032 - supervisor - INFO - Heartbeat sent at 1778571660.0308852.
+2026-05-12 09:41:10,038 - supervisor - INFO - Heartbeat sent at 1778571670.037547.
+2026-05-12 09:41:20,041 - supervisor - INFO - Heartbeat sent at 1778571680.039716.
+2026-05-12 09:41:30,047 - supervisor - INFO - Heartbeat sent at 1778571690.045575.
+2026-05-12 09:41:40,049 - supervisor - INFO - Heartbeat sent at 1778571700.048697.
+2026-05-12 09:41:50,056 - supervisor - INFO - Heartbeat sent at 1778571710.055261.
+2026-05-12 09:42:00,062 - supervisor - INFO - Heartbeat sent at 1778571720.062378.
+2026-05-12 09:42:10,068 - supervisor - INFO - Heartbeat sent at 1778571730.067523.
+2026-05-12 09:42:20,075 - supervisor - INFO - Heartbeat sent at 1778571740.073972.
+2026-05-12 09:42:30,079 - supervisor - INFO - Heartbeat sent at 1778571750.07903.
+2026-05-12 09:42:40,082 - supervisor - INFO - Heartbeat sent at 1778571760.0804758.
+2026-05-12 09:42:50,086 - supervisor - INFO - Heartbeat sent at 1778571770.085629.
+2026-05-12 09:43:00,093 - supervisor - INFO - Heartbeat sent at 1778571780.09281.
+2026-05-12 09:43:10,100 - supervisor - INFO - Heartbeat sent at 1778571790.0995572.
+2026-05-12 09:43:20,103 - supervisor - INFO - Heartbeat sent at 1778571800.103186.
+2026-05-12 09:43:30,111 - supervisor - INFO - Heartbeat sent at 1778571810.109331.
+2026-05-12 09:43:40,118 - supervisor - INFO - Heartbeat sent at 1778571820.1164951.
+2026-05-12 09:43:50,125 - supervisor - INFO - Heartbeat sent at 1778571830.124129.
+2026-05-12 09:44:00,132 - supervisor - INFO - Heartbeat sent at 1778571840.1313841.
+2026-05-12 09:44:10,135 - supervisor - INFO - Heartbeat sent at 1778571850.13467.
+2026-05-12 09:44:20,142 - supervisor - INFO - Heartbeat sent at 1778571860.1416829.
+2026-05-12 09:44:30,148 - supervisor - INFO - Heartbeat sent at 1778571870.148111.
+2026-05-12 09:44:40,156 - supervisor - INFO - Heartbeat sent at 1778571880.1545038.
+2026-05-12 09:44:50,163 - supervisor - INFO - Heartbeat sent at 1778571890.1623008.
+2026-05-12 09:45:00,170 - supervisor - INFO - Heartbeat sent at 1778571900.169067.
+2026-05-12 09:45:10,177 - supervisor - INFO - Heartbeat sent at 1778571910.1758761.
+2026-05-12 09:45:20,181 - supervisor - INFO - Heartbeat sent at 1778571920.17979.
+2026-05-12 09:45:30,189 - supervisor - INFO - Heartbeat sent at 1778571930.1876721.
+2026-05-12 09:45:40,195 - supervisor - INFO - Heartbeat sent at 1778571940.193865.
+2026-05-12 09:45:50,201 - supervisor - INFO - Heartbeat sent at 1778571950.2001238.
+2026-05-12 09:46:00,208 - supervisor - INFO - Heartbeat sent at 1778571960.207675.
+2026-05-12 09:46:10,212 - supervisor - INFO - Heartbeat sent at 1778571970.211182.
+2026-05-12 09:46:20,219 - supervisor - INFO - Heartbeat sent at 1778571980.2183812.
+2026-05-12 09:46:30,224 - supervisor - INFO - Heartbeat sent at 1778571990.2230499.
+2026-05-12 09:50:25,177 - supervisor - INFO - Application registry initialized
+2026-05-12 09:50:25,182 - supervisor - INFO - Command processor initialized
+2026-05-12 09:50:26,360 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 09:50:26,361 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 09:50:26,361 - supervisor - INFO - Heartbeat service started.
+2026-05-12 09:50:26,362 - supervisor - INFO - Heartbeat sent at 1778572226.361632.
+2026-05-12 09:50:36,368 - supervisor - INFO - Heartbeat sent at 1778572236.367109.
+2026-05-12 09:50:44,811 - supervisor - INFO - Command 44e10f1b-e25d-4f6f-aa77-373d3de1334c is valid.
+2026-05-12 09:50:44,811 - supervisor - INFO - PUSH command received.
+2026-05-12 09:50:44,811 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 09:50:44,812 - supervisor - INFO - Application version already registered, no action performed
+2026-05-12 09:50:46,371 - supervisor - INFO - Heartbeat sent at 1778572246.37006.
+2026-05-12 09:50:56,378 - supervisor - INFO - Heartbeat sent at 1778572256.37695.
+2026-05-12 09:51:06,381 - supervisor - INFO - Heartbeat sent at 1778572266.379562.
+2026-05-12 09:51:16,388 - supervisor - INFO - Heartbeat sent at 1778572276.387407.
+2026-05-12 09:51:26,391 - supervisor - INFO - Heartbeat sent at 1778572286.390177.
+2026-05-12 09:51:27,034 - supervisor - INFO - Command b476e2ca-a552-4568-ac06-5a39aa28b807 is valid.
+2026-05-12 09:51:27,034 - supervisor - INFO - PUSH command received.
+2026-05-12 09:51:27,034 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 09:51:27,035 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 09:51:27,438 - supervisor - INFO - New version of the application registered and activated
+2026-05-12 09:51:36,396 - supervisor - INFO - Heartbeat sent at 1778572296.394688.
+2026-05-12 09:51:46,400 - supervisor - INFO - Heartbeat sent at 1778572306.39913.
+2026-05-12 09:51:56,404 - supervisor - INFO - Heartbeat sent at 1778572316.4031239.
+2026-05-12 09:52:06,410 - supervisor - INFO - Heartbeat sent at 1778572326.40978.
+2026-05-12 09:52:16,415 - supervisor - INFO - Heartbeat sent at 1778572336.414047.
+2026-05-12 09:52:26,420 - supervisor - INFO - Heartbeat sent at 1778572346.419372.
+2026-05-12 09:52:36,424 - supervisor - INFO - Heartbeat sent at 1778572356.4231622.
+2026-05-12 09:52:46,429 - supervisor - INFO - Heartbeat sent at 1778572366.428096.
+2026-05-12 09:52:56,437 - supervisor - INFO - Heartbeat sent at 1778572376.435164.
+2026-05-12 09:53:00,877 - supervisor - INFO - Command 85d6ce02-7ac9-4f15-8eb0-52337d9c3711 is valid.
+2026-05-12 09:53:00,877 - supervisor - INFO - PUSH command received.
+2026-05-12 09:53:00,877 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 09:53:00,878 - supervisor - INFO - Application version already registered, no action performed
+2026-05-12 09:53:06,439 - supervisor - INFO - Heartbeat sent at 1778572386.4383512.
+2026-05-12 09:53:16,446 - supervisor - INFO - Heartbeat sent at 1778572396.445761.
+2026-05-12 09:53:26,452 - supervisor - INFO - Heartbeat sent at 1778572406.450416.
+2026-05-12 09:53:30,239 - supervisor - INFO - Command 1d34f879-b35f-4ab5-899e-f70671841d26 is valid.
+2026-05-12 09:53:30,240 - supervisor - INFO - PUSH command received.
+2026-05-12 09:53:30,240 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 09:53:30,911 - supervisor - INFO - Application successfully registered
+2026-05-12 09:53:36,455 - supervisor - INFO - Heartbeat sent at 1778572416.454304.
+2026-05-12 09:53:46,461 - supervisor - INFO - Heartbeat sent at 1778572426.460808.
+2026-05-12 09:53:56,466 - supervisor - INFO - Heartbeat sent at 1778572436.464973.
+2026-05-12 09:54:06,472 - supervisor - INFO - Heartbeat sent at 1778572446.471006.
+2026-05-12 09:54:16,477 - supervisor - INFO - Heartbeat sent at 1778572456.475735.
+2026-05-12 09:54:26,483 - supervisor - INFO - Heartbeat sent at 1778572466.482285.
+2026-05-12 09:54:36,487 - supervisor - INFO - Heartbeat sent at 1778572476.486177.
+2026-05-12 09:54:46,495 - supervisor - INFO - Heartbeat sent at 1778572486.4936352.
+2026-05-12 09:54:56,502 - supervisor - INFO - Heartbeat sent at 1778572496.501004.
+2026-05-12 09:55:06,510 - supervisor - INFO - Heartbeat sent at 1778572506.508438.
+2026-05-12 09:55:16,512 - supervisor - INFO - Heartbeat sent at 1778572516.5113358.
+2026-05-12 09:55:26,515 - supervisor - INFO - Heartbeat sent at 1778572526.514103.
+2026-05-12 09:55:36,518 - supervisor - INFO - Heartbeat sent at 1778572536.5176802.
+2026-05-12 09:55:46,526 - supervisor - INFO - Heartbeat sent at 1778572546.5247061.
+2026-05-12 09:55:56,533 - supervisor - INFO - Heartbeat sent at 1778572556.532288.
+2026-05-12 09:56:06,537 - supervisor - INFO - Heartbeat sent at 1778572566.536919.
+2026-05-12 09:56:16,544 - supervisor - INFO - Heartbeat sent at 1778572576.5434508.
+2026-05-12 09:56:26,549 - supervisor - INFO - Heartbeat sent at 1778572586.547711.
+2026-05-12 09:56:36,555 - supervisor - INFO - Heartbeat sent at 1778572596.554027.
+2026-05-12 09:56:46,559 - supervisor - INFO - Heartbeat sent at 1778572606.557987.
+2026-05-12 09:56:56,566 - supervisor - INFO - Heartbeat sent at 1778572616.565032.
+2026-05-12 09:57:06,573 - supervisor - INFO - Heartbeat sent at 1778572626.5716312.
+2026-05-12 09:57:16,579 - supervisor - INFO - Heartbeat sent at 1778572636.578466.
+2026-05-12 09:57:26,584 - supervisor - INFO - Heartbeat sent at 1778572646.583497.
+2026-05-12 09:57:36,591 - supervisor - INFO - Heartbeat sent at 1778572656.5893319.
+2026-05-12 09:57:46,597 - supervisor - INFO - Heartbeat sent at 1778572666.597034.
+2026-05-12 09:57:56,600 - supervisor - INFO - Heartbeat sent at 1778572676.59933.
+2026-05-12 09:58:06,607 - supervisor - INFO - Heartbeat sent at 1778572686.60606.
+2026-05-12 09:58:16,614 - supervisor - INFO - Heartbeat sent at 1778572696.613503.
+2026-05-12 09:58:26,618 - supervisor - INFO - Heartbeat sent at 1778572706.61691.
+2026-05-12 09:58:36,624 - supervisor - INFO - Heartbeat sent at 1778572716.623619.
+2026-05-12 09:58:46,631 - supervisor - INFO - Heartbeat sent at 1778572726.6302779.
+2026-05-12 09:58:56,638 - supervisor - INFO - Heartbeat sent at 1778572736.6370502.
+2026-05-12 09:59:06,642 - supervisor - INFO - Heartbeat sent at 1778572746.6408541.
+2026-05-12 09:59:16,646 - supervisor - INFO - Heartbeat sent at 1778572756.645139.
+2026-05-12 09:59:26,652 - supervisor - INFO - Heartbeat sent at 1778572766.651962.
+2026-05-12 09:59:36,658 - supervisor - INFO - Heartbeat sent at 1778572776.657514.
+2026-05-12 09:59:46,665 - supervisor - INFO - Heartbeat sent at 1778572786.6643882.
+2026-05-12 09:59:56,672 - supervisor - INFO - Heartbeat sent at 1778572796.671294.
+2026-05-12 10:00:06,680 - supervisor - INFO - Heartbeat sent at 1778572806.678656.
+2026-05-12 10:00:16,684 - supervisor - INFO - Heartbeat sent at 1778572816.6831439.
+2026-05-12 10:00:26,691 - supervisor - INFO - Heartbeat sent at 1778572826.689795.
+2026-05-12 10:00:36,698 - supervisor - INFO - Heartbeat sent at 1778572836.6971798.
+2026-05-12 10:00:46,705 - supervisor - INFO - Heartbeat sent at 1778572846.7040908.
+2026-05-12 10:00:56,711 - supervisor - INFO - Heartbeat sent at 1778572856.710135.
+2026-05-12 10:01:06,716 - supervisor - INFO - Heartbeat sent at 1778572866.71486.
+2026-05-12 10:01:16,719 - supervisor - INFO - Heartbeat sent at 1778572876.718266.
+2026-05-12 10:01:26,722 - supervisor - INFO - Heartbeat sent at 1778572886.720884.
+2026-05-12 10:01:36,729 - supervisor - INFO - Heartbeat sent at 1778572896.728523.
+2026-05-12 10:01:46,736 - supervisor - INFO - Heartbeat sent at 1778572906.735509.
+2026-05-12 10:01:56,742 - supervisor - INFO - Heartbeat sent at 1778572916.741606.
+2026-05-12 10:02:06,750 - supervisor - INFO - Heartbeat sent at 1778572926.748538.
+2026-05-12 10:02:16,754 - supervisor - INFO - Heartbeat sent at 1778572936.753441.
+2026-05-12 10:02:26,761 - supervisor - INFO - Heartbeat sent at 1778572946.7608588.
+2026-05-12 10:02:36,765 - supervisor - INFO - Heartbeat sent at 1778572956.764069.
+2026-05-12 10:02:46,772 - supervisor - INFO - Heartbeat sent at 1778572966.7713459.
+2026-05-12 10:02:56,779 - supervisor - INFO - Heartbeat sent at 1778572976.777536.
+2026-05-12 10:03:06,784 - supervisor - INFO - Heartbeat sent at 1778572986.782988.
+2026-05-12 10:03:16,790 - supervisor - INFO - Heartbeat sent at 1778572996.790124.
+2026-05-12 10:03:33,831 - supervisor - INFO - Application registry initialized
+2026-05-12 10:03:33,833 - supervisor - INFO - Command processor initialized
+2026-05-12 10:03:35,018 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 10:03:35,018 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 10:03:35,019 - supervisor - INFO - Heartbeat service started.
+2026-05-12 10:03:35,019 - supervisor - INFO - Heartbeat sent at 1778573015.019316.
+2026-05-12 10:03:45,026 - supervisor - INFO - Heartbeat sent at 1778573025.025578.
+2026-05-12 10:03:55,028 - supervisor - INFO - Heartbeat sent at 1778573035.027484.
+2026-05-12 10:04:05,029 - supervisor - INFO - Heartbeat sent at 1778573045.028704.
+2026-05-12 10:04:15,033 - supervisor - INFO - Heartbeat sent at 1778573055.033229.
+2026-05-12 10:04:25,036 - supervisor - INFO - Heartbeat sent at 1778573065.0360608.
+2026-05-12 10:04:32,360 - supervisor - INFO - Command d65cf095-d7ca-4d71-a8bd-9ad9b0f18884 is valid.
+2026-05-12 10:04:32,360 - supervisor - INFO - PUSH command received.
+2026-05-12 10:04:32,360 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 10:04:32,361 - supervisor - INFO - Application version already registered, no action performed
+2026-05-12 10:04:35,042 - supervisor - INFO - Heartbeat sent at 1778573075.041635.
+2026-05-12 10:04:45,043 - supervisor - INFO - Heartbeat sent at 1778573085.043016.
+2026-05-12 10:04:52,470 - supervisor - INFO - Command a77b6bb1-6bd7-44e6-8c2c-9b0fe9f04d5e is valid.
+2026-05-12 10:04:52,470 - supervisor - INFO - PUSH command received.
+2026-05-12 10:04:52,471 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 10:04:52,471 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 10:04:52,867 - supervisor - INFO - New version of the application registered and activated
+2026-05-12 10:04:55,049 - supervisor - INFO - Heartbeat sent at 1778573095.049214.
+2026-05-12 10:05:05,051 - supervisor - INFO - Heartbeat sent at 1778573105.050876.
+2026-05-12 10:05:15,054 - supervisor - INFO - Heartbeat sent at 1778573115.0538619.
+2026-05-12 10:05:25,058 - supervisor - INFO - Heartbeat sent at 1778573125.057558.
+2026-05-12 10:05:34,834 - supervisor - INFO - Command dede21b3-c03b-4ed1-8733-e9214e449f45 is valid.
+2026-05-12 10:05:34,834 - supervisor - INFO - PUSH command received.
+2026-05-12 10:05:34,834 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 10:05:35,064 - supervisor - INFO - Heartbeat sent at 1778573135.063575.
+2026-05-12 10:05:35,476 - supervisor - INFO - Application successfully registered
+2026-05-12 10:05:45,066 - supervisor - INFO - Heartbeat sent at 1778573145.065564.
+2026-05-12 10:05:55,068 - supervisor - INFO - Heartbeat sent at 1778573155.0679839.
+2026-05-12 10:06:05,072 - supervisor - INFO - Heartbeat sent at 1778573165.072148.
+2026-05-12 10:06:13,868 - supervisor - INFO - Command d9fbabc1-e14b-4403-859c-c9c4d52b79cb is valid.
+2026-05-12 10:06:13,869 - supervisor - INFO - PUSH command received.
+2026-05-12 10:06:13,869 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 10:06:14,497 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Fetching updates before checkout...
+2026-05-12 10:06:14,827 - supervisor - INFO - Checking out repository 'flexia-robosapiens-example' at commit 'aea124e7d38818e8699e713077b19c180fa1cf4e'...
+2026-05-12 10:06:14,852 - supervisor - INFO - Application successfully registered - pulled remote registered version:v0.0.4
+2026-05-12 10:06:15,076 - supervisor - INFO - Heartbeat sent at 1778573175.076106.
+2026-05-12 10:06:25,081 - supervisor - INFO - Heartbeat sent at 1778573185.0812411.
+2026-05-12 10:06:35,088 - supervisor - INFO - Heartbeat sent at 1778573195.087449.
+2026-05-12 10:06:45,090 - supervisor - INFO - Heartbeat sent at 1778573205.0894191.
+2026-05-12 10:06:55,092 - supervisor - INFO - Heartbeat sent at 1778573215.0917299.
+2026-05-12 10:07:05,097 - supervisor - INFO - Heartbeat sent at 1778573225.0970619.
+2026-05-12 10:07:15,100 - supervisor - INFO - Heartbeat sent at 1778573235.100024.
+2026-05-12 10:07:25,106 - supervisor - INFO - Heartbeat sent at 1778573245.106061.
+2026-05-12 10:07:35,109 - supervisor - INFO - Heartbeat sent at 1778573255.1087208.
+2026-05-12 10:07:45,111 - supervisor - INFO - Heartbeat sent at 1778573265.1110342.
+2026-05-12 10:07:55,114 - supervisor - INFO - Heartbeat sent at 1778573275.11396.
+2026-05-12 10:08:05,119 - supervisor - INFO - Heartbeat sent at 1778573285.1184661.
+2026-05-12 10:08:15,123 - supervisor - INFO - Heartbeat sent at 1778573295.1228108.
+2026-05-12 10:08:25,126 - supervisor - INFO - Heartbeat sent at 1778573305.126071.
+2026-05-12 10:08:35,131 - supervisor - INFO - Heartbeat sent at 1778573315.130427.
+2026-05-12 10:09:10,894 - supervisor - INFO - Application registry initialized
+2026-05-12 10:09:10,896 - supervisor - INFO - Command processor initialized
+2026-05-12 10:09:12,080 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 10:09:12,081 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 10:09:12,081 - supervisor - INFO - Heartbeat service started.
+2026-05-12 10:09:12,082 - supervisor - INFO - Heartbeat sent at 1778573352.081766.
+2026-05-12 10:09:16,843 - supervisor - INFO - Command 8e4b02ec-c0eb-4479-a1fe-4d6db434e999 is valid.
+2026-05-12 10:09:16,843 - supervisor - INFO - PUSH command received.
+2026-05-12 10:09:16,843 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 10:09:17,501 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Fetching updates before checkout...
+2026-05-12 10:09:17,821 - supervisor - INFO - Checking out repository 'flexia-robosapiens-example' at commit 'aea124e7d38818e8699e713077b19c180fa1cf4e'...
+2026-05-12 10:09:17,850 - supervisor - INFO - Application successfully registered - pulled remote registered version:v0.0.3
+2026-05-12 10:09:22,109 - supervisor - INFO - Heartbeat sent at 1778573362.108296.
+2026-05-12 10:09:32,128 - supervisor - INFO - Heartbeat sent at 1778573372.128007.
+2026-05-12 10:09:42,138 - supervisor - INFO - Heartbeat sent at 1778573382.137465.
+2026-05-12 10:09:52,146 - supervisor - INFO - Heartbeat sent at 1778573392.145004.
+2026-05-12 10:10:02,152 - supervisor - INFO - Heartbeat sent at 1778573402.150555.
+2026-05-12 10:10:12,159 - supervisor - INFO - Heartbeat sent at 1778573412.158185.
+2026-05-12 10:10:13,216 - supervisor - INFO - Command 722f3abf-862f-408d-85cc-62279e6c9ce5 is valid.
+2026-05-12 10:10:13,217 - supervisor - INFO - PUSH command received.
+2026-05-12 10:10:13,217 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 10:10:13,218 - supervisor - INFO - Application version already registered, no action performed
+2026-05-12 10:10:22,164 - supervisor - INFO - Heartbeat sent at 1778573422.1628711.
+2026-05-12 10:10:32,167 - supervisor - INFO - Heartbeat sent at 1778573432.166236.
+2026-05-12 10:10:42,174 - supervisor - INFO - Heartbeat sent at 1778573442.172843.
+2026-05-12 10:10:52,178 - supervisor - INFO - Heartbeat sent at 1778573452.177231.
+2026-05-12 10:11:02,183 - supervisor - INFO - Heartbeat sent at 1778573462.181712.
+2026-05-12 10:11:12,187 - supervisor - INFO - Heartbeat sent at 1778573472.186154.
+2026-05-12 10:11:22,191 - supervisor - INFO - Heartbeat sent at 1778573482.1899798.
+2026-05-12 10:11:32,199 - supervisor - INFO - Heartbeat sent at 1778573492.197315.
+2026-05-12 10:11:42,206 - supervisor - INFO - Heartbeat sent at 1778573502.204898.
+2026-05-12 10:11:52,211 - supervisor - INFO - Heartbeat sent at 1778573512.210649.
+2026-05-12 10:12:02,218 - supervisor - INFO - Heartbeat sent at 1778573522.217293.
+2026-05-12 10:12:12,222 - supervisor - INFO - Heartbeat sent at 1778573532.220871.
+2026-05-12 10:12:22,227 - supervisor - INFO - Heartbeat sent at 1778573542.226588.
+2026-05-12 10:12:32,234 - supervisor - INFO - Heartbeat sent at 1778573552.2333891.
+2026-05-12 10:12:42,241 - supervisor - INFO - Heartbeat sent at 1778573562.240541.
+2026-05-12 10:12:52,249 - supervisor - INFO - Heartbeat sent at 1778573572.2481291.
+2026-05-12 10:13:02,256 - supervisor - INFO - Heartbeat sent at 1778573582.254984.
+2026-05-12 10:13:12,261 - supervisor - INFO - Heartbeat sent at 1778573592.259394.
+2026-05-12 10:13:22,264 - supervisor - INFO - Heartbeat sent at 1778573602.263575.
+2026-05-12 10:13:32,268 - supervisor - INFO - Heartbeat sent at 1778573612.266609.
+2026-05-12 10:13:42,273 - supervisor - INFO - Heartbeat sent at 1778573622.27174.
+2026-05-12 10:13:52,277 - supervisor - INFO - Heartbeat sent at 1778573632.275585.
+2026-05-12 10:14:02,283 - supervisor - INFO - Heartbeat sent at 1778573642.2822762.
+2026-05-12 10:14:12,291 - supervisor - INFO - Heartbeat sent at 1778573652.289859.
+2026-05-12 10:14:22,295 - supervisor - INFO - Heartbeat sent at 1778573662.294535.
+2026-05-12 10:14:33,897 - supervisor - INFO - Application registry initialized
+2026-05-12 10:14:33,899 - supervisor - INFO - Command processor initialized
+2026-05-12 10:14:35,080 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 10:14:35,081 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 10:14:35,081 - supervisor - INFO - Heartbeat service started.
+2026-05-12 10:14:35,081 - supervisor - INFO - Heartbeat sent at 1778573675.0815418.
+2026-05-12 10:14:45,086 - supervisor - INFO - Heartbeat sent at 1778573685.084769.
+2026-05-12 10:14:55,094 - supervisor - INFO - Heartbeat sent at 1778573695.093005.
+2026-05-12 10:15:05,100 - supervisor - INFO - Heartbeat sent at 1778573705.099277.
+2026-05-12 10:15:15,107 - supervisor - INFO - Heartbeat sent at 1778573715.106163.
+2026-05-12 10:15:22,855 - supervisor - INFO - Command 5aaec569-5f27-45fd-ab57-113644aa8dee is valid.
+2026-05-12 10:15:22,856 - supervisor - INFO - PUSH command received.
+2026-05-12 10:15:22,856 - supervisor - INFO - Cloning repository 'https://github.com/BertVanAcker/flexia-robosapiens-example.git' into 'apps/flexia-robosapiens-example'...
+2026-05-12 10:15:23,472 - supervisor - INFO - Application successfully registered
+2026-05-12 10:15:25,109 - supervisor - INFO - Heartbeat sent at 1778573725.108768.
+2026-05-12 10:15:35,117 - supervisor - INFO - Heartbeat sent at 1778573735.1156852.
+2026-05-12 10:15:43,004 - supervisor - INFO - Command b9fa7da9-8861-42ac-92f0-1cc3ce03ef77 is valid.
+2026-05-12 10:15:43,004 - supervisor - INFO - PUSH command received.
+2026-05-12 10:15:43,005 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 10:15:43,005 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 10:15:43,375 - supervisor - INFO - New version of the application registered and activated
+2026-05-12 10:15:45,121 - supervisor - INFO - Heartbeat sent at 1778573745.1200461.
+2026-05-12 10:15:55,128 - supervisor - INFO - Heartbeat sent at 1778573755.1269052.
+2026-05-12 10:15:57,906 - supervisor - INFO - Command d43200a8-7af6-47d6-a063-ec4ca2fff406 is valid.
+2026-05-12 10:15:57,907 - supervisor - INFO - PUSH command received.
+2026-05-12 10:15:57,907 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 10:15:57,907 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Fetching updates before checkout...
+2026-05-12 10:15:58,328 - supervisor - INFO - Checking out repository 'flexia-robosapiens-example' at commit 'aea124e7d38818e8699e713077b19c180fa1cf4e'...
+2026-05-12 10:15:58,353 - supervisor - INFO - Application snapshot loaded for version:v0.0.1
+2026-05-12 10:16:05,135 - supervisor - INFO - Heartbeat sent at 1778573765.134346.
+2026-05-12 10:16:15,138 - supervisor - INFO - Heartbeat sent at 1778573775.137664.
+2026-05-12 10:16:23,966 - supervisor - INFO - Command 3aafb025-4e0e-4e3f-9e93-198f292f4c6d is valid.
+2026-05-12 10:16:23,967 - supervisor - INFO - PUSH command received.
+2026-05-12 10:16:23,967 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 10:16:23,968 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Pulling latest changes...
+2026-05-12 10:16:24,320 - supervisor - ERROR - Error pulling repository: You are not currently on a branch.
+Please specify which branch you want to merge with.
+See git-pull(1) for details.
+
+    git pull <remote> <branch>
+
+
+2026-05-12 10:16:24,321 - supervisor - ERROR - Application not successfully registered
+2026-05-12 10:16:25,146 - supervisor - INFO - Heartbeat sent at 1778573785.14445.
+2026-05-12 10:16:35,153 - supervisor - INFO - Heartbeat sent at 1778573795.152033.
+2026-05-12 10:16:45,159 - supervisor - INFO - Heartbeat sent at 1778573805.158182.
+2026-05-12 10:16:55,166 - supervisor - INFO - Heartbeat sent at 1778573815.165024.
+2026-05-12 10:17:05,174 - supervisor - INFO - Heartbeat sent at 1778573825.1725922.
+2026-05-12 10:17:15,181 - supervisor - INFO - Heartbeat sent at 1778573835.180202.
+2026-05-12 10:17:25,186 - supervisor - INFO - Heartbeat sent at 1778573845.185287.
+2026-05-12 10:17:35,194 - supervisor - INFO - Heartbeat sent at 1778573855.1932218.
+2026-05-12 10:17:45,201 - supervisor - INFO - Heartbeat sent at 1778573865.201024.
+2026-05-12 10:17:55,205 - supervisor - INFO - Heartbeat sent at 1778573875.2039738.
+2026-05-12 10:18:05,212 - supervisor - INFO - Heartbeat sent at 1778573885.21178.
+2026-05-12 10:18:15,215 - supervisor - INFO - Heartbeat sent at 1778573895.214292.
+2026-05-12 10:18:25,222 - supervisor - INFO - Heartbeat sent at 1778573905.22151.
+2026-05-12 10:18:35,228 - supervisor - INFO - Heartbeat sent at 1778573915.2275689.
+2026-05-12 10:18:45,235 - supervisor - INFO - Heartbeat sent at 1778573925.234059.
+2026-05-12 10:18:55,238 - supervisor - INFO - Heartbeat sent at 1778573935.237081.
+2026-05-12 10:19:05,242 - supervisor - INFO - Heartbeat sent at 1778573945.2406988.
+2026-05-12 10:19:15,249 - supervisor - INFO - Heartbeat sent at 1778573955.248241.
+2026-05-12 10:19:25,254 - supervisor - INFO - Heartbeat sent at 1778573965.2528791.
+2026-05-12 10:19:35,260 - supervisor - INFO - Heartbeat sent at 1778573975.258618.
+2026-05-12 10:19:45,264 - supervisor - INFO - Heartbeat sent at 1778573985.263469.
+2026-05-12 10:19:55,270 - supervisor - INFO - Heartbeat sent at 1778573995.269971.
+2026-05-12 10:20:05,278 - supervisor - INFO - Heartbeat sent at 1778574005.2764852.
+2026-05-12 10:20:12,171 - supervisor - INFO - Application registry initialized
+2026-05-12 10:20:12,174 - supervisor - INFO - Command processor initialized
+2026-05-12 10:20:13,357 - supervisor - INFO - Stored shared secret in environment variable SHARED_SECRET
+2026-05-12 10:20:13,358 - supervisor - INFO - Stored connectorID in environment variable FLEXCLOUD_CONNECTORID_SECRET
+2026-05-12 10:20:13,359 - supervisor - INFO - Heartbeat service started.
+2026-05-12 10:20:13,359 - supervisor - INFO - Heartbeat sent at 1778574013.3590488.
+2026-05-12 10:20:21,971 - supervisor - INFO - Command 782dfb92-2a2e-45da-9a5f-1da17f137da7 is valid.
+2026-05-12 10:20:21,972 - supervisor - INFO - PUSH command received.
+2026-05-12 10:20:21,973 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 10:20:21,973 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Updating branch 'main'...
+2026-05-12 10:20:22,749 - supervisor - INFO - New version of the application registered and activated
+2026-05-12 10:20:23,366 - supervisor - INFO - Heartbeat sent at 1778574023.364814.
+2026-05-12 10:20:33,373 - supervisor - INFO - Heartbeat sent at 1778574033.372153.
+2026-05-12 10:20:43,378 - supervisor - INFO - Heartbeat sent at 1778574043.377418.
+2026-05-12 10:20:52,284 - supervisor - INFO - Command a07556e8-6a0a-497a-b4dc-3f35e5b229f9 is valid.
+2026-05-12 10:20:52,284 - supervisor - INFO - PUSH command received.
+2026-05-12 10:20:52,285 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 10:20:52,285 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Fetching updates before checkout...
+2026-05-12 10:20:52,656 - supervisor - INFO - Checking out repository 'flexia-robosapiens-example' at commit 'aea124e7d38818e8699e713077b19c180fa1cf4e'...
+2026-05-12 10:20:52,674 - supervisor - INFO - Application snapshot loaded for version:v0.0.2
+2026-05-12 10:20:53,385 - supervisor - INFO - Heartbeat sent at 1778574053.3841002.
+2026-05-12 10:21:03,387 - supervisor - INFO - Heartbeat sent at 1778574063.3865669.
+2026-05-12 10:21:10,351 - supervisor - INFO - Command c20436fc-c89a-4041-ba6e-675e9ca5fee3 is valid.
+2026-05-12 10:21:10,351 - supervisor - INFO - PUSH command received.
+2026-05-12 10:21:10,352 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Automatically pulling latest changes DISABLED, no changes to the local repository...
+2026-05-12 10:21:10,352 - supervisor - INFO - Repository 'flexia-robosapiens-example' already exists. Updating branch 'main'...
+2026-05-12 10:21:11,124 - supervisor - INFO - New version of the application registered and activated
+2026-05-12 10:21:13,394 - supervisor - INFO - Heartbeat sent at 1778574073.3931992.
+2026-05-12 10:21:23,401 - supervisor - INFO - Heartbeat sent at 1778574083.400654.
+2026-05-12 10:21:33,408 - supervisor - INFO - Heartbeat sent at 1778574093.4067001.
+2026-05-12 10:21:43,415 - supervisor - INFO - Heartbeat sent at 1778574103.4140108.
+2026-05-12 10:21:53,422 - supervisor - INFO - Heartbeat sent at 1778574113.421309.

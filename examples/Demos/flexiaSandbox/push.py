@@ -32,4 +32,5 @@ secret = _device_config_lattepandaD3_1.get("shared_secret","UNKNOWN")
 register_os_variable(secret, env_var_name=SECURITY_STORE.SHARED_SECRET)
 
 # ----------------------- PUSH APPLICATION TO DEVICES -----------------------
-push_appliction(type=REGISTRY_TYPE.GITHUB,url="https://github.com/BertVanAcker/flexia-robosapiens-example.git",branche="main",devices=[_device_config_lattepandaD3_1,_device_config_lattepandaD3_2,_device_config_lattepandaD3_3],flexCloud_config=_flexCloud_config)
+_version = "v0.0.4"
+push_appliction(type=REGISTRY_TYPE.GITHUB,url="https://github.com/BertVanAcker/flexia-robosapiens-example.git",version=_version,branche="main",devices=[_device_config_lattepandaD3_1,_device_config_lattepandaD3_2,_device_config_lattepandaD3_3],flexCloud_config=_flexCloud_config)

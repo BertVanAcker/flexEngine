@@ -28,6 +28,9 @@ class COMMUNICATIONMATRIX:
     APPLICATION_REMOTE = ":remote"
     APPLICATION_STATUS = ":status"
     APPLICATION_WORKSPACE = ":workspace"
+    APPLICATION_COMMIT_SHA = ":commit_sha"
+    APPLICATION_VERSION = ":version"
+    APPLICATION_VERSION_HISTORY = ":version_history"
     #devices
     DEVICES = ":devices:"
 
