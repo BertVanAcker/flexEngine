@@ -8,7 +8,7 @@
 # *************************************************************************
 import json
 import os
-
+from typing import Optional
 from flexEngine.communication.composer import compose_command
 from flexEngine.communication.matrix import COMMUNICATIONMATRIX
 from flexEngine.security.security import generate_app_tag
@@ -412,6 +412,140 @@ class registryManager(object):
 
         return repo_path, _workspace_exists
 
+    def _fetch_repo_snapshot_new(
+            self,
+            repo_url: str,
+            workspace: str,
+            commit_sha: Optional[str] = None,
+            version: Optional[str] = None,
+            branch: str = "master",
+
+    ) -> tuple[str, bool]:
+        """
+        Clone a Git repository into a workspace if needed, then check out a specific
+        snapshot using either a commit SHA or a Git version tag.
+        If both commit_sha and version are provided, version is used as the checkout
+        reference, and commit_sha is used only for verification.
+        :param repo_url: URL of the Git repository.
+        :param workspace: Path to the workspace directory.
+        :param commit_sha: Optional commit SHA to check out or verify against.
+        :param version: Optional Git tag/version to check out, for example 'v0.0.1'.
+        :param branch: Branch to clone initially if the repository does not exist.
+        :return: Tuple containing:
+                 - local path to the repository
+                 - whether the repository already existed
+        :raises Exception: If clone, fetch, checkout, or verification fails.
+        """
+
+        if not commit_sha and not version:
+            raise ValueError("Either commit_sha or version must be provided")
+
+        _workspace_exists = False
+
+        if not os.path.exists(workspace):
+            os.makedirs(workspace)
+
+        repo_name = os.path.splitext(os.path.basename(repo_url))[0]
+        repo_path = os.path.join(workspace, repo_name)
+
+        if os.path.exists(repo_path):
+            _workspace_exists = True
+            if self._logger is not None:
+                self._logger.info(
+                    f"Repository '{repo_name}' already exists. Fetching updates and tags before checkout..."
+                )
+            result = subprocess.run(
+                ["git", "-C", repo_path, "fetch", "--all", "--tags"],
+                capture_output=True,
+                text=True,
+            )
+
+            if result.returncode != 0:
+                if self._logger is not None:
+                    self._logger.error(f"Error fetching repository: {result.stderr}")
+                raise Exception("Git fetch failed")
+        else:
+            if self._logger is not None:
+                self._logger.info(
+                    f"Cloning repository '{repo_url}' into '{repo_path}'..."
+                )
+            result = subprocess.run(
+                ["git", "clone", "-b", branch, repo_url, repo_path],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                if self._logger is not None:
+                    self._logger.error(f"Error cloning repository: {result.stderr}")
+                raise Exception("Git clone failed")
+
+            fetch_tags_result = subprocess.run(
+                ["git", "-C", repo_path, "fetch", "--tags"],
+                capture_output=True,
+                text=True,
+            )
+
+            if fetch_tags_result.returncode != 0:
+                if self._logger is not None:
+                    self._logger.error(
+                        f"Error fetching tags after clone: {fetch_tags_result.stderr}"
+                    )
+                raise Exception("Git fetch tags failed")
+
+        checkout_ref = version if version else commit_sha
+
+        if self._logger is not None:
+            self._logger.info(
+                f"Checking out repository '{repo_name}' at snapshot '{checkout_ref}'..."
+            )
+
+        result = subprocess.run(
+            ["git", "-C", repo_path, "checkout", "--detach", checkout_ref],
+            capture_output=True,
+            text=True,
+        )
+
+        if result.returncode != 0:
+            if self._logger is not None:
+                self._logger.error(
+                    f"Error checking out snapshot '{checkout_ref}': {result.stderr}"
+                )
+            raise Exception("Git checkout failed")
+
+        verify_result = subprocess.run(
+            ["git", "-C", repo_path, "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+        )
+
+        if verify_result.returncode != 0:
+            if self._logger is not None:
+                self._logger.error(
+                    f"Error verifying checked-out snapshot: {verify_result.stderr}"
+                )
+            raise Exception("Git snapshot verification failed")
+
+        checked_out_sha = verify_result.stdout.strip()
+
+        if commit_sha and not checked_out_sha.startswith(commit_sha):
+            if self._logger is not None:
+                self._logger.error(
+                    f"Checked-out commit '{checked_out_sha}' does not match expected commit '{commit_sha}'"
+                )
+            raise Exception("Checked-out commit does not match expected commit")
+
+        if self._logger is not None:
+            if version:
+                self._logger.info(
+                    f"Repository '{repo_name}' checked out at version '{version}' "
+                    f"with commit '{checked_out_sha}'."
+                )
+            else:
+                self._logger.info(
+                    f"Repository '{repo_name}' checked out at commit '{checked_out_sha}'."
+                )
+
+        return repo_path, _workspace_exists
 
     def _create_git_version_tag(
             self,
