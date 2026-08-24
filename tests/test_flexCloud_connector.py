@@ -76,7 +76,7 @@ class TestFlexCloudConnectorRealRedis(unittest.TestCase):
         self.assertIn("Command received.", output,
                       "The connector did not print that a command was received.")
 
-        self.assertIn("OTA UPDATE command received.", output,
+        self.assertIn("OTA_UPDATE command received.", output,
                       "The command processor did not receive the OTA UPDATE correclty.")
 
 #------------------------------------------------------------------

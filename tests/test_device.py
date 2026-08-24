@@ -70,7 +70,7 @@ class TestDeviceMonitor(unittest.TestCase):
             r"^ {2}City:\s+(.+)$",  # "  City: Ieper"
             r"^ {2}Region:\s+(.+)$",  # "  Region: Flanders"
             r"^ {2}Country:\s+(.+)$",  # "  Country: BE"
-            r"^ {2}Coordinates:\s+[\d\.]+,\s*[\d\.]+$",  # "  Coordinates: <number>,<number>"
+            r"^ {2}Coordinates:\s+-?[\d\.]+,\s*-?[\d\.]+$",  # "  Coordinates: <number>,<number>"
             r"^Storage Details:$",  # "Storage Details:"
             r"^ {2}Total:\s+[\d\.]+\s+GB$",  # "  Total: <number> GB"
             r"^ {2}Used:\s+[\d\.]+\s+GB$",  # "  Used: <number> GB"
@@ -101,7 +101,7 @@ class TestHeartbeatSenderReal(unittest.TestCase):
         self._primaryHardwareID="Oberon-5"
         self._projectID="sandbox"
         self._key="3fg445"
-        self._heartbeatKey = self._primaryHardwareID+"@"+self._projectID+"-"+self._key+COMMUNICATIONMATRIX.HEARTBEAT
+        self._heartbeatKey = self._projectID+"-"+self._key+COMMUNICATIONMATRIX.DEVICES+self._primaryHardwareID+COMMUNICATIONMATRIX.HEARTBEAT
         self.redis_client.delete(self._heartbeatKey)
 
     def tearDown(self):

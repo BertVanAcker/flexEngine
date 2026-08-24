@@ -45,7 +45,7 @@ class commandProcessor(object):
         # --- Application manager ---
         self._applicationManager = applicationManager
 
-        self._logger.info("Command processor initialized")
+        if self._logger is not None: self._logger.info("Command processor initialized")
 
 
     def process_command(self,command):

@@ -13,7 +13,7 @@ import redis
 from flexEngine.security.security import verify_signature
 from flexEngine.utils.constants import *
 from flexEngine.communication.matrix import *
-from flexEngine.command.commandProcessor import *
+from flexEngine.command.commandProcessor import commandProcessor as CommandProcessor
 from flexEngine.logging.logger import *
 class flexCloudConnector:
     def __init__(self, name="flexCloudConnector",primaryHardwareID="Oberon-5",projectID="sandbox",key="3fg445",  redis_host='localhost', redis_port=6379, redis_db=0,commandProcessor=None,logger=None, verbose=False):
@@ -55,7 +55,10 @@ class flexCloudConnector:
             self._commandKey: self._on_command
         })
         #---configure command processor---
-        self._commandProcessor = commandProcessor
+        if commandProcessor is not None:
+            self._commandProcessor = commandProcessor
+        else:
+            self._commandProcessor = CommandProcessor(logger=self._logger, verbose=self._verbose)
 
         # Start listener thread
         self.listener_thread = threading.Thread(target=self._listen, daemon=True)
@@ -103,7 +106,7 @@ class flexCloudConnector:
         :param key: The key for storing the data
         :param value: The value to store (can be a dict, str, int, etc.)
         """
-        #key = self.connectorID+":"+"data:"+key
+        key = self.connectorID+":"+"data:"+key
         if isinstance(value, dict):
             value = json.dumps(value)  # Serialize the dictionary to a JSON string
         else:

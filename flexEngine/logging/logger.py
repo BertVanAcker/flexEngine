@@ -11,6 +11,7 @@ import logging
 
 def setup_logger(name, log_file, level=logging.INFO):
     """Setup of multiple loggers"""
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     handler = logging.FileHandler(log_file)
     handler.setFormatter(formatter)
@@ -90,5 +91,18 @@ class Logger(object):
             self._syslogger.debug(msg)
         elif level == 'ERROR':
             self._syslogger.error(msg)
+        elif level == 'WARNING':
+            self._syslogger.warning(msg)
 
+    def info(self, msg="tbd"):
+        self.syslog(msg=msg, level="INFO")
+
+    def debug(self, msg="tbd"):
+        self.syslog(msg=msg, level="DEBUG")
+
+    def error(self, msg="tbd"):
+        self.syslog(msg=msg, level="ERROR")
+
+    def warning(self, msg="tbd"):
+        self.syslog(msg=msg, level="WARNING")
 
