@@ -85,6 +85,7 @@ class registryManager(object):
                         self._registry.append(_app)
                         self.register_backend(applicationEntry=_app)
                         #6. register version as tag on remote + push
+                        _commit_sha = self._get_commit_sha(_localPath)
                         self._create_git_version_tag(repo_path=_localPath,version=_version,commit_sha=_commit_sha,push=True)
                         if self._logger is not None: self._logger.info("Application successfully registered")
                     else:

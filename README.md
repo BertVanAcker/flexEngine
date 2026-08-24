@@ -15,6 +15,7 @@ flexEngine is an engine purpose-built for deploying and monitoring flexible indu
 
 - [Overview](#overview)
 - [Features](#features)
+- [Installation](#installation)
 - [Requirements](#requirements)
 - [License](#license)
 - [Support](#support)
@@ -43,14 +44,84 @@ Whether you’re managing a small automation task or overseeing a large industri
 
 ---
 
+## Installation
+
+flexEngine is a pure-Python package, so the same lightweight install path
+works on Windows, macOS, Linux, and Linux ARMv6+ (e.g. Raspberry Pi) — no
+compiled installers needed. Each option below installs flexEngine into an
+isolated environment (no admin/root rights required) and then scaffolds a
+ready-to-run **agent workspace** (`apps/`, `configuration/`, `logs/`,
+`agent.py`).
+
+### Quick install
+
+**macOS / Linux / Linux ARMv6+ (Raspberry Pi):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/BertVanAcker/flexEngine/master/scripts/install.sh | bash
+```
+
+To answer the configuration prompts interactively (device name, flexCloud
+credentials, Redis connection, ...) rather than getting the non-interactive
+defaults, run it as:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/BertVanAcker/flexEngine/master/scripts/install.sh)"
+```
+
+**Windows (PowerShell):**
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/BertVanAcker/flexEngine/master/scripts/install.ps1 | iex
+```
+
+**Manual install (any platform):**
+
+```bash
+pip install flexEngine
+flexEngine init my-agent-workspace
+```
+
+### Setting up the workspace
+
+`flexEngine init` creates the workspace layout and either builds
+`configuration/config.yaml` from your answers to a short set of prompts, or
+copies in a config file you already have:
+
+```bash
+# interactive setup
+flexEngine init my-agent-workspace
+
+# bring your own config.yaml
+flexEngine init my-agent-workspace --config /path/to/config.yaml
+
+# non-interactive, defaults only (useful for scripted installs)
+flexEngine init my-agent-workspace --non-interactive
+```
+
+### Running the agent
+
+```bash
+cd my-agent-workspace
+python agent.py
+```
+
+flexEngine connects to Redis on startup (see `flexCloud.redis_host` /
+`redis_port` in `configuration/config.yaml`) — make sure a Redis instance is
+reachable before starting the agent.
+
+---
+
 ## Requirements
 
-- **Operating System:** Compatible with major industrial OS distributions (e.g., Ubuntu, CentOS, Windows IoT).
-- **Hardware:** Industrial-grade PC or embedded system meeting minimum performance criteria.
-- **Software Dependencies:**
-  - Docker (for containerized deployments)
-  - Python (for scripting and automation tasks)
-- **Network:** Reliable network connectivity for remote monitoring and data transmission.
+- **Operating System:** Windows, macOS, Linux, or Linux ARMv6+ (e.g. Raspberry Pi OS).
+- **Python:** 3.10 or newer.
+- **Redis:** reachable locally or remotely — required by flexEngine's flexCloud connector.
+- **Docker** *(optional)*: only needed if you deploy applications as containers.
+- **Note for Linux ARMv6/ARMv7 devices:** one dependency (`psutil`) may not
+  have a prebuilt wheel for your architecture and could require compiling
+  from source (`sudo apt install python3-dev build-essential`) during
+  install.
 
 ---
 
@@ -66,3 +137,5 @@ For assistance or inquiries, please reach out via:
 
 Email: bert.vanacker@uantwerpen.be
 Issue Tracker: Open an issue on our GitHub Issues page
+
+Maintainers cutting a new release should see [RELEASING.md](RELEASING.md).
