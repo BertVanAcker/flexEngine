@@ -77,7 +77,23 @@ iwr -useb https://raw.githubusercontent.com/BertVanAcker/flexEngine/master/scrip
 
 **Manual install (any platform):**
 
+flexEngine requires Python 3.10 or newer. Check which interpreter you have
+before installing:
+
 ```bash
+python3 --version
+```
+
+If that reports an older Python (or none at all), install a 3.10+ interpreter
+first — e.g. `sudo apt install python3.10` on Debian/Ubuntu, `brew install
+python@3.10` on macOS, or download it from
+[python.org](https://www.python.org/downloads/) on Windows — and use that
+interpreter explicitly below (e.g. `python3.10`).
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
 pip install flexEngine
 flexEngine init my-agent-workspace
 ```

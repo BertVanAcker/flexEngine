@@ -23,6 +23,7 @@ setup(
     version=about["__version__"],
     description=about["__description__"],
     long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     author=about["__author__"],
     author_email=about["__email__"],
     url=about["__url__"],
