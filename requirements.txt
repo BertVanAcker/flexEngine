@@ -1,13 +1,8 @@
-asgiref==3.11.1
-Booktype==1.5
 certifi==2025.1.31
 charset-normalizer==3.4.1
-Django==5.2.14
 idna==3.10
 psutil==6.1.1
 PyYAML==6.0.3
 redis==7.4.0
 requests==2.32.3
-simplejson==4.1.1
-sqlparse==0.5.5
 urllib3==2.3.0

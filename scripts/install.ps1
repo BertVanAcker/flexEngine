@@ -81,7 +81,7 @@ $initArgs = @($Workspace)
 if ($Config -ne "") {
     $initArgs += @("--config", $Config)
 }
-if (-not [Environment]::UserInteractive) {
+if ([Console]::IsInputRedirected) {
     $initArgs += "--non-interactive"
 }
 
