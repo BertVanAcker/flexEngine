@@ -133,7 +133,10 @@ reachable before starting the agent.
 - **Operating System:** Windows, macOS, Linux, or Linux ARMv6+ (e.g. Raspberry Pi OS).
 - **Python:** 3.10 or newer.
 - **Redis:** reachable locally or remotely — required by flexEngine's flexCloud connector.
-- **Docker** *(optional)*: only needed if you deploy applications as containers.
+- **Docker** *(optional)*: only needed if you deploy applications as
+  containers. The quick-install scripts will ask whether to install it for
+  you; to skip the prompt, pass `--install-docker`/`--no-docker` (bash) or
+  `-InstallDocker`/`-NoDocker` (PowerShell).
 - **Note for Linux ARMv6/ARMv7 devices:** one dependency (`psutil`) may not
   have a prebuilt wheel for your architecture and could require compiling
   from source (`sudo apt install python3-dev build-essential`) during

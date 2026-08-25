@@ -5,6 +5,11 @@
 #   curl -fsSL https://raw.githubusercontent.com/BertVanAcker/flexEngine/master/scripts/install.sh | bash
 #   curl -fsSL .../install.sh | bash -s -- 0.2.0 --workspace ~/my-agent --config ~/my-config.yaml
 #
+# Docker is optional and only needed if you plan to deploy applications as
+# containers. When run interactively you'll be asked whether to install it;
+# for scripted/non-interactive installs pass --install-docker or --no-docker
+# explicitly (the default is to skip it).
+#
 # Installs flexEngine into an isolated venv (no sudo, no system-wide
 # changes) and scaffolds an agent workspace via `flexEngine init`.
 set -euo pipefail
@@ -12,6 +17,7 @@ set -euo pipefail
 VERSION=""
 WORKSPACE="./flexEngine-workspace"
 CONFIG=""
+INSTALL_DOCKER=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -22,6 +28,14 @@ while [ $# -gt 0 ]; do
     --config)
       CONFIG="$2"
       shift 2
+      ;;
+    --install-docker)
+      INSTALL_DOCKER="yes"
+      shift
+      ;;
+    --no-docker)
+      INSTALL_DOCKER="no"
+      shift
       ;;
     -*)
       echo "error: unknown option '$1'" >&2
@@ -88,6 +102,53 @@ case ":$PATH:" in
     echo "  export PATH=\"$BIN_DIR:\$PATH\""
     ;;
 esac
+
+echo
+if command -v docker >/dev/null 2>&1; then
+  echo "Docker is already installed ($(docker --version)), skipping."
+elif [ "$INSTALL_DOCKER" = "no" ]; then
+  echo "Skipping Docker install (--no-docker). Install it later: https://docs.docker.com/get-docker/"
+else
+  if [ -z "$INSTALL_DOCKER" ]; then
+    if [ -t 0 ]; then
+      printf 'Docker is optional (only needed to deploy applications as containers). Install it now? [y/N] '
+      read -r REPLY
+      case "$REPLY" in
+        [yY]*) INSTALL_DOCKER="yes" ;;
+        *) INSTALL_DOCKER="no" ;;
+      esac
+    else
+      # No terminal attached to ask (e.g. piped from curl) - default to skip.
+      INSTALL_DOCKER="no"
+    fi
+  fi
+
+  if [ "$INSTALL_DOCKER" = "yes" ]; then
+    echo "Installing Docker ..."
+    case "$(uname -s)" in
+      Linux)
+        curl -fsSL https://get.docker.com | sh
+        echo "note: to run docker without sudo, add your user to the docker group:"
+        echo "  sudo usermod -aG docker \$USER && newgrp docker"
+        ;;
+      Darwin)
+        if command -v brew >/dev/null 2>&1; then
+          brew install --cask docker
+          echo "note: open the Docker app once to finish setup and start the daemon."
+        else
+          echo "note: Homebrew not found, can't install Docker Desktop automatically."
+          echo "      Download it from: https://www.docker.com/products/docker-desktop/"
+        fi
+        ;;
+      *)
+        echo "note: automatic Docker install isn't supported on this OS. See:"
+        echo "      https://docs.docker.com/get-docker/"
+        ;;
+    esac
+  else
+    echo "Skipping Docker install. You can install it later: https://docs.docker.com/get-docker/"
+  fi
+fi
 
 INIT_ARGS=("$WORKSPACE")
 if [ -n "$CONFIG" ]; then

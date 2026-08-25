@@ -7,13 +7,20 @@
 #   iwr -useb .../install.ps1 -OutFile install.ps1
 #   .\install.ps1 -Version 0.2.0 -Workspace C:\my-agent -Config C:\my-config.yaml
 #
+# Docker is optional and only needed if you plan to deploy applications as
+# containers. When run interactively you'll be asked whether to install it;
+# for scripted/non-interactive installs pass -InstallDocker or -NoDocker
+# explicitly (the default is to skip it).
+#
 # Installs flexEngine into an isolated venv (no admin rights, no system-wide
 # changes) and scaffolds an agent workspace via `flexEngine init`.
 
 param(
     [string]$Version = "",
     [string]$Workspace = ".\flexEngine-workspace",
-    [string]$Config = ""
+    [string]$Config = "",
+    [switch]$InstallDocker,
+    [switch]$NoDocker
 )
 
 $ErrorActionPreference = "Stop"
@@ -75,6 +82,38 @@ if (($env:Path -split ";") -notcontains $binDir) {
     Write-Host ""
     Write-Host "note: $binDir is not on your PATH. Add it, e.g.:"
     Write-Host "  [Environment]::SetEnvironmentVariable('Path', `$env:Path + ';$binDir', 'User')"
+}
+
+Write-Host ""
+$installDocker = $null
+if ($InstallDocker) { $installDocker = $true }
+elseif ($NoDocker) { $installDocker = $false }
+
+if (Get-Command docker -ErrorAction SilentlyContinue) {
+    Write-Host "Docker is already installed, skipping."
+} else {
+    if ($null -eq $installDocker) {
+        if (-not [Console]::IsInputRedirected) {
+            $reply = Read-Host "Docker is optional (only needed to deploy applications as containers). Install it now? [y/N]"
+            $installDocker = $reply -match '^[Yy]'
+        } else {
+            # No terminal attached to ask (e.g. run via iwr | iex) - default to skip.
+            $installDocker = $false
+        }
+    }
+
+    if ($installDocker) {
+        Write-Host "Installing Docker Desktop ..."
+        if (Get-Command winget -ErrorAction SilentlyContinue) {
+            winget install -e --id Docker.DockerDesktop
+            Write-Host "note: launch Docker Desktop once to finish setup and start the daemon."
+        } else {
+            Write-Host "note: winget not found, can't install Docker Desktop automatically."
+            Write-Host "      Download it from: https://www.docker.com/products/docker-desktop/"
+        }
+    } else {
+        Write-Host "Skipping Docker install. You can install it later: https://docs.docker.com/get-docker/"
+    }
 }
 
 $initArgs = @($Workspace)
