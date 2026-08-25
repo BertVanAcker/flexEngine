@@ -6,7 +6,7 @@
 # * flexIA can not be copied and/or distributed without the express
 # * permission of Bert Van Acker
 # *************************************************************************
-VERSION = (0, 3, "0")
+VERSION = (0, 4, "0")
 
 __version__ = ".".join([str(s) for s in VERSION])
 
