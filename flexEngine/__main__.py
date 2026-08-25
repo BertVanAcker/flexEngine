@@ -10,14 +10,27 @@ import argparse
 import importlib.resources
 import socket
 import sys
+import time
 from pathlib import Path
 
+import psutil
+import redis
 import yaml
 
 from flexEngine import __version__
 from flexEngine.security.security import generate_shared_secret
+from flexEngine.utils.auxiliary import load_config
 
 WORKSPACE_SUBDIRS = ("apps", "configuration", "logs")
+DEFAULT_LOG_FILE = "logs/syslog_local.log"
+LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+CONFIG_SECTIONS = {
+    "logging": ("level", "file", "remote"),
+    "flexCloud": ("redis_host", "redis_port", "redis_db"),
+    "deviceCredentials": ("name", "primaryHardwareID", "projectID", "key", "shared_secret"),
+    "heartbeat": ("heartbeat_interval", "ttl"),
+}
+PLACEHOLDER_VALUES = {"changeme-project", "changeme-key", "UNKNOWN"}
 
 
 def _read_template(name):
@@ -29,20 +42,23 @@ def _prompt(text, default):
     return answer or default
 
 
-def _collect_config_values(non_interactive):
-    defaults = {
-        "device_name": "flexEngine-agent",
-        "primary_hardware_id": socket.gethostname(),
-        "project_id": "changeme-project",
-        "device_key": "changeme-key",
-        "redis_host": "localhost",
-        "redis_port": "6379",
-        "redis_db": "0",
-        "heartbeat_interval": "10",
-        "heartbeat_ttl": "12",
-        "log_level": "INFO",
-        "log_remote": "True",
-    }
+DEFAULT_CONFIG_VALUES = {
+    "device_name": "flexEngine-agent",
+    "primary_hardware_id": socket.gethostname(),
+    "project_id": "changeme-project",
+    "device_key": "changeme-key",
+    "redis_host": "localhost",
+    "redis_port": "6379",
+    "redis_db": "0",
+    "heartbeat_interval": "10",
+    "heartbeat_ttl": "12",
+    "log_level": "INFO",
+    "log_remote": "True",
+}
+
+
+def _collect_config_values(non_interactive, defaults=None):
+    defaults = {**DEFAULT_CONFIG_VALUES, **(defaults or {})}
 
     if non_interactive:
         values = dict(defaults)
@@ -117,6 +133,247 @@ def cmd_init(args):
     return 0
 
 
+def _gb(n):
+    return n / (1024 ** 3)
+
+
+def _format_uptime(seconds):
+    seconds = int(seconds)
+    days, seconds = divmod(seconds, 86400)
+    hours, seconds = divmod(seconds, 3600)
+    minutes, _ = divmod(seconds, 60)
+    parts = [f"{days}d"] if days else []
+    parts += [f"{hours}h", f"{minutes}m"]
+    return " ".join(parts)
+
+
+def _collect_stats():
+    return {
+        "cpu_percent": psutil.cpu_percent(interval=0.5),
+        "per_cpu": psutil.cpu_percent(interval=None, percpu=True),
+        "mem": psutil.virtual_memory(),
+        "disk": psutil.disk_usage("/"),
+        "net": psutil.net_io_counters(),
+        "uptime": time.time() - psutil.boot_time(),
+    }
+
+
+def _render_stats(stats):
+    mem, disk, net = stats["mem"], stats["disk"], stats["net"]
+    per_core = " ".join(f"{c:.0f}%" for c in stats["per_cpu"])
+    lines = [
+        "flexEngine device stats",
+        "=" * 40,
+        f"CPU load:    {stats['cpu_percent']:.1f}%  (per core: {per_core})",
+        f"Memory:      {mem.percent:.1f}%  ({_gb(mem.used):.2f} / {_gb(mem.total):.2f} GB used)",
+        f"Storage (/): {disk.percent:.1f}%  ({_gb(disk.used):.2f} / {_gb(disk.total):.2f} GB used)",
+        f"Network:     sent {_gb(net.bytes_sent):.2f} GB / recv {_gb(net.bytes_recv):.2f} GB (since boot)",
+        f"Uptime:      {_format_uptime(stats['uptime'])}",
+        "",
+        f"updated {time.strftime('%Y-%m-%d %H:%M:%S')}",
+    ]
+    return "\n".join(lines)
+
+
+def cmd_stats(args):
+    if args.once:
+        print(_render_stats(_collect_stats()))
+        return 0
+
+    print("Watching device stats. Press Ctrl+C to exit.")
+    try:
+        while True:
+            report = _render_stats(_collect_stats())
+            sys.stdout.write("\033[2J\033[H" + report + "\n")
+            sys.stdout.flush()
+            time.sleep(max(args.interval - 0.5, 0.1))  # cpu_percent() above already blocks ~0.5s
+    except KeyboardInterrupt:
+        print()
+    return 0
+
+
+def _resolve_log_file(workspace):
+    config_path = workspace / "configuration" / "config.yaml"
+    log_file = DEFAULT_LOG_FILE
+    if config_path.exists():
+        try:
+            log_file = load_config(config_path).get("logging", {}).get("file", DEFAULT_LOG_FILE)
+        except (OSError, yaml.YAMLError):
+            pass
+
+    log_path = Path(log_file)
+    return log_path if log_path.is_absolute() else workspace / log_path
+
+
+def cmd_logs(args):
+    workspace = Path(args.path).resolve()
+    log_path = _resolve_log_file(workspace)
+
+    if not log_path.exists():
+        print(f"error: log file not found at '{log_path}'.", file=sys.stderr)
+        print("       is the agent running, and does the path point at its workspace?", file=sys.stderr)
+        return 1
+
+    level_filter = args.level.upper() if args.level else None
+
+    def _matches(line):
+        return level_filter is None or f" {level_filter} " in line
+
+    with open(log_path, "r") as f:
+        tail = [line for line in f.readlines()[-args.lines:] if _matches(line)]
+        sys.stdout.writelines(tail)
+        sys.stdout.flush()
+
+        if not args.follow:
+            return 0
+
+        print(f"-- following {log_path} (Ctrl+C to stop) --")
+        try:
+            while True:
+                line = f.readline()
+                if not line:
+                    time.sleep(0.5)
+                    continue
+                if _matches(line):
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+        except KeyboardInterrupt:
+            print()
+    return 0
+
+
+def _config_path(workspace):
+    return workspace / "configuration" / "config.yaml"
+
+
+def _load_workspace_config(config_path):
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f) or {}
+
+
+def cmd_config_check(args):
+    workspace = Path(args.path).resolve()
+    config_path = _config_path(workspace)
+
+    if not config_path.exists():
+        print(f"error: no config.yaml found at '{config_path}'. Run `flexEngine init` first.", file=sys.stderr)
+        return 1
+
+    try:
+        config = _load_workspace_config(config_path)
+    except yaml.YAMLError as exc:
+        print(f"error: '{config_path}' is not valid YAML: {exc}", file=sys.stderr)
+        return 1
+
+    problems = []
+    for section, keys in CONFIG_SECTIONS.items():
+        if section not in config:
+            problems.append(f"missing section '{section}'")
+            continue
+        for key in keys:
+            if key not in config[section]:
+                problems.append(f"missing '{section}.{key}'")
+
+    device = config.get("deviceCredentials", {})
+    for key in ("projectID", "key"):
+        value = str(device.get(key, ""))
+        if value in PLACEHOLDER_VALUES:
+            problems.append(f"deviceCredentials.{key} is still a placeholder ('{value}') - run `flexEngine config edit`")
+
+    flexcloud = config.get("flexCloud", {})
+    heartbeat = config.get("heartbeat", {})
+    logging_cfg = config.get("logging", {})
+
+    print(f"Configuration: {config_path}")
+    print("-" * 40)
+    print(f"device name:         {device.get('name', '?')}")
+    print(f"primary hardware ID: {device.get('primaryHardwareID', '?')}")
+    print(f"project ID:          {device.get('projectID', '?')}")
+    print(f"redis:               {flexcloud.get('redis_host', '?')}:{flexcloud.get('redis_port', '?')} (db {flexcloud.get('redis_db', '?')})")
+    print(f"heartbeat:           every {heartbeat.get('heartbeat_interval', '?')}s, ttl {heartbeat.get('ttl', '?')}s")
+    print(f"log level:           {logging_cfg.get('level', '?')} -> {logging_cfg.get('file', '?')} (remote={logging_cfg.get('remote', '?')})")
+    print()
+
+    redis_host = flexcloud.get("redis_host", "localhost")
+    redis_port = flexcloud.get("redis_port", 6379)
+    redis_db = flexcloud.get("redis_db", 0)
+    try:
+        redis.StrictRedis(
+            host=redis_host, port=redis_port, db=redis_db, socket_connect_timeout=2
+        ).ping()
+        print(f"redis connectivity:  OK ({redis_host}:{redis_port})")
+    except redis.RedisError as exc:
+        problems.append(f"cannot reach redis at {redis_host}:{redis_port} ({exc})")
+
+    if problems:
+        print("\nProblems found:")
+        for problem in problems:
+            print(f"  - {problem}")
+        return 1
+
+    print("\nConfiguration looks good.")
+    return 0
+
+
+def _config_defaults_from(config):
+    device = config.get("deviceCredentials", {})
+    flexcloud = config.get("flexCloud", {})
+    heartbeat = config.get("heartbeat", {})
+    logging_cfg = config.get("logging", {})
+    return {
+        "device_name": device.get("name", DEFAULT_CONFIG_VALUES["device_name"]),
+        "primary_hardware_id": device.get("primaryHardwareID", DEFAULT_CONFIG_VALUES["primary_hardware_id"]),
+        "project_id": device.get("projectID", DEFAULT_CONFIG_VALUES["project_id"]),
+        "device_key": device.get("key", DEFAULT_CONFIG_VALUES["device_key"]),
+        "redis_host": flexcloud.get("redis_host", DEFAULT_CONFIG_VALUES["redis_host"]),
+        "redis_port": str(flexcloud.get("redis_port", DEFAULT_CONFIG_VALUES["redis_port"])),
+        "redis_db": str(flexcloud.get("redis_db", DEFAULT_CONFIG_VALUES["redis_db"])),
+        "heartbeat_interval": str(heartbeat.get("heartbeat_interval", DEFAULT_CONFIG_VALUES["heartbeat_interval"])),
+        "heartbeat_ttl": str(heartbeat.get("ttl", DEFAULT_CONFIG_VALUES["heartbeat_ttl"])),
+        "log_level": logging_cfg.get("level", DEFAULT_CONFIG_VALUES["log_level"]),
+        "log_remote": str(logging_cfg.get("remote", DEFAULT_CONFIG_VALUES["log_remote"])),
+        "shared_secret": device.get("shared_secret"),
+    }
+
+
+def cmd_config_edit(args):
+    workspace = Path(args.path).resolve()
+    config_path = _config_path(workspace)
+
+    if not config_path.exists():
+        print(f"error: no config.yaml found at '{config_path}'. Run `flexEngine init` first.", file=sys.stderr)
+        return 1
+
+    try:
+        config = _load_workspace_config(config_path)
+    except yaml.YAMLError as exc:
+        print(f"error: '{config_path}' is not valid YAML: {exc}", file=sys.stderr)
+        return 1
+
+    current = _config_defaults_from(config)
+
+    print(f"Editing {config_path} (press Enter to keep the current value).")
+    values = _collect_config_values(non_interactive=False, defaults=current)
+
+    if args.regenerate_secret:
+        values["shared_secret"] = repr(generate_shared_secret(32))
+        print("note: generated a new shared secret - the device will need to re-register with flexCloud.")
+    elif current["shared_secret"] is not None:
+        # current["shared_secret"] was read verbatim from the existing config.yaml,
+        # where it's already stored in its final repr()-serialized form - reuse it
+        # as-is rather than repr()-ing it again (which would double-escape it).
+        values["shared_secret"] = current["shared_secret"]
+
+    config_path.write_text(_render_config(values))
+    print(f"\nUpdated {config_path}")
+    return 0
+
+
+def cmd_config_missing(args):
+    print("error: specify a config subcommand: `check` or `edit`.", file=sys.stderr)
+    return 1
+
+
 def build_parser():
     parser = argparse.ArgumentParser(prog="flexEngine", description="flexEngine agent CLI")
     parser.add_argument("--version", action="version", version=f"flexEngine {__version__}")
@@ -129,6 +386,34 @@ def build_parser():
     init_parser.add_argument("--non-interactive", action="store_true", help="skip prompts and use defaults")
     init_parser.add_argument("--force", action="store_true", help="scaffold even if the target directory is not empty")
     init_parser.set_defaults(func=cmd_init)
+
+    stats_parser = subparsers.add_parser("stats", help="show a live CPU/memory/storage/network dashboard for this device")
+    stats_parser.add_argument("--interval", type=float, default=2.0, help="refresh interval in seconds (default: 2)")
+    stats_parser.add_argument("--once", action="store_true", help="print a single snapshot and exit")
+    stats_parser.set_defaults(func=cmd_stats)
+
+    logs_parser = subparsers.add_parser("logs", help="view an agent's log file")
+    logs_parser.add_argument("path", nargs="?", default=".", help="workspace directory (default: current directory)")
+    logs_parser.add_argument("-n", "--lines", type=int, default=50, help="number of lines to show (default: 50)")
+    logs_parser.add_argument("-f", "--follow", action="store_true", help="follow the log file as it grows (like tail -f)")
+    logs_parser.add_argument("--level", choices=LOG_LEVELS, help="only show log lines at this level")
+    logs_parser.set_defaults(func=cmd_logs)
+
+    config_parser = subparsers.add_parser("config", help="inspect or interactively edit an agent's configuration")
+    config_parser.set_defaults(func=cmd_config_missing)
+    config_subparsers = config_parser.add_subparsers(dest="config_command")
+
+    config_check_parser = config_subparsers.add_parser("check", help="validate config.yaml and test redis connectivity")
+    config_check_parser.add_argument("path", nargs="?", default=".", help="workspace directory (default: current directory)")
+    config_check_parser.set_defaults(func=cmd_config_check)
+
+    config_edit_parser = config_subparsers.add_parser("edit", help="interactively edit config.yaml")
+    config_edit_parser.add_argument("path", nargs="?", default=".", help="workspace directory (default: current directory)")
+    config_edit_parser.add_argument(
+        "--regenerate-secret", action="store_true",
+        help="generate a new shared secret (the device will need to re-register with flexCloud)"
+    )
+    config_edit_parser.set_defaults(func=cmd_config_edit)
 
     return parser
 
