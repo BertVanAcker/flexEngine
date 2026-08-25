@@ -1,6 +1,10 @@
+import io
 import shutil
 import subprocess
 import unittest
+from contextlib import redirect_stdout
+
+from flexEngine.__main__ import build_parser
 
 
 class TestDockerInstallation(unittest.TestCase):
@@ -33,6 +37,32 @@ class TestDockerInstallation(unittest.TestCase):
             "Desktop (or the docker service) and re-run this test.\n"
             f"stderr: {result.stderr}"
         )
+
+
+class TestDockerCommand(unittest.TestCase):
+    """Covers `flexEngine docker`, independent of whether Docker is actually
+    installed on the machine running the suite."""
+
+    def run_cmd(self):
+        parser = build_parser()
+        args = parser.parse_args(["docker"])
+        out = io.StringIO()
+        with redirect_stdout(out):
+            exit_code = args.func(args)
+        return exit_code, out.getvalue()
+
+    def test_reports_docker_state(self):
+        exit_code, output = self.run_cmd()
+        if shutil.which("docker") is None:
+            self.assertEqual(exit_code, 1)
+            self.assertIn("not installed", output)
+        else:
+            self.assertIn("Docker:", output)
+            daemon_reachable = subprocess.run(
+                ["docker", "info"], capture_output=True, timeout=10
+            ).returncode == 0
+            self.assertEqual(exit_code, 0 if daemon_reachable else 1)
+            self.assertIn("running." if daemon_reachable else "not reachable.", output)
 
 
 if __name__ == "__main__":

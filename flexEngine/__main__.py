@@ -8,6 +8,7 @@
 # *************************************************************************
 import argparse
 import importlib.resources
+import shutil
 import socket
 import subprocess
 import sys
@@ -494,6 +495,42 @@ def cmd_config_missing(args):
     return 1
 
 
+def cmd_docker(args):
+    docker_path = shutil.which("docker")
+    if docker_path is None:
+        print("Docker:        not installed.")
+        print("  install: https://docs.docker.com/get-docker/")
+        print("  (only needed if you plan to deploy applications as containers)")
+        return 1
+
+    try:
+        version_result = subprocess.run([docker_path, "--version"], capture_output=True, text=True, timeout=10)
+    except subprocess.TimeoutExpired:
+        print("Docker:        installed, but `docker --version` timed out.")
+        return 1
+
+    if version_result.returncode != 0:
+        print(f"Docker:        installed at {docker_path}, but `docker --version` failed.")
+        print(f"  {version_result.stderr.strip()}")
+        return 1
+
+    print(f"Docker:        installed ({version_result.stdout.strip()})")
+
+    try:
+        info_result = subprocess.run([docker_path, "info"], capture_output=True, text=True, timeout=10)
+    except subprocess.TimeoutExpired:
+        print("Docker daemon: not reachable (`docker info` timed out).")
+        return 1
+
+    if info_result.returncode != 0:
+        print("Docker daemon: not reachable.")
+        print("  start Docker Desktop (or the docker service) and try again.")
+        return 1
+
+    print("Docker daemon: running.")
+    return 0
+
+
 def build_parser():
     parser = argparse.ArgumentParser(prog="flexEngine", description="flexEngine agent CLI")
     parser.add_argument("--version", action="version", version=f"flexEngine {__version__}")
@@ -547,6 +584,9 @@ def build_parser():
         help="generate a new shared secret (the device will need to re-register with flexCloud)"
     )
     config_edit_parser.set_defaults(func=cmd_config_edit)
+
+    docker_parser = subparsers.add_parser("docker", help="check whether Docker is installed and its daemon is running")
+    docker_parser.set_defaults(func=cmd_docker)
 
     return parser
 

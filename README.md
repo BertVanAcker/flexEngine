@@ -145,6 +145,13 @@ flexEngine connects to Redis on startup (see `flexCloud.redis_host` /
 `redis_port` in `configuration/config.yaml`) — make sure a Redis instance is
 reachable before starting the agent.
 
+Docker is optional and only needed if you plan to deploy applications as
+containers. Check whether it's installed and its daemon is running with:
+
+```bash
+flexEngine docker
+```
+
 ---
 
 ## Requirements
