@@ -9,6 +9,7 @@
 import argparse
 import importlib.resources
 import socket
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -23,6 +24,9 @@ from flexEngine.utils.auxiliary import load_config
 
 WORKSPACE_SUBDIRS = ("apps", "configuration", "logs")
 DEFAULT_LOG_FILE = "logs/syslog_local.log"
+PID_FILE_NAME = "agent.pid"
+STOP_FILE_NAME = "agent.stop"
+STDOUT_LOG_NAME = "logs/agent.out.log"
 LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
 CONFIG_SECTIONS = {
     "logging": ("level", "file", "remote"),
@@ -127,9 +131,125 @@ def cmd_init(args):
     print(f"  agent.py         -> entry point")
     print("\nNext steps:")
     print(f"  cd {target}")
-    print("  python agent.py")
+    print("  python agent.py       # run in the foreground, or:")
+    print("  flexEngine start      # run in the background (see `flexEngine stop`/`status`)")
     print("\nNote: flexEngine connects to Redis on startup - make sure it is reachable")
     print("(see flexCloud.redis_host/redis_port in configuration/config.yaml).")
+    return 0
+
+
+def _pid_file(workspace):
+    return workspace / PID_FILE_NAME
+
+
+def _stop_file(workspace):
+    return workspace / STOP_FILE_NAME
+
+
+def _read_pid(workspace):
+    pid_file = _pid_file(workspace)
+    if not pid_file.exists():
+        return None
+    try:
+        return int(pid_file.read_text().strip())
+    except ValueError:
+        return None
+
+
+def _is_agent_running(pid):
+    """True if `pid` is alive and looks like one of our agent.py processes.
+
+    Checking cmdline (not just pid_exists) guards against a stale pid file
+    whose pid has since been recycled by an unrelated process.
+    """
+    if pid is None or not psutil.pid_exists(pid):
+        return False
+    try:
+        return "agent.py" in " ".join(psutil.Process(pid).cmdline())
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        return False
+
+
+def cmd_start(args):
+    workspace = Path(args.path).resolve()
+    agent_script = workspace / "agent.py"
+    if not agent_script.exists():
+        print(f"error: no agent.py found at '{workspace}'. Run `flexEngine init` first.", file=sys.stderr)
+        return 1
+
+    pid = _read_pid(workspace)
+    if _is_agent_running(pid):
+        print(f"agent already running (pid {pid}).")
+        return 0
+
+    _stop_file(workspace).unlink(missing_ok=True)
+
+    log_path = workspace / STDOUT_LOG_NAME
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    popen_kwargs = dict(cwd=str(workspace), stdin=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    if sys.platform == "win32":
+        popen_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
+    else:
+        popen_kwargs["start_new_session"] = True  # detach from the controlling terminal (like setsid)
+
+    with open(log_path, "a") as log_handle:
+        process = subprocess.Popen([sys.executable, str(agent_script)], stdout=log_handle, **popen_kwargs)
+    _pid_file(workspace).write_text(str(process.pid))
+
+    time.sleep(0.5)
+    if not _is_agent_running(process.pid):
+        _pid_file(workspace).unlink(missing_ok=True)
+        print(f"error: agent exited immediately - check {log_path}", file=sys.stderr)
+        return 1
+
+    print(f"agent started in the background (pid {process.pid}).")
+    print(f"  flexEngine status {args.path}   -> check it's running")
+    print(f"  flexEngine logs -f {args.path}  -> follow its logs")
+    print(f"  flexEngine stop {args.path}     -> stop it")
+    return 0
+
+
+def cmd_stop(args):
+    workspace = Path(args.path).resolve()
+    pid = _read_pid(workspace)
+
+    if not _is_agent_running(pid):
+        print("agent is not running.")
+        _pid_file(workspace).unlink(missing_ok=True)
+        _stop_file(workspace).unlink(missing_ok=True)
+        return 0
+
+    print(f"stopping agent (pid {pid})...")
+    _stop_file(workspace).write_text("")
+
+    deadline = time.time() + args.timeout
+    while time.time() < deadline and _is_agent_running(pid):
+        time.sleep(0.2)
+
+    if _is_agent_running(pid):
+        print(f"agent did not stop within {args.timeout}s - killing it.", file=sys.stderr)
+        try:
+            psutil.Process(pid).kill()
+        except psutil.NoSuchProcess:
+            pass
+
+    _pid_file(workspace).unlink(missing_ok=True)
+    _stop_file(workspace).unlink(missing_ok=True)
+    print("agent stopped.")
+    return 0
+
+
+def cmd_status(args):
+    workspace = Path(args.path).resolve()
+    pid = _read_pid(workspace)
+
+    if not _is_agent_running(pid):
+        print("agent is not running.")
+        return 1
+
+    uptime = time.time() - psutil.Process(pid).create_time()
+    print(f"agent running (pid {pid}), uptime {_format_uptime(uptime)}.")
     return 0
 
 
@@ -386,6 +506,19 @@ def build_parser():
     init_parser.add_argument("--non-interactive", action="store_true", help="skip prompts and use defaults")
     init_parser.add_argument("--force", action="store_true", help="scaffold even if the target directory is not empty")
     init_parser.set_defaults(func=cmd_init)
+
+    start_parser = subparsers.add_parser("start", help="start the agent as a background process")
+    start_parser.add_argument("path", nargs="?", default=".", help="workspace directory (default: current directory)")
+    start_parser.set_defaults(func=cmd_start)
+
+    stop_parser = subparsers.add_parser("stop", help="stop a background agent started with `flexEngine start`")
+    stop_parser.add_argument("path", nargs="?", default=".", help="workspace directory (default: current directory)")
+    stop_parser.add_argument("--timeout", type=float, default=10.0, help="seconds to wait for graceful shutdown before killing it (default: 10)")
+    stop_parser.set_defaults(func=cmd_stop)
+
+    status_parser = subparsers.add_parser("status", help="check whether the background agent is running")
+    status_parser.add_argument("path", nargs="?", default=".", help="workspace directory (default: current directory)")
+    status_parser.set_defaults(func=cmd_status)
 
     stats_parser = subparsers.add_parser("stats", help="show a live CPU/memory/storage/network dashboard for this device")
     stats_parser.add_argument("--interval", type=float, default=2.0, help="refresh interval in seconds (default: 2)")

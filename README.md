@@ -117,10 +117,29 @@ flexEngine init my-agent-workspace --non-interactive
 
 ### Running the agent
 
+In the foreground (blocks the terminal, stop with Ctrl+C):
+
 ```bash
 cd my-agent-workspace
-python agent.py
+python agent.py    # if "python" isn't found, use "python3 agent.py"
 ```
+
+As a background process (keeps running after you close the terminal):
+
+```bash
+flexEngine start my-agent-workspace     # launch detached, prints its pid
+flexEngine status my-agent-workspace    # check whether it's running
+flexEngine stop my-agent-workspace      # gracefully stop it
+```
+
+`flexEngine start` writes a pid file (`agent.pid`) and the process's
+stdout/stderr (`logs/agent.out.log`) into the workspace; `flexEngine stop`
+signals the agent to shut down cleanly and waits up to `--timeout` seconds
+(default 10) before force-killing it. This works the same way on
+Windows/macOS/Linux. For start-on-boot or automatic restart-on-crash on a
+fixed deployment (e.g. an always-on Raspberry Pi), prefer an OS service
+manager (systemd/launchd/Windows Service) that invokes `python agent.py`
+directly instead.
 
 flexEngine connects to Redis on startup (see `flexCloud.redis_host` /
 `redis_port` in `configuration/config.yaml`) — make sure a Redis instance is
