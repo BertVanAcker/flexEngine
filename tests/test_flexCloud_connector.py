@@ -144,10 +144,10 @@ class TestFlexCloudConnectorReadWrite(unittest.TestCase):
         message = self.get_update_message(update_channel, timeout=2)
         self.assertIsNotNone(message, "Update message not received for write with string.")
         # Verify that the value is stored correctly.
-        stored_value = self.connector.redis_client.get(self.connector.connectorID+":"+"data:"+key)
+        stored_value = self.connector.redis_client.get(key)
         self.assertEqual(stored_value, "test_value", "Stored value does not match expected string.")
         # Test the read method.
-        read_value = self.connector.read(self.connector.connectorID+":"+"data:"+key)
+        read_value = self.connector.read(key)
         self.assertEqual(read_value, "test_value", "Read value does not match expected string.")
 
     def test_write_with_dict(self):
@@ -160,10 +160,10 @@ class TestFlexCloudConnectorReadWrite(unittest.TestCase):
         message = self.get_update_message(update_channel)
         self.assertIsNotNone(message, "Update message not received for write with dict.")
         # Verify that the value is stored as a JSON string.
-        stored_value = self.connector.redis_client.get(self.connector.connectorID+":"+"data:"+key)
+        stored_value = self.connector.redis_client.get(key)
         self.assertEqual(stored_value, json.dumps(test_dict), "Stored value does not match expected JSON string.")
         # Test the read method (should deserialize the JSON into a dict).
-        read_value = self.connector.read(self.connector.connectorID+":"+"data:"+key)
+        read_value = self.connector.read(key)
         self.assertEqual(read_value, test_dict, "Read value does not match expected dictionary.")
 
     def test_write_storage_and_read_list(self):
@@ -180,15 +180,15 @@ class TestFlexCloudConnectorReadWrite(unittest.TestCase):
 
         # Since write_storage uses LPUSH, the list order will be reversed:
         # The most recently pushed element is at index 0.
-        stored_list = self.connector.redis_client.lrange(self.connector.connectorID+":"+"data:"+key, 0, -1)
+        stored_list = self.connector.redis_client.lrange(key, 0, -1)
         self.assertEqual(stored_list, ["value2", "value1"], "Stored list does not match expected order.")
 
         # Test read_list with all=True to return the entire list.
-        read_list_all = self.connector.read_list(self.connector.connectorID+":"+"data:"+key, all=True)
+        read_list_all = self.connector.read_list(key, all=True)
         self.assertEqual(read_list_all, ["value2", "value1"], "Read list (all) does not match expected order.")
 
         # Test read_list with queueSize=1 to return only the first element.
-        read_list_single = self.connector.read_list(self.connector.connectorID+":"+"data:"+key, queueSize=0)
+        read_list_single = self.connector.read_list(key, queueSize=0)
         self.assertEqual(read_list_single, ["value2"], "Read list (queueSize=1) does not match expected value.")
 
 

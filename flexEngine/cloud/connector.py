@@ -131,7 +131,7 @@ class flexCloudConnector:
         :param key: The key for storing the data
         :param value: The value to store (can be a dict, str, int, etc.)
         """
-        key = self.connectorID + ":" + "data:" + key
+        #key = self.connectorID + ":" + "data:" + key
         if isinstance(value, dict):
             value = json.dumps(value)  # Serialize the dictionary to a JSON string
         self.redis_client.lpush(key,value)
