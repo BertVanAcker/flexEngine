@@ -22,6 +22,7 @@ import yaml
 from flexEngine import __version__
 from flexEngine.security.security import generate_shared_secret
 from flexEngine.utils.auxiliary import load_config
+from flexEngine.utils.banner import print_banner
 
 WORKSPACE_SUBDIRS = ("apps", "configuration", "logs")
 DEFAULT_LOG_FILE = "logs/syslog_local.log"
@@ -596,6 +597,14 @@ def main():
     args = parser.parse_args()
 
     if not getattr(args, "command", None):
+        workspace = Path(".").resolve()
+        pid = _read_pid(workspace)
+        print_banner(
+            agent_running=_is_agent_running(pid),
+            agent_pid=pid,
+            workdir=str(workspace),
+        )
+        print()
         parser.print_help()
         return 1
 
