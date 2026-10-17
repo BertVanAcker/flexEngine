@@ -21,6 +21,9 @@ contracts.reason_code("health check failed")            # -> {"code": "FE-REC-00
 
 ## Index
 
+Generated reference of every spec (fields, `$defs`, routes, reason codes): [cp-reference.md](cp-reference.md).
+Driver authors: [../docs/spi-guide.md](../docs/spi-guide.md).
+
 | CP | Connection point | Spec | Reference fake / producer | Contract tests |
 |---|---|---|---|---|
 | CP-1 | Desired-state model | `desired-state.v1alpha1.schema.json`, `descriptor.v1alpha1.schema.json` (release descriptor: health, restart, runOptions, `x-flex-mcu`) | `testing/fakecloud.py` (serves), `flex release` (descriptors) | `test_schemas.py`, `test_engine_contracts.py` [V] |
@@ -87,6 +90,7 @@ descriptor (`descriptor.v1alpha1.schema.json`), so the cloud cannot widen them.
 cd flexengine
 .venv/bin/python api/tools/gen_reason_codes.py   # after changing a reason text in the engine (test fails otherwise)
 .venv/bin/python api/tools/gen_vectors.py        # deterministic; the test regenerates and compares byte for byte
+.venv/bin/python api/tools/gen_cp_reference.py   # cp-reference.md after any spec change (tests/api/test_cp_reference.py)
 .venv/bin/python -m pytest tests/api -q
 ```
 
