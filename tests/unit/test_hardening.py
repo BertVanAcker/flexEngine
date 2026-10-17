@@ -371,6 +371,7 @@ def test_sd_notify_ready_watchdog_status_stopping(tmp_path, sock_dir, monkeypatc
     sock_path = str(sock_dir / "notify.sock")
     srv = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     srv.bind(sock_path)
+    srv.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1 << 20)   # macOS: small default datagram buffer
     srv.settimeout(0.2)
     monkeypatch.setenv("NOTIFY_SOCKET", sock_path)
     monkeypatch.setenv("WATCHDOG_USEC", "200000")            # ping every <= 0.1 s
@@ -397,13 +398,16 @@ def test_sd_notify_ready_watchdog_status_stopping(tmp_path, sock_dir, monkeypatc
     th = threading.Thread(target=hostmod.run, args=(cfg,), kwargs={"stop": stop, "on_ready": on_ready, "grace": 5})
     th.start()
 
-    def collect(until: float):
-        while time.time() < until:
+    def collect(until: float, first_ping: bool = False):
+        while time.time() < until and not (first_ping and any(m == "WATCHDOG=1" for _, m in got)):
             try:
                 got.append((time.time(), srv.recv(4096).decode()))
             except socket.timeout:
                 pass
 
+    # the window starts at the first ping: how long the host takes to start (slow fsyncs on a busy runner) is not
+    # what this test measures
+    collect(time.time() + 10, first_ping=True)
     collect(time.time() + 1.2)
     stop.set()
     th.join(10)
@@ -414,11 +418,12 @@ def test_sd_notify_ready_watchdog_status_stopping(tmp_path, sock_dir, monkeypatc
     assert len(ready) == 1 and "STATUS=2/2 devices running" in ready[0]
     assert all(v >= 1 for v in seen_ready["ticks"].values()) and seen_ready["n"] == 2   # after the first round
     assert seen_ready["stop"] is stop and set(seen_ready["dirs"]) == {"dev-a", "dev-b"}
-    assert len([m for m in msgs if m == "WATCHDOG=1"]) >= 8 and len(pings) >= 8   # the pings reach the socket
+    timeline = [(round(t - got[0][0], 3), m.split("\n")[0]) for t, m in got]
+    assert len(pings) >= 8 and len([m for m in msgs if m == "WATCHDOG=1"]) >= 8, (pings, timeline)  # sent, received
     # The engine pings every WatchdogSec/2 = 0.1 s; systemd kills it only after WatchdogSec = 0.2 s without one.
     # Measured where the engine sends (the receive times of this thread add its own scheduling delays on a busy
     # runner): no gap may reach WatchdogSec.
-    assert max(b - a for a, b in zip(pings, pings[1:])) < 0.2
+    assert max(b - a for a, b in zip(pings, pings[1:])) < 0.2, (pings, timeline)
     assert msgs[-1].startswith("STOPPING=1")
 
 
