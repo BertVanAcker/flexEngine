@@ -102,6 +102,8 @@ def test_device_event_reaches_the_cloud_and_shares_the_seq_space(fake_cloud, eng
     eng.report("app", "Pending", reason="awaiting safe state: machine_parked")
     eng.flush_outbox()
     assert eng.state["outbox"] == []
+    audit = [a for a in fake_cloud.state.s["audit"] if a.get("action") == "device.event"]
+    assert audit and audit[-1]["detail"]["reasonCode"] == "FE-DS-004", audit[-1:]
     evs = fake_cloud.state.s.get("events", [])
     assert [e["reasonCode"] for e in evs] == ["FE-DS-004"], evs
     seqs = [e["seq"] for e in evs] + [r["seq"] for r in fake_cloud.state.s["statusLog"]]
@@ -125,3 +127,11 @@ def test_local_api_shows_the_last_refusal(engine_cfg, vectors, tmp_path):
 
 def eng_dir(eng) -> str:
     return str(eng.dir)
+
+
+def test_reference_cloud_refuses_a_plan_that_would_break_cp1(fake_cloud):  # noqa: F811
+    """Lead decision 2026-10-17: the fake backend checks activation and parameters against CP-1 at plan time."""
+    s, p = admin(fake_cloud, "POST", "/api/v1/admin/plans", {"deviceId": "vec-dev", "allowUnknownDevice": True, "deployments": [
+        {"id": "native-app", "module": "vec_native", "version": "1.0.0", "driver": "native",
+         "activation": {"requires": ["not a valid requirement!"]}}]})
+    assert s == 422 and "CP-1" in json.dumps(p), (s, p)

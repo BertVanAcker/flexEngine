@@ -49,6 +49,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from flexengine2 import contracts
 from flexengine2.identity import crypto
 from flexengine2.util import atomic_write_json, canonical_json, iso, read_json, sha256_digest
 from flexengine2.artefacts.oci import Layout
@@ -438,6 +439,10 @@ def make_handler(st: CloudState, base_url_holder: dict):
                     st.s["lastSeq"][caller] = seq
                     ev["receivedAt"] = time.time()
                     st.s.setdefault("events", []).append({"deviceId": caller, **ev})
+                    # lead decision 2026-10-17: device events belong in the hash-chained audit log
+                    st.audit(f"device:{caller}", "device.event", {k: ev.get(k) for k in (
+                        "event", "seq", "reasonCode", "reason", "documentDigest", "offeredManifestVersion",
+                        "acceptedManifestVersion")})
                     st.save()
                 st.count(f"{caller}:event")
                 return self._json(200, {"ok": True})
@@ -541,6 +546,12 @@ def make_handler(st: CloudState, base_url_holder: dict):
                 if len(ids) != len(set(ids)):
                     raise Problem(422, "Duplicate deployment id")
                 st.check_placement(dev, new)
+                # lead decision 2026-10-17: the reference backend checks what it would serve against CP-1, so a
+                # backend-side mistake (activation, parameters, driver) fails at plan time, not on the device
+                cand = {**cur, "manifestVersion": cur["manifestVersion"] + 1, "deployments": new}
+                errs = contracts.errors("desired-state", cand)
+                if errs:
+                    raise Problem(422, "Desired state would not match CP-1", "; ".join(errs[:5]))
                 old = {d["metadata"]["id"]: d for d in cur["deployments"]}
                 diff, needs_approval = [], False
                 for d in new:
