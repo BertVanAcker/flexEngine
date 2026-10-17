@@ -40,6 +40,28 @@ from flexengine2.drivers.base import Driver, DriverError, Observed, Workload, ht
 from flexengine2.identity.secrets import SecretPermissionError, looks_secret, read_secret_file
 
 
+def archive_image_ids(path: str | os.PathLike | None) -> list[str]:
+    """Image IDs (config digests, `sha256:<hex>`) named by the manifest.json of a docker-archive tar (the OCI layout
+    `docker save` writes carries one as well); [] when the file has none or cannot be read."""
+    import tarfile
+
+    try:
+        with tarfile.open(path) as tf:
+            f = tf.extractfile("manifest.json")
+            entries = json.load(f) if f is not None else []
+    except (OSError, KeyError, ValueError, TypeError, tarfile.TarError):
+        return []
+    out = []
+    for e in entries if isinstance(entries, list) else []:
+        cfg = e.get("Config") if isinstance(e, dict) else None
+        if not isinstance(cfg, str):
+            continue
+        hexd = cfg.rsplit("/", 1)[-1].removesuffix(".json")      # blobs/sha256/<hex> or legacy <hex>.json
+        if re.fullmatch(r"[0-9a-f]{64}", hexd):
+            out.append(f"sha256:{hexd}")
+    return out
+
+
 def _run(cmd: list[str], timeout: float = 120, check: bool = True,
          env: dict | None = None) -> subprocess.CompletedProcess:
     """Run a runtime CLI command. A missing binary or a hung CLI is an executor problem (DriverError) even with
@@ -245,13 +267,26 @@ class CliContainerDriver(Driver):
 
     # ---- images ----------------------------------------------------------------------------
     def ensure_image(self, wl: Workload) -> str:
-        """Load the verified archive unless present; always run by digest-pinned reference."""
+        """Load the verified archive unless present; always run by a content-addressed reference.
+
+        The release pins the image by the manifest digest of the saved archive (dev.flex.imageRef). A containerd
+        image store (Docker >= 29 default) resolves that reference after `docker load`; the classic graph-driver
+        stores (Docker before 29, Podman) keep no repo digest for a loaded image and know it by its image ID, the
+        digest of its config (which names every layer's diff id). Both identify exactly the verified content, so the
+        driver runs by whichever the runtime resolves: the manifest digest first, else the archive's config digest."""
         ref = wl.payload_annotations["dev.flex.imageRef"]  # docker.io/flexnode/<app>@sha256:...
-        if _run([self.rt, "image", "inspect", ref], check=False).returncode != 0:
+        refs = [ref, *archive_image_ids(wl.payload_path)]
+
+        def resolved() -> str | None:
+            return next((r for r in refs if _run([self.rt, "image", "inspect", r], check=False).returncode == 0), None)
+
+        have = resolved()
+        if have is None:
             _run([self.rt, "load", "-q", "-i", wl.payload_path], timeout=300)
-            if _run([self.rt, "image", "inspect", ref], check=False).returncode != 0:
+            have = resolved()
+            if have is None:
                 raise DriverError(f"payload did not contain image {ref}")
-        return ref
+        return have
 
     def _labels(self, wl: Workload) -> list[str]:
         out = []

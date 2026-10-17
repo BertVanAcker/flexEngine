@@ -224,3 +224,64 @@ def test_process_probe_sees_restarts(monkeypatch):
     assert d.health("x", p) is False
     monkeypatch.setattr(d, "_inspect", lambda ref: (_ for _ in ()).throw(DriverError("down")))
     assert d.health("x", p) is False
+
+
+# ---- image resolution on graph-driver stores (classic Docker, Podman) ------------------------------------------------
+def _docker_save_tar(path: Path, config_hex: str) -> Path:
+    import io
+
+    docs = {"index.json": {"schemaVersion": 2, "manifests": [{"digest": "sha256:" + "d" * 64}]},
+            "manifest.json": [{"Config": f"blobs/sha256/{config_hex}", "RepoTags": ["flexnode/x:1"], "Layers": []}]}
+    with tarfile.open(path, "w") as tf:
+        for name, doc in docs.items():
+            data = json.dumps(doc).encode()
+            ti = tarfile.TarInfo(name)
+            ti.size = len(data)
+            tf.addfile(ti, io.BytesIO(data))
+    return path
+
+
+def test_archive_image_ids(tmp_path):
+    from flexengine2.drivers.container import archive_image_ids
+
+    assert archive_image_ids(_docker_save_tar(tmp_path / "a.tar", "c" * 64)) == ["sha256:" + "c" * 64]
+    (tmp_path / "fake.json").write_text("{}")
+    assert archive_image_ids(tmp_path / "fake.json") == [] and archive_image_ids(tmp_path / "missing") == []
+
+
+@pytest.mark.parametrize("store", ["containerd", "graph"])
+def test_loaded_image_runs_by_whatever_content_reference_the_store_resolves(tmp_path, monkeypatch, store):
+    """A containerd image store (Docker >= 29) resolves the release's manifest-digest reference after `docker load`;
+    a graph-driver store (Docker < 29, Podman) knows the loaded image only by its ID (config digest). Both are the
+    verified content; the driver must run either way (it used to fail with 'payload did not contain image')."""
+    import subprocess
+
+    from flexengine2.drivers import container as ctr
+    from flexengine2.drivers.base import Workload
+
+    tar = _docker_save_tar(tmp_path / "a.tar", "c" * 64)
+    ref = "docker.io/flexnode/x@sha256:" + "d" * 64
+    known: set[str] = set()
+    loads = [ref if store == "containerd" else "sha256:" + "c" * 64]   # what `load` makes resolvable
+    calls = []
+
+    def run(cmd, timeout=120, check=True, env=None):
+        calls.append(cmd[1:])
+        rc = 0
+        if cmd[1:3] == ["image", "inspect"]:
+            rc = 0 if cmd[3] in known else 1
+        elif cmd[1] == "load" and loads:
+            known.add(loads.pop(0))
+        return subprocess.CompletedProcess(cmd, rc, "", "")
+
+    monkeypatch.setattr(ctr, "_run", run)
+    d = ctr.CliContainerDriver("dev", runtime="podman")
+    wl = Workload(dep_id="d", module="x", version="1", digest="sha256:" + "1" * 64, payload_path=str(tar),
+                  payload_annotations={"dev.flex.imageRef": ref})
+    want = ref if store == "containerd" else "sha256:" + "c" * 64
+    assert d.ensure_image(wl) == want
+    assert d.ensure_image(wl) == want and [c for c in calls if c[0] == "load"] == [["load", "-q", "-i", str(tar)]]
+    known.clear()
+    loads.append("flexnode/x:1")                                   # resolvable by tag only: not pinned, refused
+    with pytest.raises(DriverError, match="payload did not contain image"):
+        d.ensure_image(wl)
