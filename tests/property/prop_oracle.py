@@ -83,7 +83,7 @@ def duplicate_applies(actions: list[dict], crashes: list[dict]) -> list[str]:
                 out.append(f"{dep}: duplicate apply #{i} of {a.get('version')} ({d[:19]}) without a crash that left "
                            f"it incomplete (crashes in between: {between})")
             r["last"] = i
-        elif kind == "rollback" and r is not None and a.get("failed") == r["version"]:
+        elif kind in ("rollback", "rollback-resume") and r is not None and a.get("failed") == r["version"]:
             r["failed"] = True
         elif kind == "repair":
             if r is not None and a.get("digest") != r["digest"] and ("abandoned" in a or "observed" in a):

@@ -3,10 +3,11 @@
 Every driver is adapted to the shared cases in test_spi.py by a harness (spi_harness/*.py):
 
   push tier (always)   fakes: fake docker/podman CLI, fake systemctl, fake `ank`, P4's fake arduino-app-cli, a fake
-                       SMP base image, the D1 pyads/pymodbus stand-ins and an RT_HDR shm file; the process driver
-                       runs real
+                       SMP base image, the D1 pyads/pymodbus stand-ins, an RT_HDR shm file, a fake `rauc` + boot
+                       simulator; the process driver runs real
   nightly tier         real docker, real systemd (PID 1 in an Ubuntu 24.04 container, marker docker), real podman
-                       (plain + under a fake `ank`), QEMU mps2-an385 with the P3 base image. Marked `docker` / `podman` / `qemu` + `slow`; collected always, but only RUN when
+                       (plain + under a fake `ank`), QEMU mps2-an385 with the P3 base image, real rauc 1.11.3 in a
+                       privileged Ubuntu 24.04 container (boot simulator backend). Marked `docker` / `podman` / `qemu` + `slow`; collected always, but only RUN when
                        selected with -m (e.g. `-m "docker or podman or qemu"`), and skipped when the executor is
                        missing.
 
@@ -29,6 +30,7 @@ if str(HERE) not in sys.path:
 from spi_harness.applab import ApplabHarness  # noqa: E402
 from spi_harness.container import (FakeAnkaiosHarness, FakeDockerHarness, FakePodmanHarness,  # noqa: E402
                                    RealDockerHarness, RealPodmanAnkaiosHarness, RealPodmanHarness)
+from spi_harness.os_rauc import FakeRaucHarness, RealRaucHarness  # noqa: E402
 from spi_harness.mcu import (FakeMcuFirmwareHarness, FakeMcuModuleHarness, QemuMcuFirmwareHarness,  # noqa: E402
                              QemuMcuModuleHarness)
 from spi_harness.plc import PlcAdsHarness, PlcModbusHarness, PlcShmHarness  # noqa: E402
@@ -36,9 +38,9 @@ from spi_harness.process import ProcessHarness  # noqa: E402
 from spi_harness.systemd import FakeSystemdHarness, RealSystemdHarness  # noqa: E402
 
 PUSH = [ProcessHarness, FakeSystemdHarness, FakeDockerHarness, FakePodmanHarness, FakeAnkaiosHarness, ApplabHarness,
-        FakeMcuModuleHarness, FakeMcuFirmwareHarness, PlcModbusHarness, PlcShmHarness, PlcAdsHarness]
+        FakeMcuModuleHarness, FakeMcuFirmwareHarness, PlcModbusHarness, PlcShmHarness, PlcAdsHarness, FakeRaucHarness]
 NIGHTLY = [(RealDockerHarness, "docker"), (RealSystemdHarness, "docker"), (RealPodmanHarness, "podman"), (RealPodmanAnkaiosHarness, "podman"),
-           (QemuMcuModuleHarness, "qemu"), (QemuMcuFirmwareHarness, "qemu")]
+           (QemuMcuModuleHarness, "qemu"), (QemuMcuFirmwareHarness, "qemu"), (RealRaucHarness, "docker")]
 NIGHTLY_MARKS = ("docker", "podman", "qemu")
 
 

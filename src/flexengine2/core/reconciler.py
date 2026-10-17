@@ -611,12 +611,16 @@ class Engine:
                         interfaceHash=rel.descriptor.get("interfaceHash"), applySeconds=round(time.time() - t0, 3), healthGateSeconds=round(dt, 3))
             return
         # apply or health gate failed -> automatic rollback. The verdict (digest failed) and the rollback phase are
-        # made durable *before* the rollback starts, so a crash inside it resumes the rollback at the restart
-        # (resolve_journal) and never starts the known-bad release again (EV-13).
+        # made durable *before* the rollback starts, for every driver: a crash, a power cut or a rebooting driver's
+        # reboot (os-rauc, `reboots_on_apply`) inside the rollback ends this process before the Failed report; the
+        # next reconcile finishes the rollback from the journal and reports (resolve_journal), and the known-bad
+        # release is never started again (EV-13, EV-17).
         self.state["failed"][dep_id] = wl.digest
         reason = "apply failed" if apply_error is not None else "health check failed"
-        self.state["journal"].update(phase="rolling-back", reason=reason, failure=why, detectSeconds=round(dt, 3),
-                                     startedAt=t0)
+        self.state["journal"].update(
+            phase="rolling-back", failedDigest=wl.digest, failedVersion=wl.version,
+            rolledBackTo=cur_wl.version if cur_wl else None, reason=reason, failure=why,
+            failFast=bool(why) and not str(why).startswith("timeout"), detectSeconds=round(dt, 3), startedAt=t0)
         self.save()
         self._rollback(dep_id, drv, prof, wl.version, wl.digest, wl, cur_wl, self.state["journal"])
 
@@ -631,7 +635,8 @@ class Engine:
         again = {"resumed": True} if resumed else {}
         if cur_wl:
             self._hist(dep_id, "ROLLING_BACK", version=cur_wl.version, failed=version)
-            self.action("rollback", dep_id, version=cur_wl.version, digest=cur_wl.digest, failed=version, **again)
+            self.action("rollback-resume" if resumed else "rollback", dep_id, version=cur_wl.version,
+                        digest=cur_wl.digest, failed=version)
             with self.tracer.span("engine.rollback", self._mv_traceparent(),
                                   **{"flex.deployment": dep_id, "flex.version": cur_wl.version,
                                      "flex.failed_version": version}) as sp:
@@ -691,6 +696,9 @@ class Engine:
             return
         self._dep = dep_id
         if j.get("phase") == "rolling-back":
+            # failedDigest/failedVersion name the failed release (an os-rauc journal of 2026-10-17 kept the rollback
+            # target in `digest`; current journals carry both)
+            digest, version = j.get("failedDigest") or digest, j.get("failedVersion") or version
             self.log(f"resuming the rollback of {dep_id} {version} after a restart", "warning", "rollback.resumed",
                      dep=dep_id, version=version)
             self.state["failed"][dep_id] = digest
@@ -751,7 +759,11 @@ class Engine:
                 # interrupted install left behind) -> restore the committed version
                 self._hist(dep_id, "REPAIR", version=wl.version, observed=obs.version)
                 self.action("repair", dep_id, version=wl.version, digest=wl.digest, observed=obs.digest)
-                self._driver_call("apply", drv, rec["dep"]["x-flex-driver"], drv.apply, None, wl)
+                try:
+                    self._driver_call("apply", drv, rec["dep"]["x-flex-driver"], drv.apply, None, wl)
+                except DriverError as e:
+                    self.log(f"drift repair failed: {e}", "warning", "repair.failed", dep=dep_id, version=wl.version)
+                    continue
                 self.report(dep_id, "Installed", version=wl.version, digest=wl.digest,
                             reason="drift repaired (executor ran another release)")
                 continue
@@ -984,4 +996,9 @@ def build_drivers(cfg: dict, data_dir: Path) -> dict[str, Driver]:
                                       unit_dir=nat.get("unitDir"), user=nat.get("user"))
     elif nat:
         out["native"] = ProcessDriver(cfg["deviceId"], data_dir)
+    dr = cfg.get("drivers", {}).get("os-rauc")
+    if dr:
+        from flexengine2.drivers.os_rauc import OsRaucDriver
+
+        out["os-rauc"] = OsRaucDriver(cfg["deviceId"], data_dir, dr)
     return out

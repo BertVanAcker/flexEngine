@@ -71,7 +71,7 @@ contracts.reason_code("health check failed")            # -> {"code": "FE-REC-00
 | `.…properties.digest` | `sha256:<64 hex>` | ✔ | store (manifest hash), drivers (identity) |
 | `.…properties.size` | int | – | – |
 | `.spec.parameters` | map name → string/number/bool; `_interfaceHash` (FLEX01), `plc` reserved | – | container/native (env `FLEX_PARAM_*`), mcu-module (`k=v;`, `_interfaceHash`), applab (`inst.name` split), plc-verify (`plc`, `_interfaceHash`) |
-| `.x-flex-driver` | `container\|native\|applab\|mcu-module\|mcu-firmware\|plc-verify` | ✔ | reconciler (driver choice, layer `dev.flex.profile`) |
+| `.x-flex-driver` | `container\|native\|applab\|mcu-module\|mcu-firmware\|plc-verify\|os-rauc` | ✔ | reconciler (driver choice, layer `dev.flex.profile`) |
 | `.x-flex-safetyClass` | `none\|safety-relevant` (default none) | – | store (= descriptor class, 2 approvers), gate (implicit FE-S6 signals) |
 | `.x-flex-activation.requires[]` | signal name or `plc:<dep>[@FLEX01_…]` | – | reconciler `_gate` (+ plc-verify `verified()`) |
 | `.x-flex-activation.window` | `{start, end}` `HH:MM` UTC | – | `SafeState.check` |
@@ -102,3 +102,14 @@ cd flexengine
 - **`reasonCode`:** every status record and device event with a reason carries the stable code from
   `reason-codes.v1alpha1.json` (additive field).
 - **Plain HTTP** to the control plane only with `allowPlainHttp: true` (or `FLEX_ALLOW_PLAIN_HTTP=1`).
+
+## Additive changes within v1alpha1
+
+- **2026-10-17, EV-17 `os-rauc`** (whole-OS A/B update with RAUC, health-gated `mark-good`): CP-1 `DriverProfile` +
+  `os-rauc` (desired state, descriptor `profiles`, descriptor `health.type` `os-rauc`); CP-3 payload media type
+  `application/vnd.flex.payload.os-rauc.v1+raucb`, `dev.flex.profile` `os-rauc` and the annotation
+  `dev.flex.compatible` (required on os-rauc layers); CP-2 capabilities fragment `$defs/OsRauc` (`compatible`,
+  `booted`, `bootPrimary`, `slots[]`, `sharedDataPath`, `dataDirOnSharedPartition`, `available`/`reachable`/`detail`);
+  reason codes FE-RAU-PRE-001…007 and FE-RAU-001…014; CP-5: optional class attribute `reboots_on_apply` (the
+  reconciler journals a rollback before a rebooting apply and reports it after the next start, see
+  [cp5-driver-spi.md](cp5-driver-spi.md#driver-os-rauc-ev-17-driversos_raucpy)).

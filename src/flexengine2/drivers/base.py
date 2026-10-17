@@ -21,6 +21,15 @@ Attributes
 ``exclusive``      True when the executor runs at most ``max_deployments`` (default 1) deployments per device
                    (App Lab: one app per board).
 ``max_deployments`` see ``exclusive``; ignored otherwise.
+``reboots_on_apply`` True when ``apply``/``remove`` may reboot the device and so end the engine (os-rauc;
+                   additive in 1.0, default False; informational since EV-13). The reconciler writes a
+                   ``rolling-back`` journal entry before every rollback, whatever the driver, and at the next start
+                   checks (or redoes) the rollback, runs its gate and sends the Failed report. The forward path needs
+                   nothing extra: after the reboot ``status`` reports the new digest running and the engine adopts it
+                   (no second ``apply``).
+``repairs_digest_drift`` default True: ``supervise`` re-applies a committed workload whose ``status`` reports it
+                   running with another digest (EV-13). False for an executor that may legitimately run another
+                   digest for a while (os-rauc after a bootloader fall-back).
 
 Required methods
 ----------------
@@ -165,6 +174,7 @@ class Driver(ABC):
 
     exclusive: bool = False
     max_deployments: int | None = None
+    reboots_on_apply: bool = False
 
     def supervise(self) -> list[dict]:
         return []

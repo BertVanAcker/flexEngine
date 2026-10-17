@@ -197,8 +197,17 @@ def from_plan_v2(doc: dict) -> tuple[dict, list[str]]:
             else:  # EV-19: {mode: systemd} -> {runtime: systemd}
                 drv["native"] = {"runtime": mode, **{k: v for k, v in nat.items() if k != "mode"}}
         if "os-rauc" in drv:
-            del drv["os-rauc"]
-            notes.append(f"/devices/{i}/drivers/os-rauc dropped: the RAUC OS driver is not in alpha")
+            r = drv["os-rauc"]
+            if isinstance(r, dict) and r.get("sharedDataPath"):
+                plan_only = sorted(set(r) & {"bundleDir", "commitTimeout"})
+                drv["os-rauc"] = {k: v for k, v in r.items() if k not in plan_only}
+                if plan_only:
+                    notes.append(f"/devices/{i}/drivers/os-rauc/{plan_only[0]} dropped: not a key of the os-rauc "
+                                 "driver (bundles stay in the engine's store; the gate timeout is the release's)")
+            else:
+                del drv["os-rauc"]
+                notes.append(f"/devices/{i}/drivers/os-rauc dropped: the plan form names no sharedDataPath (the data "
+                             "partition both slots share); set drivers.os-rauc.sharedDataPath")
     if errors:
         raise ConfigError(errors)
     return cfg, notes
