@@ -1,6 +1,6 @@
 # /etc/flexengine/engine.yaml -- flexEngineV2 host config (written once by packaging/install.sh; never overwritten).
-# Form of demo/edge/edge.example.yaml (the keys flexengine2.host.load_config reads today); ${VARS} are expanded from
-# the environment (put them in a drop-in: Environment= / EnvironmentFile=).
+# Form of demo/edge/edge.example.yaml (the keys flexengine2.host.load_config reads today). Environment
+# variables are expanded ($ + {NAME}), also inside comments: an unset one makes the config invalid.
 # Check after editing: /opt/flexengine/bin/flexengine config check /etc/flexengine/engine.yaml --resolve
 # (schema: flexengine2/config/schema.json). As installed it fails on purpose until cloudPublicKey is set.
 # TODO(config schema): move to the plan §3.6 form (apiVersion, identity, local, observability, safeState) once the

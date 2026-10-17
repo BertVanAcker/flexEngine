@@ -136,11 +136,12 @@ if [[ $MODE == uninstall ]]; then
     if systemctl is-enabled -q flexengine 2>/dev/null; then sctl disable flexengine; else ok "flexengine not enabled"; fi
     for i in $(systemctl list-units --plain --no-legend 'flexengine@*' 2>/dev/null | awk '{print $1}'); do sctl stop "$i"; done
   fi
+  before=$CHANGES
   remove "$R_UNITDIR/$UNIT" "$R_UNITDIR/$TUNIT" "$R_UNITDIR/$UNIT.d/10-groups.conf" "$R_UNITDIR/$TUNIT.d/10-groups.conf"
   for d in "$R_UNITDIR/$UNIT.d" "$R_UNITDIR/$TUNIT.d"; do
     [[ -d "$d" ]] && [[ -z "$(ls -A "$d")" ]] && run rmdir "$d"
   done
-  have_systemd && sctl daemon-reload
+  if have_systemd && [[ $CHANGES -gt $before ]]; then sctl daemon-reload; fi
   if [[ -e "$R_PREFIX" ]]; then
     [[ -f "$R_PREFIX/.flexengine-install" || -f "$R_PREFIX/pyvenv.cfg" ]] || \
       die "$R_PREFIX is not a flexengine venv (no .flexengine-install / pyvenv.cfg): not removing it"

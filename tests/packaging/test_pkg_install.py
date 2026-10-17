@@ -149,6 +149,7 @@ def test_template_validates(tmp_path):
         s.Encoding.Raw, s.PublicFormat.Raw)).decode()
     raw = tmp_path / "raw.yaml"
     raw.write_text(tmpl.replace("@DEVICE_ID@", "panda"))
+    assert "${" not in tmpl                          # expanded even in comments by the loader
     filled = tmp_path / "engine.yaml"
     filled.write_text(tmpl.replace("@DEVICE_ID@", "panda").replace(
         "  # cloudPublicKey: <b64>", f"  cloudPublicKey: {key}"))
