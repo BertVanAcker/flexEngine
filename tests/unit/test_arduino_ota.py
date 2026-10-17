@@ -22,7 +22,7 @@ from flexengine2.core.reconciler import Engine, build_drivers
 from flexengine2.drivers import arduino_ota as ao
 from flexengine2.drivers.arduino_ota import ANN_BOARD, ANN_FIRMWARE, ArduinoOtaDriver, OtaServer
 from flexengine2.drivers.arduino_wire import MqttClient, RedisClient, WireError
-from flexengine2.drivers.base import DriverError, Workload
+from flexengine2.drivers.base import DriverError, Workload, wait_until
 from flexengine2.testing import arduino_sim as asim
 from flexengine2.testing.miniwire import MiniBroker, MiniRedis, topic_matches
 
@@ -311,8 +311,10 @@ def test_unpatched_library_and_wrong_key_never_accept(lab, mk, tmp_path):
     (Path(lab.root) / "p1.key").write_text((b"\x01" * 32).hex())
     with pytest.raises(DriverError, match="did not accept"):
         mk(acceptTimeoutSeconds=0.6).apply(None, wl(lab, tmp_path, "2.0.0"))
-    logs = lab.redis.db(15).get(lab.sim().k["logs"])
-    assert any(b"OTA_UPDATE rejected: bad signature" in x for x in logs)
+    # The node may log the rejection after the driver has stopped waiting for an accept (under load): wait for it.
+    def rejected() -> bool:
+        return any(b"OTA_UPDATE rejected: bad signature" in x for x in lab.redis.db(15).get(lab.sim().k["logs"]) or [])
+    assert wait_until(rejected, 3.0, 0.05)
 
 
 def test_node_side_rejection_is_reported(lab, mk, tmp_path):
