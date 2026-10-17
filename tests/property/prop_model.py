@@ -333,6 +333,10 @@ class InprocDevice:
         O.raise_if(errs, f"crashes={self.crashes}\nactions={[(a['action'], a['dep'], a.get('version')) for a in acts]}")
 
     def close(self):
+        try:
+            O.record_stats("inproc", self.crashes, O.read_actions(self.data / "actions.jsonl")[0])
+        except OSError:
+            pass
         shutil.rmtree(self.root, ignore_errors=True)
 
 

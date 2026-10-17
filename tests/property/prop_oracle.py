@@ -14,6 +14,20 @@ from pathlib import Path
 TERMINAL = ("Installed", "Failed", "Removed")
 
 
+def record_stats(kind: str, crashes: list[dict], actions: list[dict], **extra):
+    """One line per schedule in tests/work/property/stats.jsonl (what the schedules really exercised)."""
+    import collections
+    import os
+    import time
+    p = Path(__file__).resolve().parents[1] / "work" / "property" / "stats.jsonl"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    rec = {"t": time.time(), "kind": kind, "test": os.environ.get("PYTEST_CURRENT_TEST", "").split(" ")[0],
+           "crashes": len(crashes), "powerCuts": sum(1 for c in crashes if c.get("powerCut")),
+           "actions": dict(collections.Counter(a.get("action") for a in actions)), **extra}
+    with open(p, "a") as f:
+        f.write(json.dumps(rec) + "\n")
+
+
 class Violation(AssertionError):
     pass
 

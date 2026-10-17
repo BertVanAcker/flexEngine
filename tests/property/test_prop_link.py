@@ -56,7 +56,7 @@ def kth(pattern: str, k: int):
     return pred
 
 
-def run_link(lab, schedule, first_event=None):
+def run_link(lab, schedule, first_event=None, bound: float = 25):
     shim = NetShim(lab.port)
     dev = L.SubDev(lab, api_url=shim.url)
     try:
@@ -82,12 +82,13 @@ def run_link(lab, schedule, first_event=None):
             time.sleep(0.3)
         lab.storm(0)
         shim.restore()
-        errs = dev.settle(25, cloud_mv=mv)
+        errs = dev.settle(bound, cloud_mv=mv)
         errs += dev.final_errors()
         O.raise_if(errs, dev.context() + f"\nshim log tail: {shim.log[-12:]}")
     finally:
         lab.storm(0)
-        dev.cleanup()
+        dev.cleanup(cuts=sum(1 for _, _, v in shim.log if v in ("cut", "deliver-then-cut")),
+                    dropped=sum(1 for _, _, v in shim.log if v == "dropped"))
         shim.close()
 
 
@@ -120,4 +121,4 @@ def test_link_cuts_and_503_storms_converge_nightly(lab, schedule):
 @example(schedule=[({"dl-a": "1.0.0"}, [])])
 @given(schedule=PHASES)
 def test_bug_onboarding_ack_lost(lab, schedule):
-    run_link(lab, schedule, first_event=("cut", "onboarding", 1, True, 0.5))
+    run_link(lab, schedule, first_event=("cut", "onboarding", 1, True, 0.5), bound=8)

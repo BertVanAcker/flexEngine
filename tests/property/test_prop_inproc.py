@@ -26,6 +26,14 @@ KILL = st.builds(M.KillPoint, event=st.sampled_from(M.EVENTS), k=st.integers(1, 
                  when=st.sampled_from(("before", "after")))
 
 
+@st.composite
+def _with_crash(draw, base, crash):
+    """Every schedule contains at least one crash (a derandomized push run would otherwise start with trivial ones)."""
+    first, rest = draw(base)
+    i = draw(st.integers(0, len(rest)))
+    return first, rest[:i] + [draw(crash)] + rest[i:]
+
+
 def steps(power_cut=st.booleans()):
     step = st.one_of(
         st.tuples(st.just("publish"), SPEC),
@@ -35,7 +43,7 @@ def steps(power_cut=st.booleans()):
         st.tuples(st.just("crash"), KILL, power_cut),
         st.tuples(st.just("drift"), st.sampled_from(M.DEPS)),
     )
-    return st.tuples(SPEC, st.lists(step, min_size=1, max_size=12))
+    return _with_crash(st.tuples(SPEC, st.lists(step, max_size=11)), st.tuples(st.just("crash"), KILL, power_cut))
 
 
 def run_schedule(tmp_root, schedule, known=O.KNOWN_BUGS, torn_action: bool = False):
@@ -68,13 +76,13 @@ def tmp_root(tmp_path_factory):
 
 # ---- push tier ------------------------------------------------------------------------------------------------
 
-@budget(push=20, nightly=20)
+@budget(push=30, nightly=30)
 @given(schedule=steps())
 def test_inproc_crash_restart_converges(tmp_root, schedule):
     run_schedule(tmp_root, schedule)
 
 
-@budget(push=20, nightly=20)
+@budget(push=30, nightly=30)
 @given(schedule=steps(power_cut=st.just(True)))
 def test_inproc_power_cut_converges(tmp_root, schedule):
     run_schedule(tmp_root, schedule)

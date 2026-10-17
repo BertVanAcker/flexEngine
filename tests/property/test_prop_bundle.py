@@ -18,7 +18,7 @@ from __future__ import annotations
 import signal
 
 import pytest
-from hypothesis import example, given
+from hypothesis import Phase, example, given, settings
 from hypothesis import strategies as st
 
 import prop_lab as L
@@ -26,7 +26,8 @@ import prop_oracle as O
 from prop_lab import budget
 
 CLOSED = "http://127.0.0.1:9"
-VERSIONS = st.sampled_from(L.GOOD * 3 + ("1.2.0", "1.3.0"))
+# unsigned releases (1.3.0) are excluded here: known bug, test_bug_unsigned_release_in_bundle_never_rejected
+VERSIONS = st.sampled_from(L.GOOD * 3 + ("1.2.0",))
 SPEC = st.dictionaries(st.sampled_from(L.DEPS), VERSIONS, min_size=1, max_size=2)
 KILLS = st.one_of(st.none(), st.builds(lambda e, k, w: f"{e}:{k}:{w}",
                                        st.sampled_from(("write:cas", "write:state.json", "action:apply",
@@ -36,7 +37,7 @@ SCHEDULE = st.tuples(st.lists(SPEC, min_size=2, max_size=3),
                      st.lists(st.tuples(st.integers(0, 2), KILLS), min_size=1, max_size=4))
 
 
-def run_bundles(lab, schedule):
+def run_bundles(lab, schedule, bound: float = 25):
     specs, imports = schedule
     dev = L.SubDev(lab, api_url=CLOSED, prefix="b")
     try:
@@ -64,7 +65,7 @@ def run_bundles(lab, schedule):
             elif now not in (before, mv):
                 raise O.Violation(f"accepted v{now} after a killed import of v{mv} over v{before}")
         dev.start()   # offline, no import: must converge to what was accepted
-        errs = dev.settle(25, online=False)
+        errs = dev.settle(bound, online=False)
         st_ = dev.state()
         accepted = st_.get("desired") or {}
         if accepted:
@@ -94,6 +95,17 @@ def test_bundle_only_converges_and_replays_refused(lab, schedule):
 
 @pytest.mark.slow
 @budget(push=0, nightly=20, shrink=False)
+@example(schedule=([{"dl-b": "1.1.0"}, {"dl-a": "1.2.0"}], [(2, None), (2, None), (1, "gate:1:after")]))
 @given(schedule=SCHEDULE)
 def test_bundle_only_converges_and_replays_refused_nightly(lab, schedule):
     run_bundles(lab, schedule)
+
+
+@pytest.mark.xfail(strict=True, reason="bug: bundle-only, a release without signature is never rejected: import_bundle "
+                   "indexes only signatures that exist, ArtefactStore.referrers() then asks the (unreachable) cloud, "
+                   "Offline -> 'prepare deferred' every tick: no Failed report, the manifest's removals held forever")
+@settings(phases=[Phase.explicit])
+@example(schedule=([{"dl-b": "1.1.0"}, {"dl-a": "1.3.0"}], [(0, None), (1, None)]))
+@given(schedule=SCHEDULE)
+def test_bug_unsigned_release_in_bundle_never_rejected(lab, schedule):
+    run_bundles(lab, schedule, bound=8)

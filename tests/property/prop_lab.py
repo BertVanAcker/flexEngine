@@ -206,13 +206,20 @@ class SubDev:
     def alive(self) -> bool:
         return self.proc is not None and self.proc.poll() is None
 
+    def started(self) -> bool:
+        """This incarnation reached its run loop (`engine.start` is logged after a bundle import)."""
+        try:
+            return (self.dir / "engine.log").read_text().count('"event":"engine.start"') >= self.incarnations
+        except OSError:
+            return False
+
     def run_until(self, pred, timeout: float) -> str:
-        """'killed' (the kill point fired), 'pred' or 'timeout'."""
+        """'killed' (the kill point fired), 'pred' (only once this incarnation is running) or 'timeout'."""
         end = time.time() + timeout
         while time.time() < end:
             if not self.alive():
                 return "killed"
-            if pred():
+            if self.started() and pred():
                 return "pred"
             time.sleep(0.05)
         return "timeout"
@@ -244,8 +251,12 @@ class SubDev:
                              "running": self.running(), "kill": label, "powerCut": power_cut})
         self.observe()
 
-    def cleanup(self):
+    def cleanup(self, **stats):
         self.stop()
+        try:
+            O.record_stats("subprocess", self.crashes, self.actions(), incarnations=self.incarnations, **stats)
+        except OSError:
+            pass
         for pids in unit_procs(self.dev).values():
             for pid in pids:
                 try:

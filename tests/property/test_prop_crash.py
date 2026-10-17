@@ -31,25 +31,29 @@ import prop_lab as L
 import prop_oracle as O
 from prop_lab import budget
 
+BUG_BOUND = 8   # bug tests: a fixed engine converges in ~2 s; keeps the expected failures cheap
 EVENTS = ("action:apply", "action:adopt", "action:rollback", "action:remove", "action:reject", "action:repair",
           "write:state.json", "write:units.json", "write:cas", "drv:apply", "drv:remove", "gate")
+COMMON = ("write:state.json", "write:units.json", "write:cas", "action:apply", "drv:apply", "gate")
 VERSIONS = st.sampled_from(L.GOOD * 3 + ("1.2.0", "1.3.0"))
 SPEC = st.dictionaries(st.sampled_from(L.DEPS), VERSIONS, max_size=2)
 
 
 @st.composite
 def kill_points(draw):
-    ev = draw(st.sampled_from(EVENTS))
+    # events that happen on every install are weighted up, so most armed kill points actually fire
+    ev = draw(st.sampled_from(EVENTS + COMMON * 3))
     when = draw(st.sampled_from(("before", "after", "torn") if ev.startswith("write:") else ("before", "after")))
-    return f"{ev}:{draw(st.integers(1, 4))}:{when}"
+    return f"{ev}:{draw(st.integers(1, 2 if ev == 'gate' or ev.startswith('action') else 4))}:{when}"
 
 
 def phases(power_cut=st.booleans()):
-    return st.lists(st.tuples(SPEC, st.one_of(st.none(), kill_points(), kill_points()), power_cut),
+    return st.lists(st.tuples(SPEC, st.one_of(st.none(), kill_points(), kill_points(), kill_points()), power_cut),
                     min_size=1, max_size=3)
 
 
-def run_phases(lab, schedule, known=O.KNOWN_BUGS, lose_payload: bool = False, onboard: bool = True):
+def run_phases(lab, schedule, known=O.KNOWN_BUGS, lose_payload: bool = False, onboard: bool = True,
+               bound: float = 25):
     dev = L.SubDev(lab)
     try:
         if onboard:
@@ -68,7 +72,7 @@ def run_phases(lab, schedule, known=O.KNOWN_BUGS, lose_payload: bool = False, on
                 dev.stop(signal.SIGTERM)
                 dev.observe()
         dev.start()
-        errs = dev.settle(25, cloud_mv=mv, known=known)
+        errs = dev.settle(bound, cloud_mv=mv, known=known)
         errs += dev.final_errors(known=known)
         O.raise_if(errs, dev.context())
     finally:
@@ -125,7 +129,7 @@ def test_power_cut_restart_converges_nightly(lab, schedule):
 @example(schedule=[({"dl-a": "1.0.0"}, "gate:1:after", True)])
 @given(schedule=phases())
 def test_bug_power_cut_loses_unpacked_payload(lab, schedule):
-    run_phases(lab, schedule, lose_payload=True)
+    run_phases(lab, schedule, lose_payload=True, bound=BUG_BOUND)
 
 
 @pytest.mark.xfail(strict=True, reason="bug: a kill between Popen and the unit-table save in ProcessDriver._spawn "
@@ -134,7 +138,7 @@ def test_bug_power_cut_loses_unpacked_payload(lab, schedule):
 @example(schedule=[({"dl-a": "1.0.0"}, "spawn:1:after", False)])
 @given(schedule=phases())
 def test_bug_kill_in_spawn_leaks_orphan(lab, schedule):
-    run_phases(lab, schedule)
+    run_phases(lab, schedule, bound=BUG_BOUND)
 
 
 @pytest.mark.xfail(strict=True, reason="bug: onboarding is not idempotent: a kill after the onboarding POST was "
@@ -144,4 +148,4 @@ def test_bug_kill_in_spawn_leaks_orphan(lab, schedule):
 @example(schedule=[({"dl-a": "1.0.0"}, "write:state.json:1:before", False)])
 @given(schedule=phases())
 def test_bug_kill_during_onboarding_bricks_device(lab, schedule):
-    run_phases(lab, schedule, onboard=False)
+    run_phases(lab, schedule, onboard=False, bound=BUG_BOUND)
