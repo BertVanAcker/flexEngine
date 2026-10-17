@@ -17,6 +17,8 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
+
+from flexengine2.testing.release import PROBES
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from flexengine2.drivers.base import Workload
@@ -27,7 +29,7 @@ from flexengine2.drivers.mcu.link import SmpLink
 from .base import Harness, Release, deployment, digest_of, free_port
 
 REPO = Path(__file__).resolve().parents[4]
-P3 = REPO / "probes" / "p3-mcu-hotload"
+P3 = PROBES / "p3-mcu-hotload"
 P3B = P3 / "build"
 CHILD = "ct1.mcu0"
 MOD_HEALTH = {"type": "mcu-module", "periodSeconds": 0.1, "successThreshold": 3, "timeoutSeconds": 6}
@@ -163,8 +165,6 @@ class _FakeMcuBase(_McuBase):
 class FakeMcuModuleHarness(_ModuleMixin, _FakeMcuBase):
     id = "mcu-module[fake-smp]"
     fail_delay = 1.0
-    xfail = {"idempotent_apply": "bug: McuModuleDriver.apply() of the module already under test reverts it and "
-                                 "uploads it again (state TESTING, no committed slot)"}
 
     def _mod(self, name: str, version: str, sign: bool = True) -> Path:
         p = self.tmp / "payloads" / f"{name}-{version}.flxm"
@@ -187,8 +187,7 @@ class FakeMcuModuleHarness(_ModuleMixin, _FakeMcuBase):
 class FakeMcuFirmwareHarness(_FirmwareMixin, _FakeMcuBase):
     id = "mcu-firmware[fake-smp]"
     fail_delay = None
-    xfail = {"fail_fast": "EV-20: McuFirmwareDriver.failed() is not implemented (a FAULT build only times out)",
-             "unknown_deployment": "bug: McuFirmwareDriver.health() ignores dep_id (True for an unknown deployment)"}
+    xfail = {"fail_fast": "EV-20: McuFirmwareDriver.failed() is not implemented (a FAULT build only times out)"}
 
     def setup(self):
         super().setup()
@@ -249,13 +248,13 @@ class _QemuBase(_McuBase):
         self.pub_raw = flxm.raw_public(flxm.load_private(P3 / "work" / "keys" / "module-ec-p256.pem"))
 
     def cleanup(self):
-        self.mcu.stop()
+        if getattr(self, "mcu", None) is not None:   # setup may have skipped before starting QEMU
+            self.mcu.stop()
 
 
 class QemuMcuModuleHarness(_ModuleMixin, _QemuBase):
     id = "mcu-module[qemu]"
     fail_delay = None
-    xfail = FakeMcuModuleHarness.xfail
 
     def workload(self, version="1.0.0", dep_id=None):
         return self._wl(P3B / "modules" / f"servo_drive-{version}.flxm", version, dep_id, module="servo_drive")

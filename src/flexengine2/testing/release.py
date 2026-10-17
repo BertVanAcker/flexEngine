@@ -34,9 +34,12 @@ from flexengine2.artefacts.oci import (AT_NODE, AT_SIGNATURE, EMPTY_JSON, MT_DES
 
 # Repo checkout: $FLEX_REPO, default computed from this file (src/flexengine2/testing/release.py -> repo root).
 REPO = Path(os.environ.get("FLEX_REPO") or Path(__file__).resolve().parents[4]).resolve()
+# Probe trees (read-only stand-ins, build outputs, caches): $FLEX_PROBES_DIR, default <repo>/probes. A git worktree
+# has the probe sources but not their gitignored build outputs; point this at the main checkout's probes/ there.
+PROBES = Path(os.environ.get("FLEX_PROBES_DIR") or REPO / "probes").resolve()
 # Stand-in flexNode apps (container: alpine + busybox nc health endpoint; native: Python). Default: probe P2's apps,
 # used read-only; $FLEX_TEST_APPS overrides.
-APPS = Path(os.environ.get("FLEX_TEST_APPS") or REPO / "probes" / "p2-reconciling-engine" / "apps")
+APPS = Path(os.environ.get("FLEX_TEST_APPS") or PROBES / "p2-reconciling-engine" / "apps")
 
 
 def flex_cli() -> Path:

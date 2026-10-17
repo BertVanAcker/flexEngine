@@ -14,9 +14,9 @@
 | `apply(current, desired)` | required | idempotent; rollback = `apply(failed, previous)` without re-transfer; only `DriverError` |
 | `remove(dep_id)` | required | idempotent |
 | `status(dep_id) -> Observed` | required | unknown → `present=False`; unreachable → `present=True, running=False`; never raises |
-| `list() -> {dep_id: Observed}` | required | rebuilt from the executor + driver files (adopt after restart) |
+| `list() -> {dep_id: Observed}` | required | rebuilt from the executor + driver files (adopt after restart); never raises (unreachable → `{}`; not "absent", `status` is the per-deployment truth) |
 | `health(dep_id, probe) -> bool` | required | one probe; `probe` = descriptor `health` (CP-1 descriptor schema); never raises |
-| `capabilities() -> dict` | required | CP-2 fragment (`capabilities.v1alpha1.schema.json` `$defs/<Profile>`) |
+| `capabilities() -> dict` | required | CP-2 fragment (`capabilities.v1alpha1.schema.json` `$defs/<Profile>`); never raises: CLI missing → `available: false`, executor not answering → `reachable: false` (executor facts omitted, not guessed), reason in `detail` |
 | `supervise() -> [event]` | optional | `{"dep", "event": restarted\|start-limit-hit\|exited, "restarts"?, "willRestartAt"?}` |
 | `failed(dep_id) -> str\|None` | optional | terminal failure text → status `failure` (registered in reason-codes) |
 | `preflight(release, dep) -> str\|None` | optional | reason = refusal (manifest version rejected, `artefact rejected: …`); `DriverError` = defer |

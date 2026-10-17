@@ -52,6 +52,11 @@ base, arch/float ABI equal, required caps offered, interface hash = descriptor a
 undefined ELF symbols ⊆ {memcpy, memset, memcmp, strlen}, size ≤ slot, RAM estimate ≤ heap/2.
 Stand-in: the P3 base image on QEMU mps2/an385 (`probes/p3-mcu-hotload`).
 
+**Capabilities fragment** (`mcu-module` / `mcu-firmware`, CP-2) [V]: built from `flexmod info`. With the MCU
+unreachable when the fragment is built, it carries only `profile`, `driver`, `transport`/`bootloader` plus
+`reachable: false` and `detail` (the link error): no `moduleAbi`, `arch`, `floatAbi`, `caps`, `sockets`, `slotBytes`,
+`llextHeapBytes`, `baseImage`, `confirmed`, `board` — never `null`/`"None.None"` guesses.
+
 ## 2. App Lab (Arduino UNO Q) — `drivers/applab/{driver,ard,rpc}.py`
 
 **CLI subset** (`arduino-app-cli … --format json`; remote mode wraps it in `ssh -o BatchMode=yes <host>`) [V]:
@@ -67,6 +72,8 @@ Stand-in: the P3 base image on QEMU mps2/an385 (`probes/p3-mcu-hotload`).
 | `app logs release:<rel> --tail 200` | health via logs: line `FLEX_CONTRACT_OK <hash>` | text |
 
 Failure: exit ≠ 0; the error text is `error` of the last stderr line if it is JSON (FE-APL-001).
+A CLI that cannot be run at all (binary missing, no answer within the timeout) is a `DriverError` like any failure;
+`capabilities()` then reports `available: false` with the reason in `detail` (and `cli: {error}`) instead of raising.
 `flex_params.json` = parameters split as `{instance: {name: value}, "*": {bare: value}}`.
 
 **`.ard` archive**: tar.gz rooted in one folder `<releaseName>/` with `release.yaml` `{name, target, schema ≤ 1,

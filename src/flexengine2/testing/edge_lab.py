@@ -56,9 +56,16 @@ def offenders(doc: dict) -> list[str]:
     return bad
 
 
+_OWN_SRC = Path(__file__).resolve().parents[2]   # the directory holding this flexengine2 package
+
+
 def clean_env(extra: dict | None = None) -> dict:
-    """Environment for the engine: no PYTHONPATH (nothing but the installed flexengine2 + its deps)."""
+    """Environment for the engine: no foreign PYTHONPATH (nothing but flexengine2 + its deps). When this flexengine2
+    is a source tree (not site-packages), PYTHONPATH names exactly that tree, so the engine subprocess runs the same
+    copy as the test process (e.g. a git worktree while the venv's editable install points at the main checkout)."""
     env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+    if _OWN_SRC.name not in ("site-packages", "dist-packages"):
+        env["PYTHONPATH"] = str(_OWN_SRC)
     env.update({"PYTHONUNBUFFERED": "1", **(extra or {})})
     return env
 

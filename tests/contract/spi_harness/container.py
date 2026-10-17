@@ -128,8 +128,6 @@ class FakeDockerHarness(FakeCliHarness):
     id = "container-docker[fake]"
     driver_cls = CliContainerDriver
     runtime = "docker"
-    xfail = {"unreachable_no_false_drift": "bug: CliContainerDriver.status() reports present=False when the runtime is unreachable "
-                            "(-> false drift repair)"}
 
 
 class FakePodmanHarness(FakeDockerHarness):
@@ -141,9 +139,7 @@ class FakeAnkaiosHarness(FakeCliHarness):
     id = "container-ankaios[fake-ank+fake-podman]"
     driver_cls = AnkaiosDriver
     runtime = "podman"
-    xfail = {"fail_fast": "EV-20: AnkaiosDriver.failed() is not implemented (always None)",
-             "unreachable_no_false_drift": "bug: AnkaiosDriver.status() reports present=False when podman is unreachable "
-                            "(-> false drift repair)"}
+    xfail = {"fail_fast": "EV-20: AnkaiosDriver.failed() is not implemented (always None)"}
 
     def setup(self):
         super().setup()
@@ -215,7 +211,6 @@ class RealDockerHarness(RealCliHarness):
     driver_cls = CliContainerDriver
     runtime = "docker"
     fail_delay = 2.0
-    xfail = FakeDockerHarness.xfail
 
 
 class RealPodmanHarness(RealDockerHarness):

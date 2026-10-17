@@ -224,6 +224,24 @@ class McuModuleDriver(Driver):
         slot_sha = [sl.get("sha") if sl.get("valid") else None for sl in s["slots"]]
         m = {"t0": time.time(), "upload_s": 0.0, "uploaded_bytes": 0, "path": ""}
         L = self.links
+        params = self._params(desired)
+        if s["state"] == "testing" and s["active"] >= 0 and slot_sha[s["active"]] == sha and \
+                s.get("dep") == desired.dep_id:
+            # the desired module is already the one under test (idempotent apply, e.g. an engine crash between
+            # apply and commit): keep the test running -- never revert and re-upload it. Only new parameters
+            # need a device action, and the device accepts re-activating the slot under test.
+            if s.get("params_crc") == zlib.crc32(params.encode()):
+                m["path"] = "already under test (no device action)"
+                self._finish(desired, sock, {"rc": 0, "state": "testing"}, m)
+                return
+            self.fault_base.setdefault(desired.dep_id, int(s.get("fault_reverts", 0) or 0))
+            win = {"win": mod.header.test_window_ms + CONFIRM_GRACE_MS} if mod.header.test_window_ms else {}
+            t = time.time()
+            r = L.call(lambda l: l.flexmod("activate", sock=sock, slot=s["active"], dep=desired.dep_id,
+                                           params=params, test=True, timeout=30, **win), retries=0)
+            m.update(path="re-activate slot under test (parameters)", rpc_ms=round((time.time() - t) * 1000, 1))
+            self._finish(desired, sock, r, m)
+            return
         if s["state"] == "testing":
             if s["confirmed"] >= 0 and slot_sha[s["confirmed"]] == sha:  # rollback target = committed slot
                 self.fault_base.pop(desired.dep_id, None)
@@ -236,7 +254,6 @@ class McuModuleDriver(Driver):
             status = self.device_status()
             s = status["sockets"][sock]
         active = s["active"]
-        params = self._params(desired)
         if active >= 0 and slot_sha[active] == sha and s["state"] == "confirmed" and \
                 s.get("params_crc") == zlib.crc32(params.encode()) and s.get("dep") == desired.dep_id:
             # already running with these parameters, e.g. the base image reverted to it on a fault (fail-fast):
@@ -389,15 +406,19 @@ class McuModuleDriver(Driver):
         return {"faultVisibleAt": round(fa, 3), "faultToHealthySeconds": round(healthy_at - fa, 3)}
 
     def capabilities(self):
+        """Never raises. With the MCU unreachable the fragment carries no MCU facts (no ABI/arch/sockets
+        guesses) and says `reachable: false`; the facts come with the next capabilities document."""
+        out = {"profile": self.profile, "driver": self.name, "transport": "SMP over UART (QEMU: TCP)"}
         try:
             info = self.info(refresh=True)
-        except DriverError:
-            info = {}
-        return {"profile": self.profile, "driver": self.name, "transport": "SMP over UART (QEMU: TCP)",
-                "moduleAbi": f"{info.get('abi_major')}.{info.get('abi_minor')}", "arch": info.get("arch"),
-                "floatAbi": info.get("float_abi"), "caps": flxm.caps_names(info.get("caps", 0)),
-                "sockets": info.get("sockets"), "slotBytes": info.get("slot_size"),
-                "llextHeapBytes": info.get("llext_heap")}
+        except DriverError as e:
+            return {**out, "reachable": False, "detail": str(e)[:300]}
+        facts = {"moduleAbi": f"{info.get('abi_major')}.{info.get('abi_minor')}"
+                 if info.get("abi_major") is not None and info.get("abi_minor") is not None else None,
+                 "arch": info.get("arch"), "floatAbi": info.get("float_abi"),
+                 "caps": flxm.caps_names(info.get("caps", 0)), "sockets": info.get("sockets"),
+                 "slotBytes": info.get("slot_size"), "llextHeapBytes": info.get("llext_heap")}
+        return {**out, **{k: v for k, v in facts.items() if v is not None}}
 
 
 class McuFirmwareDriver(Driver):
@@ -514,14 +535,16 @@ class McuFirmwareDriver(Driver):
             st = self.links.call(lambda l: l.flexmod("status"))
         except (DriverError, SmpError):
             return False
+        if dep_id is None or self.st.get("dep") != dep_id:
+            return False   # not a deployment of this driver (unknown or removed)
         want = self.st.get("want")
         socks = [s for s in st["sockets"] if s["state"] != "empty"]
         return all(s.get("healthy") for s in socks) and (want is None or self._ver(info["image"]) == want)
 
     def capabilities(self):
+        out = {"profile": self.profile, "driver": self.name, "bootloader": "MCUboot (swap with scratch, ECDSA P-256)"}
         try:
             info = self._info()
-        except (DriverError, SmpError):
-            info = {}
-        return {"profile": self.profile, "driver": self.name, "bootloader": "MCUboot (swap with scratch, ECDSA P-256)",
-                "baseImage": info.get("image"), "confirmed": info.get("confirmed"), "board": info.get("board")}
+        except (DriverError, SmpError) as e:
+            return {**out, "reachable": False, "detail": str(e)[:300]}
+        return {**out, "baseImage": info.get("image"), "confirmed": info.get("confirmed"), "board": info.get("board")}

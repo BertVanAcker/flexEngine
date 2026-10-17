@@ -10,17 +10,44 @@ Restart policy is delegated to the runtime (docker/podman `--restart on-failure:
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import time
+from typing import NoReturn
 
 from flexengine2.drivers.base import Driver, DriverError, Observed, Workload, http_probe, wait_until
 
 
 def _run(cmd: list[str], timeout: float = 120, check: bool = True) -> subprocess.CompletedProcess:
-    p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    """Run a runtime CLI command. A missing binary or a hung CLI is an executor problem (DriverError) even with
+    check=False; check=False only tolerates a non-zero exit."""
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    except FileNotFoundError as e:
+        raise DriverError(f"{cmd[0]}: executable not found ({e.strerror or e})") from e
+    except subprocess.TimeoutExpired as e:
+        raise DriverError(f"{' '.join(cmd[:4])}...: no answer within {timeout:.0f} s") from e
+    except OSError as e:
+        raise DriverError(f"{cmd[0]}: cannot run ({e})") from e
     if check and p.returncode != 0:
-        raise DriverError(f"{' '.join(cmd[:4])}...: rc={p.returncode} {p.stderr.strip()[:300]}")
+        _fail(cmd, p)
     return p
+
+
+def _fail(cmd: list[str], p: subprocess.CompletedProcess) -> NoReturn:
+    raise DriverError(f"{' '.join(cmd[:4])}...: rc={p.returncode} {(p.stderr or '').strip()[:300]}")
+
+
+def _json(cmd: list[str], out: str):
+    try:
+        return json.loads(out) if out.strip() else None
+    except json.JSONDecodeError as e:
+        raise DriverError(f"{' '.join(cmd[:4])}...: unreadable output ({e})") from e
+
+
+# what `docker|podman container inspect` says for a container that does not exist (anything else -- "Cannot
+# connect to the Docker daemon", a broken podman store -- is the executor being unreachable, never absence)
+_NO_SUCH = re.compile(r"no such (container|object)|no container with (name|id)", re.I)
 
 
 def _ip(info: dict) -> str | None:
@@ -58,6 +85,7 @@ def run_option_args(opts: dict, allowed: dict) -> list[str]:
 
 class CliContainerDriver(Driver):
     profile = "container"
+    name = "docker"   # class default; an instance refines it to its runtime (docker | podman)
 
     def __init__(self, device_id: str, runtime: str = "docker", allowed_run_options: dict | None = None):
         self.device = device_id
@@ -125,11 +153,30 @@ class CliContainerDriver(Driver):
             _run([self.rt, "rm", "-f", n], check=False, timeout=30)
 
     def _inspect(self, ref: str) -> dict | None:
-        p = _run([self.rt, "container", "inspect", ref], check=False)
+        """Container info, None when the container does not exist; DriverError when the runtime cannot answer."""
+        cmd = [self.rt, "container", "inspect", ref]
+        p = _run(cmd, check=False)
         if p.returncode != 0:
-            return None
-        data = json.loads(p.stdout)
-        return data[0] if data else None
+            if _NO_SUCH.search(p.stderr or ""):
+                return None
+            _fail(cmd, p)
+        return (_json(cmd, p.stdout) or [None])[0]
+
+    def _ps(self, *filters: str) -> list[str]:
+        """Container ids with these label filters; DriverError when the runtime cannot answer."""
+        cmd = [self.rt, "ps", "-a", "-q"]
+        for f in filters:
+            cmd += ["--filter", f"label={f}"]
+        p = _run(cmd, check=False)
+        if p.returncode != 0:
+            _fail(cmd, p)
+        return p.stdout.split()
+
+    @staticmethod
+    def _unreachable(e: DriverError) -> Observed:
+        # SPI: an unreachable executor is never reported as absent (that would make the engine repair = re-apply
+        # a workload that may well still run); present + not running, the reason in detail.
+        return Observed(present=True, running=False, detail=f"executor unreachable: {e}")
 
     def _observed(self, info: dict | None) -> Observed:
         if not info:
@@ -141,21 +188,31 @@ class CliContainerDriver(Driver):
                         detail=st.get("Status", ""))
 
     def status(self, dep_id):
-        return self._observed(self._inspect(self.cname(dep_id)))
+        try:
+            return self._observed(self._inspect(self.cname(dep_id)))
+        except DriverError as e:
+            return self._unreachable(e)
 
     def list(self):
-        p = _run([self.rt, "ps", "-a", "-q", "--filter", f"label=dev.flex.device={self.device}"], check=False)
+        """Never raises; an unreachable runtime lists nothing (callers must not read that as "all gone":
+        status() is the per-deployment truth)."""
         out = {}
-        for cid in p.stdout.split():
-            info = self._inspect(cid)
-            if info:
-                dep = ((info.get("Config") or {}).get("Labels") or {}).get("dev.flex.deployment")
-                if dep:
-                    out[dep] = self._observed(info)
+        try:
+            for cid in self._ps(f"dev.flex.device={self.device}"):
+                info = self._inspect(cid)
+                if info:
+                    dep = ((info.get("Config") or {}).get("Labels") or {}).get("dev.flex.deployment")
+                    if dep:
+                        out[dep] = self._observed(info)
+        except DriverError:
+            return {}
         return out
 
     def health(self, dep_id, probe):
-        info = self._inspect(self.cname(dep_id))
+        try:
+            info = self._inspect(self.cname(dep_id))
+        except DriverError:
+            return False
         if not info or not (info.get("State") or {}).get("Running"):
             return False
         ip = _ip(info)
@@ -166,7 +223,10 @@ class CliContainerDriver(Driver):
     def failed(self, dep_id):
         """Terminal failure: the container exited and the runtime's restart policy will not bring it back
         (on-failure:N exhausted, or policy `no`), or it is dead. A crash loop thus fails the gate at once."""
-        info = self._inspect(self.cname(dep_id))
+        try:
+            info = self._inspect(self.cname(dep_id))
+        except DriverError:
+            return None   # unreachable is "not (yet) failed"
         if not info:
             return None
         st = info.get("State") or {}
@@ -184,9 +244,17 @@ class CliContainerDriver(Driver):
         return None
 
     def capabilities(self):
-        v = _run([self.rt, "version", "--format", "{{.Server.Version}}" if self.rt == "docker" else "{{.Client.Version}}"],
-                 check=False).stdout.strip()
-        return {"profile": self.profile, "driver": self.name, "runtimeVersion": v, "supportedRuntimes": ["oci"]}
+        """Never raises: a missing CLI is `available: false`, a runtime that does not answer `reachable: false`."""
+        out = {"profile": self.profile, "driver": self.name, "supportedRuntimes": ["oci"]}
+        fmt = "{{.Server.Version}}" if self.rt == "docker" else "{{.Client.Version}}"
+        try:
+            p = _run([self.rt, "version", "--format", fmt], check=False, timeout=30)
+        except DriverError as e:
+            return {**out, "available": False, "detail": str(e)[:300]}
+        v = p.stdout.strip()
+        if p.returncode != 0 or not v or "<no value>" in v:
+            return {**out, "reachable": False, "detail": (p.stderr or p.stdout).strip()[:300] or f"rc={p.returncode}"}
+        return {**out, "runtimeVersion": v}
 
 
 class AnkaiosDriver(CliContainerDriver):
@@ -195,6 +263,8 @@ class AnkaiosDriver(CliContainerDriver):
     flexEngine stays the Margo-facing reconciler (pull, verify, safety gate, health gate, rollback);
     Ankaios is the local executor (create/delete workloads, restart policy, workload states).
     """
+
+    name = "ankaios"
 
     def __init__(self, device_id: str, ank_bin: str, server_url: str, agent: str):
         super().__init__(device_id, runtime="podman")
@@ -214,16 +284,16 @@ class AnkaiosDriver(CliContainerDriver):
             "runtimeConfig": json.dumps(rc)}}})  # JSON is valid YAML
 
     def _containers(self, dep_id: str) -> list[dict]:
-        p = _run(["podman", "ps", "-a", "-q", "--filter", f"label=dev.flex.device={self.device}",
-                  "--filter", f"label=dev.flex.deployment={dep_id}"], check=False)
-        return [i for i in (self._inspect(c) for c in p.stdout.split()) if i]
+        """DriverError when podman cannot answer (never an empty list for "unreachable")."""
+        ids = self._ps(f"dev.flex.device={self.device}", f"dev.flex.deployment={dep_id}")
+        return [i for i in (self._inspect(c) for c in ids) if i]
 
     def _ank_state(self) -> dict:
-        p = _run(self.ank + ["get", "state", "-o", "json"], check=False, timeout=30)
-        try:
-            return json.loads(p.stdout)
-        except json.JSONDecodeError:
-            return {}
+        cmd = self.ank + ["get", "state", "-o", "json"]
+        p = _run(cmd, check=False, timeout=30)
+        if p.returncode != 0:
+            _fail(cmd, p)
+        return _json(cmd, p.stdout) or {}
 
     def plan(self, current, desired):
         steps = [f"podman load (if missing)"] if desired else []
@@ -252,23 +322,19 @@ class AnkaiosDriver(CliContainerDriver):
         wait_until(lambda: not self._containers(dep_id), timeout=60, period=0.1)
 
     def status(self, dep_id):
-        cs = [self._observed(i) for i in self._containers(dep_id)]
+        try:
+            cs = [self._observed(i) for i in self._containers(dep_id)]
+        except DriverError as e:
+            return self._unreachable(e)
         running = [c for c in cs if c.running]
         return running[0] if running else (cs[0] if cs else Observed(present=False))
 
-    def list(self):
-        p = _run(["podman", "ps", "-a", "-q", "--filter", f"label=dev.flex.device={self.device}"], check=False)
-        out = {}
-        for cid in p.stdout.split():
-            info = self._inspect(cid)
-            if info:
-                dep = ((info.get("Config") or {}).get("Labels") or {}).get("dev.flex.deployment")
-                if dep:
-                    out[dep] = self._observed(info)
-        return out
-
     def health(self, dep_id, probe):
-        for info in self._containers(dep_id):
+        try:
+            infos = self._containers(dep_id)
+        except DriverError:
+            return False
+        for info in infos:
             if (info.get("State") or {}).get("Running") and _ip(info):
                 return http_probe(_ip(info), int(probe.get("port", 8080)), probe.get("path", "/healthz"))
         return False
@@ -277,6 +343,11 @@ class AnkaiosDriver(CliContainerDriver):
         return None  # Ankaios replaces/restarts workloads itself; its workload states are not mapped yet
 
     def capabilities(self):
-        st = self._ank_state()
-        return {"profile": self.profile, "driver": self.name, "executor": "ankaios+podman",
-                "ankaiosAgents": sorted((st.get("agents") or {}).keys()), "supportedRuntimes": ["oci"]}
+        """Never raises: a missing `ank` is `available: false`, a server that does not answer `reachable: false`."""
+        out = {"profile": self.profile, "driver": self.name, "executor": "ankaios+podman", "supportedRuntimes": ["oci"]}
+        try:
+            st = self._ank_state()
+        except DriverError as e:
+            missing = "executable not found" in str(e)
+            return {**out, ("available" if missing else "reachable"): False, "detail": str(e)[:300]}
+        return {**out, "ankaiosAgents": sorted((st.get("agents") or {}).keys())}

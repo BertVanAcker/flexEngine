@@ -115,11 +115,29 @@ def test_capabilities_child_device_mcu(engine_cfg):
     assert doc["x-flex"]["parent"] == {"deviceId": "panda", "mode": "see-thru"}
 
 
-@pytest.mark.xfail(strict=True, reason="engine/schema mismatch (proposed fix in McuModuleDriver.capabilities): with the "
-                   "MCU unreachable at start-up the fragment says moduleAbi 'None.None', arch/sockets null, and the "
-                   "engine sends capabilities only once (capsSent)")
 def test_capabilities_child_device_mcu_unreachable(engine_cfg):
-    contracts.validate("capabilities", mcu_engine(engine_cfg, None).capabilities())
+    doc = mcu_engine(engine_cfg, None).capabilities()
+    contracts.validate("capabilities", doc)
+    frag = doc["x-flex"]["drivers"]["mcu-module"]
+    assert frag["reachable"] is False and "moduleAbi" not in frag and "arch" not in frag, frag
+    assert doc["x-flex"]["drivers"]["mcu-firmware"]["reachable"] is False
+
+
+def test_capabilities_missing_cli_never_raises(engine_cfg, tmp_path, monkeypatch):
+    """A missing executor CLI is reported as `available: false`, never a FileNotFoundError (CP-2/CP-5)."""
+    from flexengine2.drivers.applab.driver import ApplabDriver
+    from flexengine2.drivers.container import AnkaiosDriver, CliContainerDriver
+
+    monkeypatch.setenv("PATH", str(tmp_path / "empty-bin"))
+    drivers = {"container": CliContainerDriver("vec-dev", "docker"),
+               "applab": ApplabDriver("vec-dev", tmp_path / "d", {"cli": str(tmp_path / "no-such-cli")})}
+    doc = Engine(engine_cfg(), drivers).capabilities()
+    contracts.validate("capabilities", doc)
+    for p in drivers:
+        assert doc["x-flex"]["drivers"][p]["available"] is False, doc["x-flex"]["drivers"][p]
+    doc = Engine(engine_cfg(), {"container": AnkaiosDriver("vec-dev", "ank", "http://127.0.0.1:1", "a")}).capabilities()
+    contracts.validate("capabilities", doc)
+    assert doc["x-flex"]["drivers"]["container"]["available"] is False
 
 
 # ---- CP-2 status: a real engine run, offline from the vector bundle ---------------------------------------------

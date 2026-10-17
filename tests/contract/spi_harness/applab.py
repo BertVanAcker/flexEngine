@@ -17,13 +17,15 @@ from pathlib import Path
 import pytest
 import yaml
 
+from flexengine2.testing.release import PROBES
+
 from flexengine2.drivers.applab.driver import ApplabDriver
 from flexengine2.drivers.base import Workload
 
 from .base import DEVICE, Harness, digest_of, failing_shim, shim
 
 REPO = Path(__file__).resolve().parents[4]
-FAKECLI = REPO / "probes" / "p4-applab-target" / "flexp4" / "fakecli.py"
+FAKECLI = PROBES / "p4-applab-target" / "flexp4" / "fakecli.py"
 HASH = "FLEX01_" + "ab" * 32
 
 MAIN_PY = """import sys, time

@@ -68,7 +68,12 @@ class ApplabDriver(Driver):
         if self.ssh:
             cmd = [*self.ssh_cmd, self.ssh, shlex.join(cmd)]
         t0 = time.time()
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=self.cli_timeout)
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=self.cli_timeout)
+        except subprocess.TimeoutExpired as e:
+            raise DriverError(f"arduino-app-cli {' '.join(args[:2])}: no answer within {self.cli_timeout} s") from e
+        except OSError as e:   # FileNotFoundError: the CLI (or ssh) is not installed
+            raise DriverError(f"arduino-app-cli {' '.join(args[:2])}: cannot run {cmd[0]} ({e})") from e
         with open(self.calls_path, "a") as f:
             f.write(json.dumps({"t": t0, "dt": round(time.time() - t0, 3), "args": list(args), "rc": r.returncode})
                     + "\n")
@@ -85,7 +90,10 @@ class ApplabDriver(Driver):
         return json.loads(r.stdout) if r.stdout.strip() else {}
 
     def _run(self, cmd: list[str], stdin: str | None = None):
-        r = subprocess.run(cmd, capture_output=True, text=True, input=stdin, timeout=self.cli_timeout)
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, input=stdin, timeout=self.cli_timeout)
+        except (OSError, subprocess.TimeoutExpired) as e:
+            raise DriverError(f"{cmd[0]}: {e}") from e
         if r.returncode != 0:
             raise DriverError(f"{cmd[0]}: {(r.stderr or r.stdout).strip()[-300:]} (exit {r.returncode})")
         return r.stdout
@@ -297,12 +305,15 @@ class ApplabDriver(Driver):
         return events
 
     def capabilities(self):
+        """Never raises: a CLI that cannot be run (missing, hung, failing) is reported as `available: false`."""
+        avail = {}
         try:
             ver = self._cli("version")
-        except DriverError as e:
-            ver = {"error": str(e)}
+        except (DriverError, ValueError) as e:
+            ver = {"error": str(e)[:300]}
+            avail = {"available": False, "detail": str(e)[:300]}
         return {"profile": self.profile, "driver": self.name, "board": self.board, "cli": ver,
-                "maxRunningApps": 1, **self.placement(),
+                "maxRunningApps": 1, **self.placement(), **avail,
                 "health": f"app running + FLEX01 handshake via {self.health_via}"}
 
 
