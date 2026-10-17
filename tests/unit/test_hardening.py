@@ -375,6 +375,15 @@ def test_sd_notify_ready_watchdog_status_stopping(tmp_path, sock_dir, monkeypatc
     monkeypatch.setenv("NOTIFY_SOCKET", sock_path)
     monkeypatch.setenv("WATCHDOG_USEC", "200000")            # ping every <= 0.1 s
     monkeypatch.delenv("WATCHDOG_PID", raising=False)
+    from flexengine2.local import sdnotify
+
+    pings: list[float] = []                                   # when the engine pinged (its own clock, not ours)
+    real_watchdog = sdnotify.watchdog
+
+    def watchdog(env=None):
+        pings.append(time.monotonic())
+        return real_watchdog(env)
+    monkeypatch.setattr(sdnotify, "watchdog", watchdog)
     got: list[tuple[float, str]] = []
     seen_ready: dict = {}
     stop = threading.Event()
@@ -405,9 +414,11 @@ def test_sd_notify_ready_watchdog_status_stopping(tmp_path, sock_dir, monkeypatc
     assert len(ready) == 1 and "STATUS=2/2 devices running" in ready[0]
     assert all(v >= 1 for v in seen_ready["ticks"].values()) and seen_ready["n"] == 2   # after the first round
     assert seen_ready["stop"] is stop and set(seen_ready["dirs"]) == {"dev-a", "dev-b"}
-    wd = [t for t, m in got if m == "WATCHDOG=1"]
-    assert len(wd) >= 8
-    assert max(b - a for a, b in zip(wd, wd[1:])) <= 0.1 + 0.08
+    assert len([m for m in msgs if m == "WATCHDOG=1"]) >= 8 and len(pings) >= 8   # the pings reach the socket
+    # The engine pings every WatchdogSec/2 = 0.1 s; systemd kills it only after WatchdogSec = 0.2 s without one.
+    # Measured where the engine sends (the receive times of this thread add its own scheduling delays on a busy
+    # runner): no gap may reach WatchdogSec.
+    assert max(b - a for a, b in zip(pings, pings[1:])) < 0.2
     assert msgs[-1].startswith("STOPPING=1")
 
 
