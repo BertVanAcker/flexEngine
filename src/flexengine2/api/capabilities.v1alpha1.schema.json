@@ -328,6 +328,18 @@
         "maxDeployments": {
           "type": "integer",
           "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
         }
       }
     },
@@ -366,6 +378,18 @@
         "maxDeployments": {
           "type": "integer",
           "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
         }
       }
     },
@@ -395,6 +419,18 @@
         "maxDeployments": {
           "type": "integer",
           "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
         }
       }
     },
@@ -434,6 +470,18 @@
         },
         "health": {
           "type": "string"
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
         }
       }
     },
@@ -500,6 +548,18 @@
         "maxDeployments": {
           "type": "integer",
           "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
         }
       }
     },
@@ -544,6 +604,18 @@
         "maxDeployments": {
           "type": "integer",
           "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
         }
       }
     },
@@ -583,6 +655,18 @@
         "maxDeployments": {
           "type": "integer",
           "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
         }
       }
     }

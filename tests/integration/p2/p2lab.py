@@ -15,11 +15,11 @@ from pathlib import Path
 
 from flexengine2.identity import crypto
 from flexengine2.testing.fakecloud import CloudServer
-from flexengine2.testing.release import REPO
+from flexengine2.testing.release import PROBES, REPO
 from flexengine2.util import read_json
 
 FLEXENGINE = Path(__file__).resolve().parents[3]
-PROBE = REPO / "probes" / "p2-reconciling-engine"          # read-only: cached payloads, Ankaios binaries
+PROBE = PROBES / "p2-reconciling-engine"          # read-only: cached payloads, Ankaios binaries
 WORK = FLEXENGINE / "tests" / "work" / "p2"                  # gitignored
 RESULTS = FLEXENGINE / "results"
 MODEL = REPO / "examples" / "models" / "uc1"

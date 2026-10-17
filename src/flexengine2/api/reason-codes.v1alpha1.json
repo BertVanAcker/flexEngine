@@ -395,6 +395,42 @@
    "meaning": "Ankaios start timeout"
   },
   {
+   "code": "FE-CTR-008",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "container",
+   "template": "{cmd}: executable not found ({error})",
+   "pattern": "^(.+?):\\ executable\\ not\\ found\\ \\((.+?)\\)$",
+   "meaning": "runtime CLI (docker/podman/ank) not installed; capabilities() reports available: false"
+  },
+  {
+   "code": "FE-CTR-009",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "container",
+   "template": "{cmd}...: no answer within {timeout} s",
+   "pattern": "^(.+?)\\.\\.\\.:\\ no\\ answer\\ within\\ (.+?)\\ s$",
+   "meaning": "runtime CLI call hung (daemon unresponsive): executor unreachable"
+  },
+  {
+   "code": "FE-CTR-012",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "container",
+   "template": "{cmd}: cannot run ({error})",
+   "pattern": "^(.+?):\\ cannot\\ run\\ \\((.+?)\\)$",
+   "meaning": "runtime CLI not executable (OSError other than not found)"
+  },
+  {
+   "code": "FE-CTR-013",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "container",
+   "template": "{cmd}...: unreadable output ({error})",
+   "pattern": "^(.+?)\\.\\.\\.:\\ unreadable\\ output\\ \\((.+?)\\)$",
+   "meaning": "runtime CLI answered with output that is not JSON"
+  },
+  {
    "code": "FE-CTR-010",
    "field": "failure",
    "stage": "health-gate",
@@ -537,6 +573,24 @@
    "template": "app release:{release} not installed",
    "pattern": "^app\\ release:(.+?)\\ not\\ installed$",
    "meaning": "fail-fast: release vanished"
+  },
+  {
+   "code": "FE-APL-012",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "applab",
+   "template": "arduino-app-cli {cmd}: cannot run {binary} ({error})",
+   "pattern": "^arduino\\-app\\-cli\\ (.+?):\\ cannot\\ run\\ (.+?)\\ \\((.+?)\\)$",
+   "meaning": "arduino-app-cli (or ssh in remote mode) is not installed or not executable; capabilities() reports available: false"
+  },
+  {
+   "code": "FE-APL-013",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "applab",
+   "template": "arduino-app-cli {cmd}: no answer within {timeout} s",
+   "pattern": "^arduino\\-app\\-cli\\ (.+?):\\ no\\ answer\\ within\\ (.+?)\\ s$",
+   "meaning": "arduino-app-cli call hung (cliTimeout)"
   },
   {
    "code": "FE-APL-ARD-001",

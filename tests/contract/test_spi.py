@@ -72,12 +72,7 @@ def assert_observed(o, wl):
 
 
 # ---- class-level: attributes and signatures (no executor) -----------------------------------------------------
-NAME_BUG = pytest.mark.xfail(strict=True, reason="bug: CliContainerDriver/AnkaiosDriver set `name` only in __init__ "
-                                                  "(class default '?')")
-
-
-@pytest.mark.parametrize("cls", [pytest.param(c, id=c.__name__, marks=[NAME_BUG] if c in (CliContainerDriver, AnkaiosDriver)
-                                              else []) for c in ALL_DRIVERS])
+@pytest.mark.parametrize("cls", [pytest.param(c, id=c.__name__) for c in ALL_DRIVERS])
 def test_driver_class_attributes(cls):
     """Every driver class sets profile and name (not the base's "?") and implements the required methods."""
     assert issubclass(cls, Driver)

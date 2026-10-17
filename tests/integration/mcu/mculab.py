@@ -19,9 +19,11 @@ from pathlib import Path
 
 import yaml
 
+from flexengine2.testing.release import PROBES
+
 FLEXENGINE = Path(__file__).resolve().parents[3]
 REPO = FLEXENGINE.parent
-PROBE = REPO / "probes" / "p3-mcu-hotload"
+PROBE = PROBES / "p3-mcu-hotload"
 B = PROBE / "build"
 WORK = FLEXENGINE / "tests" / "work" / "mcu" / "lab"
 RESULTS = FLEXENGINE / "results"

@@ -22,9 +22,11 @@ import sys
 
 import yaml
 
+from flexengine2.testing.release import PROBES
+
 FLEXENGINE = Path(__file__).resolve().parents[3]
 REPO = FLEXENGINE.parent
-PROBE = REPO / "probes" / "p4-applab-target"
+PROBE = PROBES / "p4-applab-target"
 WORK = FLEXENGINE / "tests" / "work" / "applab"
 RESULTS = FLEXENGINE / "results"
 FAKEBIN = PROBE / "tools" / "fakebin"
