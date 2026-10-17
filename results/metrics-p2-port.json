@@ -8,8 +8,8 @@
     "ank-server": 12342048
   },
   "ankaios_rss_kb": {
-    "agent": 7008,
-    "server": 7048
+    "agent": 7016,
+    "server": 7056
   },
   "ankaios_server_restart": {
     "outage_s": 0.246,
@@ -30,22 +30,22 @@
   "d_native_total_rollback_seconds": 8.916,
   "d_publish_to_both_rolled_back_seconds": 19.327,
   "driver_ankaios": {
-    "failed_update_and_rollback": 11.014,
-    "install": 1.588,
-    "remove": 0.927,
-    "update": 2.06
+    "failed_update_and_rollback": 10.988,
+    "install": 2.253,
+    "remove": 1.067,
+    "update": 2.304
   },
   "driver_docker": {
-    "failed_update_and_rollback": 10.213,
-    "install": 0.966,
-    "remove": 0.732,
-    "update": 1.648
+    "failed_update_and_rollback": 11.51,
+    "install": 1.159,
+    "remove": 0.809,
+    "update": 2.796
   },
   "driver_podman": {
-    "failed_update_and_rollback": 10.889,
-    "install": 1.044,
-    "remove": 0.971,
-    "update": 1.899
+    "failed_update_and_rollback": 11.884,
+    "install": 1.488,
+    "remove": 0.945,
+    "update": 1.956
   },
   "e_remove_one_seconds": 0.925,
   "f_reject_reasons": {
@@ -58,5 +58,5 @@
   "i_bundle_bytes": 3676160,
   "i_bundle_to_running_seconds": 1.399,
   "j_native_restart_seconds": 1.825,
-  "release_build_12_releases_seconds_warm": 0.4
+  "release_build_12_releases_seconds_warm": 0.36
 }
