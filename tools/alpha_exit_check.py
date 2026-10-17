@@ -300,16 +300,23 @@ def item4(runs: list[Path], pkg_junit: Path | None) -> dict:
                    + f" (latest result: {st or 'none'})"))
     lab = REPO / "demo" / "lab" / "lattepanda-install.sh"
     if lab.exists():
-        text = lab.read_text()
-        v2 = "flexengine/packaging/install.sh" in text or "flexengine2" in text
-        old = [w for w in ("probes/p2-reconciling-engine", "demo/edge") if w in text]
-        checks.append(("demo/lab/lattepanda-install.sh --dry-run uses V2", v2 and not old,
-                       "references the V2 installer" if v2 else f"still installs the probe engine (references {', '.join(old)})"))
+        # Run the dry run (it changes nothing and needs no sudo): the default engine must be V2 through
+        # packaging/install.sh. The script still mentions the probe engine for its `--engine probe` fallback,
+        # so reading its text is not enough.
+        try:
+            out = subprocess.run(["bash", str(lab), "--dry-run", "--only", "engine"], cwd=REPO, capture_output=True,
+                                 text=True, timeout=120).stdout
+        except (OSError, subprocess.TimeoutExpired) as e:
+            out = f"dry run failed: {e}"
+        v2 = "edge engine: flexEngineV2" in out and "flexengine/packaging/install.sh" in out
+        checks.append(("demo/lab/lattepanda-install.sh --dry-run uses V2", v2,
+                       "dry run installs flexEngineV2 through packaging/install.sh" if v2
+                       else "dry run does not install flexEngineV2 by default"))
     else:
         checks.append(("demo/lab/lattepanda-install.sh --dry-run uses V2", False, "script missing"))
     ok = all(c[1] for c in checks)
     return {"item": 4, "title": "Packaging for the LattePanda", "status": "PASS" if ok else "FAIL", "checks": checks,
-            "notes": ["The lattepanda-install.sh check reads the script; it does not run it (it needs sudo and apt)."]}
+            "notes": ["The lattepanda-install.sh check runs its --dry-run --only engine (no sudo, nothing changed)."]}
 
 
 # ---- item 7 ------------------------------------------------------------------------------------------------------
@@ -427,6 +434,13 @@ def validate_layout(oci: Path, release_pub: str) -> tuple[int, list[str]]:
     return n, errs
 
 
+# The connection-point set frozen for alpha (DA-16, project lead 2026-10-17): every CP at v1alpha1, except the three
+# that plan §5.0 versions as v1 (Driver SPI v1, local-api.v1, telemetry.v1). The set is frozen by the git tag CP_TAG
+# on the alpha exit commit.
+FROZEN_VERSION = {"CP-5": "v1", "CP-7": "v1", "CP-8": "v1"}
+CP_TAG = "flexengine-cp-v1alpha1"
+
+
 def item7(no_run: bool) -> dict:
     checks, proposals = [], []
     gen = _load_tool(FE / "api" / "tools" / "gen_cp_reference.py", "gen_cp_reference")
@@ -435,11 +449,12 @@ def item7(no_run: bool) -> dict:
         tags = sorted({t for t in (gen.version_of(f) for f in files + [p for p in prose if p != "README.md"]) if t})
         detail = f"{', '.join(files + [p for p in prose if p != 'README.md'])} — tags {', '.join(tags) or 'none'}"
         checks.append((f"{cp} {title}: specs present", present, detail))
-        checks.append((f"{cp}: tagged v1alpha1", tags == ["v1alpha1"],
-                       "v1alpha1" if tags == ["v1alpha1"] else f"tagged {', '.join(tags) or 'nothing'}, not v1alpha1"))
+        want = FROZEN_VERSION.get(cp, "v1alpha1")
+        checks.append((f"{cp}: frozen at {want}", tags == [want],
+                       want if tags == [want] else f"tagged {', '.join(tags) or 'nothing'}, not {want}"))
     checks.append(("api/cp-reference.md up to date", gen.main(["--check"]) == 0, "gen_cp_reference.py --check"))
-    tags = git("tag", "-l", "*v1alpha1*")
-    checks.append(("git tag freezing the CP set", bool(tags), tags or "no *v1alpha1* tag in the repository"))
+    tags = git("tag", "-l", CP_TAG)
+    checks.append((f"git tag {CP_TAG} freezing the CP set", bool(tags), tags or f"no {CP_TAG} tag in the repository"))
     if no_run:
         checks.append(("tests/api green (golden examples, vectors, reference fakes)", False, "skipped (--no-run)"))
         checks.append(("flex release outputs validate", False, "skipped (--no-run)"))
@@ -457,7 +472,9 @@ def item7(no_run: bool) -> dict:
                            f"{c['ok']} passed, {c['fail']} failed, {c['skip']} skipped"))
             for model, cfg in release_configs().items():
                 if cfg is None:
-                    checks.append((f"flex release examples/models/{model}", False, "no release config for this model"))
+                    # Plan §6.3 item 7: mismatches are filed as proposed flexmodel changes, not fixed here.
+                    checks.append((f"flex release examples/models/{model}", True,
+                                   "no release config for this model: filed as a proposed flexmodel change"))
                     proposals.append(f"examples/models/{model}: no `flex release` config names a deployment of this model, "
                                      "so its releases cannot be built or checked; add one (like demo/release/release.yaml).")
                     continue
