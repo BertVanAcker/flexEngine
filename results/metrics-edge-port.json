@@ -1,0 +1,28 @@
+{
+  "mcu_deploy_two_modules_s": 17.762,
+  "mcu_layer_bytes": {
+    "release layers": {
+      "cortex-m3": 5980,
+      "cortex-m7-hard": 3268
+    },
+    "uploaded (cortex-m3)": 5980
+  },
+  "mcu_m7_only_refused": {
+    "apply_to_failed_s": 0.2,
+    "reason": "artefact rejected: module built for armv7m/hard-float, panda.portenta is armv7m/soft-float"
+  },
+  "plc_skew_fault_c": {
+    "apply_to_failed_s": 0.273,
+    "detect_s": 0.001,
+    "failFast": true,
+    "failure": "panda/cx runs interface FLEX01_28ebc981b006b003f\u2026, the release expects FLEX01_f4574d6f05c5ad863\u2026 (Hello -> HASH_MISMATCH): program not provisioned for this release",
+    "total_s": 0.012
+  },
+  "plc_v1_apply_to_installed_s": {
+    "cell (held until CX verified)": 1.198,
+    "cx-bridge (ADS)": 1.178,
+    "opta-stack (Modbus)": 1.188
+  },
+  "relay_command_to_state_change_s": 0.401,
+  "relay_state_rate_hz": 3.67
+}

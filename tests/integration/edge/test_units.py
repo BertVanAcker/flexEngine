@@ -96,16 +96,18 @@ def test_config_resolves_cloud_stack_info_and_keys(tmp_path, monkeypatch):
 
     key = tmp_path / "release.key"
     crypto.load_or_create(key)
+    # adapted: the V2 config schema (EV-04) validates the key, so a real Ed25519 public key replaces "CLOUDKEY"
+    cloud_pub = crypto.public_b64(crypto.generate())
     (tmp_path / "stack.json").write_text(json.dumps({"internal": {"p2": "http://127.0.0.1:8700"},
                                                      "urls": {"p2": "https://lattepanda.lab:9700"},
-                                                     "cloudPublicKey": "CLOUDKEY"}))
+                                                     "cloudPublicKey": cloud_pub}))
     (tmp_path / "tok").write_text("tok-123\n")
     monkeypatch.setenv("T", str(tmp_path))
     (tmp_path / "edge.yaml").write_text(
         "cloud: {stackInfo: ${T}/stack.json, releaseKeyFiles: [${T}/release.key]}\n"
         "dataDir: ${T}/data\ndevices:\n  - {deviceId: panda, onboardingTokenFile: ${T}/tok}\n")
     cfg = load_config(tmp_path / "edge.yaml")
-    assert cfg["cloud"]["apiUrl"] == "http://127.0.0.1:8700" and cfg["cloud"]["cloudPublicKey"] == "CLOUDKEY"
+    assert cfg["cloud"]["apiUrl"] == "http://127.0.0.1:8700" and cfg["cloud"]["cloudPublicKey"] == cloud_pub
     assert cfg["cloud"]["releasePublicKeys"] == [crypto.public_b64(crypto.load_private(key))]
     assert cfg["devices"][0]["onboardingToken"] == "tok-123"
 
