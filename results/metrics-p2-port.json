@@ -1,0 +1,62 @@
+{
+  "a_engine_rss_kb": 35188,
+  "a_fresh_deploy_1_node_seconds": 1.49,
+  "a_fresh_deploy_2_nodes_seconds": 2.293,
+  "ankaios_binary_bytes": {
+    "ank": 14767632,
+    "ank-agent": 11826032,
+    "ank-server": 12342048
+  },
+  "ankaios_rss_kb": {
+    "agent": 7016,
+    "server": 7052
+  },
+  "ankaios_server_restart": {
+    "outage_s": 0.587,
+    "workload_deleted_after_s": 1.123
+  },
+  "b_container_apply_seconds": 1.127,
+  "b_container_health_gate_seconds": 0.616,
+  "b_native_apply_seconds": 1.014,
+  "b_update_2_nodes_seconds": 2.724,
+  "c1_offline_seconds": 4,
+  "c1_requests_dropped_while_offline": 10,
+  "c1_restore_to_converged_seconds": 3.316,
+  "c2_restore_to_status_converged_seconds": 0.635,
+  "c3_503_window_to_converged_seconds": 5.524,
+  "d_container_detect_seconds": 8.268,
+  "d_container_total_rollback_seconds": 9.921,
+  "d_health_timeout_configured_seconds": 8,
+  "d_native_total_rollback_seconds": 9.454,
+  "d_publish_to_both_rolled_back_seconds": 20.018,
+  "driver_ankaios": {
+    "failed_update_and_rollback": 10.867,
+    "install": 1.038,
+    "remove": 1.103,
+    "update": 2.052
+  },
+  "driver_docker": {
+    "failed_update_and_rollback": 10.35,
+    "install": 1.123,
+    "remove": 0.677,
+    "update": 1.805
+  },
+  "driver_podman": {
+    "failed_update_and_rollback": 10.569,
+    "install": 1.027,
+    "remove": 0.973,
+    "update": 1.767
+  },
+  "e_remove_one_seconds": 1.044,
+  "f_reject_reasons": {
+    "1.3.0": "artefact rejected: digest mismatch: flexnodes/perception_guard blobs/sha256:26e92aa9c8e1ef8676acbe8ad7c1707e7290a43f5d5ed85c1a1627014a4f5288 hashes to sha256:55af9745ee40568285b722b783f50a97724d849703abdd8ef22f0c77318c6c0b",
+    "1.4.0": "artefact rejected: release not signed by a trusted key (no signature)",
+    "1.5.0": "artefact rejected: release not signed by a trusted key (untrusted key ed25519:03d0656c988eaa93)"
+  },
+  "g_safe_state_to_installed_seconds": 1.487,
+  "h_crash_restart_to_converged_seconds": 7.377,
+  "i_bundle_bytes": 3676160,
+  "i_bundle_to_running_seconds": 1.135,
+  "j_native_restart_seconds": 1.729,
+  "release_build_12_releases_seconds_warm": 0.27
+}

@@ -76,8 +76,8 @@ def registry(keys):
     """Build every release once (docker build + save unless cached, descriptor from flexModel, SBOM, signature)."""
     oci = WORK / "oci"
     shutil.rmtree(oci, ignore_errors=True)
-    cold = not any((WORK / "payloads").glob("*.tar")) if (WORK / "payloads").exists() else True
     _seed_payloads()
+    cold = not any((WORK / "payloads").glob("*.tar"))
     layout = Layout(oci)
     hashes = module_hashes(MODEL)
     classes = model_safety(MODEL)
