@@ -125,6 +125,35 @@ def test_rollback_resumes_after_a_crash_and_never_reapplies(tmp_path):
 
 # ---- process driver ------------------------------------------------------------------------------------------
 
+def test_process_driver_readopts_its_unit_after_an_engine_restart(tmp_path):
+    """Every platform: Linux identifies the unit's process by its FLEX_UNIT marker in /proc, macOS (no procfs) by pid
+    + the start time recorded at spawn. A live process under the unit's pid that is not the unit (a reused pid) is
+    not taken for it."""
+    from flexengine2.drivers.base import wait_until
+    from flexengine2.drivers.process import ProcessDriver
+
+    drv = ProcessDriver("pd-dev", tmp_path)
+    d = drv.root / "d1" / "abc"
+    d.mkdir(parents=True)
+    drv.units["d1"] = {"marker": drv.marker("d1"), "dir": str(d), "digest": "sha256:" + "0" * 64, "version": "1",
+                       "port": 1, "parameters": {}, "restart": {}, "restarts": 0, "failures": [],
+                       "argv": [sys.executable, "-c", "import time; time.sleep(30)"], "wantRunning": True, "pid": None}
+    drv._spawn("d1")
+    first = dict(drv.units["d1"])
+    try:
+        assert wait_until(lambda: drv._alive(first), 5, 0.02)
+        drv2 = ProcessDriver("pd-dev", tmp_path)            # the engine restarted: no Popen, only the unit table
+        assert drv2.status("d1").running and drv2.units["d1"]["pid"] == first["pid"]
+        assert not drv2._alive({**drv2.units["d1"], "pid": os.getpid()})
+        drv2.remove("d1")
+        assert "d1" not in drv2.units and wait_until(lambda: not drv._alive(first), 5, 0.05)
+    finally:
+        try:
+            os.killpg(first["pid"], 9)
+        except ProcessLookupError:
+            pass
+
+
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="/proc")
 def test_process_driver_adopts_a_spawning_orphan_and_kills_strangers(tmp_path):
     from flexengine2.drivers.process import ProcessDriver

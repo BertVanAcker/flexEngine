@@ -6,7 +6,9 @@ the process. The probe container has no systemd, so the driver plays systemd its
   * the process runs in its own session (it survives an engine crash, like a systemd unit)
   * a unit table (units.json, atomically written) holds pid, digest, port, restart counters
   * Restart=on-failure with RestartSec and StartLimitBurst, evaluated by supervise() every tick
-  * after an engine restart the unit is re-adopted by pid + FLEX_UNIT marker in /proc/<pid>/environ
+  * after an engine restart the unit is re-adopted by pid + FLEX_UNIT marker in /proc/<pid>/environ (Linux); without
+    procfs (macOS dev installs) by pid + the process start time `ps` reports, recorded at spawn. Workload processes
+    the unit table does not know (EV-13 orphans) are found and reaped only on Linux (they need /proc)
   * EV-36/37 (drivers/native/pyenv.py): a payload with requirements.lock + wheels/ gets its own venv per digest
     (offline, hash-checked); its python runs app.py. unit.json's ExecStart is honoured ({python} = the payload
     interpreter; a relative program path is resolved in the payload tree, e.g. a Rust binary). platform() =
@@ -31,6 +33,24 @@ from flexengine2.drivers.base import Driver, DriverError, Observed, Workload, ht
 from flexengine2.drivers.native import pyenv
 
 
+PROCFS = sys.platform.startswith("linux")   # /proc/<pid>/{stat,environ,cwd}; else `ps` (macOS, BSD)
+
+
+def proc_start(pid: int) -> str | None:
+    """Start time of a live, non-zombie process as `ps -o lstart=` prints it (C locale), None when there is none.
+    With the pid it identifies a process across engine restarts where /proc is missing: a reused pid has another
+    start time."""
+    try:
+        r = subprocess.run(["ps", "-o", "stat=", "-o", "lstart=", "-p", str(int(pid))], capture_output=True, text=True,
+                           timeout=5, env={"PATH": "/bin:/usr/bin", "LC_ALL": "C", "TZ": "UTC"})
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return None
+    stat, _, start = r.stdout.strip().partition(" ")
+    if r.returncode != 0 or not stat or stat.startswith("Z"):
+        return None
+    return " ".join(start.split()) or None
+
+
 def _free_port() -> int:
     s = socket.socket()
     s.bind(("127.0.0.1", 0))
@@ -51,7 +71,8 @@ class ProcessDriver(Driver):
         self.root.mkdir(parents=True, exist_ok=True)
         self.units_path = self.root / "units.json"
         self.units: dict = read_json(self.units_path, {})
-        if sys.platform.startswith("linux"):
+        self._children: dict[int, subprocess.Popen] = {}   # processes this driver instance spawned (exact liveness)
+        if PROCFS:
             self._reap_unknown()
 
     def _save(self):
@@ -64,6 +85,8 @@ class ProcessDriver(Driver):
         if not u or not u.get("pid"):
             return False
         pid = u["pid"]
+        if not PROCFS:
+            return self._alive_ps(u)
         try:
             with open(f"/proc/{pid}/stat") as f:
                 if f.read().split(") ")[-1].startswith("Z"):
@@ -76,6 +99,18 @@ class ProcessDriver(Driver):
         except (FileNotFoundError, ProcessLookupError, PermissionError):
             return False
         return f"FLEX_UNIT={u['marker']}".encode() in env.split(b"\0")
+
+    def _alive_ps(self, u: dict) -> bool:
+        """No procfs: a child of this driver instance by its Popen (which also reaps it), an adopted process (engine
+        restarted) by pid + the start time recorded at spawn."""
+        pid = u["pid"]
+        p = self._children.get(pid)
+        if p is not None:
+            if p.poll() is None:
+                return True
+            del self._children[pid]
+            return False
+        return bool(u.get("startTime")) and proc_start(pid) == u["startTime"]
 
     def _unpack(self, wl: Workload) -> Path:
         """Unpack the payload once per digest. Durable before it is marked complete (EV-13): every extracted file and
@@ -129,10 +164,14 @@ class ProcessDriver(Driver):
         log.close()
         u.pop("spawning", None)
         u.update(pid=p.pid, startedAt=time.time())
+        if not PROCFS:
+            self._children[p.pid] = p
+            u["startTime"] = proc_start(p.pid)   # fork time: the same before and after exec
         self._save()
         # until the child has exec'ed, /proc/<pid>/environ still shows the engine's environment (no FLEX_UNIT marker),
         # so _alive() would call a just-started workload dead; wait for the exec (bounded)
-        wait_until(lambda: self._alive(u) or p.poll() is not None, 2.0, 0.01)
+        if PROCFS:
+            wait_until(lambda: self._alive(u) or p.poll() is not None, 2.0, 0.01)
 
     def _marked_processes(self) -> dict[str, list[tuple[int, str]]]:
         """{dep_id: [(pid, cwd)]} of live process-group leaders owned by this user, running from a directory of this

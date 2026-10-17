@@ -121,14 +121,29 @@ def parse_unit(path: Path) -> dict:
 
 
 # ---- process helpers ---------------------------------------------------------------------------------------------
+# macOS has no /proc; FAKE_SYSTEMD_NO_PROCFS=1 takes the same `ps` path on Linux (to check it there)
+PROCFS = sys.platform.startswith("linux") and not os.environ.get("FAKE_SYSTEMD_NO_PROCFS")
+
+
 def alive(pid) -> bool:
+    """A live, non-zombie process: /proc on Linux, `ps` elsewhere (macOS has no procfs)."""
     if not pid:
         return False
+    if PROCFS:
+        try:
+            st = Path(f"/proc/{pid}/stat").read_text()
+        except OSError:
+            return False
+        return not st.split(") ")[-1].startswith("Z")
     try:
-        st = Path(f"/proc/{pid}/stat").read_text()
-    except OSError:
+        os.kill(int(pid), 0)
+    except ProcessLookupError:
         return False
-    return not st.split(") ")[-1].startswith("Z")
+    except PermissionError:
+        pass
+    r = subprocess.run(["ps", "-o", "stat=", "-p", str(int(pid))], capture_output=True, text=True,
+                       env={"PATH": "/bin:/usr/bin", "LC_ALL": "C"})
+    return r.returncode == 0 and bool(r.stdout.strip()) and not r.stdout.strip().startswith("Z")
 
 
 def runtime(unit: str) -> dict:
