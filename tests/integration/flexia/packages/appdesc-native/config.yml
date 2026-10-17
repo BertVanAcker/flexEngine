@@ -1,0 +1,42 @@
+name: flexIA-counter
+description: v1 application descriptor (components, manifests, requirements, dependencies)
+components:
+  - name: counter
+    type: python
+    manifests:
+      - name: counter-manifest
+    requirements:
+      architecture: generic
+      os: linux
+      cpu: 0.2
+      memory: 50Mi
+      devices: none
+  - name: reporter
+    type: python
+    manifests:
+      - name: reporter-manifest
+  - name: web
+    type: docker
+    manifests:
+      - name: web-manifest
+dependencies:
+  - name: reporter
+    dependencies:
+      depends_on: counter
+manifests:
+  - name: counter-manifest
+    manifest:
+      type: python
+      version: "3"
+      path: nodes/counter
+      entry: counter.py
+      arguments: ["--period", "0.2"]
+  - name: reporter-manifest
+    manifest:
+      type: python
+      path: nodes/reporter
+  - name: web-manifest
+    manifest:
+      type: docker
+      version: 23.0.3
+      path: nodes/web
