@@ -21,6 +21,7 @@
     "reason": {"type": "string", "minLength": 1, "description": "Why (registered text, see reason-codes)."},
     "reasonCode": {"type": "string", "pattern": "^FE-[A-Z0-9]+(-[A-Z0-9]+)*-[0-9]{3}$", "description": "Stable code of `reason` from reason-codes.v1alpha1.json (added 2026-10-17, lead decision; absent when the text is not registered)."},
     "operation": {"const": "remove", "description": "Pending: the held operation is a removal."},
+    "waitingFor": {"type": "array", "items": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DeploymentId"}, "description": "Pending, held by x-flex-dependsOn (EV-42): the dependencies not ready yet (FE-GATE-004), or with operation remove the dependents still to be removed first (FE-GATE-005)."},
     "stage": {"const": "preflight", "description": "Failed: the driver's preflight refused the artefact."},
     "keptPrevious": {"type": "boolean", "description": "Failed (artefact rejected): the previous state keeps running."},
     "interfaceHash": {"type": ["string", "null"], "pattern": "^FLEX(01|SYS01)_[0-9a-f]{64}$", "description": "Installed: interface hash from the release descriptor."},

@@ -20,7 +20,7 @@ release from one made by `flex release`.
 
 Output (`--out`, default `./flexia-release`): `oci/` (OCI layout: release manifests, descriptor config blobs,
 payload layers, SPDX SBOM, Ed25519 signature referrers), `proposal.json` (per device: the `deployments` list for
-`POST /api/v1/admin/plans` plus order notes and a capability check list), `report.json` (every unit, release and
+`POST /api/v1/admin/plans`, each with its `dependsOn`, plus order notes and a capability check list), `report.json` (every unit, release and
 note), `work/` (build scratch). Exit code: 0 imported; 1 imported with refusals (`--partial`) or a build/publish
 failure; 2 refused (nothing built).
 
@@ -56,7 +56,7 @@ docker.io/flexnode/<module>@<digest>` (the engine runs it by digest) and `dev.fl
 | `restart`, `deploy.restart_policy`, `--restart` | `restartPolicy` (`no` → never, `always`/`unless-stopped` → always, `on-failure[:N]`); compose default `no` becomes the V2 default on-failure:5 |
 | `healthcheck` with an http URL on the container (`curl http://localhost:8080/healthz`, `urllib…urlopen(...)`) | http health probe on that port/path |
 | no (http) healthcheck | **liveness shim**: `python3 /flex/flex_health_shim.py --port 18080 -- <entrypoint+cmd>` serves `/healthz` while the node runs (needs python3 in the image; flcpy nodes have it). Otherwise give the node an endpoint and pass `--health http:PORT/PATH` |
-| `depends_on` | order note: the proposal lists deployments in dependency order and `order[].after`; V2 starts them independently |
+| `depends_on` (list, or map with `condition`), config.yml `dependencies.depends_on` | plan item `dependsOn` → CP-1 `x-flex-dependsOn` (EV-42): the engine installs the dependency first, holds the dependent (`held: waiting for …`) until the dependency runs its release (`service_started` and the short list form → `started`) or is healthy (`service_healthy`, and config.yml dependencies → `healthy`), and removes it before its dependency. `service_completed_successfully` → `started` (warning: no one-shot jobs in V2); `required`/`restart` keys → info, ignored. A cycle is an error (CP-1 refuses it); a refused or unbuilt dependency is left out of `dependsOn` (kept in `order[].after`) |
 | `cpus`, `mem_limit`, `deploy.resources.limits`, `[REQUIREMENTS] cpu/memory` | `descriptor.resources` + a placement check; **not enforced** |
 
 **Native releases** (`type: python` runnables; payload layout of EV-36, `bundle.v1alpha1.md` §2): the runnable's
@@ -74,8 +74,9 @@ a payload with wheels installs but its imports fail (the process driver runs the
 armv7l; `os`; `devices`) and the proposal's `checks`: driver present, architecture, cpu cores, memory, and one manual
 item per device kind (gpio/camera/serial/i2c/spi → add `runOptions.devices` and allow it on the device; wlan → nothing
 to map; `can` → refused, needs host networking). With `--plan` the checks are evaluated against the onboarded
-device's capabilities (CP-2). `[DEPENDENCIES] depends_on` (device level) → `rolloutAfterDevices` (apply those
-plans first). `--arch` builds every listed CPU type; without it the device's architecture, else the host's.
+device's capabilities (CP-2). `[DEPENDENCIES] depends_on` (device level: other v1 devices, i.e. other V2 devices) →
+`rolloutAfterDevices` (apply those plans first): `x-flex-dependsOn` orders deployments of one device only, V2 has
+no cross-device ordering. `--arch` builds every listed CPU type; without it the device's architecture, else the host's.
 Containers for several CPU types become one release per CPU type (version `<v>-<arch>`, the proposal picks the
 device's).
 
@@ -91,7 +92,7 @@ device's).
 | `os` other than linux/generic, `can` device | error | Linux drivers only; SocketCAN needs host networking |
 | `ports`, `-p`, `--publish` | warning | no published ports: reach the container on its bridge IP (EV-27) |
 | `networks`, `links`, service-name DNS | warning | every deployment runs on the default bridge; services do not resolve each other |
-| `depends_on` (service and device) | warning | order note only; no ordering in V2 yet |
+| `[DEPENDENCIES] depends_on` (device level) | warning | cross-device: `rolloutAfterDevices` note only (ordering is per device, EV-42) |
 | `env_file` values | warning | baked into the signed image: do not put secrets there; per-device values → deployment `parameters` (`FLEX_PARAM_<NAME>`) |
 | cpu / memory limits | warning/info | recorded, not enforced |
 | `extra_hosts`, `dns*`, `cap_drop`, `shm_size`, `ulimits`, `read_only`, … | warning | not mapped |
@@ -101,8 +102,8 @@ device's).
 
 Engine-side changes that would remove gaps (not done here): a non-HTTP liveness health type for the container driver
 (no shim, images without python3); `platform()` for the container driver (one multi-arch container release instead
-of one per CPU type); environment/ports/volumes/limits in `runOptions` or the compose profile (EV-27); deployment
-ordering in the desired state; placement checks of `descriptor.requires` in the backend.
+of one per CPU type); environment/ports/volumes/limits in `runOptions` or the compose profile (EV-27); cross-device rollout ordering;
+placement checks of `descriptor.requires` in the backend.
 
 ## CI recipe
 
@@ -132,3 +133,7 @@ Dockerfiles without `RUN` build for a foreign CPU (and the liveness shim's pytho
   native python runnables and a docker runnable, the RoboSAPIENS example (`local`), and a crashing node: import →
   publish to the reference fake cloud → `--plan` → plan/apply → a real engine (`python -m flexengine2.testing.single`,
   container driver on real Docker + process driver) installs and runs them, health OK (the crash fails the gate).
+- `flexengine/tests/integration/flexia/test_flexia_ordering.py` (EV-42): config.yml `dependencies` (native only) and
+  the compose example's `depends_on` → proposal `dependsOn` → plan → `x-flex-dependsOn` → the engine installs the
+  dependency first and removes it last; `flexmodel/tests/test_flexia.py` covers the mapping (forms, conditions,
+  cycles, refused dependencies).

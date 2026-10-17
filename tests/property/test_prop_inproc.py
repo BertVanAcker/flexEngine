@@ -46,11 +46,11 @@ def steps(power_cut=st.booleans()):
     return _with_crash(st.tuples(SPEC, st.lists(step, max_size=11)), st.tuples(st.just("crash"), KILL, power_cut))
 
 
-def run_schedule(tmp_root, schedule):
+def run_schedule(tmp_root, schedule, order=None):
     """A power cut at an `action:<kind>` "before" point also leaves a torn prefix of that record in actions.jsonl
-    (the append was in flight; prop_model.InprocDevice.crash)."""
+    (the append was in flight; prop_model.InprocDevice.crash). `order`: x-flex-dependsOn pairs (EV-42)."""
     first, rest = schedule
-    dev = M.InprocDevice(tmp_root)
+    dev = M.InprocDevice(tmp_root, order=order)
     try:
         with M.quiet_logs():
             dev.publish(first)
@@ -88,6 +88,31 @@ def test_inproc_crash_restart_converges(tmp_root, schedule):
 @given(schedule=steps(power_cut=st.just(True)))
 def test_inproc_power_cut_converges(tmp_root, schedule):
     run_schedule(tmp_root, schedule)
+
+
+# EV-42 ordering: c depends on b, b on a (healthy). Same schedules; in addition the executor never starts a new
+# release of a dependent ahead of its dependency (also after crashes / power cuts), and a dependent held behind a
+# failed dependency keeps its previous release
+ORDER = {"b": ("a",), "c": ("b",)}
+
+
+@budget(push=20, nightly=100)
+@given(schedule=steps())
+def test_inproc_ordering_holds_across_crashes(tmp_root, schedule):
+    run_schedule(tmp_root, schedule, order=ORDER)
+
+
+@settings(phases=[Phase.explicit])
+@example(schedule=({"a": "1.0.0", "b": "1.0.0"}, [("publish", {"a": "2.0.0", "b": "1.1.0"}), ("tick", 2),
+                                                   ("publish", {"a": "1.0.0", "b": "1.1.0"})]))
+@example(schedule=({"a": "1.0.0", "b": "1.0.0"}, [("tick", 1), ("publish", {"a": "1.0.0", "b": "1.1.0"}),
+                                                   ("crash", M.KillPoint("drv:apply", 1, "after"), False),
+                                                   ("publish", {"a": "2.1.0", "b": "1.1.0"})]))
+@example(schedule=({"a": "1.0.0", "b": "1.0.0", "c": "1.0.0"}, [("tick", 1), ("publish", {}),
+                                                                ("crash", M.KillPoint("action:remove", 2, "after"), True)]))
+@given(schedule=steps())
+def test_ordering_regressions(tmp_root, schedule):
+    run_schedule(tmp_root, schedule, order=ORDER)
 
 
 # ---- nightly tier ---------------------------------------------------------------------------------------------
