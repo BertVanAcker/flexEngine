@@ -40,29 +40,16 @@ from flexengine2.core.reconciler import Engine, build_drivers
 from flexengine2.drivers.base import DriverError
 
 def load_config(path: str | Path) -> dict:
-    """JSON or YAML; ${VAR} references are expanded from the environment; relative paths are taken as given (run
-    from the repo root). Resolves the coordination files of the other demo components:
+    """JSON or YAML, validated against flexengine2/config/schema.json (raises config.load.ConfigError with every
+    error); ${VAR} references are expanded from the environment; relative paths are taken as given (run from the repo
+    root); cloud.stackInfo, cloud.releaseKeyFiles and devices[].onboardingTokenFile are resolved. See
+    flexengine2.config.load."""
+    from flexengine2.config.load import ConfigError, load, validate
 
-      cloud.stackInfo        demo/cloud's stack.json -> apiUrl (its internal P2 URL) and cloudPublicKey, when unset
-      cloud.releaseKeyFiles  Ed25519 release key files (flex release `release_key`) -> releasePublicKeys
-      devices[].onboardingTokenFile   one-time onboarding token written by whoever issued it
-    """
-    text = os.path.expandvars(Path(path).read_text())
-    cfg = json.loads(text) if str(path).endswith(".json") else yaml.safe_load(text)
-    cl = cfg.setdefault("cloud", {})
-    if cl.get("stackInfo"):
-        info = json.loads(Path(cl["stackInfo"]).read_text())
-        cl.setdefault("apiUrl", (info.get("internal") or {}).get("p2") or info["urls"]["p2"])
-        cl.setdefault("cloudPublicKey", info["cloudPublicKey"])
-    keys = list(cl.get("releasePublicKeys") or [])
-    for f in cl.get("releaseKeyFiles") or []:
-        from flexengine2.identity import crypto
-
-        keys.append(crypto.public_b64(crypto.load_private(f)))
-    cl["releasePublicKeys"] = keys
-    for dev in cfg.get("devices", []):
-        if dev.get("onboardingTokenFile") and not dev.get("onboardingToken"):
-            dev["onboardingToken"] = Path(dev["onboardingTokenFile"]).read_text().strip()
+    cfg = load(path)
+    errors = validate(cfg)
+    if errors:
+        raise ConfigError(errors)
     return cfg
 
 

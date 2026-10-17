@@ -1,0 +1,590 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/capabilities.v1alpha1.schema.json",
+  "title": "CP-2 DeviceCapabilities v1alpha1",
+  "description": "Body of PUT /api/v1/devices/{deviceId}/capabilities, sent once after onboarding (core/reconciler.py Engine.capabilities()). Margo DeviceCapabilities shape (properties.*) plus the flex-owned x-flex block. flexCloud uses x-flex.drivers.<profile>.exclusive/maxDeployments for plan-time placement.",
+  "$comment": "Margo-owned objects accept unknown non-x- keys; the x-flex block and the driver fragments are closed (a new fragment field is an additive schema change). Semantic rule: properties.id equals the deviceId of the request path.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "properties",
+    "x-flex"
+  ],
+  "propertyNames": {
+    "anyOf": [
+      {
+        "not": {
+          "pattern": "^x-"
+        }
+      },
+      {
+        "const": "x-flex"
+      }
+    ]
+  },
+  "properties": {
+    "apiVersion": {
+      "const": "device.margo.org/v1alpha1"
+    },
+    "kind": {
+      "const": "DeviceCapabilities"
+    },
+    "properties": {
+      "type": "object",
+      "required": [
+        "id",
+        "roles",
+        "resources",
+        "supportedDeploymentTypes"
+      ],
+      "propertyNames": {
+        "not": {
+          "pattern": "^x-"
+        }
+      },
+      "properties": {
+        "id": {
+          "$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"
+        },
+        "vendor": {
+          "type": "string"
+        },
+        "modelNumber": {
+          "type": "string"
+        },
+        "serialNumber": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "enum": [
+              "standalone-device",
+              "gateway",
+              "child-device"
+            ]
+          }
+        },
+        "resources": {
+          "type": "object",
+          "required": [
+            "cpu"
+          ],
+          "properties": {
+            "cpu": {
+              "type": "object",
+              "required": [
+                "architecture"
+              ],
+              "properties": {
+                "cores": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "description": "os.cpu_count(); null when unknown."
+                },
+                "architecture": {
+                  "type": "string"
+                }
+              }
+            },
+            "memory": {
+              "type": "string",
+              "pattern": "^[0-9]+Mi$"
+            }
+          }
+        },
+        "peripherals": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "interfaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "ethernet",
+                  "uart"
+                ]
+              },
+              "protocol": {
+                "enum": [
+                  "smp"
+                ]
+              }
+            }
+          }
+        },
+        "otelCollector": {
+          "type": "boolean"
+        },
+        "supportedRuntimes": {
+          "type": "array",
+          "items": {
+            "const": "oci"
+          },
+          "uniqueItems": true
+        },
+        "supportedDeploymentTypes": {
+          "type": "array",
+          "items": {
+            "const": "custom"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "x-flex": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "drivers",
+        "safeStateSignals",
+        "engine"
+      ],
+      "properties": {
+        "drivers": {
+          "type": "object",
+          "description": "One fragment per installed driver profile (Driver.capabilities()).",
+          "propertyNames": {
+            "$ref": "desired-state.v1alpha1.schema.json#/$defs/DriverProfile"
+          },
+          "properties": {
+            "container": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/ContainerCli"
+                },
+                {
+                  "$ref": "#/$defs/ContainerAnkaios"
+                }
+              ]
+            },
+            "native": {
+              "$ref": "#/$defs/Native"
+            },
+            "applab": {
+              "$ref": "#/$defs/Applab"
+            },
+            "mcu-module": {
+              "$ref": "#/$defs/McuModule"
+            },
+            "mcu-firmware": {
+              "$ref": "#/$defs/McuFirmware"
+            },
+            "plc-verify": {
+              "$ref": "#/$defs/PlcVerify"
+            }
+          }
+        },
+        "safeStateSignals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          },
+          "description": "Signal names the safe-state provider offers (activation requires)."
+        },
+        "engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "impl",
+            "version",
+            "spi"
+          ],
+          "properties": {
+            "impl": {
+              "const": "flexengine2"
+            },
+            "version": {
+              "type": "string",
+              "description": "flexengine2.__version__ (PEP 440)."
+            },
+            "spi": {
+              "type": "string",
+              "pattern": "^1\\.[0-9]+$",
+              "description": "Driver SPI version (CP-5)."
+            },
+            "onDevice": {
+              "type": "string",
+              "description": "child-device: what runs on the child itself."
+            }
+          }
+        },
+        "parent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deviceId",
+            "mode"
+          ],
+          "properties": {
+            "deviceId": {
+              "$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"
+            },
+            "mode": {
+              "const": "see-thru"
+            }
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "deviceId",
+              "mode",
+              "kind"
+            ],
+            "properties": {
+              "deviceId": {
+                "$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"
+              },
+              "mode": {
+                "const": "see-thru"
+              },
+              "link": {
+                "type": "string"
+              },
+              "kind": {
+                "const": "mcu"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "properties": {
+            "properties": {
+              "roles": {
+                "contains": {
+                  "const": "child-device"
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "x-flex": {
+            "required": [
+              "parent"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "ContainerCli": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "container"
+        },
+        "driver": {
+          "enum": [
+            "docker",
+            "podman"
+          ]
+        },
+        "runtimeVersion": {
+          "type": "string"
+        },
+        "supportedRuntimes": {
+          "type": "array",
+          "items": {
+            "const": "oci"
+          }
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "ContainerAnkaios": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "container"
+        },
+        "driver": {
+          "const": "ankaios"
+        },
+        "executor": {
+          "type": "string"
+        },
+        "ankaiosAgents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supportedRuntimes": {
+          "type": "array",
+          "items": {
+            "const": "oci"
+          }
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "Native": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "native"
+        },
+        "driver": {
+          "type": "string"
+        },
+        "executor": {
+          "type": "string"
+        },
+        "python": {
+          "type": "string"
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "Applab": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver",
+        "exclusive",
+        "maxDeployments"
+      ],
+      "properties": {
+        "profile": {
+          "const": "applab"
+        },
+        "driver": {
+          "const": "arduino-app-cli"
+        },
+        "board": {
+          "type": "string"
+        },
+        "cli": {
+          "type": "object",
+          "description": "`arduino-app-cli version --format json`, or {error} when the CLI failed."
+        },
+        "maxRunningApps": {
+          "const": 1,
+          "description": "Deprecated P4 alias of maxDeployments (fakecloud still reads it)."
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "health": {
+          "type": "string"
+        }
+      }
+    },
+    "McuModule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "mcu-module"
+        },
+        "driver": {
+          "const": "mcumgr-llext"
+        },
+        "transport": {
+          "type": "string"
+        },
+        "moduleAbi": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "arch": {
+          "enum": [
+            "armv7m",
+            "armv8m.main"
+          ]
+        },
+        "floatAbi": {
+          "enum": [
+            "soft",
+            "hard"
+          ]
+        },
+        "caps": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "pwm",
+              "localbus",
+              "heap",
+              "fpu",
+              "zenoh"
+            ]
+          }
+        },
+        "sockets": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "slotBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "llextHeapBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "McuFirmware": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "mcu-firmware"
+        },
+        "driver": {
+          "const": "mcumgr-mcuboot"
+        },
+        "bootloader": {
+          "type": "string"
+        },
+        "baseImage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirmed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "board": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "PlcVerify": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver",
+        "download",
+        "plcs"
+      ],
+      "properties": {
+        "profile": {
+          "const": "plc-verify"
+        },
+        "driver": {
+          "const": "plc-verify"
+        },
+        "download": {
+          "const": false
+        },
+        "plcs": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "ads",
+              "modbus",
+              "shm"
+            ]
+          },
+          "description": "PLC target -> verify transport."
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

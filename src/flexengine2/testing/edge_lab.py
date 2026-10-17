@@ -176,11 +176,11 @@ def _relay(a):
 
 def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
-    if os.environ.get("FLEX_TEST_MODULES_FILE"):
-        _start_guard(os.environ["FLEX_TEST_MODULES_FILE"])
     if not argv or argv[0] not in ("relay-inject", "relay-status"):
         from flexengine2.local.cli import main as cli
 
+        if os.environ.get("FLEX_TEST_MODULES_FILE"):  # after the CLI import: every snapshot shows the entry point
+            _start_guard(os.environ["FLEX_TEST_MODULES_FILE"])
         return cli(argv)
     ap = argparse.ArgumentParser(prog="flexengine2.testing.edge_lab")
     sub = ap.add_subparsers(dest="cmd", required=True)

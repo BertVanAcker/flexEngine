@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/oci-profile.v1alpha1.schema.json",
+  "title": "CP-3 OCI artefact access profile v1alpha1",
+  "description": "The OCI image-manifest / referrers subset the engine reads (artefacts/store.py), written by the release tools (flex release; testing/release.py) and served by flexCloud's /v2/ subset (testing/fakecloud.py). See flexengine/api/bundle.v1alpha1.md.",
+  "$defs": {
+    "Digest": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/Digest"},
+    "PayloadMediaType": {"enum": [
+      "application/vnd.flex.payload.image.docker-archive.v1.tar",
+      "application/vnd.flex.payload.native.v1.tar+gzip",
+      "application/vnd.flex.payload.applab-release.v1.tar+gzip",
+      "application/vnd.flex.payload.mcu-module.v1+flxm",
+      "application/vnd.flex.payload.mcu-firmware.v1+mcuboot",
+      "application/vnd.flex.payload.plc-artefact.v1.tar+gzip",
+      "application/vnd.flex.payload.system.v1+json"]},
+    "Descriptor": {
+      "type": "object", "required": ["mediaType", "digest", "size"],
+      "properties": {"mediaType": {"type": "string"}, "digest": {"$ref": "#/$defs/Digest"}, "size": {"type": "integer", "minimum": 0},
+        "annotations": {"type": "object", "additionalProperties": {"type": "string"}}}
+    },
+    "PayloadLayer": {
+      "allOf": [{"$ref": "#/$defs/Descriptor"}],
+      "required": ["annotations"],
+      "properties": {
+        "mediaType": {"$ref": "#/$defs/PayloadMediaType"},
+        "annotations": {
+          "type": "object", "required": ["dev.flex.profile"],
+          "propertyNames": {"anyOf": [{"pattern": "^dev\\.flex\\.(profile|platform|imageDigest|imageRef|imageTag|releaseName|contractHash|board|arch|floatAbi|moduleAbi|cpuProfile|ifaceHash|verify)$"}, {"not": {"pattern": "^dev\\.flex\\."}}]},
+          "properties": {
+            "dev.flex.profile": {"enum": ["container", "native", "applab", "mcu-module", "mcu-firmware", "plc-verify", "system"], "description": "The engine picks the layer whose profile equals the deployment's x-flex-driver."},
+            "dev.flex.arch": {"enum": ["armv7m", "armv8m.main"]},
+            "dev.flex.floatAbi": {"enum": ["soft", "hard"]},
+            "dev.flex.imageRef": {"type": "string", "pattern": "@sha256:[0-9a-f]{64}$"},
+            "dev.flex.imageDigest": {"$ref": "#/$defs/Digest"},
+            "dev.flex.ifaceHash": {"type": "string", "pattern": "^FLEX01_[0-9a-f]{64}$"},
+            "dev.flex.contractHash": {"type": "string", "pattern": "^FLEX01_[0-9a-f]{64}$"},
+            "dev.flex.verify": {"enum": ["ads", "modbus", "shm"]}
+          },
+          "allOf": [
+            {"if": {"properties": {"dev.flex.profile": {"const": "container"}}}, "then": {"required": ["dev.flex.imageRef"]}},
+            {"if": {"properties": {"dev.flex.profile": {"const": "applab"}}}, "then": {"required": ["dev.flex.releaseName"]}},
+            {"if": {"properties": {"dev.flex.profile": {"const": "mcu-module"}}}, "then": {"required": ["dev.flex.arch", "dev.flex.floatAbi"]}}
+          ]
+        }
+      }
+    },
+    "SbomLayer": {
+      "allOf": [{"$ref": "#/$defs/Descriptor"}],
+      "properties": {"mediaType": {"const": "application/spdx+json"}, "annotations": {"properties": {"dev.flex.role": {"const": "sbom"}}}}
+    },
+    "ReleaseManifest": {
+      "type": "object", "required": ["schemaVersion", "mediaType", "config", "layers"],
+      "description": "GET /v2/<repo>/manifests/<digest>. sha256(exact bytes) must equal the digest in the desired state.",
+      "properties": {
+        "schemaVersion": {"const": 2},
+        "mediaType": {"const": "application/vnd.oci.image.manifest.v1+json"},
+        "artifactType": {"const": "application/vnd.flex.node.v1+json"},
+        "config": {"allOf": [{"$ref": "#/$defs/Descriptor"}], "properties": {"mediaType": {"const": "application/vnd.flex.node.descriptor.v1+json"}}},
+        "layers": {"type": "array", "minItems": 1, "items": {"anyOf": [{"$ref": "#/$defs/SbomLayer"}, {"$ref": "#/$defs/PayloadLayer"}]}},
+        "annotations": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    },
+    "SignatureManifest": {
+      "type": "object", "required": ["schemaVersion", "mediaType", "artifactType", "config", "layers", "subject"],
+      "properties": {
+        "schemaVersion": {"const": 2},
+        "mediaType": {"const": "application/vnd.oci.image.manifest.v1+json"},
+        "artifactType": {"const": "application/vnd.flex.signature.v1+json"},
+        "config": {"allOf": [{"$ref": "#/$defs/Descriptor"}], "properties": {"mediaType": {"const": "application/vnd.oci.empty.v1+json"}}},
+        "layers": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"allOf": [{"$ref": "#/$defs/Descriptor"}], "properties": {"mediaType": {"const": "application/vnd.flex.signature.v1+json"}}}},
+        "subject": {"$ref": "#/$defs/Descriptor"}
+      }
+    },
+    "ReferrersIndex": {
+      "type": "object", "required": ["manifests"],
+      "description": "GET /v2/<repo>/referrers/<digest>. The engine uses the entries with artifactType application/vnd.flex.signature.v1+json, in order, until one verifies.",
+      "properties": {
+        "schemaVersion": {"const": 2},
+        "mediaType": {"const": "application/vnd.oci.image.index.v1+json"},
+        "manifests": {"type": "array", "items": {"type": "object", "required": ["mediaType", "digest", "artifactType"],
+          "properties": {"mediaType": {"type": "string"}, "digest": {"$ref": "#/$defs/Digest"}, "size": {"type": "integer"},
+            "artifactType": {"type": "string"}, "annotations": {"type": "object"}}}}
+      }
+    }
+  }
+}

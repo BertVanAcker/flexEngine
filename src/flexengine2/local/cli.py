@@ -2,6 +2,7 @@
 
     flexengine run --config engine.yaml [--ticks N]
     flexengine plc-read --via ads|modbus|shm --conn '{...}' [--spec flex-plc.json]
+    flexengine config check <file> [--json] [--resolve]
     flexengine version
 """
 
@@ -26,6 +27,12 @@ def main(argv=None) -> int:
     p.add_argument("--via", required=True, choices=["ads", "modbus", "shm"])
     p.add_argument("--conn", required=True)
     p.add_argument("--spec")
+    p = sub.add_parser("config", help="engine configuration tools")
+    csub = p.add_subparsers(dest="config_cmd", required=True)
+    p = csub.add_parser("check", help="validate an engine config (exit 0 valid, 1 invalid)")
+    p.add_argument("file")
+    p.add_argument("--json", action="store_true", help='print {"valid": bool, "errors": [{path, message}]}')
+    p.add_argument("--resolve", action="store_true", help="also read stackInfo, releaseKeyFiles, onboardingTokenFile")
     sub.add_parser("version")
     a = ap.parse_args(argv)
     if a.cmd == "version":
@@ -36,6 +43,20 @@ def main(argv=None) -> int:
 
         run(load_config(a.config), ticks=a.ticks)
         return 0
+    if a.cmd == "config":
+        from flexengine2.config.load import check, format_error
+
+        r = check(a.file, resolve_files=a.resolve)
+        for w in r["warnings"]:
+            print(f"warning: {w}", file=sys.stderr)
+        if a.json:
+            print(json.dumps({"valid": r["valid"], "errors": r["errors"]}))
+        else:
+            for e in r["errors"]:
+                print(format_error(e))
+            if r["valid"]:
+                print(f"{a.file}: valid")
+        return 0 if r["valid"] else 1
     if a.cmd == "plc-read":
         from flexengine2.drivers.plc.verify import READERS, Unreachable
 

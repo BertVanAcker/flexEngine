@@ -1,0 +1,178 @@
+{
+  "a_child_capabilities": {
+    "mcu-firmware": {
+      "baseImage": "1.0.0+0",
+      "board": "mps2/an385",
+      "bootloader": "MCUboot (swap with scratch, ECDSA P-256)",
+      "confirmed": true,
+      "driver": "mcumgr-mcuboot",
+      "profile": "mcu-firmware"
+    },
+    "mcu-module": {
+      "arch": "armv7m",
+      "caps": [
+        "pwm",
+        "localbus"
+      ],
+      "driver": "mcumgr-llext",
+      "floatAbi": "soft",
+      "llextHeapBytes": 65536,
+      "moduleAbi": "1.0",
+      "profile": "mcu-module",
+      "slotBytes": 131072,
+      "sockets": 2,
+      "transport": "SMP over UART (QEMU: TCP)"
+    },
+    "parent": {
+      "deviceId": "gw1",
+      "mode": "see-thru"
+    },
+    "roles": [
+      "child-device"
+    ]
+  },
+  "a_deploy_two_modules_s": 17.359,
+  "a_gripper_upload": {
+    "device": {
+      "load_us": 1497,
+      "state": "testing",
+      "switch_us": 3260,
+      "verify_us": 96393
+    },
+    "rpc_ms": 160.0,
+    "upload_s": 7.149,
+    "uploaded_bytes": 37904
+  },
+  "a_llext_bytes": {
+    "gripper_station": 28278,
+    "servo_drive": 3473
+  },
+  "a_local_bus": {
+    "gripper_pubs": 188,
+    "gripper_rx": 559,
+    "servo_pubs": 2609
+  },
+  "a_servo_upload": {
+    "device": {
+      "load_us": 2768,
+      "state": "testing",
+      "switch_us": 689,
+      "verify_us": 45549
+    },
+    "rpc_ms": 107.9,
+    "upload_s": 1.134,
+    "uploaded_bytes": 5980
+  },
+  "b_swap": {
+    "activate_rpc_ms": 124.0,
+    "cloud_apply_to_installed_s": 5.776,
+    "device_at_activate": {
+      "load_us": 788,
+      "state": "testing",
+      "switch_us": 639,
+      "verify_us": 64949
+    },
+    "device_init_us": 580,
+    "device_llext_load_us": 788,
+    "device_switch_us": 639,
+    "device_unload_old_us": 1312,
+    "device_verify_us": 64949,
+    "driver_upload_s": 1.093,
+    "engine_apply_plus_health_s": 5.57,
+    "gripper_steps_during_swap": 201,
+    "health_gate_s": 4.134,
+    "mcu_reboots": 0,
+    "service_gap_us": 4000,
+    "step_period_ms": 5,
+    "uploaded_bytes": 5980
+  },
+  "c_rollback": {
+    "cloud_apply_to_failed_s": 3.405,
+    "detect_s": 0.526,
+    "device_fault_reverts": 1,
+    "device_reverts": 1,
+    "device_switch_back_us": 416,
+    "fail_fast": true,
+    "failure": "module fault on gw1.mcu0: fail-fast: step() error (last rc -5) -> reverted",
+    "reason": "health check failed",
+    "revert_rpc_ms": null,
+    "rollback_path": "already active (no device action)",
+    "total_s": 2.777,
+    "window_s": 6.0
+  },
+  "d2_device_side_rejections": {
+    "activate erased slot": "slot A: no FLXM container",
+    "bit-flipped ELF": "ELF SHA-256 mismatch (tampered or incomplete)",
+    "servo_drive-abi2": "module ABI 2.0, base supports 1.0..1.0",
+    "servo_drive-m33hard": "module arch 2 float 2, base arch 1 float 1",
+    "servo_drive-rogue": "bad module signature (untrusted key or modified container)",
+    "servo_drive-unsigned": "module not signed"
+  },
+  "d_reject_4.0.0-abi2": {
+    "cloud_apply_to_failed_s": 0.144,
+    "reason": "artefact rejected: module ABI 2.0 incompatible with base ABI 1.0 on gw1.mcu0"
+  },
+  "d_reject_4.0.0-m33": {
+    "cloud_apply_to_failed_s": 0.26,
+    "reason": "artefact rejected: module built for armv8m.main/hard-float, gw1.mcu0 is armv7m/soft-float"
+  },
+  "d_reject_5.0.0-iface": {
+    "cloud_apply_to_failed_s": 0.439,
+    "reason": "artefact rejected: interface hash mismatch: deployment expects FLEX01_51f4685e4a6d7\u2026, module has FLEX01_aa108d0dfc409\u2026"
+  },
+  "e_reject_6.0.0-rogue": "artefact rejected: module container: bad module signature",
+  "e_reject_6.0.1-unsigned": "artefact rejected: module container: module not signed",
+  "e_reject_6.0.2-nosig": "artefact rejected: release not signed by a trusted key (no signature)",
+  "e_reject_6.0.3-tamper": "artefact rejected: digest mismatch: flexnodes/servo_drive blobs/sha256:65c352d6749065db1f28ebc5eae135d2cdb7fe6cffcc64110113ccd4f472ff57 hashes to sha256:4215be9429f830d8ff5df787da49e23de37026e53d85f28c8b442c10d106f451",
+  "f_full_image_revert": {
+    "cloud_apply_to_failed_s": 26.709,
+    "detect_s": 8.39,
+    "revert_path": "reset without confirm (MCUboot revert)",
+    "revert_reset_s": 1.058,
+    "total_s": 26.375,
+    "upload_s": 14.848
+  },
+  "f_full_image_update": {
+    "cloud_apply_to_installed_s": 17.156,
+    "health_gate_s": 0.887,
+    "path": "upload + test + reset (MCUboot swap)",
+    "reset_swap_boot_s": 1.055,
+    "upload_s": 14.804,
+    "uploaded_bytes": 77147
+  },
+  "g_power_cycle": {
+    "power_on_to_modules_running_s": 0.202
+  },
+  "g_testing_power_cut": {
+    "auto_reverts": 1,
+    "revert_at_boot": true
+  },
+  "h_footprint": {
+    "base-1.1.0": {
+      "flash_B": 76996,
+      "ram_B": 98656,
+      "ram_of_which_llext_heap_B": 65536
+    },
+    "gripper_station-1.0.0": {
+      "elf_alloc_B": 28166,
+      "elf_bss_B": 648,
+      "elf_data_B": 1128,
+      "elf_text_B": 13728,
+      "flxm_B": 37904,
+      "llext_heap_used_B": 28278
+    },
+    "mcuboot": {
+      "flash_B": 23684,
+      "ram_B": 19760
+    },
+    "servo_drive-2.0.0": {
+      "elf_alloc_B": 3153,
+      "elf_bss_B": 88,
+      "elf_data_B": 0,
+      "elf_text_B": 2920,
+      "flxm_B": 5980,
+      "llext_heap_used_B": 3473
+    }
+  },
+  "mcu_cold_boot_to_ready_s": 1.264
+}
