@@ -29,8 +29,9 @@ SRC = Path(__file__).resolve().parents[2] / "src" / "flexengine2"
 FILES = ["core/reconciler.py", "artefacts/store.py", "cloud/client.py", "drivers/base.py", "drivers/container.py", "drivers/process.py",
          "drivers/native/systemd.py",
          "drivers/applab/driver.py", "drivers/applab/ard.py", "drivers/mcu/driver.py", "drivers/mcu/flxm.py",
-         "drivers/mcu/link.py", "drivers/plc/verify.py"]
-RAISES = {"VerificationError", "DriverError", "ReleaseError", "SmpError", "ValueError", "RuntimeError"}
+         "drivers/mcu/link.py", "drivers/plc/verify.py", "drivers/os_rauc.py"]
+RAISES = {"VerificationError", "DriverError", "ReleaseError", "SmpError", "ValueError", "RuntimeError",
+          "RaucUnavailable"}
 ASSIGN_NAMES = {"gate_failure", "why", "reason"}
 LOG_FUNCS = {"accept_manifest"}   # desired-state refusals are logged (and counted), not reported
 

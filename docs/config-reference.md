@@ -89,6 +89,17 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `devices[].drivers.applab.sshCmd` | array of string | `["ssh", "-o", "BatchMode=yes"]` |  | SSH command prefix (remote mode). |
 | `devices[].drivers.applab.scpCmd` | array of string | `["scp", "-q", "-o", "BatchMode=yes"]` |  | SCP command prefix (remote mode). |
 | `devices[].drivers.applab.remoteStaging` | string | `"/tmp/flex-applab"` |  | Staging directory on the board (remote mode). |
+| `devices[].drivers.os-rauc` | object |  |  | RAUC whole-OS A/B driver (EV-17): `rauc install` into the other slot, reboot, health gate after the boot, `rauc status mark-good`. Needs rauc + rauc-service (D-Bus; packaging/polkit/50-flexengine-rauc.rules) and the engine data dir on the shared data partition. |
+| `devices[].drivers.os-rauc.rauc` | string | `"rauc"` |  | `rauc` binary. |
+| `devices[].drivers.os-rauc.conf` | string |  |  | RAUC system.conf passed as `--conf` (default: RAUC's own, /etc/rauc/system.conf). |
+| `devices[].drivers.os-rauc.keyring` | string |  |  | Keyring passed to `rauc info --keyring` in preflight (default: the system.conf keyring). `rauc install` always uses the keyring of the RAUC service. |
+| `devices[].drivers.os-rauc.rebootCommand` | array of string | `["systemctl", "reboot"]` |  | Command that reboots into the new slot after `rauc install`; the reboot ends the engine, which adopts the new slot at its next start. |
+| `devices[].drivers.os-rauc.sharedDataPath` | string |  | yes | Mount point of the data partition both slots share; the device's data dir must lie under it (else every os-rauc deployment is refused at preflight), so manifestVersion, the outbox and the driver state survive the slot switch. |
+| `devices[].drivers.os-rauc.bootTimeoutSeconds` | number | `600` |  | How long apply waits for the requested reboot to end the engine; then the booted slot is made primary again and the deployment fails (rolled back). |
+| `devices[].drivers.os-rauc.installTimeoutSeconds` | number | `1800` |  | Timeout of `rauc install`. |
+| `devices[].drivers.os-rauc.cliTimeout` | number | `60` |  | Timeout of the other rauc calls (status, info, mark-*) and of the reboot command. |
+| `devices[].drivers.os-rauc.bootIdFile` | string | `"/proc/sys/kernel/random/boot_id"` |  | Source of the boot id that tells a reboot from an engine restart (tests: the boot simulator's file). |
+| `devices[].drivers.os-rauc.healthChecks` | array of array | `[]` |  | Device-side checks of the new OS after the boot: each command must exit 0 for the health gate to pass (in addition to: booted slot = target, not marked bad, and the release's http probe if it names a port). |
 | `devices[].mcu` | object |  |  | Makes the device an MCU child (see-thru): mcu-module and mcu-firmware drivers over SMP (mcumgr). Needs `parent`; no `drivers`. |
 | `devices[].mcu.smp` | object |  | yes | SMP link: either `{host, port}` (TCP: QEMU or a serial-to-TCP bridge) or `{tty, baud}` (serial, accepted by the schema, implemented later: d2-prep request R5). |
 | `devices[].mcu.smp.tty` | string |  | yes | *[serial form (accepted by schema, implemented later: R5)]* Serial device of the SMP UART, e.g. `/dev/ttyUSB0` (pyserial, no socat). Accepted by the schema, implemented later (R5). |

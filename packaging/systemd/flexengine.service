@@ -9,8 +9,10 @@
 #             root-equivalent: it is the trade-off of the docker runtime; prefer podman/quadlet where possible.
 #   (podman)  rootful podman needs root; rootless podman needs a user session (loginctl enable-linger flex,
 #             XDG_RUNTIME_DIR=/run/user/<uid>) and subuid/subgid ranges for flex -- run rootless via quadlet instead.
-#   (RAUC)    os-rauc talks to rauc.service over the system D-Bus: needs a D-Bus policy (or polkit rule) that allows
-#             group flex to call de.pengutronix.rauc.Installer; the bundle dir lives under the StateDirectory.
+#   (RAUC)    os-rauc talks to rauc.service (package rauc-service) over the system D-Bus and reboots with
+#             `systemctl reboot`: install packaging/polkit/50-flexengine-rauc.rules (reboot for user flex) and,
+#             optionally, packaging/dbus/flexengine-rauc.conf (RAUC calls only for root + group flex). The
+#             StateDirectory (dataDir) must be on the data partition both slots mount (packaging/README.md).
 #   (native)  the native systemd driver (drivers.native: {runtime: systemd}) needs `systemctl` on the system bus:
 #             packaging/polkit/50-flexengine-systemd.rules (group flex, flex-*.service units) and
 #             unitDir: /var/lib/flexengine/units (this unit's ProtectSystem=strict); see packaging/README.md.

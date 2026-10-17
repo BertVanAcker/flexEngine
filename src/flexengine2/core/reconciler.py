@@ -476,6 +476,7 @@ class Engine:
         desired_doc = self.state["desired"]
         if not desired_doc:
             return
+        self._resume_rollback()
         mv = desired_doc["manifestVersion"]
         if (self.state.get("rejected") or {}).get("manifestVersion") == mv:
             return  # keep previous state until a new manifest arrives
@@ -611,6 +612,8 @@ class Engine:
         self.state["failed"][dep_id] = wl.digest
         reason = "apply failed" if apply_error is not None else "health check failed"
         detail = {"failure": why, "failFast": bool(why) and not str(why).startswith("timeout")}
+        if getattr(drv, "reboots_on_apply", False):
+            self._journal_rollback(dep_id, wl, cur_wl, reason, detail, dt)
         if cur_wl:
             self._hist(dep_id, "ROLLING_BACK", version=cur_wl.version, failed=wl.version)
             self.action("rollback", dep_id, version=cur_wl.version, digest=cur_wl.digest, failed=wl.version)
@@ -637,6 +640,50 @@ class Engine:
             self.state["journal"] = None
             self.report(dep_id, "Failed", version=wl.version, digest=wl.digest, reason=reason,
                         rolledBackTo=None, **detail, detectSeconds=round(dt, 3))
+
+    def _journal_rollback(self, dep_id: str, wl: Workload, prev: Workload | None, reason: str, detail: dict,
+                          dt: float) -> None:
+        """EV-17: the rollback of a driver whose apply/remove reboots the device (`reboots_on_apply`, os-rauc) ends
+        this process before the Failed report. The journal keeps what that report needs (the failed digest is
+        already in state.failed); the next start finishes the rollback and reports (`_resume_rollback`)."""
+        self.state["journal"] = {"dep": dep_id, "digest": prev.digest if prev else None, "phase": "rolling-back",
+                                 "at": time.time(), "failedDigest": wl.digest, "failedVersion": wl.version,
+                                 "rolledBackTo": prev.version if prev else None, "reason": reason,
+                                 "detectSeconds": round(dt, 3), **detail}
+        self.save()
+
+    def _resume_rollback(self) -> None:
+        """A `rolling-back` journal entry left by a rebooting driver: check (or redo) the rollback, run its gate and
+        send the Failed report the rebooted engine could not send. Cleared only once reported."""
+        j = self.state.get("journal") or {}
+        if j.get("phase") != "rolling-back":
+            return
+        dep_id = j["dep"]
+        self._dep = dep_id
+        cur = self.state["applied"].get(dep_id)
+        back, prev = False, None
+        if j.get("digest") and cur and cur["wl"]["digest"] == j["digest"]:
+            prof = cur["dep"]["x-flex-driver"]
+            drv = self.drivers.get(prof)
+            prev = Workload.from_dict(cur["wl"])
+            if drv is not None:
+                obs = drv.status(dep_id)
+                if obs.present and not obs.running and str(obs.detail).startswith("executor unreachable"):
+                    raise Offline(f"{prof} executor unreachable: {obs.detail}")   # retried next tick
+                self.action("rollback-resume", dep_id, version=prev.version, digest=prev.digest,
+                            failed=j.get("failedVersion"))
+                try:
+                    if not (obs.present and obs.running and obs.digest == prev.digest):
+                        self._driver_call("apply", drv, prof, drv.apply, None, prev)   # the rollback did not land
+                    back, _ = self.health_gate(drv, dep_id, prev.health, rollback=True)
+                except DriverError as e:
+                    self.log(f"rollback failed: {e}", "error", "rollback.failed", dep=dep_id, version=prev.version)
+        self.state["journal"] = None
+        self.state["failed"][dep_id] = j.get("failedDigest")
+        extra = {k: j[k] for k in ("failure", "failFast") if k in j}
+        self.report(dep_id, "Failed", version=j.get("failedVersion"), digest=j.get("failedDigest"),
+                    reason=j.get("reason") or "health check failed", rolledBackTo=prev.version if prev else None,
+                    **({"rollbackHealthy": back} if prev else {}), **extra, detectSeconds=j.get("detectSeconds"))
 
     # ---- supervision / drift ------------------------------------------------------------------
     def supervise(self):
@@ -893,4 +940,9 @@ def build_drivers(cfg: dict, data_dir: Path) -> dict[str, Driver]:
                                       unit_dir=nat.get("unitDir"), user=nat.get("user"))
     elif nat:
         out["native"] = ProcessDriver(cfg["deviceId"], data_dir)
+    dr = cfg.get("drivers", {}).get("os-rauc")
+    if dr:
+        from flexengine2.drivers.os_rauc import OsRaucDriver
+
+        out["os-rauc"] = OsRaucDriver(cfg["deviceId"], data_dir, dr)
     return out
