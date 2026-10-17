@@ -41,6 +41,9 @@ def changes(out: str) -> int:
 def sh(cmd, **kw) -> subprocess.CompletedProcess:
     kw.setdefault("capture_output", True)
     kw.setdefault("text", True)
+    # an installed copy under test must import itself, never the source tree a PYTHONPATH names (run_tests.sh and
+    # worktree runs put flexengine/src on PYTHONPATH)
+    kw.setdefault("env", {k: v for k, v in os.environ.items() if k != "PYTHONPATH"})
     return subprocess.run(cmd, **kw)
 
 

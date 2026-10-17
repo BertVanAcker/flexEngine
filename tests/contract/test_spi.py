@@ -24,9 +24,10 @@ from flexengine2.drivers.native.systemd import SystemdDriver
 from flexengine2.drivers.process import ProcessDriver
 
 from spi_harness.base import deployment
+from spi_harness.example_spool import SpoolDriver
 
 ALL_DRIVERS = [CliContainerDriver, AnkaiosDriver, ProcessDriver, SystemdDriver, ApplabDriver, McuModuleDriver, McuFirmwareDriver,
-               PlcVerifyDriver, OsRaucDriver, ArduinoOtaDriver]
+               PlcVerifyDriver, OsRaucDriver, ArduinoOtaDriver, SpoolDriver]
 SPI_METHODS = ["plan", "apply", "remove", "status", "list", "health", "capabilities", "supervise", "failed",
                "preflight", "commit", "platform"]
 

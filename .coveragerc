@@ -1,0 +1,14 @@
+# Coverage of layers 1-6 (docs/flexengine-v2-plan.md §7.3); used by run_tests.sh coverage.
+# Engine subprocesses started with Python are measured too (patch = subprocess, coverage >= 7.10).
+[run]
+branch = True
+parallel = True
+source_pkgs = flexengine2
+patch = subprocess
+sigterm = True
+omit =
+    */flexengine2/__main__.py
+
+[report]
+show_missing = True
+skip_empty = True

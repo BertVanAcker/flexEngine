@@ -201,6 +201,10 @@ class EngineProc:
     def kill(self):
         self.host.kill()
 
+    def stop(self):
+        """SIGTERM, as systemd stops the service (the engine exits cleanly; SIGKILL only after a timeout)."""
+        self.host.stop()
+
     def actions(self):
         p = self.dir / "data" / "actions.jsonl"
         return [json.loads(l) for l in p.read_text().splitlines()] if p.exists() else []

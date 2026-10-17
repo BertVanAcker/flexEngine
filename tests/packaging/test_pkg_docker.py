@@ -7,6 +7,7 @@ The tests share one container and run in file order (each step builds on the pre
 from __future__ import annotations
 
 import base64
+import json
 import os
 
 import pytest
@@ -136,6 +137,15 @@ def test_service_runs_real_engine(box):
     assert box.ok("stat -c %U /var/lib/flexengine/panda/device.key").strip() == "flex"
     j = box.ok("journalctl -u flexengine --no-pager -n 200")
     assert "offline" in j, j
+    # plan §6.3 item 4: `flexengine status --json` answers from the running service (local API socket, CP-7)
+    from flexengine2 import contracts
+
+    st = box.sh("for i in $(seq 40); do [ -S /run/flexengine/api.sock ] && break; sleep 0.25; done; "
+                "runuser -u flex -- /opt/flexengine/bin/flexengine status --json")
+    assert st.returncode == 0, st.stdout + st.stderr
+    doc = json.loads(st.stdout)
+    contracts.validate("cli-status", doc)
+    assert doc["engine"]["mode"] == "running" and [d["deviceId"] for d in doc["devices"]] == ["panda"], doc
     box.pid = props.split("MainPID=")[1].split()[0]
 
 
