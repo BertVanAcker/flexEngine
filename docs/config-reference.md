@@ -23,6 +23,11 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `cloud.httpTimeout` | number | `5` |  | Timeout in seconds of one HTTP request to the cloud. |
 | `cloud.healthEveryTicks` | integer | `3` |  | Run the health check of installed deployments every N engine ticks. |
 | `cloud.safeStateFile` | string |  |  | Host-wide default of `devices[].safeStateFile`. |
+| `cloud.caFile` | string |  |  | PEM file of the (lab) CA that an `https://` apiUrl must chain to; the only trusted CA (EV-06). Required for https unless `allowSystemTrust`. |
+| `cloud.tlsServerName` | string |  |  | Host name checked in the cloud's TLS certificate instead of the apiUrl host (e.g. `cloud.lab` for an IP-addressed lab host). |
+| `cloud.allowSystemTrust` | boolean | `false` |  | `true` lets an https apiUrl without `caFile` use the system trust store. |
+| `cloud.fixPermissions` | boolean | `false` |  | Repair (chmod 0600 / 0700) a device key file or directory with group/other permissions instead of refusing to start. |
+| `cloud.outboxMax` | integer | `1000` |  | Maximum status reports kept per device while the cloud is unreachable; beyond it superseded reports are dropped (newest per deployment kept) and a back-pressure warning is logged. |
 | `dataDir` | string |  | yes | Root of the engine state. Each device keeps `<dataDir>/<deviceId>/` (state.json, actions.jsonl, driver state, device.key) unless it sets its own `dataDir`. |
 | `model` | string |  |  | flexModel workspace directory used by the MCU relay (types, rmw_zenoh keys). Required when a relay is enabled and does not set `relay.model`. |
 | `deployment` | string |  |  | Deployment id in `model` the MCU relay maps (e.g. `d_pick_lab`). Required when a relay is enabled and does not set `relay.deployment`. |
@@ -33,7 +38,7 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `devices[].modelDevice` | string |  |  | Device name of this device in the flexModel deployment (used by the MCU relay). |
 | `devices[].link` | string |  |  | Free text describing the gateway-child link, reported in the gateway's capabilities (default `smp/uart`). |
 | `devices[].onboardingToken` | string |  |  | One-time onboarding token (`POST /api/v1/admin/onboarding-tokens`). Only needed until the device is onboarded. |
-| `devices[].onboardingTokenFile` | string |  |  | File holding the onboarding token; read into `onboardingToken` at load when that is unset. |
+| `devices[].onboardingTokenFile` | string |  |  | File holding the one-time onboarding token (mode 0600, owned by the engine user). The engine reads it at onboarding and overwrites + deletes it once the cloud confirmed; `onboardingToken` is the fallback when the file is absent. |
 | `devices[].dataDir` | string |  |  | State directory of this device (default `<dataDir>/<deviceId>`). |
 | `devices[].safeStateFile` | string |  |  | JSON file `{"machine_parked": bool, "operator_confirmed": bool}` with the safe-state signals that gate safety-relevant activations (FE-S6). Unset = no signal is ever true. |
 | `devices[].pollInterval` | number | `1.0` |  | Per-device override of `cloud.pollInterval`. |
@@ -97,8 +102,16 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `devices[].relay.deployment` | string |  |  | Deployment id (default: top-level `deployment`). |
 | `devices[].relay.modelDevice` | string |  |  | Device name in the model (default: the device's `modelDevice`). |
 | `local` | object |  |  | Local operator API (CP-7, EV-07): HTTP over a Unix socket (every operation) and an optional read-only TCP bind with a bearer token (GET only). The CLI (`flexengine status\|deployments\|logs\|history\|bundle import`) uses the socket and falls back to reading the data directories when the engine is not running. |
-| `local.socket` | string | `"/run/flexengine/api.sock"` |  | Path of the API Unix socket (created mode 0660; its directory is created when missing). |
+| `local.socket` | string | `"/run/flexengine/api.sock"` |  | Path of the API Unix socket (created mode 0660; its directory is created when missing). Default: /run/flexengine/api.sock when /run/flexengine exists (packaged service), else <dataDir>/api.sock. |
 | `local.group` | string |  |  | Group that owns the socket (e.g. `flex`), so its members can use the API and the CLI. Unset = the engine's primary group. |
 | `local.tcp` | object |  |  | Optional read-only TCP bind for the desk runbooks: GET operations only, each with `Authorization: Bearer <token>`. Unset = no TCP listener. |
 | `local.tcp.bind` | string |  | yes | `host:port` to listen on, e.g. `127.0.0.1:8781` (`[::1]:8781` for IPv6). |
 | `local.tcp.tokenFile` | string |  | yes | File holding the bearer token (mode 0600, owned by the engine user; read once at start). |
+| `local.enabled` | boolean | `true` |  | Serve the local API while `flexengine run` runs (`--no-api` also turns it off). |
+| `logFormat` | `json` \| `text` | `"json"` |  | Engine log format on stdout (journald): `json` = one JSON object per line (ts, level, device, event, dep, version, msg, ...), `text` = `<ts> [<device>] <msg>`. `$FLEX_LOG_FORMAT` applies when unset. |
+| `otel` | object |  |  | Built-in OpenTelemetry spans (EV-09; needs the optional `otel` extra). `FLEX_OTEL=1`, `FLEX_OTEL_FILE` and `OTEL_EXPORTER_OTLP_ENDPOINT` still work and also enable/configure it. |
+| `otel.enabled` | boolean | `false` |  | Emit engine.install / driver.apply / driver.remove / engine.health-gate / engine.rollback spans. |
+| `otel.endpoint` | string |  |  | OTLP/HTTP collector base URL, e.g. `http://127.0.0.1:4318` (`/v1/traces` is appended). Unset = `$OTEL_EXPORTER_OTLP_ENDPOINT`, else no OTLP export. |
+| `otel.file` | string |  |  | Also write every finished span as one JSON line to this file. |
+| `historyMax` | integer | `500` |  | Transitions kept per device in the local status history (`<device dataDir>/history.jsonl`, rotated to `history.jsonl.1`). |
+| `shutdownGrace` | number | `30` |  | Seconds a running apply / health gate may take to finish after SIGTERM before the host exits anyway. |

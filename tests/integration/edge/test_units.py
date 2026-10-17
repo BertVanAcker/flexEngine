@@ -109,7 +109,8 @@ def test_config_resolves_cloud_stack_info_and_keys(tmp_path, monkeypatch):
     cfg = load_config(tmp_path / "edge.yaml")
     assert cfg["cloud"]["apiUrl"] == "http://127.0.0.1:8700" and cfg["cloud"]["cloudPublicKey"] == cloud_pub
     assert cfg["cloud"]["releasePublicKeys"] == [crypto.public_b64(crypto.load_private(key))]
-    assert cfg["devices"][0]["onboardingToken"] == "tok-123"
+    # adapted (EV-06): the token file is consumed by the engine at onboarding, no longer copied into the config
+    assert "onboardingToken" not in cfg["devices"][0] and cfg["devices"][0]["onboardingTokenFile"].endswith("/tok")
 
 
 def test_shm_reader_reads_the_sim_rt_host_header(tmp_path):

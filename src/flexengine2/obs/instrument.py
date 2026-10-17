@@ -1,4 +1,6 @@
-"""OTel spans for a device engine (IG-13, moved from demo/obs/flexobs/engine_wrapper.py; built in from EV-09).
+"""LEGACY compatibility shim: OTel spans for a *foreign* engine object by monkeypatching (IG-13, moved from
+demo/obs/flexobs/engine_wrapper.py). The flexengine2 Engine emits these spans itself since EV-09 (obs/tracing.py) and
+is never patched; host._otel_hook() only applies this to objects that are not a flexengine2 Engine.
 
     FLEX_OTEL=1 FLEX_OTEL_FILE=DATA/obs/spans-engine.jsonl OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4318 \
         python -m flexobs.engine_wrapper --config engine.json [--engine-module flexp2.engine.engine]

@@ -1,5 +1,5 @@
 {
-  "cli_calls_total": 58,
+  "cli_calls_total": 53,
   "engine_actions": [
     "apply",
     "apply",
@@ -10,11 +10,11 @@
     "remove"
   ],
   "engine_timings_seconds": {
-    "deploy_1.0.0": 1.61,
-    "refuse_1.3.0_total": 1.37,
-    "rollback_1.2.0_detect": 0.119,
-    "rollback_1.2.0_total": 2.27,
-    "update_1.1.0": 2.61
+    "deploy_1.0.0": 1.31,
+    "refuse_1.3.0_total": 1.47,
+    "rollback_1.2.0_detect": 0.134,
+    "rollback_1.2.0_total": 2.63,
+    "update_1.1.0": 2.69
   },
-  "pipeline_build_seconds": 0.25
+  "pipeline_build_seconds": 0.24
 }

@@ -1,0 +1,11 @@
+flexengine 2.0.0a1 (spi 1.0) running, up 1h00m
+config: /etc/flexengine/engine.yaml
+
+DEVICE          ROLE          ONBOARDED  MANIFEST  ONLINE  ETAG AGE  OUTBOX  DEPLOYMENTS
+panda           gateway       yes        12        yes     0.8s      0       1 installed, 1 failed
+panda.portenta  child-device  yes        5         yes     -         2       1 pending
+
+panda: manifestVersion 13 rejected (cell): bad signature
+panda/cx-bridge: Failed: health check failed [FE-REC-004]
+panda.portenta: install in flight: servo applying
+panda.portenta/servo: Pending: held: PLC not verified: plc:cx-bridge [FE-GATE-003]

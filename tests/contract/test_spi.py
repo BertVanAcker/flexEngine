@@ -12,7 +12,7 @@ import time
 
 import pytest
 
-from flexengine2.core.reconciler import Engine, SafeState
+from flexengine2.core.reconciler import Engine
 from flexengine2.drivers.applab.driver import ApplabDriver
 from flexengine2.drivers.base import SPI_VERSION, Driver, DriverError, Observed, wait_until
 from flexengine2.drivers.container import AnkaiosDriver, CliContainerDriver
@@ -29,12 +29,26 @@ SPI_METHODS = ["plan", "apply", "remove", "status", "list", "health", "capabilit
 
 
 # ---- helpers ---------------------------------------------------------------------------------------------------
+_ENGINES: dict = {}
+
+
+def engine(data_dir=None) -> Engine:
+    """A real (offline) reconciler Engine: only its health gate / capabilities are used, no cloud is contacted."""
+    import tempfile
+    from pathlib import Path
+    key = data_dir or "default"
+    if key not in _ENGINES:
+        d = Path(data_dir or tempfile.mkdtemp(prefix="flex-contract-engine-"))
+        cfg = {"deviceId": "ct1", "dataDir": str(d), "apiUrl": "http://127.0.0.1:9", "releasePublicKeys": [],
+               "cloudPublicKey": "", "logFormat": "text"}
+        _ENGINES[key] = Engine(cfg, drivers={})
+    return _ENGINES[key]
+
+
 def gate(drv: Driver, dep_id: str, probe: dict, rollback: bool = False) -> tuple[bool, float, str | None]:
     """The reconciler's own health gate (fail-fast via failed(), commit() after a pass) with this driver."""
-    eng = Engine.__new__(Engine)
-    eng.log = lambda msg: None
-    eng.action = lambda *a, **kw: None
-    ok, dt = Engine.health_gate(eng, drv, dep_id, probe, rollback=rollback)
+    eng = engine()
+    ok, dt = eng.health_gate(drv, dep_id, probe, rollback=rollback)
     return ok, dt, eng.gate_failure
 
 
@@ -89,9 +103,8 @@ def test_driver_method_signatures(cls):
 def test_spi_version_in_engine_capabilities(tmp_path):
     """The engine reports the SPI version it speaks; SPI v1 is frozen as "1.0"."""
     assert SPI_VERSION == "1.0"
-    eng = Engine.__new__(Engine)
+    eng = engine(tmp_path / "eng")
     eng.drivers = {"native": ProcessDriver("ct1", tmp_path)}
-    eng.safe, eng.role, eng.device, eng.mcu, eng.children, eng.parent = SafeState(None), "standalone-device", "ct1", {}, [], None
     doc = eng.capabilities()
     assert doc["x-flex"]["engine"]["spi"] == SPI_VERSION
     assert doc["x-flex"]["drivers"]["native"]["profile"] == "native"

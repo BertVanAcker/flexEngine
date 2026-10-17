@@ -32,7 +32,7 @@ from opentelemetry.trace import (Link, NonRecordingSpan, SpanContext, SpanKind, 
 
 _lock = threading.Lock()
 _providers: dict[str, object] = {}
-_cfg = {"enabled": None, "file": None}
+_cfg: dict = {"enabled": None, "file": None, "endpoint": None, "exporters": []}
 _preset: contextvars.ContextVar = contextvars.ContextVar("flex_preset_ids", default=None)
 
 
@@ -44,9 +44,15 @@ def enabled() -> bool:
     return bool(_cfg["enabled"])
 
 
-def setup(enabled: bool = True, file: str | Path | None = None):
-    """Called once by a process that wants spans (the stack with --otel, the engine wrapper)."""
+def setup(enabled: bool = True, file: str | Path | None = None, endpoint: str | None = None, exporters=None):
+    """Called once by a process that wants spans (the stack with --otel, the engine host with cfg `otel` or
+    FLEX_OTEL=1). `endpoint` = OTLP/HTTP collector base URL (else $OTEL_EXPORTER_OTLP_ENDPOINT); `exporters` = extra
+    SpanExporters (tests: an InMemorySpanExporter). Call before the first `tracer()` of a service."""
     _cfg["enabled"] = enabled
+    if endpoint:
+        _cfg["endpoint"] = endpoint
+    if exporters:
+        _cfg["exporters"] = list(exporters)
     if file:
         Path(file).parent.mkdir(parents=True, exist_ok=True)
         _cfg["file"] = str(file)
@@ -123,11 +129,18 @@ def _sdk_provider(service: str):
 
     prov = TracerProvider(resource=Resource.create({"service.name": service, "flex.demo": "d1"}),
                           id_generator=PresetIdGenerator())
-    if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT") or os.environ.get("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"):
+    if _cfg["endpoint"]:
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        ep = _cfg["endpoint"].rstrip("/")
+        ep = ep if ep.endswith("/v1/traces") else ep + "/v1/traces"
+        prov.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=ep), schedule_delay_millis=500))
+    elif os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT") or os.environ.get("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"):
         from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
         prov.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(), schedule_delay_millis=500))
     if _cfg["file"]:
         prov.add_span_processor(SimpleSpanProcessor(JsonlSpanExporter(_cfg["file"], service)))
+    for ex in _cfg["exporters"]:
+        prov.add_span_processor(SimpleSpanProcessor(ex))
     return prov
 
 
@@ -157,6 +170,12 @@ def shutdown():
         except Exception:  # noqa: BLE001
             pass
     _providers.clear()
+
+
+def reset():
+    """Shut every provider down and forget the set-up (tests)."""
+    shutdown()
+    _cfg.update(enabled=None, file=None, endpoint=None, exporters=[])
 
 
 @contextlib.contextmanager

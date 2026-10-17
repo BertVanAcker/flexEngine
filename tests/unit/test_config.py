@@ -92,11 +92,25 @@ CASES = [
     ("cloud.httpTimeout", "std", "/cloud/httpTimeout", 3, "5"),
     ("cloud.healthEveryTicks", "std", "/cloud/healthEveryTicks", 1, 0),
     ("cloud.safeStateFile", "std", "/cloud/safeStateFile", "/var/lib/flex/safe.json", ""),
+    # EV-05/EV-06/EV-09 keys
+    ("cloud.caFile", "std", "/cloud/caFile", "/etc/flex/ca.crt", ""),
+    ("cloud.tlsServerName", "std", "/cloud/tlsServerName", "cloud.lab", 1),
+    ("cloud.allowSystemTrust", "std", "/cloud/allowSystemTrust", True, "yes"),
+    ("cloud.fixPermissions", "std", "/cloud/fixPermissions", False, 1),
+    ("cloud.outboxMax", "std", "/cloud/outboxMax", 50, 0),
+    ("logFormat", "std", "/logFormat", "text", "color"),
+    ("otel", "std", "/otel", {}, {"bogus": 1}),
+    ("otel.enabled", "std", "/otel", {"enabled": True}, {"enabled": "on"}),
+    ("otel.endpoint", "std", "/otel", {"endpoint": "http://127.0.0.1:4318"}, {"endpoint": "127.0.0.1:4318"}),
+    ("otel.file", "std", "/otel", {"file": "/var/log/flexengine/spans.jsonl"}, {"file": ""}),
+    ("historyMax", "std", "/historyMax", 100, 0),
+    ("shutdownGrace", "std", "/shutdownGrace", 5, -1),
     ("dataDir", "std", "/dataDir", "/var/lib/flexengine", 1),
     ("model", "std", "/model", "/var/lib/flex/runs/current/model", ""),
     ("deployment", "std", "/deployment", "d_other", ["d"]),
     ("devices", "std", "/devices", [{"deviceId": "solo", "drivers": {"native": True}}], []),
     ("local", "std", "/local", {}, "/run/flexengine/api.sock"),
+    ("local.enabled", "std", "/local", {"enabled": False}, {"enabled": "no"}),
     ("local.socket", "std", "/local", {"socket": "/run/fe/api.sock"}, {"socket": ""}),
     ("local.group", "std", "/local", {"group": "flex"}, {"group": 0}),
     ("local.tcp", "std", "/local", {"tcp": {"bind": "127.0.0.1:8781", "tokenFile": "/etc/flexengine/api.token"}},
@@ -250,7 +264,7 @@ def test_unknown_key_rejected(b, ptr):
 
 def test_unknown_key_message_lists_allowed_keys():
     errs = cl.validate(put(base(), "/cloud/apiURL", "http://x"))
-    assert errs[0]["message"].startswith("unknown key 'apiURL' (allowed: apiUrl, ")
+    assert errs[0]["message"].startswith("unknown key 'apiURL' (allowed: allowSystemTrust, apiUrl, ")
 
 
 # ---- cross-key rules -------------------------------------------------------------------------------------------------
@@ -370,7 +384,7 @@ def test_file_resolution(tmp_path, monkeypatch):
     cfg = cl.load(p)
     assert cfg["cloud"]["apiUrl"] == "http://127.0.0.1:8700" and cfg["cloud"]["cloudPublicKey"] == K2
     assert cfg["cloud"]["releasePublicKeys"] == [crypto.public_b64(crypto.load_private(key))]
-    assert cfg["devices"][0]["onboardingToken"] == "tok-123"
+    assert "onboardingToken" not in cfg["devices"][0]  # EV-06: the engine consumes the file at onboarding
     assert cl.validate(cfg) == []
     from flexengine2.host import load_config
 
@@ -427,8 +441,11 @@ def test_plan_example_converts():
     assert cfg["cloud"]["safeStateFile"] == "/var/lib/flexengine/safe-state.json"
     assert "native" not in cfg["devices"][0]["drivers"] and "os-rauc" not in cfg["devices"][0]["drivers"]
     assert cfg["devices"][1]["mcu"]["smp"] == {"tty": "/dev/ttyACM0", "baud": 115200}
-    assert {n.split(" ")[0] for n in notes} == {"/cloud/caFile", "/local", "/observability", "/safeState/staleAfter",
+    assert {n.split(" ")[0] for n in notes} == {"/local", "/safeState/staleAfter",
                                                 "/devices/0/drivers/native", "/devices/0/drivers/os-rauc"}
+    # EV-06 / EV-09: caFile is canonical now; observability maps to logFormat / historyMax (empty otlpEndpoint = off)
+    assert cfg["cloud"]["caFile"] == "/etc/flex/ca.crt"
+    assert cfg["logFormat"] == "json" and cfg["historyMax"] == 1000 and "otel" not in cfg
     # the plan example names no deployment for the relay anywhere (inconsistency reported in EV-04)
     assert msgs(cfg) == ["/devices/1/relay: an enabled relay needs a deployment (relay.deployment or top-level "
                          "deployment)"]
@@ -441,7 +458,7 @@ def test_plan_form_is_converted_by_load(tmp_path):
     doc["devices"][1]["relay"]["deployment"] = "d_pick_lab"
     p = write(tmp_path, yaml.safe_dump(doc))
     r = cl.check(p)
-    assert r["valid"] and len(r["warnings"]) == 6
+    assert r["valid"] and len(r["warnings"]) == 4
     assert "apiVersion" not in cl.parse(p)
 
 
@@ -585,8 +602,9 @@ def test_cli_config_check(tmp_path, capsys):
     badp = write(tmp_path, json.dumps(bad), "bad.json")
     assert cli.main(["config", "check", str(badp)]) == 1
     out = capsys.readouterr().out.strip().splitlines()
-    assert out == ["/cloud/x: unknown key 'x' (allowed: apiUrl, backoff, cloudPublicKey, healthEveryTicks, httpTimeout, "
-                   "pollInterval, releaseKeyFiles, releasePublicKeys, safeStateFile, stackInfo)",
+    assert out == ["/cloud/x: unknown key 'x' (allowed: allowSystemTrust, apiUrl, backoff, caFile, cloudPublicKey, "
+                   "fixPermissions, healthEveryTicks, httpTimeout, outboxMax, pollInterval, releaseKeyFiles, "
+                   "releasePublicKeys, safeStateFile, stackInfo, tlsServerName)",
                    "/devices/0/drivers/container/runtime: must be one of docker, podman, ankaios; got 'quadlet'"]
     assert cli.main(["config", "check", str(badp), "--json"]) == 1
     doc = json.loads(capsys.readouterr().out)
@@ -600,7 +618,7 @@ def test_cli_config_check_prints_conversion_warnings(tmp_path, capsys):
     doc = plan_example()
     doc["devices"][1]["relay"]["deployment"] = "d"
     assert cli.main(["config", "check", str(write(tmp_path, yaml.safe_dump(doc)))]) == 0
-    assert capsys.readouterr().err.count("warning: ") == 6
+    assert capsys.readouterr().err.count("warning: ") == 4
 
 
 # ---- schema + generated reference ------------------------------------------------------------------------------------

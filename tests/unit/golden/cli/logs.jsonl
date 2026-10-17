@@ -1,0 +1,4 @@
+{"action": "apply", "dep": "cell", "device": "panda", "digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", "source": "actions", "t": 1792195000.5, "version": "1.1.0"}
+{"action": "rollback", "dep": "cx-bridge", "device": "panda", "failed": "1.1.0", "source": "actions", "t": 1792195160.0, "version": "1.0.0"}
+{"device": "panda", "level": "warning", "msg": "offline (connection refused); retry in 0.50s", "source": "log", "t": 1792231200.0, "ts": "2026-10-17T10:00:00.000Z"}
+{"device": "panda", "event": "x", "source": "log", "t": 1792231201.0}

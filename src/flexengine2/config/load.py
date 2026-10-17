@@ -10,7 +10,8 @@ The canonical form is the one of demo/edge/edge.example.yaml; see the `$comment`
 Order: ${VAR} references are expanded in the file text (os.path.expandvars semantics: unset variables stay as they
 are and are then reported by validate()), the text is parsed (JSON for *.json, else YAML), a plan-§3.6 document is
 converted, and only then validated. load() validates before it reads the referenced files (cloud.stackInfo,
-cloud.releaseKeyFiles, devices[].onboardingTokenFile), so a bad config fails with the schema error, not a traceback.
+cloud.releaseKeyFiles), so a bad config fails with the schema error, not a traceback. devices[].onboardingTokenFile is
+consumed by the engine at onboarding (EV-06), never copied into the config.
 """
 
 from __future__ import annotations
@@ -140,9 +141,6 @@ def from_plan_v2(doc: dict) -> tuple[dict, list[str]]:
                                    "message": "cosign release trust is a beta feature; alpha trusts ed25519 keys only"})
                 keys = trust.get("ed25519") or []
                 cl["releasePublicKeys"] = list(cl.get("releasePublicKeys") or []) + list(keys if isinstance(keys, list) else [keys])
-        if "caFile" in cl:
-            notes.append(f"/cloud/caFile ({cl.pop('caFile')}) dropped: alpha does not pin a CA yet, https uses the "
-                         "system trust store")
     ident = cfg.pop("identity", None)
     if ident is not None:
         ks = ident.get("keyStore", "file") if isinstance(ident, dict) else ident
@@ -162,9 +160,19 @@ def from_plan_v2(doc: dict) -> tuple[dict, list[str]]:
             notes.append("/local http with an empty bind = no TCP listener (canonical form: local.tcp {bind, tokenFile})")
     obs = cfg.pop("observability", None)
     if obs is not None:
-        hint = (" (export OTEL_EXPORTER_OTLP_ENDPOINT and FLEX_OTEL=1 instead)"
-                if isinstance(obs, dict) and obs.get("otlpEndpoint") else "")
-        notes.append(f"/observability dropped: not configured from the engine config yet{hint}")
+        # plan form `observability: {logFormat, otlpEndpoint, history}` -> canonical logFormat / otel / historyMax
+        if not isinstance(obs, dict):
+            errors.append({"path": "/observability", "message": f"must be a mapping, got {_tname(obs)}"})
+        else:
+            extra = sorted(set(obs) - {"logFormat", "otlpEndpoint", "history"})
+            if extra:
+                errors.append({"path": "/observability", "message": f"unknown key(s) {', '.join(extra)}"})
+            if "logFormat" in obs:
+                cfg.setdefault("logFormat", obs["logFormat"])
+            if obs.get("otlpEndpoint"):
+                cfg.setdefault("otel", {"enabled": True, "endpoint": obs["otlpEndpoint"]})
+            if "history" in obs:
+                cfg.setdefault("historyMax", obs["history"])
     ss = cfg.pop("safeState", None)
     if ss is not None:
         if not isinstance(ss, dict) or ss.get("provider", "file") != "file":
@@ -344,12 +352,15 @@ def validate(cfg) -> list[dict]:
 
 
 # ---- resolve ----------------------------------------------------------------------------------------------------------
-def resolve(cfg: dict) -> dict:
+def resolve(cfg: dict, *, check_tokens: bool = False, warnings: list[str] | None = None) -> dict:
     """Read the coordination files of the other components (in place; returns cfg), as host.load_config always did:
 
       cloud.stackInfo                demo/cloud's stack.json -> apiUrl (its internal P2 URL) and cloudPublicKey, if unset
       cloud.releaseKeyFiles          Ed25519 release key files (flex release `release_key`) -> releasePublicKeys
-      devices[].onboardingTokenFile  one-time onboarding token written by whoever issued it
+
+    devices[].onboardingTokenFile is not read into the config any more (EV-06): the engine consumes the file at
+    onboarding and deletes it afterwards. `check_tokens` (config check --resolve) verifies that the token file of a
+    device that is not onboarded yet (its state.json) is readable, and warns when its mode would be refused (not 0600).
     """
     errors: list[dict] = []
     cl = cfg.setdefault("cloud", {})
@@ -369,16 +380,34 @@ def resolve(cfg: dict) -> dict:
         except (OSError, ValueError) as e:
             errors.append({"path": f"/cloud/releaseKeyFiles/{i}", "message": f"cannot use {f}: {_why(e)}"})
     cl["releasePublicKeys"] = keys
-    for i, dev in enumerate(cfg.get("devices", [])):
-        if dev.get("onboardingTokenFile") and not dev.get("onboardingToken"):
-            try:
-                dev["onboardingToken"] = Path(dev["onboardingTokenFile"]).read_text().strip()
-            except OSError as e:
-                errors.append({"path": f"/devices/{i}/onboardingTokenFile",
-                               "message": f"cannot read {dev['onboardingTokenFile']}: {_why(e)}"})
+    for i, dev in enumerate(cfg.get("devices", []) if check_tokens else []):
+        tf = dev.get("onboardingTokenFile")
+        if not tf or dev.get("onboardingToken") or _onboarded(cfg, dev):
+            continue
+        try:
+            if not Path(tf).read_text().strip():
+                raise OSError("file is empty")
+        except OSError as e:
+            errors.append({"path": f"/devices/{i}/onboardingTokenFile", "message": f"cannot read {tf}: {_why(e)}"})
+            continue
+        from flexengine2.identity.keys import check_private_file
+
+        try:
+            check_private_file(tf, what="onboarding token")
+        except PermissionError as e:
+            if warnings is not None:
+                warnings.append(f"/devices/{i}/onboardingTokenFile: {e} (the engine refuses it; chmod 600)")
     if errors:
         raise ConfigError(errors)
     return cfg
+
+
+def _onboarded(cfg: dict, dev: dict) -> bool:
+    data = Path(dev.get("dataDir") or Path(str(cfg.get("dataDir") or ".")) / str(dev.get("deviceId")))
+    try:
+        return bool(json.loads((data / "state.json").read_text()).get("onboarded"))
+    except (OSError, ValueError, AttributeError):
+        return False
 
 
 def _why(e: Exception) -> str:
@@ -403,13 +432,13 @@ def load(path: str | Path, *, strict: bool = True, notes: list[str] | None = Non
 
 def check(path: str | Path, *, resolve_files: bool = False) -> dict:
     """{"valid": bool, "errors": [{path, message}], "warnings": [str]} for `flexengine config check`.
-    resolve_files also reads stackInfo / releaseKeyFiles / onboardingTokenFile (run it on the target host)."""
+    resolve_files also reads stackInfo / releaseKeyFiles and checks onboardingTokenFile (run it on the target host)."""
     notes: list[str] = []
     try:
         cfg = parse(path, notes)
         errors = validate(cfg)
         if not errors and resolve_files:
-            errors = validate(resolve(cfg))
+            errors = validate(resolve(cfg, check_tokens=True, warnings=notes))
     except ConfigError as e:
         errors = e.errors
     return {"valid": not errors, "errors": errors, "warnings": notes}

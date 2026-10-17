@@ -1,0 +1,86 @@
+{
+ "apiVersion": "flexengine.local/v1",
+ "devices": [
+  {
+   "deployments": [
+    {
+     "digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+     "driver": "container",
+     "health": "healthy",
+     "id": "cell",
+     "previousVersion": "1.0.0",
+     "since": 1792195100.0,
+     "state": "Installed",
+     "version": "1.1.0"
+    },
+    {
+     "driver": "plc-verify",
+     "failFast": true,
+     "id": "cx-bridge",
+     "reason": "health check failed",
+     "reasonCode": "FE-REC-004",
+     "rolledBackTo": "1.0.0",
+     "state": "Failed",
+     "version": "1.1.0"
+    }
+   ],
+   "deviceId": "panda",
+   "downgradesRefused": 0,
+   "drivers": [
+    "container",
+    "plc-verify"
+   ],
+   "etag": "\"sha256:0000000000000000000000000000000000000000000000000000000000000000\"",
+   "etagAgeSeconds": 0.8,
+   "journal": null,
+   "manifestVersion": 12,
+   "onboarded": true,
+   "online": true,
+   "outboxLength": 0,
+   "rejected": {
+    "deployment": "cell",
+    "manifestVersion": 13,
+    "reason": "bad signature"
+   },
+   "role": "gateway"
+  },
+  {
+   "deployments": [
+    {
+     "driver": "mcu-module",
+     "id": "servo",
+     "reason": "held: PLC not verified: plc:cx-bridge",
+     "reasonCode": "FE-GATE-003",
+     "state": "Pending",
+     "version": "2.0.0"
+    }
+   ],
+   "deviceId": "panda.portenta",
+   "drivers": [
+    "mcu-module",
+    "mcu-firmware"
+   ],
+   "journal": {
+    "at": 1792195000.0,
+    "dep": "servo",
+    "digest": "sha256:abababababababababababababababababababababababababababababababab",
+    "phase": "applying"
+   },
+   "manifestVersion": 5,
+   "onboarded": true,
+   "online": true,
+   "outboxLength": 2,
+   "parent": "panda",
+   "role": "child-device"
+  }
+ ],
+ "engine": {
+  "configFile": "/etc/flexengine/engine.yaml",
+  "mode": "running",
+  "otel": false,
+  "spi": "1.0",
+  "uptimeSeconds": 3600.5,
+  "version": "2.0.0a1"
+ },
+ "kind": "EngineStatus"
+}
