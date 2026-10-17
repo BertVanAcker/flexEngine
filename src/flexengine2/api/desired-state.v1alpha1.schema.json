@@ -65,9 +65,10 @@
         "mcu-module",
         "mcu-firmware",
         "plc-verify",
-        "os-rauc"
+        "os-rauc",
+        "arduino-ota"
       ],
-      "description": "Driver SPI profile (CP-5). One profile per driver; the engine refuses a deployment whose profile has no driver on this device ('no driver for <profile>'). os-rauc (EV-17): whole-OS A/B update with RAUC. New profiles (plc-codesys-as, ...) are added here as they ship."
+      "description": "Driver SPI profile (CP-5). One profile per driver; the engine refuses a deployment whose profile has no driver on this device ('no driver for <profile>'). os-rauc (EV-17): whole-OS A/B update with RAUC. arduino-ota (EV-38): flexNode-arduino board firmware over the Portenta OTA path (parameter `board` names the board when the driver has several). New profiles (plc-codesys-as, ...) are added here as they ship."
     },
     "SafetyClass": {
       "enum": [

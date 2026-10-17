@@ -33,6 +33,11 @@ def base() -> dict:
             {"deviceId": "panda", "role": "gateway", "onboardingToken": "t",
              "drivers": {"container": {"runtime": "docker"},
                          "os-rauc": {"sharedDataPath": "/tmp/fe-data"},
+                         "arduino-ota": {"boards": {"p1": {
+                             "fqbn": "arduino:mbed_portenta:envie_m7", "connectorId": "flexIA@demo-1fd420",
+                             "applicationId": "OTA_01", "commandKeyFile": "/etc/flexengine/keys/OTA_01.key"}},
+                             "mqtt": {"host": "192.168.1.101"}, "redis": {"host": "192.168.1.101", "db": 15},
+                             "serve": {"publicUrl": "http://192.168.1.50:8470", "allowPlainHttp": True}},
                          "plc-verify": {"plcs": {
                              "panda/cx": {"via": "ads", "amsNetId": "127.0.0.1.1.1", "ip": "127.0.0.1"},
                              "opta": {"via": "modbus", "host": "127.0.0.1"},
@@ -81,6 +86,8 @@ CX, OPTA, SIM = f"{D0}/drivers/plc-verify/plcs/panda~1cx", f"{D0}/drivers/plc-ve
 CONT, APP, MCU, RELAY = f"{D0}/drivers/container", f"{D2}/drivers/applab", f"{D1}/mcu", f"{D1}/relay"
 NAT = f"{D0}/drivers/native"
 RAU = f"{D0}/drivers/os-rauc"
+AO = f"{D0}/drivers/arduino-ota"
+AOB = f"{AO}/boards/p1"
 
 # (documented key, base, pointer, valid value, invalid value) -- one row per key of the generated reference
 CASES = [
@@ -192,6 +199,49 @@ CASES = [
     ("devices[].drivers.os-rauc.bootIdFile", "std", f"{RAU}/bootIdFile", "/run/boot_id", ""),
     ("devices[].drivers.os-rauc.healthChecks", "std", f"{RAU}/healthChecks", [["systemctl", "is-system-running"]],
      ["systemctl is-system-running"]),
+    ("devices[].drivers.arduino-ota", "std", AO, {"boards": {"b": {"fqbn": "arduino:mbed_opta:opta", "connectorId": "c", "applicationId": "a",
+                                             "commandKeyFile": "/k"}}, "serve": {}}, {"serve": {}}),
+    ("devices[].drivers.arduino-ota.boards", "std", f"{AO}/boards", {"opta-1": {"fqbn": "arduino:mbed_opta:opta", "connectorId": "c",
+                                                    "applicationId": "a", "commandKeyFile": "/k"}}, {}),
+    ("devices[].drivers.arduino-ota.boards.<name>.fqbn", "std", f"{AOB}/fqbn", "arduino:mbed_opta:opta", "esp32:esp32:m5stack_atoms3"),
+    ("devices[].drivers.arduino-ota.boards.<name>.connectorId", "std", f"{AOB}/connectorId", "flexIA@x", ""),
+    ("devices[].drivers.arduino-ota.boards.<name>.applicationId", "std", f"{AOB}/applicationId", "OTA_02", ""),
+    ("devices[].drivers.arduino-ota.boards.<name>.commandKeyFile", "std", f"{AOB}/commandKeyFile", "/k", 1),
+    ("devices[].drivers.arduino-ota.boards.<name>.address", "std", f"{AOB}/address", "192.168.1.60", ""),
+    ("devices[].drivers.arduino-ota.boards.<name>.mqtt", "std", f"{AOB}/mqtt", {"host": "10.0.0.2"}, {"hots": "x"}),
+    ("devices[].drivers.arduino-ota.boards.<name>.mqtt.host", "std", f"{AOB}/mqtt", {"host": "10.0.0.2"}, {"host": ""}),
+    ("devices[].drivers.arduino-ota.boards.<name>.mqtt.port", "std", f"{AOB}/mqtt", {"port": 8883}, {"port": 0}),
+    ("devices[].drivers.arduino-ota.boards.<name>.mqtt.username", "std", f"{AOB}/mqtt", {"username": "u"}, {"username": 1}),
+    ("devices[].drivers.arduino-ota.boards.<name>.mqtt.passwordFile", "std", f"{AOB}/mqtt", {"passwordFile": "/p"}, {"passwordFile": ""}),
+    ("devices[].drivers.arduino-ota.boards.<name>.redis", "std", f"{AOB}/redis", {"db": 14}, {"database": 14}),
+    ("devices[].drivers.arduino-ota.boards.<name>.redis.host", "std", f"{AOB}/redis", {"host": "10.0.0.3"}, {"host": 1}),
+    ("devices[].drivers.arduino-ota.boards.<name>.redis.port", "std", f"{AOB}/redis", {"port": 6380}, {"port": 70000}),
+    ("devices[].drivers.arduino-ota.boards.<name>.redis.db", "std", f"{AOB}/redis", {"db": 15}, {"db": "15"}),
+    ("devices[].drivers.arduino-ota.boards.<name>.redis.passwordFile", "std", f"{AOB}/redis", {"passwordFile": "/p"}, {"passwordFile": 1}),
+    ("devices[].drivers.arduino-ota.mqtt", "std", f"{AO}/mqtt", {"host": "192.168.1.101", "port": 1883}, []),
+    ("devices[].drivers.arduino-ota.mqtt.host", "std", f"{AO}/mqtt/host", "192.168.1.101", ""),
+    ("devices[].drivers.arduino-ota.mqtt.port", "std", f"{AO}/mqtt/port", 1883, "1883"),
+    ("devices[].drivers.arduino-ota.mqtt.username", "std", f"{AO}/mqtt/username", "engine", ""),
+    ("devices[].drivers.arduino-ota.mqtt.passwordFile", "std", f"{AO}/mqtt/passwordFile", "/etc/flexengine/mqtt.pw", ""),
+    ("devices[].drivers.arduino-ota.redis", "std", f"{AO}/redis", {"host": "192.168.1.101", "db": 15}, "redis://x"),
+    ("devices[].drivers.arduino-ota.redis.host", "std", f"{AO}/redis/host", "192.168.1.101", ""),
+    ("devices[].drivers.arduino-ota.redis.port", "std", f"{AO}/redis/port", 6379, 0),
+    ("devices[].drivers.arduino-ota.redis.db", "std", f"{AO}/redis/db", 15, 16),
+    ("devices[].drivers.arduino-ota.redis.passwordFile", "std", f"{AO}/redis/passwordFile", "/etc/flexengine/redis.pw", ""),
+    ("devices[].drivers.arduino-ota.serve", "std", f"{AO}/serve", {"host": "192.168.1.50"}, {"bind": "x"}),
+    ("devices[].drivers.arduino-ota.serve.host", "std", f"{AO}/serve/host", "192.168.1.50", ""),
+    ("devices[].drivers.arduino-ota.serve.port", "std", f"{AO}/serve/port", 0, -1),
+    ("devices[].drivers.arduino-ota.serve.publicUrl", "std", f"{AO}/serve/publicUrl", "https://panda.lan:8470", "panda.lan:8470"),
+    ("devices[].drivers.arduino-ota.serve.certFile", "std", f"{AO}/serve/certFile", "/etc/flexengine/ota.crt", ""),
+    ("devices[].drivers.arduino-ota.serve.keyFile", "std", f"{AO}/serve/keyFile", "/etc/flexengine/ota.key", ""),
+    ("devices[].drivers.arduino-ota.serve.allowPlainHttp", "std", f"{AO}/serve/allowPlainHttp", False, "yes"),
+    ("devices[].drivers.arduino-ota.acceptTimeoutSeconds", "std", f"{AO}/acceptTimeoutSeconds", 30, 0),
+    ("devices[].drivers.arduino-ota.updateTimeoutSeconds", "std", f"{AO}/updateTimeoutSeconds", 600, -5),
+    ("devices[].drivers.arduino-ota.pollSeconds", "std", f"{AO}/pollSeconds", 1, 0),
+    ("devices[].drivers.arduino-ota.timeout", "std", f"{AO}/timeout", 3, "3"),
+    ("devices[].drivers.arduino-ota.healthyStatus", "std", f"{AO}/healthyStatus", ["RUNNING", "CLOUDLINK_OK"], []),
+    ("devices[].drivers.arduino-ota.failedStatus", "std", f"{AO}/failedStatus", ["ERROR", "STOPPED"], "ERROR"),
+    ("devices[].drivers.arduino-ota.requireHeartbeat", "std", f"{AO}/requireHeartbeat", False, "no"),
     ("devices[].mcu", "std", MCU, {"smp": {"host": "h", "port": 1}, "modulePublicKey": HEX}, {}),
     ("devices[].mcu.smp", "std", f"{MCU}/smp", {"tty": "/dev/ttyACM0", "baud": 115200}, {}),
     ("devices[].mcu.smp.tty", "serial", f"{MCU}/smp/tty", "/dev/ttyACM0", "ttyACM0"),
@@ -241,7 +291,9 @@ def test_key_invalid(key, b, ptr, good, bad):
 REQUIRED = [("/cloud", ""), ("/dataDir", ""), ("/devices", ""), (f"{D0}/deviceId", D0),
             (f"{CONT}/runtime", CONT), (f"{CX}/via", CX), (f"{CX}/amsNetId", CX), (f"{CX}/ip", CX),
             (f"{OPTA}/host", OPTA), (f"{MCU}/smp", MCU), (f"{MCU}/modulePublicKey", MCU),
-            (f"{MCU}/smp/host", f"{MCU}/smp"), (f"{MCU}/smp/port", f"{MCU}/smp"), (f"{RAU}/sharedDataPath", RAU)]
+            (f"{MCU}/smp/host", f"{MCU}/smp"), (f"{MCU}/smp/port", f"{MCU}/smp"), (f"{RAU}/sharedDataPath", RAU),
+            (f"{AO}/boards", AO), (f"{AO}/serve", AO), (f"{AOB}/fqbn", AOB), (f"{AOB}/connectorId", AOB),
+            (f"{AOB}/applicationId", AOB), (f"{AOB}/commandKeyFile", AOB)]
 
 
 @pytest.mark.parametrize("ptr,parent", REQUIRED, ids=[r[0] for r in REQUIRED])
@@ -270,7 +322,8 @@ def test_ankaios_requires_its_keys_and_refuses_run_options():
 LEVELS = [("std", ""), ("std", "/cloud"), ("std", D0), ("std", f"{D0}/drivers"), ("std", CONT),
           ("ankaios", CONT), ("std", f"{CONT}/allowedRunOptions"), ("std", f"{D0}/drivers/plc-verify"),
           ("std", CX), ("std", OPTA), ("std", SIM), ("std", APP), ("std", MCU), ("std", f"{MCU}/smp"),
-          ("serial", f"{MCU}/smp"), ("std", RELAY), ("std", NAT), ("std", RAU)]
+          ("serial", f"{MCU}/smp"), ("std", RELAY), ("std", NAT), ("std", RAU), ("std", AO),
+          ("std", AOB), ("std", f"{AO}/serve")]
 
 
 @pytest.mark.parametrize("b,ptr", LEVELS, ids=[f"{b}:{p or '/'}" for b, p in LEVELS])

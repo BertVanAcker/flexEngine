@@ -1,0 +1,719 @@
+diff -ruN a/README.adoc b/README.adoc
+--- a/README.adoc
++++ b/README.adoc
+@@ -51,6 +51,18 @@
+ application status and version are written again; MQTT topics are subscribed
+ again after every reconnect.
+ 
++== Remote OTA ==
++
++With `ota_config` enabled, a node also accepts a signed `OTA_UPDATE` command on
++`flexcloud/<connectorID>/<applicationID>/cmd` (sent by the flexEngineV2 `arduino-ota`
++driver; format and signature as flexCommunicator's `compose_command`, key =
++`appDescriptor_config`'s flexCloud secret key). It downloads the image named in the
++command, checks its size and sha256, installs it and restarts; a failed step leaves the
++current firmware running. Progress is written to `<connectorID>:applications:<applicationID>:ota`,
++a heartbeat to `...:heartbeat` every `FLEXNODE_HEARTBEAT_S` (5) seconds. The Portenta
++bootloader checks no signature: only commands signed with the node key are executed, so
++keep that key secret. See `examples/features/otaRemote`.
++
+ 
+ For more information about this library please contact us
+ Bert.VanAcker@uantwerp.be
+diff -ruN a/examples/features/otaRemote/.fqbns b/examples/features/otaRemote/.fqbns
+--- a/examples/features/otaRemote/.fqbns	1970-01-01 00:00:00.000000000 +0000
++++ b/examples/features/otaRemote/.fqbns
+@@ -0,0 +1 @@
++arduino:mbed_portenta:envie_m7
+diff -ruN a/examples/features/otaRemote/communicationMatrix.h b/examples/features/otaRemote/communicationMatrix.h
+--- a/examples/features/otaRemote/communicationMatrix.h	1970-01-01 00:00:00.000000000 +0000
++++ b/examples/features/otaRemote/communicationMatrix.h
+@@ -0,0 +1,16 @@
++#include <cstdint>
++#include <cstddef>
++#include "property.h"
++#include "arrayView.h"
++
++static constexpr Property kBuiltInProperties[] = {
++    { "heartbeat", "Periodic sign of life of the node", "message", "AckMessage", "mqtt",
++      { "/OTA_01/heartbeat", 0 } }
++};
++
++static constexpr std::size_t kBuiltInPropertyCount =
++    sizeof(kBuiltInProperties) / sizeof(kBuiltInProperties[0]);
++
++inline constexpr ArrayView<Property> getDefaultProperties() noexcept {
++    return { kBuiltInProperties, kBuiltInPropertyCount };
++}
+diff -ruN a/examples/features/otaRemote/configuration.h b/examples/features/otaRemote/configuration.h
+--- a/examples/features/otaRemote/configuration.h	1970-01-01 00:00:00.000000000 +0000
++++ b/examples/features/otaRemote/configuration.h
+@@ -0,0 +1,57 @@
++#include <configurator.h>
++
++/*------------------------- flexCLOUD configuration ----------------------------------*/
++
++flexCloud_Manager_Config flexCloud_config(
++    IPAddress(192,168,1,101),   // flexCloud IP address
++    6379,                       // flexCloud port
++    "",                         // flexCloud password
++    "15"                        // flexCloud db
++);
++
++knowledge_Manager_Config knowledge_config(
++    IPAddress(192,168,1,101),   // flexCloud IP address
++    6379,                       // flexCloud port
++    "",                         // flexCloud password
++    "14"                        // flexCloud db
++);
++
++
++static const uint8_t FLEXCLOUD_SECRET_KEY[] = {
++    0xae, 0xc1, 0x3f, 0x14, 0xb3, 0x58, 0xb1, 0xb9,
++    0x23, 0xbe, 0xe6, 0x9d, 0xab, 0x82, 0x5d, 0x29,
++    0x39, 0xb9, 0xa1, 0x2a, 0xf5, 0x3d, 0x7e, 0x04,
++    0x70, 0xe0, 0x9a, 0x0c, 0x1b, 0x17, 0xd5, 0x9c
++};
++
++flexCloud_AppDescriptor_Config appDescriptor_config(
++    "static",                   // connectorID type
++    "flexIA@demo-1fd420",    // connectorID
++    "OTA_01",                 // application ID
++    FLEXCLOUD_SECRET_KEY
++);
++
++/*------------------------- Communication managers config ----------------------------------*/
++Communication_Managers_MQTT_Config cm_MQTT_config(
++    "192.168.1.101",   // MQTT broker IP address
++    1883,                       // MQTT broker port
++    "",                         // MQTT username
++    "",                         // MQTT password
++    "OTA_01"                   // MQTT client ID
++);
++
++/*------------------------- Node configuration ----------------------------------*/
++system_status_led_Config statusLED_config(
++    true,                       // status LED enabled
++    "portenta_h7_m7"            // board with the RGB status LED
++);
++
++OTA_Config ota_config(
++    true                        // OTA updates (needs the Portenta OTA bootloader)
++);
++
++wifi_client_Config wifi_config(
++    false,                      // false: Ethernet (carrier), true: Wi-Fi
++    "",                         // Wi-Fi SSID
++    ""                          // Wi-Fi password
++);
+diff -ruN a/examples/features/otaRemote/otaRemote.ino b/examples/features/otaRemote/otaRemote.ino
+--- a/examples/features/otaRemote/otaRemote.ino	1970-01-01 00:00:00.000000000 +0000
++++ b/examples/features/otaRemote/otaRemote.ino
+@@ -0,0 +1,35 @@
++/*
++ * Remote OTA update through flexEngineV2 (Portenta H7 / Machine Control / Opta)
++ *
++ * The sketch only reports its version: the update is started from outside. A flexEngineV2 with the arduino-ota
++ * driver serves the verified .ota image on the LAN and publishes a signed OTA_UPDATE command on
++ * flexcloud/<connectorID>/<applicationID>/cmd. The library checks the HMAC-SHA256 signature with
++ * appDescriptor_config's flexCloud secret key, downloads the image, checks its size and sha256 against the command,
++ * installs it and restarts; the progress is in the flexCloud key <connectorID>:applications:<applicationID>:ota and
++ * the node writes a heartbeat key every FLEXNODE_HEARTBEAT_S seconds.
++ *
++ * Build the image with FIRMWARE_VERSION set to the release's dev.flex.firmwareVersion:
++ *   python3 tools/hwtest/make_ota.py --sketch examples/features/otaRemote --fqbn arduino:mbed_portenta:envie_m7 \
++ *       --library . -o build/otaRemote-0.2.0.ota
++ * Requires the Portenta bootloader with OTA support and ota_config enabled.
++ */
++#include <flexNode.h>
++#include "communicationMatrix.h"
++#include "configuration.h"
++
++// version of THIS firmware (= dev.flex.firmwareVersion of its release)
++const char* FIRMWARE_VERSION = "0.1.0";
++
++auto props = getDefaultProperties();
++FlexNode node("OTA_01", "Remote OTA example", props);
++
++void setup() {
++  node.begin();
++  node.set_application_version(FIRMWARE_VERSION);   // also tells the engine which firmware came up after an update
++  node.consolelogger.info(String("firmware version ") + FIRMWARE_VERSION);
++  node.set_application_status(ApplicationStatus::RUNNING);
++}
++
++void loop() {
++  node.spin();
++}
+diff -ruN a/src/commands/otaCommand.cpp b/src/commands/otaCommand.cpp
+--- a/src/commands/otaCommand.cpp	1970-01-01 00:00:00.000000000 +0000
++++ b/src/commands/otaCommand.cpp
+@@ -0,0 +1,140 @@
++#include "commands/otaCommand.h"
++#include <ArduinoJson.h>
++#include <time.h>
++#include <stdio.h>
++#include "mbedtls/md.h"
++
++// ids of the last commands (a command is executed once)
++static String seen_ids[8];
++static unsigned int seen_next = 0;
++
++static void to_hex(const uint8_t* in, size_t n, char* out) {
++  static const char* digits = "0123456789abcdef";
++  for (size_t i = 0; i < n; i++) {
++    out[2 * i] = digits[in[i] >> 4];
++    out[2 * i + 1] = digits[in[i] & 0x0f];
++  }
++  out[2 * n] = 0;
++}
++
++static bool hmac_sha256_hex(const uint8_t* key, size_t keylen, const String& data, char out[65]) {
++  uint8_t mac[32];
++  const mbedtls_md_info_t* info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
++  mbedtls_md_context_t ctx;
++  mbedtls_md_init(&ctx);
++  bool ok = info && mbedtls_md_setup(&ctx, info, 1) == 0 &&
++            mbedtls_md_hmac_starts(&ctx, key, keylen) == 0 &&
++            mbedtls_md_hmac_update(&ctx, reinterpret_cast<const unsigned char*>(data.c_str()), data.length()) == 0 &&
++            mbedtls_md_hmac_finish(&ctx, mac) == 0;
++  mbedtls_md_free(&ctx);
++  if (ok) to_hex(mac, sizeof(mac), out);
++  return ok;
++}
++
++bool sha256_file_hex(const char* path, char out[65]) {
++  FILE* f = fopen(path, "rb");
++  if (!f) return false;
++  const mbedtls_md_info_t* info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
++  mbedtls_md_context_t ctx;
++  mbedtls_md_init(&ctx);
++  bool ok = info && mbedtls_md_setup(&ctx, info, 0) == 0 && mbedtls_md_starts(&ctx) == 0;
++  static unsigned char buf[1024];
++  size_t n;
++  while (ok && (n = fread(buf, 1, sizeof(buf), f)) > 0) {
++    ok = mbedtls_md_update(&ctx, buf, n) == 0;
++  }
++  ok = ok && !ferror(f);
++  fclose(f);
++  uint8_t digest[32];
++  ok = ok && mbedtls_md_finish(&ctx, digest) == 0;
++  mbedtls_md_free(&ctx);
++  if (ok) to_hex(digest, sizeof(digest), out);
++  return ok;
++}
++
++// a string json.dumps() writes as is (printable ASCII without '"' and '\')
++static bool plain(const char* s) {
++  if (!s) return false;
++  for (; *s; s++) {
++    if (*s < 0x20 || *s > 0x7e || *s == '"' || *s == '\\') return false;
++  }
++  return true;
++}
++
++static bool is_hex64(const String& s) {
++  if (s.length() != 64) return false;
++  for (unsigned int i = 0; i < s.length(); i++) {
++    char c = s[i];
++    if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) return false;
++  }
++  return true;
++}
++
++OtaCommandResult parse_ota_command(const uint8_t* payload, unsigned int length, const uint8_t* key, size_t keylen,
++                                   OtaCommand& out) {
++  DynamicJsonDocument doc(1536);
++  if (deserializeJson(doc, payload, length)) return OtaCommandResult::NOT_JSON;
++  const char* cmd = doc["cmd"];
++  if (!cmd || strcmp(cmd, "OTA_UPDATE") != 0) return OtaCommandResult::NOT_OTA;
++
++  JsonObject p = doc["params"];
++  const char* id = doc["id"];
++  const char* nonce = doc["nonce"];
++  const char* sig = doc["signature"];
++  const char* board = p["board"];
++  const char* sha = p["sha256"];
++  const char* url = p["url"];
++  const char* version = p["version"];
++  if (p.isNull() || p.size() != 5 || !p["size"].is<unsigned long>() || !doc["priority"].is<long>() ||
++      !doc["expiry"].is<unsigned long>() || !doc["timestamp"].is<unsigned long>() || !plain(id) || !plain(nonce) ||
++      !plain(sig) || !plain(board) || !plain(sha) || !plain(url) || !plain(version)) {
++    return OtaCommandResult::BAD_PARAMS;
++  }
++  unsigned long size = p["size"].as<unsigned long>();
++  long priority = doc["priority"].as<long>();
++  unsigned long expiry = doc["expiry"].as<unsigned long>();
++  unsigned long timestamp = doc["timestamp"].as<unsigned long>();
++
++  // json.dumps(params, sort_keys=True)
++  String params = String("{\"board\": \"") + board + "\", \"sha256\": \"" + sha + "\", \"size\": " + String(size) +
++                  ", \"url\": \"" + url + "\", \"version\": \"" + version + "\"}";
++  String data = String(id) + cmd + String(priority) + String(expiry) + params + String(timestamp) + nonce;
++  char expect[65];
++  if (!key || !hmac_sha256_hex(key, keylen, data, expect) || strlen(sig) != 64) {
++    return OtaCommandResult::BAD_SIGNATURE;
++  }
++  uint8_t diff = 0;                     // constant time compare
++  for (int i = 0; i < 64; i++) diff |= static_cast<uint8_t>(expect[i] ^ sig[i]);
++  if (diff) return OtaCommandResult::BAD_SIGNATURE;
++
++  for (const String& s : seen_ids) {
++    if (s == id) return OtaCommandResult::DUPLICATE;
++  }
++  seen_ids[seen_next++ % 8] = id;
++
++  out.id = id;
++  out.expiry = expiry;
++  // without a set clock (no NTP before P2) the expiry cannot be checked; the one-time URL limits a replay
++  time_t now = time(nullptr);
++  if (now > 1700000000 && static_cast<unsigned long>(now) > expiry) return OtaCommandResult::EXPIRED;
++  out.board = board;
++  out.sha256 = sha;
++  out.url = url;
++  out.version = version;
++  out.size = size;
++  if (!is_hex64(out.sha256)) return OtaCommandResult::BAD_PARAMS;
++  return OtaCommandResult::OK;
++}
++
++const char* ota_command_result_text(OtaCommandResult r) {
++  switch (r) {
++    case OtaCommandResult::OK:            return "ok";
++    case OtaCommandResult::NOT_JSON:      return "not JSON";
++    case OtaCommandResult::NOT_OTA:       return "not an OTA_UPDATE command";
++    case OtaCommandResult::BAD_PARAMS:    return "malformed command";
++    case OtaCommandResult::BAD_SIGNATURE: return "bad signature";
++    case OtaCommandResult::DUPLICATE:     return "already received";
++    case OtaCommandResult::EXPIRED:       return "command expired";
++    default:                              return "unknown";
++  }
++}
+diff -ruN a/src/commands/otaCommand.h b/src/commands/otaCommand.h
+--- a/src/commands/otaCommand.h	1970-01-01 00:00:00.000000000 +0000
++++ b/src/commands/otaCommand.h
+@@ -0,0 +1,56 @@
++#ifndef OTACOMMAND_H
++#define OTACOMMAND_H
++
++/* Remote OTA command (proposed for flexEngineV2 EV-38): a flexCloud command in flexCommunicator's
++   compose_command() format, received over MQTT on flexcloud/<connectorID>/<applicationID>/cmd:
++
++     {"id": "<uuid>", "cmd": "OTA_UPDATE", "priority": 2, "expiry": <unix s>, "timestamp": <unix s>,
++      "nonce": "<hex>", "params": {"board": "<FQBN>", "sha256": "<64 hex>", "size": <bytes>,
++      "url": "http(s)://...", "version": "<firmware version>"}, "signature": "<64 hex>"}
++
++   signature = hex HMAC-SHA256(flexCloud_secret_key, id + cmd + priority + expiry + json.dumps(params,
++   sort_keys=True) + timestamp + nonce), as flcpy's compute_signature(). The node rebuilds the json.dumps text from
++   the five known params (keys sorted, ", " and ": " separators), so a command with other params, or with characters
++   json.dumps would escape, does not verify. */
++
++#include <Arduino.h>
++
++#ifndef FLEXNODE_SECRET_KEY_LEN
++#define FLEXNODE_SECRET_KEY_LEN 32      // length of appDescriptor_config.flexCloud_secret_key
++#endif
++
++// FQBN of the board this library is compiled for (compared with the command's params.board)
++#if defined(ARDUINO_PORTENTA_H7_M7)
++#define FLEXNODE_FQBN "arduino:mbed_portenta:envie_m7"
++#elif defined(ARDUINO_OPTA)
++#define FLEXNODE_FQBN "arduino:mbed_opta:opta"
++#elif defined(ARDUINO_GIGA)
++#define FLEXNODE_FQBN "arduino:mbed_giga:giga"
++#elif defined(ARDUINO_NICLA_VISION)
++#define FLEXNODE_FQBN "arduino:mbed_nicla:nicla_vision"
++#else
++#define FLEXNODE_FQBN "unknown"
++#endif
++
++struct OtaCommand {
++  String id;
++  String url;
++  String sha256;     // lower-case hex of the .ota file
++  String version;    // the version the new firmware reports (set_application_version)
++  String board;
++  unsigned long size = 0;
++  unsigned long expiry = 0;
++};
++
++enum class OtaCommandResult { OK, NOT_JSON, NOT_OTA, BAD_PARAMS, BAD_SIGNATURE, DUPLICATE, EXPIRED };
++
++// parse + authenticate; `out` is filled when the result is OK (id also for EXPIRED)
++OtaCommandResult parse_ota_command(const uint8_t* payload, unsigned int length, const uint8_t* key, size_t keylen,
++                                   OtaCommand& out);
++
++const char* ota_command_result_text(OtaCommandResult r);
++
++// lower-case hex SHA-256 of a file (e.g. the downloaded /fs/UPDATE.BIN.LZSS); false when it cannot be read
++bool sha256_file_hex(const char* path, char out[65]);
++
++#endif // OTACOMMAND_H
+diff -ruN a/src/flexCloud/flexCloudManager.cpp b/src/flexCloud/flexCloudManager.cpp
+--- a/src/flexCloud/flexCloudManager.cpp
++++ b/src/flexCloud/flexCloudManager.cpp
+@@ -54,8 +54,35 @@
+ 
+ 
+ 
++/* ------------------------ Remote OTA (flexEngineV2 arduino-ota driver) ------------------------ */
++void flexCloudManager::set_ota_state(const char* json) {
++  write(buildKey("ota"), json);
++}
++
++String flexCloudManager::ota_state() {
++  Redis* redis = link_.redis();
++  return redis ? redis->get(buildKey("ota")) : String("");
++}
++
++void flexCloudManager::heartbeat(const char* json, int ttl_s) {
++  Redis* redis = link_.redis();
++  if (!redis) return;
++  const char* key = buildKey("heartbeat");
++  if (redis->set(key, json)) redis->expire(key, ttl_s);
++}
++
+ /* ------------------------ Private helper functions ------------------------ */
+ 
++const char* flexCloudManager::buildKey(const char* suffix) {
++    static char buffer[128];
++    snprintf(buffer, sizeof(buffer),
++             "%s:applications:%s:%s",
++             appDescriptor_config.connectorID,
++             appDescriptor_config.id,
++             suffix);
++    return buffer;
++}
++
+ const char* flexCloudManager::buildApplicationStatusKey() {
+     static char buffer[128];
+     snprintf(buffer, sizeof(buffer),
+diff -ruN a/src/flexCloud/flexCloudManager.h b/src/flexCloud/flexCloudManager.h
+--- a/src/flexCloud/flexCloudManager.h
++++ b/src/flexCloud/flexCloudManager.h
+@@ -20,12 +20,20 @@
+   void set_swc_version(const char* version);
+   // cloud logger functions
+   void log(const char* key, const char* value);
++  // remote OTA: <cid>:applications:<id>:ota (JSON progress of the last OTA_UPDATE) and
++  // <cid>:applications:<id>:heartbeat (JSON, expires after ttl_s)
++  void set_ota_state(const char* json);
++  String ota_state();
++  void heartbeat(const char* json, int ttl_s);
++  const char* swc_version() const { return version_.c_str(); }
++  ApplicationStatus status() const { return status_; }
+   
+ 
+ private:
+     const char* buildApplicationStatusKey();
+     const char* buildApplicationVersionKey();
+     const char* buildRemoteLogKey();
++    const char* buildKey(const char* suffix);
+ 
+     RedisLink link_{"flexCloud"};
+     ApplicationStatus status_ = ApplicationStatus::UNKNOWN;
+diff -ruN a/src/flexNode.cpp b/src/flexNode.cpp
+--- a/src/flexNode.cpp
++++ b/src/flexNode.cpp
+@@ -97,6 +97,13 @@
+   /*flexCloud logger initialization*/
+   logger.init(flexCloud);
+ 
++  /*remote OTA: boot id (heartbeat), command topic (subscribed now and after every MQTT reconnect)*/
++  randomSeed(micros() ^ static_cast<unsigned long>(analogRead(A0)));
++  snprintf(boot_id_, sizeof(boot_id_), "%08lx%08lx", static_cast<unsigned long>(random(0x7fffffff)),
++           static_cast<unsigned long>(random(0x7fffffff)));
++  mqtt_add_topic(command_topic());
++  ota_manager.on_state(ota_state_cb);
++
+   /*shared knowledge manager initialization*/
+   knowledge.setup();
+ 
+@@ -142,6 +149,11 @@
+         systemStatusLED.update();
+       }
+ 
++      if (last_heartbeat_ == 0 || now - last_heartbeat_ >= FLEXNODE_HEARTBEAT_S * 1000UL) {
++        heartbeat();
++        last_heartbeat_ = now ? now : 1;
++      }
++
+       break;
+     }
+ 
+@@ -263,6 +275,11 @@
+ 
+ /*------------------------- REACTIVE FUNCTIONS ----------------------*/
+ void FlexNode::callback(char* topic, byte* payload, unsigned int length) {
++  // remote commands first: they are larger than the data messages' JSON document below
++  if (instance && strcmp(topic, instance->command_topic()) == 0) {
++    instance->handle_command(payload, length);
++    return;
++  }
+   
+   String message;
+   for (unsigned int i = 0; i < length; i++) {
+@@ -317,6 +334,7 @@
+ 
+ void FlexNode::set_application_version(const char* version) {
+   flexCloud.set_swc_version(version);
++  mark_booted();
+ }
+ 
+ /*------------------------- HELPERS ----------------------------------*/
+@@ -364,11 +382,87 @@
+ }
+ 
+ 
++/*------------------------- REMOTE OTA (flexEngineV2 arduino-ota driver) ----------------------------*/
+ 
++const char* FlexNode::command_topic() {
++  static char buffer[128];
++  snprintf(buffer, sizeof(buffer), "flexcloud/%s/%s/cmd", appDescriptor_config.connectorID, appDescriptor_config.id);
++  return buffer;
++}
+ 
++void FlexNode::handle_command(const uint8_t* payload, unsigned int length) {
++  OtaCommand cmd;
++  OtaCommandResult r = parse_ota_command(payload, length, appDescriptor_config.flexCloud_secret_key,
++                                         FLEXNODE_SECRET_KEY_LEN, cmd);
++  if (r != OtaCommandResult::OK && r != OtaCommandResult::EXPIRED) {
++    // not authenticated (or not for us): logged, no state written
++    logger.warning((String("OTA_UPDATE rejected: ") + ota_command_result_text(r)).c_str());
++    return;
++  }
++  String why;
++  if (r == OtaCommandResult::EXPIRED) {
++    why = "command expired";
++  } else if (!ota_config.OTA_enabled) {
++    why = "OTA disabled in ota_config";
++  } else if (cmd.board != FLEXNODE_FQBN) {
++    why = String("image is for ") + cmd.board + ", this node is " + FLEXNODE_FQBN;
++  } else if (state != AppState::RUN) {
++    why = "an update is already in progress";
++  }
++  ota_ref_ = cmd.id;
++  ota_target_ = cmd.version;
++  if (why.length()) {
++    report_ota("rejected", why.c_str());
++    logger.warning((String("OTA_UPDATE rejected: ") + why).c_str());
++    return;
++  }
++  report_ota("accepted", "");
++  logger.info((String("OTA_UPDATE accepted: ") + cmd.version).c_str());
++  set_application_status(ApplicationStatus::OTA_IN_PROGRESS);
++  ota_manager.set_ota_url(cmd.url);
++  ota_manager.expect(cmd.sha256, cmd.size);
++  trigger_ota();      // spin(): disconnect MQTT, download, verify, install, restart
++}
+ 
+-
+-
+-
+-
+-
++void FlexNode::report_ota(const char* st, const char* reason) {
++  StaticJsonDocument<512> doc;
++  doc["ref"] = ota_ref_.c_str();
++  doc["state"] = st;
++  doc["version"] = ota_target_.c_str();
++  doc["running"] = flexCloud.swc_version();
++  if (reason && reason[0]) doc["reason"] = reason;
++  if (strcmp(st, "booted") == 0) doc["bootId"] = boot_id_;
++  char buffer[512];
++  serializeJson(doc, buffer, sizeof(buffer));
++  flexCloud.set_ota_state(buffer);
++}
++
++void FlexNode::ota_state_cb(const char* st, const char* reason) {
++  if (!instance || !instance->ota_ref_.length()) return;      // a sketch-triggered OTA: nothing to report
++  instance->report_ota(st, reason);
++  if (strcmp(st, "failed") == 0) instance->ota_ref_ = "";       // final: AFTER_OTA continues on this firmware
++}
++
++// the first set_application_version() after a remote update: tell the engine which firmware came up
++void FlexNode::mark_booted() {
++  String raw = flexCloud.ota_state();
++  if (!raw.length()) return;
++  StaticJsonDocument<512> doc;
++  if (deserializeJson(doc, raw)) return;
++  const char* st = doc["state"];
++  if (!st || strcmp(st, "restarting") != 0) return;
++  ota_ref_ = doc["ref"] | "";
++  ota_target_ = doc["version"] | "";
++  report_ota("booted", "");
++}
++
++void FlexNode::heartbeat() {
++  StaticJsonDocument<256> doc;
++  doc["bootId"] = boot_id_;
++  doc["uptime"] = millis() / 1000;
++  doc["version"] = flexCloud.swc_version();
++  doc["status"] = AS_toString(flexCloud.status());
++  char buffer[256];
++  serializeJson(doc, buffer, sizeof(buffer));
++  flexCloud.heartbeat(buffer, 3 * FLEXNODE_HEARTBEAT_S);
++}
+diff -ruN a/src/flexNode.h b/src/flexNode.h
+--- a/src/flexNode.h
++++ b/src/flexNode.h
+@@ -18,6 +18,12 @@
+ #include "systemStatus/statusLED.h"
+ 
+ #include "ota/otaManager.h"
++#include "commands/otaCommand.h"
++
++// heartbeat key period (seconds); the key expires after 3 periods
++#ifndef FLEXNODE_HEARTBEAT_S
++#define FLEXNODE_HEARTBEAT_S 5
++#endif
+ 
+ 
+ #define MAX_TOPICS 20
+@@ -104,6 +110,10 @@
+     /* OTA functions */
+     void trigger_ota();
+ 
++    /* remote OTA (flexEngineV2 arduino-ota driver): signed OTA_UPDATE on command_topic() */
++    const char* command_topic();
++    void handle_command(const uint8_t* payload, unsigned int length);
++
+     /* application state to handle ota*/
+     enum class AppState { RUN, START_OTA, DO_OTA, AFTER_OTA };
+     AppState state = AppState::RUN;
+@@ -142,6 +152,16 @@
+ 
+     void _set_system_status_led(ApplicationStatus status);
+ 
++    // remote OTA
++    void report_ota(const char* state, const char* reason);
++    static void ota_state_cb(const char* state, const char* reason);
++    void mark_booted();
++    void heartbeat();
++    String ota_ref_;
++    String ota_target_;
++    char boot_id_[17] = {0};
++    unsigned long last_heartbeat_ = 0;
++
+     bool SerialInitialized = false;
+ };
+ 
+diff -ruN a/src/ota/otaManager.cpp b/src/ota/otaManager.cpp
+--- a/src/ota/otaManager.cpp
++++ b/src/ota/otaManager.cpp
+@@ -2,6 +2,12 @@
+ #include "configurator.h"
+ #include "Client.h"
+ #include "network/network.h"
++#include "commands/otaCommand.h"
++
++// where Arduino_Portenta_OTA_QSPI::download() stores the image (Arduino_Portenta_OTA 1.2: UPDATE_FILE_NAME_LZSS)
++#ifndef FLEXNODE_OTA_DOWNLOAD_FILE
++#define FLEXNODE_OTA_DOWNLOAD_FILE "/fs/UPDATE.BIN.LZSS"
++#endif
+ 
+ 
+ 
+@@ -72,34 +78,50 @@
+   // plain http:// (e.g. an image served from the bench PC) or https://
+   bool const is_https = strncmp(OTA_FILE_LOCATION, "https://", 8) == 0;
+   logger_ -> info((String("Starting download to QSPI from ") + OTA_FILE_LOCATION).c_str());
++  if (on_state_) on_state_("downloading", "");
+   delay(1000);
+   // download over the configured interface (Wi-Fi or Ethernet)
+   int const ota_download = ota.download(OTA_FILE_LOCATION, is_https, flexnode::net::socket_interface());
+   if (ota_download <= 0)
+   {
+-    logger_ -> error((String("Arduino_Portenta_OTA_QSPI::download failed with error code ") + ota_download).c_str());
+-    return false;
++    return fail(String("Arduino_Portenta_OTA_QSPI::download failed with error code ") + ota_download);
+   }
+   logger_ -> info((String(ota_download) + " bytes stored.").c_str());
+ 
++  // remote OTA: the image must be the one the signed command names (the bootloader checks no signature)
++  if (expect_size_ || expect_sha256_.length()) {
++    if (on_state_) on_state_("verifying", "");
++    if (expect_size_ && static_cast<unsigned long>(ota_download) != expect_size_) {
++      return fail(String("size ") + ota_download + " != " + expect_size_);
++    }
++    char sha[65];
++    if (!sha256_file_hex(FLEXNODE_OTA_DOWNLOAD_FILE, sha)) {
++      return fail("cannot read the downloaded image to check its sha256");
++    }
++    if (expect_sha256_ != sha) {
++      return fail("sha256 mismatch: image corrupt or not the one the command names");
++    }
++    logger_ -> info("sha256 of the image OK.");
++  }
++
+ 
+   logger_ -> info("Decompressing LZSS compressed file ...");
+   int const ota_decompress = ota.decompress();
+   if (ota_decompress < 0)
+   {
+-    logger_ -> error((String("Arduino_Portenta_OTA_QSPI::decompress() failed with error code ") + ota_decompress).c_str());
+-    return false;
++    return fail(String("Arduino_Portenta_OTA_QSPI::decompress() failed with error code ") + ota_decompress);
+   }
+   logger_ -> info((String(ota_decompress) + " bytes decompressed.").c_str());
+ 
+ 
+   logger_ -> info("Storing parameters for firmware update in bootloader accessible non-volatile memory ...");
++  if (on_state_) on_state_("installing", "");
+   if ((ota_err = ota.update()) != Arduino_Portenta_OTA::Error::None)
+   {
+-    logger_ -> error((String("ota.update() failed with error code ") + static_cast<int>(ota_err)).c_str());
+-    return false;
++    return fail(String("ota.update() failed with error code ") + static_cast<int>(ota_err));
+   }
+ 
++  if (on_state_) on_state_("restarting", "");
+   logger_ -> info("Restarting the board ...");
+   delay(1000); /* Make sure the serial message gets out before the reset. */
+   ota.reset();
+@@ -110,4 +132,17 @@
+     static String _ota_url_storage; // storage to keep the URL valid
+     _ota_url_storage = url;           // copy into storage
+     ota_url = _ota_url_storage.c_str(); // pointer stays valid
+-}
+\ No newline at end of file
++}
++
++void otaManager::expect(const String& sha256, unsigned long size) {
++  expect_sha256_ = sha256;
++  expect_size_ = size;
++}
++
++bool otaManager::fail(const String& reason) {
++  logger_ -> error(reason.c_str());
++  if (on_state_) on_state_("failed", reason.c_str());
++  expect_sha256_ = "";
++  expect_size_ = 0;
++  return false;
++}
+diff -ruN a/src/ota/otaManager.h b/src/ota/otaManager.h
+--- a/src/ota/otaManager.h
++++ b/src/ota/otaManager.h
+@@ -17,6 +17,11 @@
+   // download (http:// or https://), decompress, install and restart; false when a step failed
+   bool ota_update(const char* OTA_FILE_LOCATION);
+   void set_ota_url(const String& url);
++  // remote OTA: the image the command names (size 0 = not checked) and a progress callback
++  // (state: downloading | verifying | installing | restarting | failed; reason only with failed)
++  void expect(const String& sha256, unsigned long size);
++  typedef void (*StateCallback)(const char* state, const char* reason);
++  void on_state(StateCallback cb) { on_state_ = cb; }
+ 
+   volatile bool otaRequest = false;
+   const char* ota_url = "https://raw.githubusercontent.com/BertVanAcker/flexia-ota-test/main/flexnode-firmware.ota";
+@@ -24,6 +29,10 @@
+ private:
+   // add variables
+   flexCloudLogger* logger_ {nullptr};  // reference to existing flexCloudLogger
++  String expect_sha256_;
++  unsigned long expect_size_ = 0;
++  StateCallback on_state_ = nullptr;
++  bool fail(const String& reason);
+ };
+ 
+ 

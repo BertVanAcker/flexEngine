@@ -76,6 +76,29 @@ bootloader's boot counter falls back; the old slot's engine sees FE-RAU-010 and 
 Errors map to CP-2 texts: `DriverError` in `apply` → `failure: "apply failed: <text>"` (FE-REC-005); in `commit` →
 FE-HG-002; in `platform`/`preflight` → deferred, logged only.
 
+## Driver: arduino-ota (EV-38, `drivers/arduino_ota.py`)
+
+flexNode-arduino board firmware over the Portenta OTA path (protocol: [cp6-children.md §5](cp6-children.md); the
+node side is a proposed upstream change, `proposals/flexnode-arduino-remote-ota/`). Profile `arduino-ota`, name
+`portenta-ota`, exclusive with `maxDeployments` = number of configured boards (one firmware per board; the deployment
+parameter `board` picks the board, optional with one board). Payload: one `.ota` image as
+`application/vnd.flex.payload.arduino-ota.v1+ota` with `dev.flex.board` (FQBN) and `dev.flex.firmwareVersion`
+(CP-3). Config: `drivers.arduino-ota` (`boards`, `mqtt`, `redis`, `serve`, timeouts; config-reference).
+
+| SPI | Behaviour |
+|---|---|
+| `platform` | `{"dev.flex.board": <FQBN>}` when all boards share one FQBN, else `None` (preflight then checks the layer) |
+| `preflight` | board configured (FE-AOTA-PRE-001), `dev.flex.board` present and = board FQBN (-002/-003), `dev.flex.firmwareVersion` (-004), `.ota` header length / CRC-32 / board magic (-005 + FE-AOTA-IMG-*), command key readable (FE-AOTA-002/003). No network: never deferred |
+| `apply` | installed digest still on the board → nothing. Else serve once under a one-time URL, publish the signed `OTA_UPDATE`, follow the node's `ota` key until `booted` with the target version; rejected / failed / other version / no answer → `DriverError` (FE-AOTA-011…016, fail fast) |
+| `status` | version key vs the firmware installed by this engine (`<dataDir>/arduino-ota/state.json`); running = status in `healthyStatus` + heartbeat key; other firmware → not present (drift); Redis down / board offline → present, not running |
+| `health` | `status(...).running` and no update in flight |
+| `failed` | in-flight update reported failed/rejected or booted into another version (FE-AOTA-017/018); installed firmware reports a `failedStatus` (FE-AOTA-019) |
+| `commit` | none (the Portenta bootloader has no confirm): a bad-but-booting firmware is replaced by the reconciler's rollback, which re-serves the previous release (one transfer) |
+| `remove` | stop managing the board (the firmware keeps running) |
+
+The board checks no release signature; the engine's release verification plus the HMAC-signed command (carrying the
+image's sha256 and size, checked by the patched library) bind what the board installs to the verified release.
+
 ## In-tree drivers
 
 | Profile | Driver (`name`) | Module | Executor | Config (`devices[].drivers`) |
@@ -87,6 +110,8 @@ FE-HG-002; in `platform`/`preflight` → deferred, logged only.
 | `applab` | `arduino-app-cli` | `drivers/applab/driver.py` | arduino-app-cli (local or over ssh); exclusive, one app | `applab: {…}` |
 | `mcu-module`, `mcu-firmware` | `mcumgr-llext`, `mcumgr-mcuboot` | `drivers/mcu/driver.py` | SMP to the MCU base image | `mcu: {…}` (MCU child) |
 | `plc-verify` | `plc-verify` | `drivers/plc/verify.py` | ADS / Modbus / shm interface-hash reads | `plc-verify: {…}` |
+| `os-rauc` | `rauc` | `drivers/os_rauc.py` | RAUC A/B OS update (EV-17) | `os-rauc: {sharedDataPath, …}` |
+| `arduino-ota` | `portenta-ota` | `drivers/arduino_ota.py` | flexNode-arduino boards: MQTT command + flexCloud Redis keys + LAN image server (EV-38) | `arduino-ota: {boards, mqtt, redis, serve, …}` |
 
 ### `native` / `systemd` (EV-19)
 

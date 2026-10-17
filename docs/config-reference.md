@@ -100,6 +100,47 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `devices[].drivers.os-rauc.cliTimeout` | number | `60` |  | Timeout of the other rauc calls (status, info, mark-*) and of the reboot command. |
 | `devices[].drivers.os-rauc.bootIdFile` | string | `"/proc/sys/kernel/random/boot_id"` |  | Source of the boot id that tells a reboot from an engine restart (tests: the boot simulator's file). |
 | `devices[].drivers.os-rauc.healthChecks` | array of array | `[]` |  | Device-side checks of the new OS after the boot: each command must exit 0 for the health gate to pass (in addition to: booted slot = target, not marked bad, and the release's http probe if it names a port). |
+| `devices[].drivers.arduino-ota` | object |  |  | flexNode-arduino OTA driver (EV-38): serves the verified .ota image on the LAN under a one-time URL, sends the node a signed OTA_UPDATE command over MQTT and follows its flexCloud keys (status, version, ota, heartbeat) in Redis. Needs flexNode-arduino with the proposed remote-OTA command (flexengine/proposals/flexnode-arduino-remote-ota) and the Portenta OTA bootloader. |
+| `devices[].drivers.arduino-ota.boards` | map |  | yes | Board name (the deployment parameter `board`; may be omitted when only one board is configured) -> node. One firmware per board: maxDeployments = number of boards. |
+| `devices[].drivers.arduino-ota.boards.<name>.fqbn` | `arduino:mbed_portenta:envie_m7` \| `arduino:mbed_opta:opta` \| `arduino:mbed_giga:giga` \| `arduino:mbed_nicla:nicla_vision` |  | yes | Board FQBN; the release layer's dev.flex.board must equal it and the .ota header must carry its magic. |
+| `devices[].drivers.arduino-ota.boards.<name>.connectorId` | string |  | yes | appDescriptor_config connector id of the sketch (prefix of its flexCloud keys and of the command topic flexcloud/<connectorId>/<applicationId>/cmd). |
+| `devices[].drivers.arduino-ota.boards.<name>.applicationId` | string |  | yes | appDescriptor_config application id of the sketch. |
+| `devices[].drivers.arduino-ota.boards.<name>.commandKeyFile` | string |  | yes | File with the node's flexCloud secret key (appDescriptor_config flexCloud_secret_key): hex, or the sketch's C array `0xae, 0xc1, ...`; signs the OTA_UPDATE command (HMAC-SHA256). Keep it readable by the engine only. |
+| `devices[].drivers.arduino-ota.boards.<name>.address` | string |  |  | IP address of the board: when set, only this address may download its images. |
+| `devices[].drivers.arduino-ota.boards.<name>.mqtt` | object |  |  | Per-board broker (merged over the driver's `mqtt`). |
+| `devices[].drivers.arduino-ota.boards.<name>.mqtt.host` | string | `"127.0.0.1"` |  | Broker host. |
+| `devices[].drivers.arduino-ota.boards.<name>.mqtt.port` | integer | `1883` |  | Broker port. |
+| `devices[].drivers.arduino-ota.boards.<name>.mqtt.username` | string |  |  | MQTT user name. |
+| `devices[].drivers.arduino-ota.boards.<name>.mqtt.passwordFile` | string |  |  | File holding the MQTT password. |
+| `devices[].drivers.arduino-ota.boards.<name>.redis` | object |  |  | Per-board flexCloud Redis (merged over the driver's `redis`). |
+| `devices[].drivers.arduino-ota.boards.<name>.redis.host` | string | `"127.0.0.1"` |  | Redis host. |
+| `devices[].drivers.arduino-ota.boards.<name>.redis.port` | integer | `6379` |  | Redis port. |
+| `devices[].drivers.arduino-ota.boards.<name>.redis.db` | integer | `0` |  | Redis database of the flexCloud keys (flexCloud_config redis_db, e.g. 15). |
+| `devices[].drivers.arduino-ota.boards.<name>.redis.passwordFile` | string |  |  | File holding the Redis password. |
+| `devices[].drivers.arduino-ota.mqtt` | object |  |  | MQTT broker the nodes subscribe to (cm_MQTT_config of the sketches); per-board `mqtt` overrides it. |
+| `devices[].drivers.arduino-ota.mqtt.host` | string | `"127.0.0.1"` |  | Broker host. |
+| `devices[].drivers.arduino-ota.mqtt.port` | integer | `1883` |  | Broker port. |
+| `devices[].drivers.arduino-ota.mqtt.username` | string |  |  | MQTT user name. |
+| `devices[].drivers.arduino-ota.mqtt.passwordFile` | string |  |  | File holding the MQTT password. |
+| `devices[].drivers.arduino-ota.redis` | object |  |  | flexCloud Redis the nodes write their keys to (flexCloud_config of the sketches); per-board `redis` overrides it. |
+| `devices[].drivers.arduino-ota.redis.host` | string | `"127.0.0.1"` |  | Redis host. |
+| `devices[].drivers.arduino-ota.redis.port` | integer | `6379` |  | Redis port. |
+| `devices[].drivers.arduino-ota.redis.db` | integer | `0` |  | Redis database of the flexCloud keys (flexCloud_config redis_db, e.g. 15). |
+| `devices[].drivers.arduino-ota.redis.passwordFile` | string |  |  | File holding the Redis password. |
+| `devices[].drivers.arduino-ota.serve` | object |  | yes | The driver's image server on the LAN: each image is offered once under /ota/<192-bit token>.ota, for updateTimeoutSeconds + 60 s. |
+| `devices[].drivers.arduino-ota.serve.host` | string | `"0.0.0.0"` |  | Bind address. |
+| `devices[].drivers.arduino-ota.serve.port` | integer | `8470` |  | Bind port (0: any free port, tests). |
+| `devices[].drivers.arduino-ota.serve.publicUrl` | string |  |  | Base URL the boards download from (e.g. http://192.168.1.50:8470; `{port}` is replaced by the bound port); required when host is 0.0.0.0. |
+| `devices[].drivers.arduino-ota.serve.certFile` | string |  |  | TLS certificate (PEM) of the image server (https; the boards' Arduino_Portenta_OTA must trust its CA). |
+| `devices[].drivers.arduino-ota.serve.keyFile` | string |  |  | TLS private key (PEM) of the image server. |
+| `devices[].drivers.arduino-ota.serve.allowPlainHttp` | boolean | `false` |  | Lab flag (decision DA-4): serve over plain http when no certFile/keyFile is given; integrity still holds (the signed command carries the image's sha256), confidentiality of the firmware does not. |
+| `devices[].drivers.arduino-ota.acceptTimeoutSeconds` | number | `20` |  | How long apply waits for the node to accept the OTA command (its `ota` key names the command id); then the update fails (offline node, wrong key, library without the remote OTA command). |
+| `devices[].drivers.arduino-ota.updateTimeoutSeconds` | number | `300` |  | How long apply waits for download, install and the restart into the new firmware; then the update fails (the board did not come back). Also the lifetime of the one-time download URL (+60 s). |
+| `devices[].drivers.arduino-ota.pollSeconds` | number | `0.5` |  | Interval at which apply reads the node's keys during an update. |
+| `devices[].drivers.arduino-ota.timeout` | number | `2.0` |  | Connect / reply timeout of one MQTT or Redis call, seconds. |
+| `devices[].drivers.arduino-ota.healthyStatus` | array of string | `["RUNNING"]` |  | Status key values that count as healthy (with the expected version key and a live heartbeat). |
+| `devices[].drivers.arduino-ota.failedStatus` | array of string | `["ERROR"]` |  | Status key values of the installed firmware that fail the health gate at once (fail-fast). |
+| `devices[].drivers.arduino-ota.requireHeartbeat` | boolean | `true` |  | Require the node's heartbeat key (written by the patched library with a TTL) for running/healthy and before sending a command; false for nodes that do not write it (then a dead board keeps its last status). |
 | `devices[].mcu` | object |  |  | Makes the device an MCU child (see-thru): mcu-module and mcu-firmware drivers over SMP (mcumgr). Needs `parent`; no `drivers`. |
 | `devices[].mcu.smp` | object |  | yes | SMP link: either `{host, port}` (TCP: QEMU or a serial-to-TCP bridge) or `{tty, baud}` (serial, accepted by the schema, implemented later: d2-prep request R5). |
 | `devices[].mcu.smp.tty` | string |  | yes | *[serial form (accepted by schema, implemented later: R5)]* Serial device of the SMP UART, e.g. `/dev/ttyUSB0` (pyserial, no socat). Accepted by the schema, implemented later (R5). |

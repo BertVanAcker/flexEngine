@@ -38,7 +38,8 @@ Layer selection [V]: layers whose `dev.flex.profile` equals the deployment's `x-
 `platform()` (mcu-module: `{dev.flex.arch, dev.flex.floatAbi}`), the layer whose annotations match it; a single
 layer without platform annotations still fits. Required annotations per profile (schema): container
 `dev.flex.imageRef` (`…@sha256:…`, run by digest); applab `dev.flex.releaseName`; mcu-module `dev.flex.arch`,
-`dev.flex.floatAbi`; os-rauc `dev.flex.compatible` (matched against the driver's `platform()`). Payload media types:
+`dev.flex.floatAbi`; os-rauc `dev.flex.compatible` (matched against the driver's `platform()`); arduino-ota
+`dev.flex.board` (FQBN, matched against `platform()` / the target board) and `dev.flex.firmwareVersion`. Payload media types:
 
 | Profile | Payload mediaType |
 |---|---|
@@ -49,6 +50,7 @@ layer without platform annotations still fits. Required annotations per profile 
 | mcu-firmware | `application/vnd.flex.payload.mcu-firmware.v1+mcuboot` (MCUboot image) |
 | plc-verify | `application/vnd.flex.payload.plc-artefact.v1.tar+gzip` (`flex-plc.json` + generated sources, CP-6) |
 | os-rauc | `application/vnd.flex.payload.os-rauc.v1+raucb` (signed RAUC bundle; annotation `dev.flex.compatible` = RAUC compatible, required; RAUC re-verifies the CMS signature with its keyring) |
+| arduino-ota | `application/vnd.flex.payload.arduino-ota.v1+ota` (Arduino_Portenta_OTA image, `make_ota.py`; annotations `dev.flex.board`, `dev.flex.firmwareVersion` required; the board checks no signature, see CP-6 §5) |
 | system | `application/vnd.flex.payload.system.v1+json` (record only; no driver deploys it) |
 
 Descriptor checks [V]: config mediaType (FE-ART-REL-001), `safetyClass` = deployment class (FE-ART-SAF-002), payload

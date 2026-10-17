@@ -15,7 +15,7 @@
     "releaseVersion": {"type": "string", "minLength": 1},
     "interfaceHash": {"type": ["string", "null"], "pattern": "^FLEX(01|SYS01)_[0-9a-f]{64}$", "description": "FLEX01 interface hash (FLEXSYS01 for a system record). Reported as status.interfaceHash; preflight compares it with the payload (mcu-module header, plc-verify spec). null for a base-image (mcu-firmware) release."},
     "language": {"type": "string"},
-    "profiles": {"type": "array", "minItems": 1, "items": {"enum": ["container", "native", "applab", "mcu-module", "mcu-firmware", "plc-verify", "os-rauc", "system"]}, "description": "Driver profiles this release has payload layers for; 'system' is a record-only composite release (no driver deploys it). The engine selects the layer by its dev.flex.profile annotation (CP-3)."},
+    "profiles": {"type": "array", "minItems": 1, "items": {"enum": ["container", "native", "applab", "mcu-module", "mcu-firmware", "plc-verify", "os-rauc", "arduino-ota", "system"]}, "description": "Driver profiles this release has payload layers for; 'system' is a record-only composite release (no driver deploys it). The engine selects the layer by its dev.flex.profile annotation (CP-3)."},
     "safetyClass": {"enum": ["none", "safety-relevant"], "description": "Model-derived (flex safety). Must equal the deployment's x-flex-safetyClass (default none), else the engine rejects the manifest."},
     "safetyClassSource": {"type": "string"},
     "health": {"$ref": "#/$defs/HealthProbe"},
@@ -41,7 +41,7 @@
       "additionalProperties": false,
       "description": "Health gate spec. The engine runs drv.health(dep, probe) every periodSeconds; the gate passes after successThreshold consecutive successes once minSeconds have passed (forward installs only), fails at timeoutSeconds or at once when the driver reports a terminal failure (fail-fast). Engine defaults when absent: successThreshold 1, periodSeconds 0.25, timeoutSeconds 10, minSeconds 0.",
       "properties": {
-        "type": {"enum": ["http", "mcu-heartbeat", "mcu-base", "applab-handshake", "plc-hash", "os-rauc"], "description": "Informational: what the profile's driver checks (drivers do not dispatch on it). os-rauc: booted slot = target slot, not marked bad, device-side healthChecks; plus an http probe on 127.0.0.1 when port is set."},
+        "type": {"enum": ["http", "mcu-heartbeat", "mcu-base", "applab-handshake", "plc-hash", "os-rauc", "arduino-ota"], "description": "Informational: what the profile's driver checks (drivers do not dispatch on it). os-rauc: booted slot = target slot, not marked bad, device-side healthChecks; plus an http probe on 127.0.0.1 when port is set. arduino-ota: the node's flexCloud version key = dev.flex.firmwareVersion, status key RUNNING (driver healthyStatus) and a live heartbeat key; status ERROR fails fast."},
         "port": {"oneOf": [{"type": "integer", "minimum": 1, "maximum": 65535}, {"type": "string", "pattern": "^\\$\\{[A-Z_][A-Z0-9_]*\\}$"}], "description": "http: container port probed on the container IP (default 8080). The native driver allocates the port itself and passes it as FLEX_HEALTH_PORT, so native releases say \"${FLEX_HEALTH_PORT}\"."},
         "path": {"type": "string", "pattern": "^/", "description": "http: path (default /healthz); 2xx = healthy."},
         "periodSeconds": {"type": "number", "exclusiveMinimum": 0},
