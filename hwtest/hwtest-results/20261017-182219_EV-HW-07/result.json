@@ -1,0 +1,266 @@
+{
+  "runbook": "EV-HW-07",
+  "title": "plc-verify on the Opta (Modbus) and the CX (ADS) with the hold gate",
+  "file": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/runbooks/EV-HW-07_plc_verify.yaml",
+  "started": "2026-10-17T18:22:19",
+  "finished": "2026-10-17T18:22:33",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest",
+    "flexengine": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine",
+    "repo": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "project_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "results_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/hwtest-results/20261017-182219_EV-HW-07",
+    "local_ip": "192.0.2.2",
+    "python": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-07-qf5uec7r/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli",
+    "fe_host": "local",
+    "fe_api": "http://127.0.0.1:50459",
+    "fe_api_token_file": "/tmp/rb-07-qf5uec7r/secrets/fe-api.token",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "37777",
+    "cloud_url": "http://127.0.0.1:43505",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-07-qf5uec7r/secrets/admin.token",
+    "catalog": "/tmp/rb-07-qf5uec7r/catalog.yaml",
+    "desk": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py --cloud http://127.0.0.1:43505 --ca '' --admin-token-file /tmp/rb-07-qf5uec7r/secrets/admin.token --catalog /tmp/rb-07-qf5uec7r/catalog.yaml",
+    "gp": "rb-panda",
+    "cx_net_id": "127.0.0.1.1.1",
+    "cx_ip": "127.0.0.1",
+    "cx_port": "851",
+    "ads_local_net_id": "127.0.0.1.1.3",
+    "opta_host": "127.0.0.1",
+    "opta_port": "42841",
+    "opta_unit": "1",
+    "sim": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-07-qf5uec7r",
+    "cloud_layout": "/tmp/rb-07-qf5uec7r/cloud/oci",
+    "lab_ca": "/tmp/rb-07-qf5uec7r/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-07-qf5uec7r/pki/rogue-ca.crt",
+    "fe_api_port": "50459",
+    "safe_state_file": "/tmp/rb-07-qf5uec7r/lp/safe-state.json",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-07-qf5uec7r/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli enroll",
+    "fe_config": "/tmp/rb-07-qf5uec7r/lp/engine.yaml",
+    "journal_source": "file:/tmp/rb-07-qf5uec7r/lp/engine.log",
+    "svc": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-07-qf5uec7r svc",
+    "dry_run": "1",
+    "lp_sh": "sh -c",
+    "uplink_down": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-07-qf5uec7r uplink down",
+    "uplink_up": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-07-qf5uec7r uplink up",
+    "power_cut": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-07-qf5uec7r power-cycle --down 3",
+    "sim_dir": "/tmp/rb-07-qf5uec7r",
+    "cx1": "FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72",
+    "opta1": "FLEX01_005b80047412e05440a960da612a76b329162426fa3e77c280150c47906c00d1",
+    "cx2": "FLEX01_f4574d6f05c5ad86322215f088f9b59b72d02b12a3768f24cdf5976313e360a6"
+  },
+  "project_commit": "52e7172-dirty",
+  "runner_commit": "52e7172-dirty",
+  "summary": {
+    "PASS": 28,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:37777 reachable"
+    },
+    {
+      "id": "engine-up",
+      "title": "${gp} onboarded and online",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "capabilities",
+      "title": "Capabilities: plc-verify, verify only (no download), Opta over Modbus, CX over ADS",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:50459/v1/capabilities/rb-panda -> 200, 3 field(s) match"
+    },
+    {
+      "id": "publish",
+      "title": "Publish CX bridge 1.0.0, Opta stack light 1.0.0, cell controller 1.0.0 / 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match; saved cx1=FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72, opta1=FLEX01_005b80047412e05440a960da612a76b329162426fa3e77c280150c47906c00d1"
+    },
+    {
+      "id": "opta-hash",
+      "title": "Opta: hash registers hold the released interface hash",
+      "status": "PASS",
+      "detail": "Modbus 127.0.0.1:42841 holding [256, 16] = FLEX01_005b80047412e05440a960da612a76b329162426fa3e77c280150c47906c00d1"
+    },
+    {
+      "id": "cx-hello",
+      "title": "CX: `Hello` answers the released bridge hash",
+      "status": "PASS",
+      "detail": "ADS 127.0.0.1.1.1:851: Hello FLEX01_28ebc981b006b003... (Hello -> HASH_MISMATCH)"
+    },
+    {
+      "id": "deploy-v1",
+      "title": "Deploy cx-bridge 1.0.0, opta-stack 1.0.0 and the cell (needs the CX at the 1.0 layout)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "cx-installed",
+      "title": "cx-bridge Installed 1.0.0 (verified over ADS)",
+      "status": "PASS",
+      "detail": "rb-panda/cx-bridge: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "opta-installed",
+      "title": "opta-stack Installed 1.0.0 (verified over Modbus)",
+      "status": "PASS",
+      "detail": "rb-panda/opta-stack: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "cell-installed",
+      "title": "cell Installed 1.0.0 once the CX is verified",
+      "status": "PASS",
+      "detail": "rb-panda/cell: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "verify-only",
+      "title": "cx-bridge: one `apply` (verify), nothing downloaded or committed",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "publish-11",
+      "title": "Publish CX bridge 1.1.0 (new layout)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match; saved cx2=FLEX01_f4574d6f05c5ad86322215f088f9b59b72d02b12a3768f24cdf5976313e360a6"
+    },
+    {
+      "id": "deploy-11",
+      "title": "Deploy cx-bridge 1.1.0 and the cell 1.1.0 that needs the new layout",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "old-program",
+      "title": "The CX still runs the 1.0 program",
+      "status": "PASS",
+      "detail": "dry run: simulated (cx runs the program with interface hash FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72), answered yes"
+    },
+    {
+      "id": "cx-failed",
+      "title": "cx-bridge 1.1.0 Failed fast (program not provisioned), expectation back to 1.0.0",
+      "status": "PASS",
+      "detail": "rb-panda/cx-bridge: Failed 1.1.0, reasonCode FE-REC-004, rolledBackTo 1.0.0, failFast true"
+    },
+    {
+      "id": "cell-held",
+      "title": "cell 1.1.0 held in Pending (PLC not verified)",
+      "status": "PASS",
+      "detail": "rb-panda/cell: Pending 1.1.0, reasonCode FE-GATE-003"
+    },
+    {
+      "id": "cell-not-touched",
+      "title": "Nothing applied for the held cell 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "provision",
+      "title": "Provision the 1.1 bridge program on the CX",
+      "status": "PASS",
+      "detail": "dry run: simulated (cx runs the program with interface hash FLEX01_f4574d6f05c5ad86322215f088f9b59b72d02b12a3768f24cdf5976313e360a6), answered yes"
+    },
+    {
+      "id": "cx-hello-11",
+      "title": "CX: `Hello` now answers the 1.1 hash",
+      "status": "PASS",
+      "detail": "ADS 127.0.0.1.1.1:851: Hello FLEX01_f4574d6f05c5ad86... (Hello -> HASH_MISMATCH)"
+    },
+    {
+      "id": "rerelease",
+      "title": "Re-release the bridge as 1.1.1 (same layout, forced)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "deploy-111",
+      "title": "Deploy cx-bridge 1.1.1 with the cell 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "cx-111-installed",
+      "title": "cx-bridge Installed 1.1.1",
+      "status": "PASS",
+      "detail": "rb-panda/cx-bridge: Installed 1.1.1, health healthy"
+    },
+    {
+      "id": "cell-released",
+      "title": "cell 1.1.0 Installed (hold released)",
+      "status": "PASS",
+      "detail": "rb-panda/cell: Installed 1.1.0, health healthy"
+    },
+    {
+      "id": "opta-drift",
+      "title": "Replace the Opta program behind the engine's back",
+      "status": "PASS",
+      "detail": "dry run: simulated (opta runs the program with interface hash FLEX01_0000000000000000000000000000000000000000000000000000000000000000), done"
+    },
+    {
+      "id": "opta-unhealthy",
+      "title": "opta-stack reported unhealthy (supervision)",
+      "status": "PASS",
+      "detail": "rb-panda/opta-stack: Installed 1.0.0, health unhealthy"
+    },
+    {
+      "id": "opta-restore",
+      "title": "Load the stack_light program back onto the Opta",
+      "status": "PASS",
+      "detail": "dry run: simulated (opta runs the program with interface hash FLEX01_005b80047412e05440a960da612a76b329162426fa3e77c280150c47906c00d1), done"
+    },
+    {
+      "id": "opta-healthy",
+      "title": "opta-stack healthy again",
+      "status": "PASS",
+      "detail": "rb-panda/opta-stack: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "opta-hash-again",
+      "title": "Opta: hash registers back to the released hash",
+      "status": "PASS",
+      "detail": "Modbus 127.0.0.1:42841 holding [256, 16] = FLEX01_005b80047412e05440a960da612a76b329162426fa3e77c280150c47906c00d1"
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

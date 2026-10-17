@@ -1,0 +1,162 @@
+id: EV-HW-08
+title: "Security on the LattePanda: tampered, unsigned, unknown key, downgrade, wrong CA"
+description: >
+  Every attack is refused on the device with the exact reason (reason code), before any driver call (no `apply` in
+  the action log), while the previous release keeps running healthy: a payload blob changed after signing, an
+  unsigned release, a release signed with a key the device does not trust, an old signed bundle (manifestVersion
+  downgrade), and a flexCloud presenting a certificate of another CA than the pinned lab CA. New: no web-page runbook
+  covers this on hardware.
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
+  fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
+  fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API (DA-7: one per desk)"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  journal_source: {default: journal, prompt: "engine log source: journal (journalctl -u flexengine) or file:<path>"}
+  svc: {default: "sudo systemctl", prompt: "service control on the LattePanda"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda"}
+  dep: {default: dl, prompt: "deployment id"}
+  cloud_sh: {default: "${lp}", prompt: "host that holds the flexCloud stub's registry on disk"}
+  tamper: {default: "sudo /opt/flex/modular-interoperable-framework/.venv/bin/python /opt/flex/modular-interoperable-framework/flexengine/hwtest/deskctl.py tamper --layout /var/lib/flex/stack/p2/oci", prompt: "deskctl tamper on the stub host (--layout = the stub's OCI registry; RECORD the path)"}
+  usb_dir: {default: "~/flexhwtest-usb", prompt: "directory on this PC for the old bundle"}
+  lp_usb: {default: "/tmp", prompt: "where the old bundle is copied on the LattePanda"}
+  lp_sh: {default: "ssh -o BatchMode=yes ${lp}", prompt: "shell on the LattePanda that reads stdin (sh -c = this host)"}
+  fe_config: {default: /etc/flexengine/engine.yaml, prompt: "engine config on the LattePanda"}
+  lab_ca_lp: {default: /etc/flexengine/lab-ca.crt, prompt: "cloud.caFile in engine.yaml (the pinned lab CA)"}
+  rogue_ca: {default: /tmp/flexhwtest-rogue-ca.crt, prompt: "a CA the cloud certificate does not chain to (made by step rogue-ca)"}
+  sim: {default: "true", prompt: "simulation hook (dry run only)"}
+setup:
+  - "LattePanda: EV-HW-01 passed; device ${gp} has drivers.native in /etc/flexengine/engine.yaml; ${lp} can sudo"
+  - "The stub's OCI registry is on ${cloud_sh} at the --layout path of `tamper` (RECORD it from the stack config)"
+  - "You may edit /etc/flexengine/engine.yaml (wrong-CA step) and restore it afterwards"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: engine-up
+    title: "${gp} onboarded and online"
+    fe_status_expect: {device: "${gp}", device_fields: {onboarded: true, online: true}, timeout: 60}
+  - id: publish
+    title: Publish the good release and the three bad ones (unsigned, rogue key, to be tampered)
+    cmd_json_expect: {cmd: "${desk} publish dl_v1 dl_v2 dl_unsigned dl_rogue dl_tamper", match: {"/published": {len: 5}}, cmd_timeout: 900}
+  - id: tamper
+    title: Flip one byte of the 3.2.0 payload blob in the stub's registry (signature stays valid)
+    ssh_run: {host: "${cloud_sh}", cmd: "${tamper} --module detection_logger --version 3.2.0", match: "\"tampered\": true"}
+  - id: deploy-good
+    title: Deploy the good release 1.0.0
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_v1"}
+  - id: good-installed
+    title: 1.0.0 Installed and healthy
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 120}
+  - id: old-bundle
+    title: Keep the current signed bundle (manifestVersion now) for the downgrade step
+    cmd_json_expect: {cmd: "${desk} bundle ${gp} --out ${usb_dir}/old-bundle-${gp}.tar", match: {"/bytes": {gt: 1000}}}
+  - id: unsigned
+    title: Unsigned release 3.0.0
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_unsigned"}
+  - id: unsigned-refused
+    title: "Refused: artefact rejected (FE-REC-002): release not signed by a trusted key (no signature)"
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Failed, version: 3.0.0, fields: {reasonCode: FE-REC-002, reason: {regex: "^artefact rejected: release not signed by a trusted key \\(no signature\\)$"}}, timeout: 60}
+  - id: rogue
+    title: Release 3.1.0 signed with a key the device does not trust
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_rogue"}
+  - id: rogue-refused
+    title: "Refused: artefact rejected (FE-REC-002): release not signed by a trusted key (untrusted key ...)"
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Failed, version: 3.1.0, fields: {reasonCode: FE-REC-002, reason: {regex: "^artefact rejected: release not signed by a trusted key \\(untrusted key ed25519:[0-9a-f]+\\)$"}}, timeout: 60}
+  - id: tampered
+    title: Tampered release 3.2.0
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_tamper"}
+  - id: tampered-refused
+    title: "Refused: artefact rejected (FE-REC-002): digest mismatch of the payload blob"
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Failed, version: 3.2.0, fields: {reasonCode: FE-REC-002, reason: {regex: "^artefact rejected: digest mismatch: flexnodes/detection_logger blobs/sha256:"}}, timeout: 60}
+  - id: rejects-logged
+    title: Each refusal is in the action log as `reject` with its reason
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} logs --json -n 5000 --device ${gp}", json_lines: true, match: {"": {where: {"/source": actions, "/dep": "${dep}", "/action": reject, "/version": {in: [3.0.0, 3.1.0, 3.2.0]}}, count: 3}}}
+  - id: no-bad-apply
+    title: No driver call (apply, remove, rollback) for any refused release
+    cmd_json_expect:
+      host: "${fe_host}"
+      cmd: "${fe} logs --json -n 5000 --device ${gp}"
+      json_lines: true
+      match:
+        "": {where: {"/source": actions, "/dep": "${dep}", "/version": {in: [3.0.0, 3.1.0, 3.2.0]}, "/action": {ne: reject}}, count: 0}
+  - id: good-once
+    title: The good release was applied exactly once and never removed
+    cmd_json_expect:
+      host: "${fe_host}"
+      cmd: "${fe} logs --json -n 5000 --device ${gp}"
+      json_lines: true
+      match: {"": {where: {"/source": actions, "/dep": "${dep}", "/action": {in: [apply, remove]}}, count: 1}}
+  - id: back-to-good
+    title: Desired state back to 1.0.0
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_v1"}
+  - id: good-again
+    title: 1.0.0 Installed again without touching the workload
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 60}
+  - id: still-once
+    title: Still exactly one apply of 1.0.0
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} logs --json -n 5000 --device ${gp}", json_lines: true, match: {"": {where: {"/source": actions, "/dep": "${dep}", "/action": apply}, count: 1}}}
+  - id: downgrade-copy
+    title: Copy the old bundle to the LattePanda
+    run: {cmd: "cat ${usb_dir}/old-bundle-${gp}.tar | ${lp_sh} 'cat > ${lp_usb}/old-bundle-${gp}.lp.tar'"}
+  - id: downgrade
+    title: Import the old signed bundle (lower manifestVersion) -> refused (422)
+    ssh_run: {host: "${fe_host}", cmd: "${fe} bundle import ${lp_usb}/old-bundle-${gp}.lp.tar --device ${gp} --json 2>&1", expect_rc: 1, match: "422 manifestVersion \\d+ is older than the accepted \\d+ \\(downgrade\\)"}
+  - id: downgrade-refused
+    title: "Downgrade refused and counted (FE-DS-003)"
+    fe_status_expect: {device: "${gp}", device_fields: {downgradesRefused: {gte: 1}, /lastRefusal/reasonCode: FE-DS-003}, timeout: 30}
+  - id: downgrade-kept
+    title: 1.0.0 keeps running
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 10}
+  - id: rogue-ca
+    title: Make a CA the flexCloud certificate does not chain to
+    ssh_run: {host: "${lp}", cmd: "openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -keyout ${rogue_ca}.key -out ${rogue_ca} -subj /CN=flexhwtest-rogue-ca -days 2 2>/dev/null && chmod 644 ${rogue_ca} && echo made ${rogue_ca}", match: "made"}
+  - id: wrong-ca-mark
+    title: Journal mark
+    journal_mark: {name: wrongca, unit: flexengine, host: "${fe_host}"}
+  - id: wrong-ca
+    title: Pin the wrong CA
+    manual:
+      instruction: "On the LattePanda set `cloud.caFile: ${rogue_ca}` in ${fe_config} and run `sudo systemctl restart flexengine`."
+      sim: "${sim} engine-config cloud.caFile=${rogue_ca}"
+  - id: wrong-ca-logged
+    title: Engine refuses the TLS handshake (certificate verify failed)
+    journal_expect: {since: wrongca, pattern: "(?i)certificate verify failed|CERTIFICATE_VERIFY_FAILED|verif", timeout: 60}
+  - id: wrong-ca-offline
+    title: Engine reports itself offline
+    fe_status_expect: {device: "${gp}", device_fields: {online: false}, timeout: 60}
+  - id: wrong-ca-deploy
+    title: Publish 1.1.0 while the device does not trust the cloud
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_v2"}
+  - id: wrong-ca-hold
+    title: Nothing reaches the device
+    wait: {seconds: 8}
+  - id: wrong-ca-kept
+    title: 1.0.0 still running, 1.1.0 not fetched
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, timeout: 10}
+  - id: right-ca
+    title: Pin the lab CA again
+    manual:
+      instruction: "Set `cloud.caFile: ${lab_ca_lp}` back in ${fe_config} and run `sudo systemctl restart flexengine`."
+      sim: "${sim} engine-config cloud.caFile=${lab_ca_lp}"
+  - id: right-ca-online
+    title: Online again
+    fe_status_expect: {device: "${gp}", device_fields: {online: true}, timeout: 90}
+  - id: right-ca-v2
+    title: 1.1.0 Installed
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.1.0, health: healthy, timeout: 120}
+  - id: cleanup
+    title: Remove the deployment
+    run: {cmd: "${desk} deploy ${gp}"}
+  - id: removed
+    title: "${dep} removed"
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", absent: true, timeout: 120}
