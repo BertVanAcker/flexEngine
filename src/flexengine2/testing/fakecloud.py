@@ -5,6 +5,7 @@ Southbound (device) API, every request Ed25519-signed by the device key register
   PUT  /api/v1/devices/{id}/capabilities                    capabilities document (POST accepted too)
   GET  /api/v1/devices/{id}/deployments                     desired state; ETag / If-None-Match -> 304
   POST /api/v1/devices/{id}/deployments/{dep}/status        deployment status (idempotent by seq)
+  POST /api/v1/devices/{id}/events                          device event, e.g. DesiredStateRefused (same seq space)
   GET  /api/v1/devices/{id}/bundle                          offline bundle (manifest + all blobs, tar)
   GET  /v2/{repo}/manifests/{digest} | blobs/{digest} | referrers/{digest}   OCI distribution subset
 Northbound (operator / console / P6 MCP gateway), bearer admin token:
@@ -425,6 +426,20 @@ def make_handler(st: CloudState, base_url_holder: dict):
                     st.s["statusLog"].append({"deviceId": caller, "deploymentId": m[2], **rep})
                     st.save()
                 st.count(f"{caller}:status")
+                return self._json(200, {"ok": True})
+            if (m := _match(r"/api/v1/devices/([\w.-]+)/events", path)) and method == "POST":
+                self._scoped(caller, m[1])
+                ev = json.loads(body)
+                with st.lock:
+                    seq = int(ev["seq"])
+                    if seq <= st.s["lastSeq"].get(caller, 0):
+                        st.count(f"{caller}:eventDuplicate")
+                        return self._json(200, {"ok": True, "duplicate": True})
+                    st.s["lastSeq"][caller] = seq
+                    ev["receivedAt"] = time.time()
+                    st.s.setdefault("events", []).append({"deviceId": caller, **ev})
+                    st.save()
+                st.count(f"{caller}:event")
                 return self._json(200, {"ok": True})
             if (m := _match(r"/api/v1/devices/([\w.-]+)/bundle", path)) and method == "GET":
                 self._scoped(caller, m[1])

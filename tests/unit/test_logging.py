@@ -11,7 +11,7 @@ import threading
 
 import pytest
 
-from fe_unit_fakes import deployment, make_engine, set_desired
+from fe_unit_fakes import _digest, deployment, make_engine, set_desired
 from flexengine2.obs import logging as flog
 
 
@@ -97,7 +97,7 @@ def test_engine_log_and_action_are_structured(tmp_path, buf):
     assert all(r["device"] == "panda" for r in recs)
     apply = next(r for r in recs if r["event"] == "action.apply")
     assert apply["dep"] == "d1" and apply["version"] == "1.0.0" and apply["msg"] == "apply d1 1.0.0"
-    assert apply["digest"] == "sha256:d1-1.0.0"
+    assert apply["digest"] == _digest("d1-1.0.0")
     off = next(r for r in recs if r["event"] == "offline")
     assert off["level"] == "warning" and off["msg"].startswith("offline (")
     # the action log keeps its own JSONL format

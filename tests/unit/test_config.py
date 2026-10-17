@@ -96,6 +96,7 @@ CASES = [
     ("cloud.caFile", "std", "/cloud/caFile", "/etc/flex/ca.crt", ""),
     ("cloud.tlsServerName", "std", "/cloud/tlsServerName", "cloud.lab", 1),
     ("cloud.allowSystemTrust", "std", "/cloud/allowSystemTrust", True, "yes"),
+    ("cloud.allowPlainHttp", "std", "/cloud/allowPlainHttp", True, "yes"),
     ("cloud.fixPermissions", "std", "/cloud/fixPermissions", False, 1),
     ("cloud.outboxMax", "std", "/cloud/outboxMax", 50, 0),
     ("logFormat", "std", "/logFormat", "text", "color"),
@@ -264,7 +265,7 @@ def test_unknown_key_rejected(b, ptr):
 
 def test_unknown_key_message_lists_allowed_keys():
     errs = cl.validate(put(base(), "/cloud/apiURL", "http://x"))
-    assert errs[0]["message"].startswith("unknown key 'apiURL' (allowed: allowSystemTrust, apiUrl, ")
+    assert errs[0]["message"].startswith("unknown key 'apiURL' (allowed: allowPlainHttp, allowSystemTrust, apiUrl, ")
 
 
 # ---- cross-key rules -------------------------------------------------------------------------------------------------
@@ -602,7 +603,7 @@ def test_cli_config_check(tmp_path, capsys):
     badp = write(tmp_path, json.dumps(bad), "bad.json")
     assert cli.main(["config", "check", str(badp)]) == 1
     out = capsys.readouterr().out.strip().splitlines()
-    assert out == ["/cloud/x: unknown key 'x' (allowed: allowSystemTrust, apiUrl, backoff, caFile, cloudPublicKey, "
+    assert out == ["/cloud/x: unknown key 'x' (allowed: allowPlainHttp, allowSystemTrust, apiUrl, backoff, caFile, cloudPublicKey, "
                    "fixPermissions, healthEveryTicks, httpTimeout, outboxMax, pollInterval, releaseKeyFiles, "
                    "releasePublicKeys, safeStateFile, stackInfo, tlsServerName)",
                    "/devices/0/drivers/container/runtime: must be one of docker, podman, ankaios; got 'quadlet'"]

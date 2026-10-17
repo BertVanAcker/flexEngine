@@ -24,7 +24,7 @@ contracts.reason_code("health check failed")            # -> {"code": "FE-REC-00
 | CP | Connection point | Spec | Reference fake / producer | Contract tests |
 |---|---|---|---|---|
 | CP-1 | Desired-state model | `desired-state.v1alpha1.schema.json`, `descriptor.v1alpha1.schema.json` (release descriptor: health, restart, runOptions, `x-flex-mcu`) | `testing/fakecloud.py` (serves), `flex release` (descriptors) | `test_schemas.py`, `test_engine_contracts.py` [V] |
-| CP-2 | Status, capabilities, onboarding | `status.v1alpha1.schema.json`, `capabilities.v1alpha1.schema.json`, `onboarding.v1alpha1.schema.json`, `reason-codes.v1alpha1.json` | fakecloud (ingest) | `test_engine_contracts.py`, `test_reason_codes.py` [V] |
+| CP-2 | Status, capabilities, onboarding | `status.v1alpha1.schema.json`, `device-event.v1alpha1.schema.json`, `capabilities.v1alpha1.schema.json`, `onboarding.v1alpha1.schema.json`, `reason-codes.v1alpha1.json` | fakecloud (ingest) | `test_engine_contracts.py`, `test_reason_codes.py`, `test_refusals.py` [V] |
 | CP-3 | Artefact access (OCI subset), offline bundle | `oci-profile.v1alpha1.schema.json`, [bundle.v1alpha1.md](bundle.v1alpha1.md), `vectors/release`, `vectors/bundle` | fakecloud `/v2/…`, `/bundle` | `test_vectors.py` [V] |
 | CP-4 | Trust | [trust.v1alpha1.md](trust.v1alpha1.md), `trust.v1alpha1.schema.json`, `vectors/` | fakecloud signer, `testing/release.py` | `test_vectors.py` [V] |
 | CP-5 | Driver SPI v1 | [cp5-driver-spi.md](cp5-driver-spi.md) (frozen `drivers/base.py`) | fake executors | `tests/contract/` (EV-03, other package) |
@@ -47,10 +47,10 @@ contracts.reason_code("health check failed")            # -> {"code": "FE-REC-00
   `x-flex-activation` (ApplicationDeployment), `x-flex` (DeviceCapabilities), `x-flex-mcu` (release descriptor).
 - Rules JSON Schema cannot express are checked by `contracts.validate` (desired state: unique deployment ids,
   `metadata.deviceId` = `deviceId`) [V].
-- The engine does **not** validate against these schemas at run time today; it reads the fields it needs and
-  fails on the first missing one. Validating the desired state before acceptance is a proposed change [I].
-- Reason codes are stable: never reused or renumbered; the engine reports texts in v1alpha1, a `reasonCode` status
-  field is a future additive change [I].
+- Since 2026-10-17 the engine validates every desired state against CP-1 before acceptance (see the decisions
+  section at the end).
+- Reason codes are stable: never reused or renumbered; since 2026-10-17 the engine sends the code as `reasonCode`
+  next to every reported reason.
 
 ## CP-1 fields (DesiredState → ApplicationDeployment)
 
@@ -90,3 +90,15 @@ cd flexengine
 
 `tests/api/golden/` holds valid examples (recorded ones listed with their origin in `SOURCES.json`) and
 `invalid.json` (mutations of a valid base + the expected error).
+
+## Decisions of 2026-10-17 (project lead)
+
+- **CP-1 is enforced:** the engine checks every signed desired state against `desired-state.v1alpha1` before it reads
+  it. A document that fails is refused as a whole (FE-DS-005) and the previous state keeps running.
+- **Refusals are reported:** a refused desired state (FE-DS-001…005: bad signature, not JSON, schema, another device,
+  downgrade) is sent once per distinct (document, reason) as a `DeviceEvent` to `POST /api/v1/devices/{id}/events`
+  (`device-event.v1alpha1.schema.json`, same seq space as the status records) and shown as `lastRefusal` in the local
+  API (`GET /v1/status`) and `flexengine status`.
+- **`reasonCode`:** every status record and device event with a reason carries the stable code from
+  `reason-codes.v1alpha1.json` (additive field).
+- **Plain HTTP** to the control plane only with `allowPlainHttp: true` (or `FLEX_ALLOW_PLAIN_HTTP=1`).

@@ -617,6 +617,7 @@ class LocalApi:
                "etagAgeSeconds": round(max(0.0, now - etag_at), 3) if isinstance(etag_at, (int, float)) else None,
                "online": bool(online), "outboxLength": len(st.get("outbox") or []),
                "downgradesRefused": int(st.get("downgradesRefused") or 0), "rejected": st.get("rejected"),
+               "lastRefusal": st.get("lastRefusal"),
                "drivers": drivers, "journal": st.get("journal"),
                "deployments": self._deployments(st, self._records(d) if st else [])}
         if d.get("parent"):

@@ -44,7 +44,7 @@ def exporter():
 
 def signed_engine(tmp_path, drv=None, **kw):
     key = crypto.generate()
-    e = make_engine(tmp_path, drivers={"fake": drv or FakeDriver()}, cloudPublicKey=crypto.public_b64(key),
+    e = make_engine(tmp_path, drivers={"native": drv or FakeDriver()}, cloudPublicKey=crypto.public_b64(key),
                     healthEveryTicks=100, **kw)
 
     def push(mv, deps, tp=TP):
@@ -73,7 +73,7 @@ def test_install_spans_nest_under_the_plan_trace(tmp_path, exporter):
     assert inst.attributes["flex.deployment"] == "d1" and inst.attributes["flex.version"] == "1.0.0"
     assert inst.attributes["flex.manifest_version"] == 1 and inst.attributes["flex.device"] == "dev-a"
     assert s["engine.health-gate"].attributes["flex.healthy"] is True
-    assert s["driver.apply"].attributes["flex.driver"] == "fake"
+    assert s["driver.apply"].attributes["flex.driver"] == "native"
     # every status report carries the trace context; inside the install span it is that span
     reps = e.state["outbox"]
     assert [r["state"] for r in reps] == ["Installing", "Installed"]
@@ -115,7 +115,7 @@ def test_traceparent_is_persisted_and_survives_a_restart(tmp_path, exporter):
     cfg = json.loads(json.dumps({"deviceId": "dev-a", "apiUrl": "http://127.0.0.1:9", "dataDir": str(tmp_path / "dev-a"),
                                  "onboardingToken": "t", "cloudPublicKey": crypto.public_b64(crypto.generate()),
                                  "releasePublicKeys": []}))
-    e2 = Engine(cfg, {"fake": FakeDriver()})
+    e2 = Engine(cfg, {"native": FakeDriver()})
     assert e2._mv_traceparent() == TP
     e2.report("d1", "Pending", reason="x")
     assert e2.state["outbox"][-1]["traceparent"] == TP and e2.state["outbox"][-1]["correlationId"] == TRACE

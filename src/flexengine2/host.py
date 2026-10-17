@@ -80,7 +80,7 @@ def load_config(path: str | Path) -> dict:
 
 
 CLOUD_KEYS = ("apiUrl", "cloudPublicKey", "releasePublicKeys", "pollInterval", "backoff", "httpTimeout",
-              "healthEveryTicks", "safeStateFile", "caFile", "tlsServerName", "allowSystemTrust", "fixPermissions",
+              "healthEveryTicks", "safeStateFile", "caFile", "tlsServerName", "allowSystemTrust", "allowPlainHttp", "fixPermissions",
               "outboxMax")
 HOST_KEYS = ("historyMax",)  # top-level keys every device engine gets
 

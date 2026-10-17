@@ -257,6 +257,11 @@
           "default": false,
           "description": "`true` lets an https apiUrl without `caFile` use the system trust store."
         },
+        "allowPlainHttp": {
+          "type": "boolean",
+          "default": false,
+          "description": "`true` allows a plain `http://` apiUrl (lab and test only; refused otherwise). FLEX_ALLOW_PLAIN_HTTP=1 in the engine's environment has the same effect."
+        },
         "fixPermissions": {
           "type": "boolean",
           "default": false,

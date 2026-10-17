@@ -108,6 +108,10 @@ def format_status(doc: dict) -> str:
             notes.append(f"{d['deviceId']}: install in flight: {j.get('dep')} {j.get('phase', '')}".rstrip())
         if d.get("downgradesRefused"):
             notes.append(f"{d['deviceId']}: {d['downgradesRefused']} downgrade(s) refused")
+        lr = d.get("lastRefusal")
+        if lr:
+            code = f"{lr['reasonCode']}: " if lr.get("reasonCode") else ""
+            notes.append(f"{d['deviceId']}: desired state refused ({code}{lr['reason']}; {lr.get('count', 1)}x)")
         for dep in d["deployments"]:
             if dep["state"] in ("Failed", "Pending") and dep.get("reason"):
                 code = f" [{dep['reasonCode']}]" if dep.get("reasonCode") else ""

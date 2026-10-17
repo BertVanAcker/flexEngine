@@ -122,7 +122,7 @@ def test_service_runs_real_engine(box):
         s.Encoding.Raw, s.PublicFormat.Raw)).decode()
     # the operator's edit of the installed engine.yaml: the key and a reachable-later cloud URL
     box.ok(f"sed -i 's|  # cloudPublicKey: <b64>.*|  cloudPublicKey: {key}|; "
-           "s|apiUrl: https://lattepanda.lab:8700|apiUrl: http://127.0.0.1:9|; /container: {runtime: docker}/d; "
+           "s|apiUrl: https://lattepanda.lab:8700|apiUrl: http://127.0.0.1:9\\n  allowPlainHttp: true|; /container: {runtime: docker}/d; "
            "/^    drivers:$/d' /etc/flexengine/engine.yaml")
     box.ok("echo one-time-token > /etc/flexengine/tokens/panda && chgrp flex /etc/flexengine/tokens/panda && "
            "chmod 0640 /etc/flexengine/tokens/panda")

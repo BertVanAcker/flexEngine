@@ -8,6 +8,7 @@ Layer-specific fixtures live next to their tests (e.g. tests/integration/p2/conf
 from __future__ import annotations
 
 import functools
+import os
 import shutil
 import subprocess
 import sys
@@ -19,6 +20,10 @@ FLEXENGINE = Path(__file__).resolve().parents[1]   # flexengine/
 REPO = FLEXENGINE.parent                            # repo checkout
 WORK = FLEXENGINE / "tests" / "work"                # gitignored caches (images, OCI layouts)
 RESULTS = FLEXENGINE / "results"                    # committed results (§7.6)
+
+# The fake cloud speaks plain HTTP. Plain HTTP needs an explicit lab flag (lead decision 2026-10-17); the suites set
+# it for themselves and for every engine subprocess they start (inherited environment).
+os.environ.setdefault("FLEX_ALLOW_PLAIN_HTTP", "1")
 
 
 @functools.cache

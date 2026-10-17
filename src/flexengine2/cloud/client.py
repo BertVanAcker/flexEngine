@@ -10,6 +10,7 @@ unless ``allow_system_trust`` (cfg ``allowSystemTrust: true``) is given explicit
 from __future__ import annotations
 
 import http.client
+import os
 import json
 import logging
 import ssl
@@ -73,15 +74,27 @@ class _HTTPSConnection(http.client.HTTPSConnection):
         self.sock = self._context.wrap_socket(self.sock, server_hostname=self._server_hostname)
 
 
+PLAIN_HTTP_ENV = "FLEX_ALLOW_PLAIN_HTTP"
+
+
+def plain_http_allowed(cfg: dict | None = None) -> bool:
+    """Plain http:// to the control plane only with an explicit lab flag (project lead, 2026-10-17): config
+    `allowPlainHttp: true`, or FLEX_ALLOW_PLAIN_HTTP=1 in the engine's environment (test suites, simulation)."""
+    return bool((cfg or {}).get("allowPlainHttp")) or os.environ.get(PLAIN_HTTP_ENV) == "1"
+
+
 def from_cfg_kwargs(cfg: dict) -> dict:
-    """CloudClient keyword arguments taken from an engine cfg (caFile, tlsServerName, allowSystemTrust)."""
+    """CloudClient keyword arguments taken from an engine cfg (caFile, tlsServerName, allowSystemTrust,
+    allowPlainHttp)."""
     return {"ca_file": cfg.get("caFile"), "tls_server_name": cfg.get("tlsServerName"),
-            "allow_system_trust": bool(cfg.get("allowSystemTrust", False))}
+            "allow_system_trust": bool(cfg.get("allowSystemTrust", False)),
+            "allow_plain_http": plain_http_allowed(cfg)}
 
 
 class CloudClient:
     def __init__(self, base_url: str, device_id: str, key, timeout: float = 5.0, *, ca_file: str | None = None,
-                 tls_server_name: str | None = None, allow_system_trust: bool = False):
+                 tls_server_name: str | None = None, allow_system_trust: bool = False,
+                 allow_plain_http: bool | None = None):
         u = urlsplit(base_url)
         self.scheme = (u.scheme or "http").lower()
         if self.scheme not in ("http", "https"):
@@ -93,6 +106,9 @@ class CloudClient:
         if self.scheme == "https":
             self.ssl_context = make_ssl_context(ca_file, allow_system_trust)
         else:
+            if not (plain_http_allowed() if allow_plain_http is None else allow_plain_http):
+                raise TlsConfigError(f"plain HTTP refused for {base_url}: use https:// with caFile, or set "
+                                     f"allowPlainHttp: true (lab/test only)")
             log.warning("plain HTTP: lab/test only (%s)", base_url)
         self.bytes_in = 0
         self.requests = 0

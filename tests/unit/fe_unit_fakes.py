@@ -4,6 +4,8 @@ still runs on the injected desired state)."""
 
 from __future__ import annotations
 
+import re
+
 import json
 import threading
 import time
@@ -20,7 +22,7 @@ SPI_METHODS = ("plan", "apply", "remove", "status", "list", "health", "supervise
 
 
 class FakeDriver(Driver):
-    profile = "fake"
+    profile = "native"
     name = "fake"
 
     def __init__(self, healthy: bool = True):
@@ -90,23 +92,32 @@ class FakeDriver(Driver):
         return {"profile": self.profile, "driver": self.name}
 
 
-def deployment(dep_id: str, version: str = "1.0.0", driver: str = "fake", digest: str | None = None) -> dict:
-    return {"metadata": {"id": dep_id}, "x-flex-driver": driver,
+def _digest(x: str) -> str:
+    import hashlib
+
+    return x if re.fullmatch(r"sha256:[0-9a-f]{64}", x) else "sha256:" + hashlib.sha256(x.encode()).hexdigest()
+
+
+def deployment(dep_id: str, version: str = "1.0.0", driver: str = "native", digest: str | None = None) -> dict:
+    """A CP-1-valid ApplicationDeployment (the engine validates every desired state since 2026-10-17)."""
+    return {"apiVersion": "application.margo.org/v1alpha1", "kind": "ApplicationDeployment",
+            "metadata": {"id": dep_id, "name": dep_id}, "x-flex-driver": driver,
             "spec": {"applicationId": dep_id, "parameters": {},
-                     "deploymentProfile": {"components": [{"properties": {
-                         "revision": version, "digest": digest or f"sha256:{dep_id}-{version}",
+                     "deploymentProfile": {"type": "custom", "components": [{"name": dep_id, "properties": {
+                         "revision": version, "digest": _digest(digest or f"{dep_id}-{version}"),
                          "repository": f"oci://reg/flexnodes/{dep_id}"}}]}}}
 
 
 def desired(device: str, mv: int, deps: list[dict]) -> dict:
-    return {"deviceId": device, "manifestVersion": mv, "deployments": deps}
+    return {"apiVersion": "flex.dev/v1alpha1", "kind": "DesiredState", "deviceId": device, "manifestVersion": mv,
+            "deployments": [dict(d, metadata=dict(d["metadata"], deviceId=device)) for d in deps]}
 
 
 def make_engine(tmp: Path, device: str = "dev-a", drivers: dict | None = None, **cfg) -> Engine:
     c = {"deviceId": device, "apiUrl": CLOSED, "dataDir": str(tmp / device), "onboardingToken": "t",
          "cloudPublicKey": crypto.public_b64(crypto.generate()), "releasePublicKeys": [], "pollInterval": 0.05,
          "backoff": [0.05, 0.1], "httpTimeout": 0.5, **cfg}
-    eng = Engine(c, drivers if drivers is not None else {"fake": FakeDriver()})
+    eng = Engine(c, drivers if drivers is not None else {"native": FakeDriver()})
     # no registry in unit tests: every release "verifies" to a payload-less release
     eng.store.verify_release = lambda repo, digest, drv, cls, platform=None: SimpleNamespace(
         payload_path="/nonexistent", payload_annotations={}, descriptor={"health": {"timeoutSeconds": 0.3,

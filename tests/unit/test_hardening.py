@@ -42,7 +42,7 @@ def records(buf) -> list[dict]:
 @pytest.mark.parametrize("meth", SPI_METHODS)
 def test_driver_raising_in_any_spi_method_never_escapes_tick(tmp_path, meth, _log_to_buffer):
     drv = FakeDriver()
-    eng = make_engine(tmp_path, drivers={"fake": drv})
+    eng = make_engine(tmp_path, drivers={"native": drv})
     set_desired(eng, 1, [deployment("d1")])
     eng.tick()                                            # installs d1 (healthy)
     assert "d1" in eng.state["applied"]
@@ -76,7 +76,7 @@ def test_driver_raising_in_any_spi_method_never_escapes_tick(tmp_path, meth, _lo
 def test_reconcile_error_names_phase_and_deployment(tmp_path, _log_to_buffer):
     drv = FakeDriver()
     drv.raise_in["status"] = KeyError("gone")
-    eng = make_engine(tmp_path, drivers={"fake": drv})
+    eng = make_engine(tmp_path, drivers={"native": drv})
     set_desired(eng, 1, [deployment("d7")])
     d1 = eng.tick()
     d2 = eng.tick()
@@ -92,7 +92,7 @@ def test_driver_error_on_apply_keeps_its_semantics(tmp_path):
     """A DriverError from apply is still a failed apply: fail fast, no health gate, roll back (here: remove)."""
     drv = FakeDriver()
     drv.raise_in["apply"] = DriverError("executor refused")
-    eng = make_engine(tmp_path, drivers={"fake": drv})
+    eng = make_engine(tmp_path, drivers={"native": drv})
     set_desired(eng, 1, [deployment("d1")])
     eng.tick()
     st = [r["state"] for r in reports(eng)]
@@ -113,8 +113,8 @@ def test_failing_device_never_stops_the_others(tmp_path):
     bad, good = FakeDriver(), FakeDriver()
     for m in SPI_METHODS:
         bad.raise_in[m] = RuntimeError(m)
-    a = make_engine(tmp_path, "dev-bad", {"fake": bad})
-    b = make_engine(tmp_path, "dev-good", {"fake": good})
+    a = make_engine(tmp_path, "dev-bad", {"native": bad})
+    b = make_engine(tmp_path, "dev-good", {"native": good})
     set_desired(a, 1, [deployment("x")])
     set_desired(b, 1, [deployment("y")])
     h = _host(tmp_path, [a, b])
@@ -134,8 +134,8 @@ def test_failing_device_never_stops_the_others(tmp_path):
 def test_slow_driver_on_one_device_does_not_delay_another(tmp_path):
     slow, fast = FakeDriver(), FakeDriver()
     slow.delay["supervise"] = 2.0                      # a blocked executor call
-    a = make_engine(tmp_path, "dev-slow", {"fake": slow})
-    b = make_engine(tmp_path, "dev-fast", {"fake": fast}, pollInterval=0.1)
+    a = make_engine(tmp_path, "dev-slow", {"native": slow})
+    b = make_engine(tmp_path, "dev-fast", {"native": fast}, pollInterval=0.1)
     b.backoff.base = b.backoff.cap = 0.1              # offline back-off == one period
     ticks_b: list[float] = []
     orig = b.tick
@@ -174,7 +174,7 @@ def test_submit_runs_on_the_worker_thread(tmp_path):
 
 def test_shutdown_saves_state_and_reports_stuck_workers(tmp_path):
     drv = FakeDriver()
-    e = make_engine(tmp_path, drivers={"fake": drv})
+    e = make_engine(tmp_path, drivers={"native": drv})
     h = _host(tmp_path, [e])
     h.start()
     time.sleep(0.2)

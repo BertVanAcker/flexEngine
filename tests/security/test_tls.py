@@ -95,3 +95,17 @@ def test_plain_http_warns_once_per_client(caplog):
             assert not isinstance(ei.value, TlsError)
     msgs = [r.getMessage() for r in caplog.records if "plain HTTP" in r.getMessage()]
     assert len(msgs) == 1 and "lab/test only" in msgs[0]
+
+
+def test_plain_http_refused_without_lab_flag(monkeypatch):
+    """Lead decision 2026-10-17: http:// only with an explicit lab flag."""
+    from flexengine2.cloud.client import TlsConfigError, from_cfg_kwargs
+
+    monkeypatch.delenv("FLEX_ALLOW_PLAIN_HTTP", raising=False)
+    with pytest.raises(TlsConfigError, match="plain HTTP refused"):
+        CloudClient("http://127.0.0.1:1", "dev-a", KEY, **from_cfg_kwargs({}))
+    with pytest.raises(TlsConfigError, match="allowPlainHttp"):
+        CloudClient("http://127.0.0.1:1", "dev-a", KEY)
+    CloudClient("http://127.0.0.1:1", "dev-a", KEY, **from_cfg_kwargs({"allowPlainHttp": True}))
+    monkeypatch.setenv("FLEX_ALLOW_PLAIN_HTTP", "1")
+    CloudClient("http://127.0.0.1:1", "dev-a", KEY)

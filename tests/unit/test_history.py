@@ -90,7 +90,7 @@ def test_concurrent_reader_sees_whole_records(tmp_path):
 
 def test_engine_records_reported_and_internal_transitions(tmp_path):
     drv = FakeDriver()
-    e = make_engine(tmp_path, drivers={"fake": drv}, healthEveryTicks=100)
+    e = make_engine(tmp_path, drivers={"native": drv}, healthEveryTicks=100)
     set_desired(e, 1, [deployment("d1")])
     e.tick()
     e.tick()                                      # nothing new: internal states are not repeated

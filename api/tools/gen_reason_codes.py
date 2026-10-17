@@ -2,7 +2,7 @@
 
     flexengine/.venv/bin/python flexengine/api/tools/gen_reason_codes.py [--check]
 
-The engine does not emit codes yet (it reports the text); the registry maps every text the engine can report to a
+The engine reports the text and, since 2026-10-17, its code (`reasonCode`); the registry maps every text the engine can report to a
 stable code. The table must cover exactly the templates found in the sources by reasonscan.py (dynamic entries
 excepted); the script refuses to write otherwise, and tests/api/test_reason_codes.py checks the same.
 
@@ -25,10 +25,12 @@ OUT = Path(__file__).resolve().parents[2] / "src" / "flexengine2" / "api" / "rea
 
 # (code, field, stage, profile, template, meaning[, extra])   extra: {"pattern", "example", "dynamic"}
 T = [
-    # ---- desired-state acceptance (logged, the previous state is kept) ----
-    ("FE-DS-001", "log", "accept", "engine", "desired state with bad/missing cloud signature ignored", "X-Flex-Manifest-Signature / desired.sig does not verify with cloudPublicKey"),
-    ("FE-DS-002", "log", "accept", "engine", "desired state for another device ignored", "DesiredState.deviceId differs from this engine's deviceId"),
-    ("FE-DS-003", "log", "accept", "engine", "manifestVersion {mv} <= accepted {accepted}: rollback attack? ignored", "lower manifestVersion, or equal with a different body (counted in state.downgradesRefused)"),
+    # ---- desired-state acceptance (refused as a whole, the previous state is kept; reported once as a device event) ----
+    ("FE-DS-001", "event", "accept", "engine", "desired state with bad/missing cloud signature ignored", "X-Flex-Manifest-Signature / desired.sig does not verify with cloudPublicKey"),
+    ("FE-DS-002", "event", "accept", "engine", "desired state for another device ignored", "DesiredState.deviceId differs from this engine's deviceId"),
+    ("FE-DS-003", "event", "accept", "engine", "manifestVersion {mv} <= accepted {accepted}: rollback attack? ignored", "lower manifestVersion, or equal with a different body (counted in state.downgradesRefused)"),
+    ("FE-DS-004", "event", "accept", "engine", "desired state is not valid JSON: {error}", "the signed body does not parse as JSON"),
+    ("FE-DS-005", "event", "accept", "engine", "desired state does not match the CP-1 schema: {errors}", "the signed document fails desired-state.v1alpha1 (first three violations, '; '-joined)"),
     ("FE-ONB-001", "log", "onboarding", "engine", "cloud key at onboarding does not match the provisioned trust anchor", "onboarding response cloudPublicKey differs from cfg cloudPublicKey; the device stays un-onboarded"),
     ("FE-BUN-001", "log", "bundle", "engine", "bundle without desired state", "offline bundle lacks desired.json or desired.sig"),
     # ---- reconciler: top-level reasons ----
@@ -166,9 +168,10 @@ def build() -> dict:
         "apiVersion": "flex.dev/v1alpha1", "kind": "ReasonCodeRegistry",
         "fields": {"reason": "status.reason", "failure": "status.failure",
                    "detail": "embedded in another entry's field (e.g. FE-REC-002 'artefact rejected: {detail}')",
+                   "event": "DeviceEvent.reason (POST /devices/{id}/events; desired state refused)",
                    "log": "not reported; engine log only"},
-        "rules": "Codes are stable (never reused or renumbered). The engine reports text only in v1alpha1; a "
-                 "future status field `reasonCode` (additive) will carry the code. A text matches the entry whose "
+        "rules": "Codes are stable (never reused or renumbered). Since 2026-10-17 the engine adds "
+                 "the code as `reasonCode` next to every reported reason (status records and device events). A text matches the entry whose "
                  "pattern fullmatches it; when several do, the most specific one (most literal characters) wins "
                  "(flexengine2.contracts.reason_code).",
         "codes": codes,

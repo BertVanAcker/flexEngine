@@ -29,6 +29,7 @@ to it only through `submit()` (runs a callable on the worker between ticks), `me
 from __future__ import annotations
 
 import concurrent.futures
+import functools
 import json
 import os
 import platform
@@ -46,6 +47,7 @@ from flexengine2.artefacts.store import ArtefactStore, VerificationError
 from flexengine2 import __version__
 from flexengine2.drivers.base import SPI_VERSION, Driver, DriverError, Workload, wait_until
 from flexengine2.cloud.client import CloudClient, Offline, Rejected, TlsError, from_cfg_kwargs
+from flexengine2 import contracts
 from flexengine2.core import outbox as outbox_policy
 from flexengine2.core import state as state_file
 from flexengine2.core.state import StateCorrupt, StateError, StateTooNew  # noqa: F401  (re-exported)
@@ -179,6 +181,10 @@ class Engine:
             self.state["notices"][dep] = "rejected"
         for k, v in self._trace_fields().items():
             kw.setdefault(k, v)
+        if kw.get("reason") and "reasonCode" not in kw:
+            code = reason_code_of(kw["reason"])
+            if code:
+                kw["reasonCode"] = code
         self.state["seq"] += 1
         mv = (self.state["desired"] or {}).get("manifestVersion")
         self.state["outbox"].append({"dep": dep, "seq": self.state["seq"], "state": state, "deviceTime": time.time(),
@@ -271,7 +277,10 @@ class Engine:
     def flush_outbox(self):
         while self.state["outbox"]:
             r = self.state["outbox"][0]
-            self.client.post_json(f"/api/v1/devices/{self.device}/deployments/{r['dep']}/status", r)
+            if r.get("dep") is None:   # device-level event (desired state refused), CP-2 device-event
+                self.client.post_json(f"/api/v1/devices/{self.device}/events", {k: v for k, v in r.items() if k != "dep"})
+            else:
+                self.client.post_json(f"/api/v1/devices/{self.device}/deployments/{r['dep']}/status", r)
             self.state["outbox"].pop(0)
             self.save()
         if self._backpressure and len(self.state["outbox"]) <= self.outbox_max // 2:
@@ -286,21 +295,31 @@ class Engine:
                                     traceparent=hdrs.get("traceparent"))
 
     def accept_manifest(self, body: bytes, sig: str, etag: str | None, traceparent: str | None = None) -> bool:
+        """Accept a desired state only when it is signed by the cloud, is a valid CP-1 document (lead decision
+        2026-10-17: checked against desired-state.v1alpha1 before anything else reads it), is for this device and
+        does not go back in manifestVersion. A refused document changes nothing (the previous state keeps running)
+        and is reported once as a device event (status outbox -> POST /devices/{id}/events) and in the local API."""
         if not crypto.verify(self.cloud_pub, body, sig):
-            self.log("desired state with bad/missing cloud signature ignored")
-            return False
-        doc = json.loads(body)
+            return self.refuse(body, reason="desired state with bad/missing cloud signature ignored")
+        try:
+            doc = json.loads(body)
+        except ValueError as e:
+            return self.refuse(body, reason=f"desired state is not valid JSON: {e}")
+        errs = contracts.errors("desired-state", doc)
+        if errs:
+            detail = "; ".join(errs[:3]) + (f" (+{len(errs) - 3} more)" if len(errs) > 3 else "")
+            return self.refuse(body, reason=f"desired state does not match the CP-1 schema: {detail}",
+                               offered=doc.get("manifestVersion") if isinstance(doc, dict) else None)
         if doc.get("deviceId") != self.device:
-            self.log("desired state for another device ignored")
-            return False
+            return self.refuse(body, reason="desired state for another device ignored", offered=doc["manifestVersion"])
         mv = int(doc["manifestVersion"])
         if mv < self.state["manifestVersion"] or (mv == self.state["manifestVersion"] and self.state["desired"]
                                                   and self.state["desired"] != doc):
-            self.log(f"manifestVersion {mv} <= accepted {self.state['manifestVersion']}: rollback attack? ignored")
             self.state.setdefault("downgradesRefused", 0)
             self.state["downgradesRefused"] += 1
             self.save()
-            return False
+            return self.refuse(body, offered=mv,
+                               reason=f"manifestVersion {mv} <= accepted {self.state['manifestVersion']}: rollback attack? ignored")
         changed = self.state["desired"] != doc
         self.state.update(desired=doc, manifestVersion=mv, etag=etag)
         if traceparent:  # EV-09: the plan's trace context, per manifest version (survives a restart)
@@ -313,6 +332,38 @@ class Engine:
             self.log(f"accepted desired state v{mv} ({len(doc['deployments'])} deployments)", event="manifest.accepted",
                      manifestVersion=mv)
         return changed
+
+    def refuse(self, body: bytes, reason: str, offered=None) -> bool:
+        """A refused desired state: log it, keep it as `lastRefusal` (local API), and report it once per distinct
+        (document, reason) as a device event, so a cloud that keeps serving the same bad document does not flood the
+        outbox. Returns False (nothing accepted)."""
+        import hashlib
+
+        digest = "sha256:" + hashlib.sha256(body).hexdigest()
+        code = reason_code_of(reason)
+        self.log(reason, "warning", "manifest.refused", reasonCode=code, offeredManifestVersion=offered)
+        last = self.state.get("lastRefusal") or {}
+        if last.get("digest") == digest and last.get("reason") == reason:
+            last["count"] = int(last.get("count", 1)) + 1
+            last["lastAt"] = time.time()
+            self.save()
+            return False
+        self.state["lastRefusal"] = {"at": time.time(), "lastAt": time.time(), "count": 1, "digest": digest,
+                                     "reason": reason, "reasonCode": code, "offeredManifestVersion": offered,
+                                     "acceptedManifestVersion": self.state["manifestVersion"]}
+        self.state["seq"] += 1
+        ev = {"dep": None, "kind": "DeviceEvent", "event": "DesiredStateRefused", "seq": self.state["seq"],
+              "deviceTime": time.time(), "reason": reason, "documentDigest": digest,
+              "offeredManifestVersion": offered if isinstance(offered, int) else None,
+              "acceptedManifestVersion": self.state["manifestVersion"]}
+        if code:
+            ev["reasonCode"] = code
+        self.state["outbox"].append(ev)
+        self._bound_outbox()
+        self.save()
+        self._hist(None, "DesiredStateRefused", "reported", seq=ev["seq"], reason=reason, reasonCode=code,
+                   manifestVersion=offered)
+        return False
 
     # ---- reconcile -------------------------------------------------------------------------------
     @staticmethod
@@ -756,6 +807,16 @@ def _run_into(fut, fn, args, kw):
         fut.set_result(fn(*args, **kw))
     except BaseException as e:  # noqa: BLE001 - handed to the caller
         fut.set_exception(e)
+
+
+@functools.lru_cache(maxsize=2048)
+def reason_code_of(text: str) -> str | None:
+    """Stable code of a reported reason text (CP-2 registry), None when the text is not registered."""
+    try:
+        e = contracts.reason_code(str(text))
+    except Exception:  # noqa: BLE001  (the registry must never break a report)
+        return None
+    return e["code"] if e else None
 
 
 def _stat() -> dict:

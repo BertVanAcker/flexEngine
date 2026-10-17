@@ -89,6 +89,7 @@ components:
     ApplicationDeployment: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/ApplicationDeployment'}
     Capabilities: {$ref: 'capabilities.v1alpha1.schema.json'}
     DeploymentStatus: {$ref: 'status.v1alpha1.schema.json'}
+    DeviceEvent: {$ref: 'device-event.v1alpha1.schema.json'}
     OnboardingRequest: {$ref: 'onboarding.v1alpha1.schema.json#/$defs/OnboardingRequest'}
     OnboardingResponse: {$ref: 'onboarding.v1alpha1.schema.json#/$defs/OnboardingResponse'}
     ReleaseManifest: {$ref: 'oci-profile.v1alpha1.schema.json#/$defs/ReleaseManifest'}
@@ -176,6 +177,18 @@ paths:
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DeploymentStatus'}}}}
       responses:
         '200': {description: 'stored, or {duplicate: true} when seq <= last seen (idempotent re-send)'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/OtherDevice'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/v1/devices/{deviceId}/events:
+    post:
+      operationId: postDeviceEvent
+      summary: 'Device-level event (added 2026-10-17): a refused desired state, once per distinct (document, reason)'
+      security: [{deviceSignature: []}]
+      parameters: [{$ref: '#/components/parameters/DeviceId'}, {$ref: '#/components/parameters/XFlexDevice'}, {$ref: '#/components/parameters/XFlexDate'}, {$ref: '#/components/parameters/XFlexNonce'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DeviceEvent'}}}}
+      responses:
+        '200': {description: 'stored, or {duplicate: true} when seq <= last seen (shared with the status records)'}
         '401': {$ref: '#/components/responses/Unauthorized'}
         '403': {$ref: '#/components/responses/OtherDevice'}
         '503': {$ref: '#/components/responses/Unavailable'}
