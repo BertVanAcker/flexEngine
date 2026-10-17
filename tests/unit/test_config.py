@@ -533,7 +533,7 @@ def test_plan_example_converts():
     assert cfg["cloud"]["safeStateFile"] == "/var/lib/flexengine/safe-state.json"
     assert cfg["devices"][0]["drivers"]["native"] == {"runtime": "systemd"}  # EV-19
     assert "os-rauc" not in cfg["devices"][0]["drivers"]
-    assert cfg["devices"][1]["mcu"]["smp"] == {"tty": "/dev/ttyACM0", "baud": 115200}
+    assert cfg["devices"][1]["mcu"]["smp"] == {"host": "127.0.0.1", "port": 5555}   # socat bridge: {tty} is schema only
     assert {n.split(" ")[0] for n in notes} == {"/local", "/safeState/staleAfter", "/devices/0/drivers/os-rauc"}
     # EV-06 / EV-09: caFile is canonical now; observability maps to logFormat / historyMax (empty otlpEndpoint = off)
     assert cfg["cloud"]["caFile"] == "/etc/flex/ca.crt"
@@ -649,18 +649,21 @@ def test_labinv_engine_yaml_trusts_the_release_public_key(tmp_path, monkeypatch)
     labinv.render(labinv.load(REPO / "demo" / "lab" / "inventory.example.yaml"), tmp_path)
     cfg = cl.parse(tmp_path / "engine.yaml")
     assert cfg["cloud"]["releasePublicKeys"] == [K2] and cfg["cloud"]["allowPlainHttp"] is True
-    monkeypatch.setenv("FLEX_RELEASE_PUBKEY", "")
-    monkeypatch.setenv("FLEX_MODULE_PUBKEY_HEX", "")
+    monkeypatch.setenv("FLEX_RELEASE_PUBKEY", labinv.UNFILLED_ENV["FLEX_RELEASE_PUBKEY"])
+    monkeypatch.setenv("FLEX_MODULE_PUBKEY_HEX", labinv.UNFILLED_ENV["FLEX_MODULE_PUBKEY_HEX"])
     assert [e["path"] for e in cl.check(tmp_path / "engine.yaml")["errors"]] == [
-        "/cloud/releasePublicKeys/0", "/devices/1/mcu/modulePublicKey"]
+        "/cloud/releasePublicKeys/0", "/devices/2/mcu/modulePublicKey"]
 
 
-def test_labinv_flex_env_leaves_the_module_key_empty(tmp_path, monkeypatch):
-    """flex.env renders FLEX_MODULE_PUBKEY_HEX= (lattepanda-install.sh fills it in): until then edge.yaml is invalid."""
-    monkeypatch.setenv("FLEX_MODULE_PUBKEY_HEX", "")
+def test_labinv_flex_env_placeholder_names_the_install_step(tmp_path, monkeypatch):
+    """flex.env renders FLEX_MODULE_PUBKEY_HEX=<placeholder> (lattepanda-install.sh --only keys fills it in): until
+    then edge.yaml is invalid, and the error shows the placeholder, which names the step."""
     labinv = _labinv()
+    monkeypatch.setenv("FLEX_MODULE_PUBKEY_HEX", labinv.UNFILLED_ENV["FLEX_MODULE_PUBKEY_HEX"])
     labinv.render(labinv.load(REPO / "demo" / "lab" / "inventory.example.yaml"), tmp_path)
-    assert [e["path"] for e in cl.check(tmp_path / "edge.yaml")["errors"]] == ["/devices/1/mcu/modulePublicKey"]
+    errs = cl.check(tmp_path / "edge.yaml")["errors"]
+    assert [e["path"] for e in errs] == ["/devices/1/mcu/modulePublicKey"]
+    assert "lattepanda-install.sh--only-keys" in errs[0]["message"]
 
 
 SIL_SCRIPT = r"""
