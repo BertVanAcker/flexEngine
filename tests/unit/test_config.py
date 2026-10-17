@@ -96,6 +96,15 @@ CASES = [
     ("model", "std", "/model", "/var/lib/flex/runs/current/model", ""),
     ("deployment", "std", "/deployment", "d_other", ["d"]),
     ("devices", "std", "/devices", [{"deviceId": "solo", "drivers": {"native": True}}], []),
+    ("local", "std", "/local", {}, "/run/flexengine/api.sock"),
+    ("local.socket", "std", "/local", {"socket": "/run/fe/api.sock"}, {"socket": ""}),
+    ("local.group", "std", "/local", {"group": "flex"}, {"group": 0}),
+    ("local.tcp", "std", "/local", {"tcp": {"bind": "127.0.0.1:8781", "tokenFile": "/etc/flexengine/api.token"}},
+     {"tcp": {"bind": "127.0.0.1:8781"}}),
+    ("local.tcp.bind", "std", "/local", {"tcp": {"bind": "[::1]:8781", "tokenFile": "/t"}},
+     {"tcp": {"bind": "8781", "tokenFile": "/t"}}),
+    ("local.tcp.tokenFile", "std", "/local", {"tcp": {"bind": "localhost:8781", "tokenFile": "t"}},
+     {"tcp": {"bind": "localhost:8781", "tokenFile": ""}}),
     ("devices[].deviceId", "std", f"{D2}/deviceId", "unoq-2", "has space"),
     ("devices[].role", "std", f"{D0}/role", "standalone-device", "child-device"),
     ("devices[].parent", "std", f"{D1}/parent", "panda", "nobody"),
@@ -614,3 +623,13 @@ def test_reference_refuses_an_undocumented_key():
     del s["properties"]["dataDir"]["description"]
     with pytest.raises(refdoc.UndocumentedKey, match="dataDir"):
         refdoc.rows(s)
+
+
+def test_vars_in_yaml_comments_are_not_expanded(tmp_path, monkeypatch):
+    from flexengine2.config import load as L
+
+    monkeypatch.delenv("FLEX_UNSET_IN_COMMENT", raising=False)
+    monkeypatch.setenv("FLEX_SET_VAR", "x")
+    text = "# uses ${FLEX_UNSET_IN_COMMENT}\na: ${FLEX_SET_VAR}  # also ${FLEX_UNSET_IN_COMMENT}\nb: 'not # a comment ${FLEX_SET_VAR}'\n"
+    out = L.expand(text, yaml_comments=True)
+    assert out == "# uses ${FLEX_UNSET_IN_COMMENT}\na: x  # also ${FLEX_UNSET_IN_COMMENT}\nb: 'not # a comment x'\n"

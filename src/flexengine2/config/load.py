@@ -26,7 +26,7 @@ import yaml
 
 SCHEMA_PATH = Path(__file__).with_name("schema.json")
 PLAN_API_VERSION = "flexengine/v2alpha1"
-PLAN_ONLY_TOP = ("apiVersion", "identity", "local", "observability", "safeState")
+PLAN_ONLY_TOP = ("apiVersion", "identity", "observability", "safeState")  # `local` is in both forms (EV-07)
 _VAR = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
 
@@ -60,16 +60,37 @@ def _validator():
 
 
 # ---- parse ------------------------------------------------------------------------------------------------------------
-def expand(text: str) -> str:
-    """${VAR} / $VAR from the environment; unset ones stay (validate() reports them)."""
-    return os.path.expandvars(text)
+def _comment_start(line: str) -> int:
+    """Index of a YAML comment (`#` at line start or after whitespace, outside quotes), else -1."""
+    q = None
+    for i, c in enumerate(line):
+        if q:
+            if c == q:
+                q = None
+        elif c in "'\"":
+            q = c
+        elif c == "#" and (i == 0 or line[i - 1] in " \t"):
+            return i
+    return -1
+
+
+def expand(text: str, yaml_comments: bool = False) -> str:
+    """${VAR} / $VAR from the environment; unset ones stay (validate() reports them). With yaml_comments, text in
+    YAML comments is left as is, so a variable mentioned in a comment never breaks the config."""
+    if not yaml_comments:
+        return os.path.expandvars(text)
+    out = []
+    for line in text.splitlines(keepends=True):
+        i = _comment_start(line)
+        out.append(os.path.expandvars(line) if i < 0 else os.path.expandvars(line[:i]) + line[i:])
+    return "".join(out)
 
 
 def parse(path: str | Path, notes: list[str] | None = None) -> dict:
     """Read, expand, parse and (for a plan-§3.6 document) convert; no validation, no file resolution."""
     p = Path(path)
     try:
-        text = expand(p.read_text())
+        text = expand(p.read_text(), yaml_comments=p.suffix != ".json")
     except OSError as e:
         raise ConfigError([{"path": "", "message": f"cannot read {p}: {e.strerror or e}"}]) from e
     try:
@@ -127,9 +148,18 @@ def from_plan_v2(doc: dict) -> tuple[dict, list[str]]:
         ks = ident.get("keyStore", "file") if isinstance(ident, dict) else ident
         if ks != "file" or (isinstance(ident, dict) and set(ident) - {"keyStore"}):
             errors.append({"path": "/identity", "message": "only identity.keyStore: file is available in alpha"})
-    loc = cfg.pop("local", None)
-    if loc is not None:
-        notes.append("/local dropped: the local API (EV-07) is not configured from the engine config yet")
+    loc = cfg.get("local")
+    if isinstance(loc, dict) and "http" in loc:
+        # plan form `local: {socket, http: {bind, token}}` -> canonical `local: {socket, group?, tcp: {bind, tokenFile}}`
+        http = loc.pop("http")
+        http = http if isinstance(http, dict) else {}
+        if http.get("token"):
+            errors.append({"path": "/local/http/token",
+                           "message": "the TCP bearer token must come from a file: use local.tcp.tokenFile"})
+        if http.get("bind"):
+            loc["tcp"] = {"bind": http["bind"], **({"tokenFile": http["tokenFile"]} if http.get("tokenFile") else {})}
+        else:
+            notes.append("/local http with an empty bind = no TCP listener (canonical form: local.tcp {bind, tokenFile})")
     obs = cfg.pop("observability", None)
     if obs is not None:
         hint = (" (export OTEL_EXPORTER_OTLP_ENDPOINT and FLEX_OTEL=1 instead)"
