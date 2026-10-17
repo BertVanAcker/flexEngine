@@ -16,6 +16,7 @@
         "application/vnd.flex.payload.mcu-firmware.v1+mcuboot",
         "application/vnd.flex.payload.plc-artefact.v1.tar+gzip",
         "application/vnd.flex.payload.os-rauc.v1+raucb",
+        "application/vnd.flex.payload.arduino-ota.v1+ota",
         "application/vnd.flex.payload.system.v1+json"
       ]
     },
@@ -66,7 +67,7 @@
           "propertyNames": {
             "anyOf": [
               {
-                "pattern": "^dev\\.flex\\.(profile|platform|imageDigest|imageRef|imageTag|releaseName|contractHash|board|arch|floatAbi|moduleAbi|cpuProfile|ifaceHash|verify|compatible)$"
+                "pattern": "^dev\\.flex\\.(profile|platform|imageDigest|imageRef|imageTag|releaseName|contractHash|board|arch|floatAbi|moduleAbi|cpuProfile|ifaceHash|verify|compatible|firmwareVersion)$"
               },
               {
                 "not": {
@@ -85,6 +86,7 @@
                 "mcu-firmware",
                 "plc-verify",
                 "os-rauc",
+                "arduino-ota",
                 "system"
               ],
               "description": "The engine picks the layer whose profile equals the deployment's x-flex-driver."
@@ -127,6 +129,16 @@
               "type": "string",
               "minLength": 1,
               "description": "os-rauc: the RAUC compatible string of the bundle (= `rauc status` compatible of the target device); the engine picks the layer whose compatible equals the device's (Driver.platform()), the driver's preflight refuses a mismatch."
+            },
+            "dev.flex.board": {
+              "type": "string",
+              "minLength": 1,
+              "description": "arduino-ota: the board FQBN the .ota image is built for (e.g. arduino:mbed_portenta:envie_m7, arduino:mbed_opta:opta); matched against the driver's platform() / the target board, preflight refuses a mismatch."
+            },
+            "dev.flex.firmwareVersion": {
+              "type": "string",
+              "minLength": 1,
+              "description": "arduino-ota: the version the sketch reports in its flexCloud version key (set_application_version); the health gate waits for exactly this value."
             }
           },
           "allOf": [
@@ -187,6 +199,24 @@
               "then": {
                 "required": [
                   "dev.flex.compatible"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "dev.flex.profile": {
+                    "const": "arduino-ota"
+                  }
+                },
+                "required": [
+                  "dev.flex.profile"
+                ]
+              },
+              "then": {
+                "required": [
+                  "dev.flex.board",
+                  "dev.flex.firmwareVersion"
                 ]
               }
             }

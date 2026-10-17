@@ -191,7 +191,7 @@ def _build_device(cfg: dict, dev: dict, children: dict) -> tuple[Engine, list]:
                                    listen=rc.get("listen"), mode=rc.get("mode", "peer"),
                                    zenoh_enabled=rc.get("zenoh", True), log=eng.log))
     else:
-        p2cfg = {"drivers": {k: v for k, v in drv_cfg.items() if k in ("container", "os-rauc")}}
+        p2cfg = {"drivers": {k: v for k, v in drv_cfg.items() if k in ("container", "os-rauc", "arduino-ota")}}
         p2cfg["drivers"]["native"] = drv_cfg.get("native", False)  # bool (process driver) or {runtime: ...} (EV-19)
         drivers = build_drivers({**dcfg, **p2cfg}, data)
         if "plc-verify" in drv_cfg:

@@ -945,4 +945,9 @@ def build_drivers(cfg: dict, data_dir: Path) -> dict[str, Driver]:
         from flexengine2.drivers.os_rauc import OsRaucDriver
 
         out["os-rauc"] = OsRaucDriver(cfg["deviceId"], data_dir, dr)
+    da = cfg.get("drivers", {}).get("arduino-ota")
+    if da:  # EV-38: flexNode-arduino boards over the Portenta OTA path
+        from flexengine2.drivers.arduino_ota import ArduinoOtaDriver
+
+        out["arduino-ota"] = ArduinoOtaDriver(cfg["deviceId"], data_dir, da)
     return out

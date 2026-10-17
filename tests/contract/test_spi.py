@@ -14,6 +14,7 @@ import pytest
 
 from flexengine2.core.reconciler import Engine
 from flexengine2.drivers.applab.driver import ApplabDriver
+from flexengine2.drivers.arduino_ota import ArduinoOtaDriver
 from flexengine2.drivers.base import SPI_VERSION, Driver, DriverError, Observed, wait_until
 from flexengine2.drivers.container import AnkaiosDriver, CliContainerDriver
 from flexengine2.drivers.mcu.driver import McuFirmwareDriver, McuModuleDriver
@@ -25,7 +26,7 @@ from flexengine2.drivers.process import ProcessDriver
 from spi_harness.base import deployment
 
 ALL_DRIVERS = [CliContainerDriver, AnkaiosDriver, ProcessDriver, SystemdDriver, ApplabDriver, McuModuleDriver, McuFirmwareDriver,
-               PlcVerifyDriver, OsRaucDriver]
+               PlcVerifyDriver, OsRaucDriver, ArduinoOtaDriver]
 SPI_METHODS = ["plan", "apply", "remove", "status", "list", "health", "capabilities", "supervise", "failed",
                "preflight", "commit", "platform"]
 

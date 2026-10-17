@@ -120,3 +120,58 @@ Result `FLEX01_<hex>`. Different hash → fail-fast (FE-PLC-010); unreachable �
 - **Model generations**: a changed model adds a mapping generation; older generations keep serving topics the new
   one does not know until the new module runs.
 Stand-in: QEMU base image + `demo/interop/router.py` (SIL).
+
+## 5. flexNode-arduino boards (Portenta H7 / Machine Control / Opta) — `drivers/arduino_ota.py`, `drivers/arduino_wire.py`
+
+Firmware updates over the boards' Arduino_Portenta_OTA path. The node side is a **proposed** flexNode-arduino change
+(rule S7: not applied upstream): [`proposals/flexnode-arduino-remote-ota/`](../proposals/flexnode-arduino-remote-ota/README.md)
+(patch against `b83b5fa`, builds for H7 and Opta; its command check is PC-checked against this driver's signer) [I on
+hardware]. Stand-in that conforms: `flexengine2/testing/arduino_sim.py` (`BoardSim`) over a real MQTT broker and
+Redis (`testing/miniwire.py` in-process, or eclipse-mosquitto 2.0.22 + redis 7.4 containers) [V].
+
+**Transports.** MQTT 3.1.1 to the broker the sketches use (`cm_MQTT_config`), Redis RESP2 to the flexCloud Redis
+(`flexCloud_config`, db e.g. 15), both plain TCP like the boards' PubSubClient / Redis client; HTTP(S) from the board to
+the driver's own image server. Standard-library clients (`arduino_wire.py`): the driver connects to the broker only to
+publish one command (QoS 1, PUBACK awaited) and keeps one Redis connection per board.
+
+**Keys** (`<cid>` = `appDescriptor_config.connectorID`, `<id>` = `.id`):
+
+| Key | Written by | Value |
+|---|---|---|
+| `<cid>:applications:<id>:status` | node (0.1.0) | `CLOUDLINK_OK` → `INITIALIZED` → `RUNNING`; `OTA_IN_PROGRESS` during an update; `ERROR` (set_application_error) |
+| `<cid>:applications:<id>:version` | node (0.1.0) | `set_application_version()` of the sketch = the release's `dev.flex.firmwareVersion` |
+| `<cid>:applications:<id>:ota` | node (patch) | `{"ref", "state": accepted\|downloading\|verifying\|installing\|restarting\|booted\|failed\|rejected, "version", "running", "reason"?, "bootId"?}` |
+| `<cid>:applications:<id>:heartbeat` | node (patch) | `{"bootId", "uptime", "version", "status"}`, SET + EXPIRE 3 × 5 s |
+| `<cid>:applications:<id>:logs` | node (0.1.0) | RPUSH `<id> - LEVEL - msg` (read by people, not by the driver) |
+
+**Command** (MQTT `flexcloud/<cid>/<id>/cmd`), flexCommunicator `compose_command()` shape:
+`{"id", "cmd": "OTA_UPDATE", "priority": 2, "expiry", "timestamp", "nonce", "params": {"board": <FQBN>, "sha256":
+<hex of the .ota>, "size": <bytes>, "url": <one-time URL>, "version": <firmwareVersion>}, "signature"}`, signature =
+hex HMAC-SHA256(node key, `id + cmd + str(priority) + str(expiry) + json.dumps(params, sort_keys=True) +
+str(timestamp) + nonce`) [V: unit test against flcpy's formula; PC check of the C++ side]. The node key is
+`appDescriptor_config.flexCloud_secret_key` (driver: `boards.<n>.commandKeyFile`, hex or the sketch's C array).
+
+**Image** (`application/vnd.flex.payload.arduino-ota.v1+ota`): Arduino_Portenta_OTA container
+`[len u32][crc32 u32][magic u32][8 bytes][LZSS body]` (flexNode-arduino `tools/hwtest/make_ota.py`); magic per board:
+H7 / PMC `0x2341025B`, Opta `0x23410064`, GIGA `0x23410266`, Nicla Vision `0x2341025F`. Preflight checks length,
+CRC-32 and the magic of the target board's FQBN (FE-AOTA-IMG-*). The board checks the same in `decompress()` and,
+with the patch, size + sha256 against the command before it.
+
+**Serving.** `OtaServer`: `GET /ota/<token>.ota`, token = 192 random bits, one complete download per token
+(a broken transfer may retry), lifetime `updateTimeoutSeconds + 60`, optional source address `boards.<n>.address`;
+`HTTP/1.0` with Content-Length; https with `serve.certFile`/`keyFile`, plain http only with `serve.allowPlainHttp`.
+
+**Sequence.**
+
+1. `apply`: board runs the installed digest (state file `<dataDir>/arduino-ota/state.json` + version key) → done.
+   Board without heartbeat → FE-AOTA-011 (nothing sent). Else offer the image, publish the command, follow the `ota`
+   key (`pollSeconds`): `ref` never appears within `acceptTimeoutSeconds` → FE-AOTA-013; `rejected` → FE-AOTA-014;
+   `failed` → FE-AOTA-015 (the node keeps its firmware); `booted` with another `running` → FE-AOTA-016; no end within
+   `updateTimeoutSeconds` → FE-AOTA-012; `booted` with the target version → installed.
+2. Gate: `health` = version key = firmwareVersion, status in `healthyStatus` (RUNNING), heartbeat present.
+   `failed` = status in `failedStatus` (ERROR) on the installed firmware → FE-AOTA-019 (fail fast).
+3. No commit (the bootloader has none). Rollback = `apply(bad, previous)`: when the update itself failed the board
+   still runs `previous` → nothing sent; when the bad firmware booted, the previous release's `.ota` is served and
+   commanded again (one transfer; the contract case `rollback_without_retransfer` is `na`).
+4. `status`: another version on the board than installed (a USB upload) → not present → drift repair re-sends the
+   release; Redis unreachable or board offline → present, not running.

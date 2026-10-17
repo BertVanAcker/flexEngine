@@ -189,6 +189,9 @@
             },
             "os-rauc": {
               "$ref": "#/$defs/OsRauc"
+            },
+            "arduino-ota": {
+              "$ref": "#/$defs/ArduinoOta"
             }
           }
         },
@@ -791,6 +794,67 @@
         "detail": {
           "type": "string",
           "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "ArduinoOta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver",
+        "exclusive",
+        "maxDeployments"
+      ],
+      "description": "arduino-ota driver (EV-38): flexNode-arduino boards updated over the Portenta OTA path; one firmware per board (exclusive, maxDeployments = number of configured boards). Board facts come from the nodes' flexCloud keys; a board whose Redis is unreachable says reachable: false.",
+      "properties": {
+        "profile": {
+          "const": "arduino-ota"
+        },
+        "driver": {
+          "const": "portenta-ota"
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "signedCommands": {
+          "type": "boolean",
+          "description": "true: OTA_UPDATE commands are HMAC-SHA256 signed with the node key (flexCommunicator command format)."
+        },
+        "commit": {
+          "type": "boolean",
+          "description": "false: no confirm step on the board (the Portenta bootloader has none); rollback re-serves the previous image."
+        },
+        "serveUrl": {
+          "type": "string",
+          "description": "Base URL the boards download images from (present once the server runs)."
+        },
+        "boards": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "fqbn": {"type": ["string", "null"]},
+              "node": {"type": ["string", "null"], "description": "flexCloud application id of the node."},
+              "reachable": {"type": "boolean"},
+              "version": {"type": ["string", "null"], "description": "The node's version key."},
+              "status": {"type": ["string", "null"], "description": "The node's status key."},
+              "online": {"type": "boolean", "description": "The node's heartbeat key exists."},
+              "detail": {"type": "string"}
+            }
+          }
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the fragment could not be built (detail)."
+        },
+        "detail": {
+          "type": "string"
         }
       }
     }

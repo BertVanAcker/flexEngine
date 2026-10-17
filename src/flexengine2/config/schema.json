@@ -415,6 +415,9 @@
         },
         "os-rauc": {
           "$ref": "#/$defs/osRauc"
+        },
+        "arduino-ota": {
+          "$ref": "#/$defs/arduinoOta"
         }
       }
     },
@@ -1026,6 +1029,243 @@
           },
           "default": [],
           "description": "Device-side checks of the new OS after the boot: each command must exit 0 for the health gate to pass (in addition to: booted slot = target, not marked bad, and the release's http probe if it names a port)."
+        }
+      }
+    },
+    "arduinoOta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boards",
+        "serve"
+      ],
+      "description": "flexNode-arduino OTA driver (EV-38): serves the verified .ota image on the LAN under a one-time URL, sends the node a signed OTA_UPDATE command over MQTT and follows its flexCloud keys (status, version, ota, heartbeat) in Redis. Needs flexNode-arduino with the proposed remote-OTA command (flexengine/proposals/flexnode-arduino-remote-ota) and the Portenta OTA bootloader.",
+      "properties": {
+        "boards": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/arduinoBoard"
+          },
+          "description": "Board name (the deployment parameter `board`; may be omitted when only one board is configured) -> node. One firmware per board: maxDeployments = number of boards."
+        },
+        "mqtt": {
+          "$ref": "#/$defs/arduinoMqtt",
+          "description": "MQTT broker the nodes subscribe to (cm_MQTT_config of the sketches); per-board `mqtt` overrides it."
+        },
+        "redis": {
+          "$ref": "#/$defs/arduinoRedis",
+          "description": "flexCloud Redis the nodes write their keys to (flexCloud_config of the sketches); per-board `redis` overrides it."
+        },
+        "serve": {
+          "$ref": "#/$defs/arduinoServe"
+        },
+        "acceptTimeoutSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 20,
+          "description": "How long apply waits for the node to accept the OTA command (its `ota` key names the command id); then the update fails (offline node, wrong key, library without the remote OTA command)."
+        },
+        "updateTimeoutSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 300,
+          "description": "How long apply waits for download, install and the restart into the new firmware; then the update fails (the board did not come back). Also the lifetime of the one-time download URL (+60 s)."
+        },
+        "pollSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 0.5,
+          "description": "Interval at which apply reads the node's keys during an update."
+        },
+        "timeout": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 2.0,
+          "description": "Connect / reply timeout of one MQTT or Redis call, seconds."
+        },
+        "healthyStatus": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "default": [
+            "RUNNING"
+          ],
+          "description": "Status key values that count as healthy (with the expected version key and a live heartbeat)."
+        },
+        "failedStatus": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": [
+            "ERROR"
+          ],
+          "description": "Status key values of the installed firmware that fail the health gate at once (fail-fast)."
+        },
+        "requireHeartbeat": {
+          "type": "boolean",
+          "default": true,
+          "description": "Require the node's heartbeat key (written by the patched library with a TTL) for running/healthy and before sending a command; false for nodes that do not write it (then a dead board keeps its last status)."
+        }
+      }
+    },
+    "arduinoBoard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fqbn",
+        "connectorId",
+        "applicationId",
+        "commandKeyFile"
+      ],
+      "description": "One flexNode-arduino node.",
+      "properties": {
+        "fqbn": {
+          "enum": [
+            "arduino:mbed_portenta:envie_m7",
+            "arduino:mbed_opta:opta",
+            "arduino:mbed_giga:giga",
+            "arduino:mbed_nicla:nicla_vision"
+          ],
+          "description": "Board FQBN; the release layer's dev.flex.board must equal it and the .ota header must carry its magic."
+        },
+        "connectorId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "appDescriptor_config connector id of the sketch (prefix of its flexCloud keys and of the command topic flexcloud/<connectorId>/<applicationId>/cmd)."
+        },
+        "applicationId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "appDescriptor_config application id of the sketch."
+        },
+        "commandKeyFile": {
+          "type": "string",
+          "minLength": 1,
+          "description": "File with the node's flexCloud secret key (appDescriptor_config flexCloud_secret_key): hex, or the sketch's C array `0xae, 0xc1, ...`; signs the OTA_UPDATE command (HMAC-SHA256). Keep it readable by the engine only."
+        },
+        "address": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IP address of the board: when set, only this address may download its images."
+        },
+        "mqtt": {
+          "$ref": "#/$defs/arduinoMqtt",
+          "description": "Per-board broker (merged over the driver's `mqtt`)."
+        },
+        "redis": {
+          "$ref": "#/$defs/arduinoRedis",
+          "description": "Per-board flexCloud Redis (merged over the driver's `redis`)."
+        }
+      }
+    },
+    "arduinoMqtt": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "MQTT broker connection (plain TCP, as the boards' PubSubClient).",
+      "properties": {
+        "host": {
+          "type": "string",
+          "minLength": 1,
+          "default": "127.0.0.1",
+          "description": "Broker host."
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 1883,
+          "description": "Broker port."
+        },
+        "username": {
+          "type": "string",
+          "minLength": 1,
+          "description": "MQTT user name."
+        },
+        "passwordFile": {
+          "type": "string",
+          "minLength": 1,
+          "description": "File holding the MQTT password."
+        }
+      }
+    },
+    "arduinoRedis": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "flexCloud Redis connection (plain TCP, as the boards' Redis client).",
+      "properties": {
+        "host": {
+          "type": "string",
+          "minLength": 1,
+          "default": "127.0.0.1",
+          "description": "Redis host."
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 6379,
+          "description": "Redis port."
+        },
+        "db": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15,
+          "default": 0,
+          "description": "Redis database of the flexCloud keys (flexCloud_config redis_db, e.g. 15)."
+        },
+        "passwordFile": {
+          "type": "string",
+          "minLength": 1,
+          "description": "File holding the Redis password."
+        }
+      }
+    },
+    "arduinoServe": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The driver's image server on the LAN: each image is offered once under /ota/<192-bit token>.ota, for updateTimeoutSeconds + 60 s.",
+      "properties": {
+        "host": {
+          "type": "string",
+          "minLength": 1,
+          "default": "0.0.0.0",
+          "description": "Bind address."
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "default": 8470,
+          "description": "Bind port (0: any free port, tests)."
+        },
+        "publicUrl": {
+          "type": "string",
+          "pattern": "^https?://",
+          "description": "Base URL the boards download from (e.g. http://192.168.1.50:8470; `{port}` is replaced by the bound port); required when host is 0.0.0.0."
+        },
+        "certFile": {
+          "type": "string",
+          "minLength": 1,
+          "description": "TLS certificate (PEM) of the image server (https; the boards' Arduino_Portenta_OTA must trust its CA)."
+        },
+        "keyFile": {
+          "type": "string",
+          "minLength": 1,
+          "description": "TLS private key (PEM) of the image server."
+        },
+        "allowPlainHttp": {
+          "type": "boolean",
+          "default": false,
+          "description": "Lab flag (decision DA-4): serve over plain http when no certFile/keyFile is given; integrity still holds (the signed command carries the image's sha256), confidentiality of the firmware does not."
         }
       }
     }

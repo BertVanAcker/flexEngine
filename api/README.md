@@ -71,7 +71,7 @@ contracts.reason_code("health check failed")            # -> {"code": "FE-REC-00
 | `.…properties.digest` | `sha256:<64 hex>` | ✔ | store (manifest hash), drivers (identity) |
 | `.…properties.size` | int | – | – |
 | `.spec.parameters` | map name → string/number/bool; `_interfaceHash` (FLEX01), `plc` reserved | – | container/native (env `FLEX_PARAM_*`), mcu-module (`k=v;`, `_interfaceHash`), applab (`inst.name` split), plc-verify (`plc`, `_interfaceHash`) |
-| `.x-flex-driver` | `container\|native\|applab\|mcu-module\|mcu-firmware\|plc-verify\|os-rauc` | ✔ | reconciler (driver choice, layer `dev.flex.profile`) |
+| `.x-flex-driver` | `container\|native\|applab\|mcu-module\|mcu-firmware\|plc-verify\|os-rauc\|arduino-ota` | ✔ | reconciler (driver choice, layer `dev.flex.profile`) |
 | `.x-flex-safetyClass` | `none\|safety-relevant` (default none) | – | store (= descriptor class, 2 approvers), gate (implicit FE-S6 signals) |
 | `.x-flex-activation.requires[]` | signal name or `plc:<dep>[@FLEX01_…]` | – | reconciler `_gate` (+ plc-verify `verified()`) |
 | `.x-flex-activation.window` | `{start, end}` `HH:MM` UTC | – | `SafeState.check` |
@@ -113,3 +113,11 @@ cd flexengine
   reason codes FE-RAU-PRE-001…007 and FE-RAU-001…014; CP-5: optional class attribute `reboots_on_apply` (the
   reconciler journals a rollback before a rebooting apply and reports it after the next start, see
   [cp5-driver-spi.md](cp5-driver-spi.md#driver-os-rauc-ev-17-driversos_raucpy)).
+- **2026-10-17, EV-38 `arduino-ota`** (flexNode-arduino board firmware over the Portenta OTA path): CP-1
+  `DriverProfile` + `arduino-ota` (desired state, descriptor `profiles`, descriptor `health.type` `arduino-ota`; the
+  deployment parameter `board` names the board); CP-3 payload media type `application/vnd.flex.payload.arduino-ota.v1+ota`,
+  `dev.flex.profile` `arduino-ota` and the annotations `dev.flex.board` (FQBN) and `dev.flex.firmwareVersion`
+  (both required on arduino-ota layers); CP-2 capabilities fragment `$defs/ArduinoOta` (`boards{fqbn, node,
+  reachable, version, status, online}`, `serveUrl`, `signedCommands`, `commit: false`); reason codes
+  FE-AOTA-PRE-001…005, FE-AOTA-IMG-001…005, FE-AOTA-KEY-001, FE-AOTA-001…019; CP-6 §5 (board protocol: signed
+  `OTA_UPDATE` over MQTT, `ota` / `heartbeat` keys, proposed upstream in `proposals/flexnode-arduino-remote-ota/`).
