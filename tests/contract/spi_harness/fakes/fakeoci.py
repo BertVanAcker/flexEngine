@@ -4,13 +4,16 @@ It implements exactly the CLI surface `CliContainerDriver` / `AnkaiosDriver` use
 
     image inspect <ref>                       rc 0 when the image was loaded
     load -q -i <payload>                      payload = fake image archive (JSON, see below)
-    run -d --name N --restart P --label k=v -e K=V <ref>
+    run -d --name N --restart P --label k=v -e K=V|-e K -p P -v V <ref>   (-e K: value from the CLI's environment)
     container inspect <name|id>  /  inspect   docker-shaped JSON (State, RestartCount, HostConfig.RestartPolicy,
-                                              Config.Labels, NetworkSettings.IPAddress = 127.0.0.1)
+                                              HostConfig.PortBindings, Mounts, Config.Labels/Env,
+                                              NetworkSettings.IPAddress = 127.0.0.1)
+    exec <name|id> <cmd...>                   runs cmd on the host with the container's environment (EV-39)
     ps -a -q [--filter label=k=v ...]
     stop [-t N] <name>  /  rm -f <name>
-    version --format ...
-    info
+    volume create [--label k=v ...] N / volume inspect N / volume ls -q [--filter label=k=v ...] / volume rm [-f] N
+    version --format ...                      {{.Server.Arch}}: $FAKE_OCI_ARCH (default amd64)
+    info [--format {{.Host.Arch}}]
 
 Fake image archive (the "payload"): {"fakeoci": 1, "images": {"<ref>": {"port": 8080, "ready": true,
 "exit_after": null, "exit_code": 1}}}. A container runs a small Python HTTP server on 127.0.0.1:<port> answering
@@ -83,6 +86,53 @@ def _images() -> dict:
     return _read(STATE / "images.json", {})
 
 
+def _volumes() -> dict:
+    return _read(STATE / "volumes.json", {})
+
+
+def cmd_volume(a: list[str]):
+    vols = _volumes()
+    if a[:1] == ["create"]:
+        labels = dict(x.partition("=")[::2] for i, x in enumerate(a) if i and a[i - 1] == "--label")
+        name = a[-1]
+        if name in vols:
+            raise Fail(f"Error: volume with name {name} already exists")
+        vols[name] = {"Name": name, "Labels": labels}
+        _write(STATE / "volumes.json", vols)
+        print(name)
+    elif a[:1] == ["inspect"]:
+        if a[1] not in vols:
+            raise Fail(f"Error: no such volume {a[1]}")
+        print(json.dumps([vols[a[1]]]))
+    elif a[:1] == ["ls"]:
+        want = [x.split("=", 1)[1] for i, x in enumerate(a) if i and a[i - 1] == "--filter" and x.startswith("label=")]
+        print("\n".join(n for n, v in sorted(vols.items())
+                        if all(v["Labels"].get(w.partition("=")[0]) == w.partition("=")[2] for w in want)))
+    elif a[:1] == ["rm"]:
+        name = a[-1]
+        if name not in vols:
+            raise Fail(f"Error: no such volume {name}")
+        if any(m.split(":")[0] == name for c in _containers().values() for m in c.get("Mounts", [])):
+            raise Fail(f"Error: volume {name} is in use")
+        del vols[name]
+        _write(STATE / "volumes.json", vols)
+        print(name)
+    else:
+        raise Fail(f"fakeoci: unsupported volume command {a}", 125)
+
+
+def cmd_exec(a: list[str]):
+    """exec <ref> cmd...: replaces this process with cmd (so a CLI timeout kills the probe itself)."""
+    meta = _find(a[0])
+    if meta is None:
+        raise Fail(f"Error: No such container: {a[0]}")
+    if not _inspect(meta)["State"]["Running"]:
+        raise Fail(f"Error response from daemon: container {a[0]} is not running", 126)
+    env = {"PATH": os.environ.get("PATH", "")}
+    env.update(kv.partition("=")[::2] for kv in meta["Env"])
+    return env, a[1:]
+
+
 def _containers() -> dict[str, dict]:
     out = {}
     d = STATE / "containers"
@@ -126,7 +176,10 @@ def _inspect(meta: dict) -> dict:
             "State": {"Status": status, "Running": status == "running", "Restarting": status == "restarting",
                       "Dead": False, "ExitCode": int(run.get("exit_code") or 0), "Pid": run.get("pid") or 0},
             "RestartCount": int(run.get("restarts", 0)),
-            "HostConfig": {"RestartPolicy": {"Name": pol["Name"], "MaximumRetryCount": pol["MaximumRetryCount"]}},
+            "HostConfig": {"RestartPolicy": {"Name": pol["Name"], "MaximumRetryCount": pol["MaximumRetryCount"]},
+                           "PortBindings": meta.get("Ports", [])},
+            "Mounts": [{"Type": "volume", "Name": m.split(":")[0], "Destination": m.split(":")[1],
+                        "RW": not m.endswith(":ro")} for m in meta.get("Mounts", [])],
             "NetworkSettings": {"IPAddress": "127.0.0.1", "Networks": {}}}
 
 
@@ -183,13 +236,13 @@ def cmd_load(args):
 
 
 def cmd_run(args):
-    name, restart, labels, env, i = None, "no", {}, [], 0
+    name, restart, labels, env, ports, mounts, i = None, "no", {}, [], [], [], 0
     while i < len(args):
         a = args[i]
         if a == "-d":
             i += 1
             continue
-        if a in ("--name", "--restart", "--label", "-e", "--device", "--gpus", "--runtime", "--group-add"):
+        if a in ("--name", "--restart", "--label", "-e", "--device", "--gpus", "--runtime", "--group-add", "-p", "-v"):
             v = args[i + 1]
             if a == "--name":
                 name = v
@@ -199,7 +252,14 @@ def cmd_run(args):
                 k, _, val = v.partition("=")
                 labels[k] = val
             elif a == "-e":
-                env.append(v)
+                env.append(v if "=" in v else f"{v}={os.environ.get(v, '')}")
+            elif a == "-p":
+                ports.append(v)
+            elif a == "-v":
+                vol = v.split(":", 1)[0]
+                if vol not in _volumes():
+                    raise Fail(f"Error: no such volume {vol} (the fake creates none implicitly)", 125)
+                mounts.append(v)
             i += 2
             continue
         break
@@ -213,7 +273,8 @@ def cmd_run(args):
     d = STATE / "containers" / cid
     d.mkdir(parents=True)
     meta = {"Id": cid, "Name": name or cid[:12], "Image": image, "Labels": labels, "Env": env,
-            "RestartPolicy": _parse_policy(restart), "Cfg": cfg, "Created": time.time()}
+            "RestartPolicy": _parse_policy(restart), "Cfg": cfg, "Created": time.time(), "Ports": ports,
+            "Mounts": mounts}
     _write(d / "container.json", meta)
     _write(d / "run.json", {"status": "created", "restarts": 0})
     sup = subprocess.Popen([sys.executable, os.path.abspath(__file__), "__supervise", cid],
@@ -313,10 +374,21 @@ def main(argv: list[str]) -> int:
                 import shutil
                 shutil.rmtree(STATE / "containers" / meta["Id"], ignore_errors=True)
             print(ref)
+        elif a[:1] == ["volume"]:
+            cmd_volume(a[1:])
+        elif a[:1] == ["exec"]:
+            env, cmd = cmd_exec(a[1:])
+            lk.close()
+            sys.stdout.flush()
+            try:
+                os.execvpe(cmd[0], cmd, env)
+            except OSError as e:
+                print(f"OCI runtime exec failed: {e}", file=sys.stderr)
+                return 127
         elif a[:1] == ["version"]:
-            print("99.0.0-fake")
+            print(os.environ.get("FAKE_OCI_ARCH", "amd64") if "{{.Server.Arch}}" in a else "99.0.0-fake")
         elif a[:1] == ["info"]:
-            print("fake runtime")
+            print(os.environ.get("FAKE_OCI_ARCH", "amd64") if "{{.Host.Arch}}" in a else "fake runtime")
         else:
             raise Fail(f"fakeoci: unsupported command {a}", 125)
     except Fail as e:

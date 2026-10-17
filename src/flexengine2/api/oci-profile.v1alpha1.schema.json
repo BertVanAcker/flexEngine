@@ -104,7 +104,7 @@
                 "ppc64le",
                 "s390x"
               ],
-              "description": "mcu-module: the module's CPU profile (armv7m, armv8m.main). native (EV-37): the CPU the payload is built for, normalised `uname -m` (x86_64, aarch64, armv7l ...); absent = any CPU. The engine picks the layer that fits the driver's platform(); preflight refuses a layer for another CPU."
+              "description": "mcu-module: the module's CPU profile (armv7m, armv8m.main); required, with dev.flex.floatAbi (DA-15: the engine selects MCU module layers strictly and refuses a release whose mcu-module layers lack either, FE-ART-REL-004). native (EV-37) and container (EV-40: one image layer per CPU in one release): the CPU the payload is built for, normalised `uname -m` (x86_64, aarch64, armv7l ...); absent = any CPU. The engine picks the layer that fits the driver's platform() (permissive: an absent key fits); preflight refuses a layer for another CPU."
             },
             "dev.flex.pyabi": {
               "type": "string",

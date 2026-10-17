@@ -7,7 +7,7 @@ flexEngineV2 never builds on the device: it installs signed releases (CP-3) name
 ```
 flex import-flexia <package dir> [--device NAME ...] [--device-id NAME=ID ...] [--arch x86_64,aarch64]
                    [--out DIR] [--key release.key] [--version V]
-                   [--publish URL --admin-token-file F [--plan]] [--health auto|shim|http:PORT[/PATH]]
+                   [--publish URL --admin-token-file F [--plan]] [--health auto|process|shim|http:PORT[/PATH]]
                    [--accept-lossy] [--partial] [--find-links DIR ...] [--no-index] [--python-version X.Y]
                    [--dry-run] [--json]
 ```
@@ -40,22 +40,32 @@ needs a model, S4), payload layer(s), minimal SPDX SBOM (the node, its Dockerfil
 signature referrer by `--key` (created when missing; the devices must list its public key in `releasePublicKeys`).
 Version: `--version` (CI: `git describe`), default `0.0.0-src.<12 hex of the package digest>`.
 
-**Container releases.** The image is built here (`docker buildx build --platform linux/<arch> --load`, else
-`docker|podman build --platform`), then an overlay image (no `RUN` steps, so it also builds for a foreign CPU without
-emulation) bakes in what compose / `docker run` would have set at start: `environment`, `env_file`, `-e`,
-`--env-file` → `ENV`; `entrypoint`, `command`, `working_dir`, `user`, `--entrypoint`, `-w`, `-u`. It is saved
-(`docker save --platform`) as a docker-archive payload annotated `dev.flex.imageRef =
-docker.io/flexnode/<module>@<digest>` (the engine runs it by digest) and `dev.flex.arch`. Compose interpolation
-(`${VAR}`, `${VAR:-default}`, `.env`) happens at import time, so values are frozen into the signed release.
+**Container releases.** The image is built here for every CPU type (`docker buildx build --platform linux/<arch>
+--load`, else `docker|podman build --platform`), then an overlay image (no `RUN` steps, so it also builds for a
+foreign CPU without emulation) bakes in what compose / `docker run` would have set at start: `environment`,
+`env_file`, `-e`, `--env-file` → `ENV` (except secret-looking names, below); `entrypoint`, `command`, `working_dir`,
+`user`, `--entrypoint`, `-w`, `-u`. Each CPU's image is saved (`docker save --platform`) as a docker-archive layer
+annotated `dev.flex.imageRef = docker.io/flexnode/<module>@<digest>` (the engine runs it by digest) and
+`dev.flex.arch`; **one release carries the layers of all CPU types** (EV-40) and the engine picks the one of its
+runtime's CPU (the container driver's `platform()`). Compose interpolation (`${VAR}`, `${VAR:-default}`, `.env`)
+happens at import time, so values are frozen into the signed release.
+
+Environment stays baked into the image (it needs no device allow-list; the signed image pins it). A variable whose
+name looks like a secret (TOKEN, SECRET, KEY, PASSWORD, PASSWD, CREDENTIAL, PRIVATE) is **not** baked: it becomes
+`runOptions.envFrom: {NAME: {file: <name-lower-case-dashed>}}` and the package's value is dropped (warning); the
+device provides the value in `<drivers.container.secretsDir>/<file>` (mode 0600, owned by the engine user) and
+allows `NAME` in `allowedRunOptions.env`.
 
 | compose / `docker run` | V2 |
 |---|---|
 | `devices`, `--device` | `runOptions.devices` (must be on the device's `drivers.container.allowedRunOptions`) |
+| `ports` (short and long syntax), `-p` / `--publish` with a host port | `runOptions.ports` `"[ip:]host:container[/proto]"` (EV-41; the device must allow the host port in `allowedRunOptions.ports`); a port without a host port is not published (info); ranges are not mapped (warning) |
+| named `volumes` (`name:/path[:ro]`, long syntax `type: volume`), `-v name:/path`, `--mount type=volume` | `runOptions.volumes` (EV-41): a runtime volume `flex_<device>_<deployment>_<name>` per deployment, kept across updates and rollbacks, deleted with the deployment; the device must allow the name in `allowedRunOptions.volumes`. A volume shared by several services gets one volume per deployment (warning); `external: true` → error; `driver`/`driver_opts` ignored (warning); anonymous volumes dropped (warning) |
 | `gpus`, `deploy.resources.reservations.devices` (gpu), `--gpus` | `runOptions.gpus` |
 | `runtime`, `group_add`, `--runtime`, `--group-add` | `runOptions.runtime`, `runOptions.groupAdd` |
 | `restart`, `deploy.restart_policy`, `--restart` | `restartPolicy` (`no` → never, `always`/`unless-stopped` → always, `on-failure[:N]`); compose default `no` becomes the V2 default on-failure:5 |
-| `healthcheck` with an http URL on the container (`curl http://localhost:8080/healthz`, `urllib…urlopen(...)`) | http health probe on that port/path |
-| no (http) healthcheck | **liveness shim**: `python3 /flex/flex_health_shim.py --port 18080 -- <entrypoint+cmd>` serves `/healthz` while the node runs (needs python3 in the image; flcpy nodes have it). Otherwise give the node an endpoint and pass `--health http:PORT/PATH` |
+| `healthcheck` (`test` as `CMD`, `CMD-SHELL` or a string) | **exec** health probe (EV-39): the same command run in the container by the engine (`CMD-SHELL`/string → `/bin/sh -c`); `interval` → `periodSeconds`, `timeout` → `execTimeoutSeconds`, `start_period + retries × interval` → the gate's `timeoutSeconds` |
+| no healthcheck | **process** probe (EV-39): healthy while the container runs and does not restart (soak `minSeconds` 2); no shim, no python3 needed. `--health shim` still wraps the command in the v1 liveness shim (`python3 /flex/flex_health_shim.py --port 18080 -- <entrypoint+cmd>`), `--health http:PORT/PATH` uses the node's own endpoint |
 | `depends_on` | order note: the proposal lists deployments in dependency order and `order[].after`; V2 starts them independently |
 | `cpus`, `mem_limit`, `deploy.resources.limits`, `[REQUIREMENTS] cpu/memory` | `descriptor.resources` + a placement check; **not enforced** |
 
@@ -76,20 +86,20 @@ item per device kind (gpio/camera/serial/i2c/spi → add `runOptions.devices` an
 to map; `can` → refused, needs host networking). With `--plan` the checks are evaluated against the onboarded
 device's capabilities (CP-2). `[DEPENDENCIES] depends_on` (device level) → `rolloutAfterDevices` (apply those
 plans first). `--arch` builds every listed CPU type; without it the device's architecture, else the host's.
-Containers for several CPU types become one release per CPU type (version `<v>-<arch>`, the proposal picks the
-device's).
+Containers for several CPU types become one release with one image layer per CPU type (EV-40; before, one release
+per CPU type with version `<v>-<arch>`).
 
 ## What does not map (the report lists each occurrence)
 
 | v1 / compose | Level | Why / gap |
 |---|---|---|
 | `custom`, `none` workflows | error | no build on the device |
-| `volumes` (bind / named), `tmpfs`, `-v`, `--mount` | error (warning with `--accept-lossy`: dropped) | the container driver mounts nothing: state is lost on update |
+| bind mounts (`./data:/data`, `/host:/c`, `type: bind`, `-v /host:/c`, `--mount type=bind`), `tmpfs`, `--tmpfs` | error (warning with `--accept-lossy`: dropped) | the container driver never mounts host paths (S4); use a named volume |
 | `privileged`, `cap_add`, `security_opt`, `pid`/`ipc`/`userns_mode`, `sysctls`, `network_mode: host`, `--network host`, `--privileged` | error | not allowed by the container driver (S4) |
-| `deploy.replicas > 1`, `scale`, `extends`, `include`, `secrets`, `configs`, `build.ssh/secrets` | error | one container per deployment; no secret/config distribution; flatten with `docker compose config` |
+| `deploy.replicas > 1`, `scale`, `extends`, `include`, `secrets`, `configs`, `build.ssh/secrets`, `volumes_from`, external volumes | error | one container per deployment; no secret/config distribution (secret environment values: `envFrom` files, above); flatten with `docker compose config` |
 | component types other than docker/python (rust, cpp, arduino) | error | native binaries: EV-37; firmware: EV-38 |
 | `os` other than linux/generic, `can` device | error | Linux drivers only; SocketCAN needs host networking |
-| `ports`, `-p`, `--publish` | warning | no published ports: reach the container on its bridge IP (EV-27) |
+| port ranges, `-P` / `--publish-all` | warning | not mapped: list ports one by one |
 | `networks`, `links`, service-name DNS | warning | every deployment runs on the default bridge; services do not resolve each other |
 | `depends_on` (service and device) | warning | order note only; no ordering in V2 yet |
 | `env_file` values | warning | baked into the signed image: do not put secrets there; per-device values → deployment `parameters` (`FLEX_PARAM_<NAME>`) |
@@ -99,10 +109,10 @@ device's).
 | compose `profiles` | info | a service whose profile is not activated by `[run] arguments --profile` is skipped, as `docker compose up` would |
 | inline `#` comments, `key: value`, quoted values, missing sections | info/warning | tolerated (v1 keeps an inline comment in the value) |
 
-Engine-side changes that would remove gaps (not done here): a non-HTTP liveness health type for the container driver
-(no shim, images without python3); `platform()` for the container driver (one multi-arch container release instead
-of one per CPU type); environment/ports/volumes/limits in `runOptions` or the compose profile (EV-27); deployment
-ordering in the desired state; placement checks of `descriptor.requires` in the backend.
+Engine-side gaps closed by EV-39…41 (2026-10-17): exec/process health for containers (no shim), `platform()` for the
+container driver (one multi-CPU container release), env / published ports / named volumes in `runOptions`. Still
+open: cpu/memory limits, service networks / DNS (compose profile EV-27), deployment ordering (EV-42), placement
+checks of `descriptor.requires` in the backend.
 
 ## CI recipe
 
@@ -123,12 +133,14 @@ Dockerfiles without `RUN` build for a foreign CPU (and the liveness shim's pytho
 ## Tests
 
 - `flexmodel/tests/test_flexia.py`: the v1 example `flexIA.ini` (RoboSAPIENS, verbatim in
-  `flexmodel/tests/fixtures/flexia/`) and the v1 template; mapping functions; refusals (custom/none workflows,
-  unsupported compose options, `--accept-lossy`, `--partial`); RoboSAPIENS dry run (order notes, device suffixes,
-  checks); native payloads with wheels (lock, SBOM, signature), multi-arch native layers, the generated wrapper and
-  the shim; a container release (Docker).
+  `flexmodel/tests/fixtures/flexia/`) and the v1 template; mapping functions (healthcheck → exec probe, ports, named
+  volumes, secret variables → envFrom); refusals (custom/none workflows, unsupported compose options, bind mounts,
+  `--accept-lossy`, `--partial`); RoboSAPIENS dry run (order notes, device suffixes, checks); native payloads with
+  wheels (lock, SBOM, signature), multi-arch native layers, the generated wrapper and the shim; container releases
+  (Docker: process health, `--health shim`, a two-CPU release with one layer per CPU).
 - `flexengine/tests/integration/flexia/test_flexia_e2e.py` (Docker): flcpy publisher (docker workflow,
-  flexCommunicator from PyPI wheels, liveness shim), a two-service compose package, an application descriptor with two
+  flexCommunicator from PyPI wheels, process health, a published port), a two-service compose package (exec probe
+  from the compose healthcheck, published port, named volume), an application descriptor with two
   native python runnables and a docker runnable, the RoboSAPIENS example (`local`), and a crashing node: import →
   publish to the reference fake cloud → `--plan` → plan/apply → a real engine (`python -m flexengine2.testing.single`,
   container driver on real Docker + process driver) installs and runs them, health OK (the crash fails the gate).

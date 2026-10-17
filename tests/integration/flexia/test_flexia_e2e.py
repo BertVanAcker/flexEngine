@@ -2,10 +2,10 @@
 fake cloud, plan) -> plan/approve/apply -> a real engine installs and runs them (container driver on real Docker,
 native process driver), health OK.
 
-Packages (packages/): flcpy-docker (flexCommunicator publisher, docker workflow, liveness shim), compose-two (two
-services: api with an http healthcheck + baked environment, worker from an image), appdesc-native (application
-descriptor: two native python runnables + one docker runnable), and the RoboSAPIENS example (v1 flexIA.ini verbatim,
-device `local`)."""
+Packages (packages/): flcpy-docker (flexCommunicator publisher, docker workflow, process health and a published port:
+EV-39/41), compose-two (two services: api with a compose healthcheck -> exec probe, baked environment and a published
+port; worker from an image with a named volume), appdesc-native (application descriptor: two native python runnables
++ one docker runnable), and the RoboSAPIENS example (v1 flexIA.ini verbatim, device `local`)."""
 
 from __future__ import annotations
 
@@ -121,6 +121,17 @@ def test_import_publish_plan_apply_run(lab):
         assert out[0] == "true" and "@sha256:" in out[1], (i, out)
     s, body = http_get(container_ip("flex_edge1_api"), 8080, "/greeting")
     assert (s, body) == (200, b"hello from compose")
+    # EV-41: the compose port is published on the host, the worker's named volume exists and is mounted
+    assert http_get("127.0.0.1", 38082, "/greeting") == (200, b"hello from compose")
+    vols = subprocess.run(["docker", "volume", "ls", "-q", "--filter", "label=dev.flex.device=edge1"],
+                          capture_output=True, text=True).stdout.split()
+    assert vols == ["flex_edge1_worker_worker-state"], vols
+    cloud.wait(lambda: subprocess.run(["docker", "exec", "flex_edge1_worker", "test", "-f", "/state/started"],
+                                      capture_output=True).returncode == 0, 20, "worker wrote its volume")
+    # EV-39: health without a shim (exec probe for the compose healthcheck, process probe for the others)
+    probes = {u["id"]: u["releases"][0]["health"]["type"] for r in reports.values() for u in r["units"]
+              if u["kind"] == "container"}
+    assert probes == {"flcpy-publisher": "process", "api": "exec", "worker": "process", "web": "process"}, probes
     logs = subprocess.run(["docker", "logs", "flex_edge1_flcpy-publisher"], capture_output=True, text=True).stdout
     assert "flexCommunicator DataMessage available" in logs
     # native: cwd-relative config.yaml, sibling module import and the manifest arguments work in the unpacked release
@@ -150,7 +161,7 @@ def test_robosapiens_example_local_runs(lab):
 
 
 def test_crash_fails_the_gate_and_rolls_back(lab):
-    """The liveness shim reports a crashing v1 node unhealthy: the install fails and nothing stays installed."""
+    """The process probe (EV-39, no shim) and fail-fast: a crashing v1 node fails the install, nothing stays."""
     cloud, tmp = lab["cloud"], lab["tmp"]
     pkg = tmp / "crasher"
     pkg.mkdir()

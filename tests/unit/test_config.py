@@ -155,6 +155,11 @@ CASES = [
     ("devices[].drivers.container.allowedRunOptions.gpus", "std", f"{CONT}/allowedRunOptions", {"gpus": ["all"]}, {"gpus": [1]}),
     ("devices[].drivers.container.allowedRunOptions.runtime", "std", f"{CONT}/allowedRunOptions", {"runtime": ["nvidia"]}, {"runtime": "nvidia"}),
     ("devices[].drivers.container.allowedRunOptions.groupAdd", "std", f"{CONT}/allowedRunOptions", {"groupAdd": ["video"]}, {"groupAdd": True}),
+    # EV-41: environment, published ports, named volumes, secret files
+    ("devices[].drivers.container.allowedRunOptions.env", "std", f"{CONT}/allowedRunOptions", {"env": ["APP_*", "LOG_LEVEL"]}, {"env": ["A-B"]}),
+    ("devices[].drivers.container.allowedRunOptions.ports", "std", f"{CONT}/allowedRunOptions", {"ports": ["8080", "9000-9010/udp", "127.0.0.1:8443/tcp"]}, {"ports": ["8080:80"]}),
+    ("devices[].drivers.container.allowedRunOptions.volumes", "std", f"{CONT}/allowedRunOptions", {"volumes": ["data", "cache-*"]}, {"volumes": ["/srv/data"]}),
+    ("devices[].drivers.container.secretsDir", "std", f"{CONT}/secretsDir", "/etc/flexengine/secrets", "secrets"),
     ("devices[].drivers.native", "std", f"{D0}/drivers/native", True, "yes"),
     # EV-19: native driver on systemd
     ("devices[].drivers.native.runtime", "std", NAT, {"runtime": "systemd"}, {"runtime": "rkt"}),

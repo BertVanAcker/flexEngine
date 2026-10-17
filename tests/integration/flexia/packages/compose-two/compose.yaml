@@ -5,7 +5,7 @@ services:
       GREETING: ${GREETING:-hello from compose}
       PORT: "8080"
     ports:
-      - "8080:8080"
+      - "127.0.0.1:38082:8080"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz')"]
       interval: 2s
@@ -13,8 +13,12 @@ services:
     restart: unless-stopped
   worker:
     image: mirror.gcr.io/library/python:3.13-alpine
-    command: ["python", "-u", "-c", "import os, time\nprint('worker', os.environ['MODE'], flush=True)\nwhile True: time.sleep(1)"]
+    command: ["python", "-u", "-c", "import os, time\nprint('worker', os.environ['MODE'], flush=True)\nopen('/state/started', 'a').write('x')\nwhile True: time.sleep(1)"]
     environment:
       - MODE=worker
+    volumes:
+      - worker-state:/state
     depends_on:
       - api
+volumes:
+  worker-state: {}

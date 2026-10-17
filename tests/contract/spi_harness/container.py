@@ -17,7 +17,7 @@ from flexengine2.drivers import container as container_mod
 from flexengine2.drivers.base import Workload
 from flexengine2.drivers.container import AnkaiosDriver, CliContainerDriver
 
-from .base import DEVICE, FAKES, Harness, digest_of, failing_shim, free_port, shim
+from .base import DEVICE, FAKES, Harness, deployment, digest_of, failing_shim, free_port, shim
 
 HEALTH = {"type": "http", "path": "/healthz", "periodSeconds": 0.15, "successThreshold": 2, "timeoutSeconds": 8}
 
@@ -43,7 +43,8 @@ class _ContainerBase(Harness):
     profile = "container"
     runtime = "docker"
     fail_delay = 1.5
-    na = {"preflight_refusal": "the container drivers have no preflight checks (verification is the engine's)"}
+    #: EV-39/41 container cases: does `exec` run inside a real container filesystem (named volumes really mounted)?
+    real_fs = False
 
     def setup(self):
         self.device = DEVICE + "-" + os.urandom(3).hex()
@@ -54,6 +55,35 @@ class _ContainerBase(Harness):
             self.calls.append(list(cmd))
             return real(cmd, *a, **kw)
         self.mp.setattr(container_mod, "_run", counting)
+
+    @property
+    def arch(self) -> str:
+        """The runtime's architecture (EV-40): the valid workloads' image layer is annotated with it."""
+        if not hasattr(self, "_arch"):
+            self._arch = CliContainerDriver(self.device, self.runtime).platform()["dev.flex.arch"]
+        return self._arch
+
+    def refused_release(self):
+        """A release asking for a run option this device does not allow (S4) -> preflight refusal, no transfer."""
+        wl = self.workload("1.0.0")
+        rel = self.release(wl)
+        rel.descriptor["runOptions"] = {"devices": ["/dev/mem"]}
+        return rel, deployment(wl.dep_id, wl.module, wl.version, "container")
+
+    def exec_command(self, ok: bool) -> list[str]:
+        """A health command that succeeds (in the container) / fails."""
+        return ["sh", "-c", "exit 0"] if ok else ["sh", "-c", "exit 3"]
+
+    def option_driver(self, allowed: dict, secrets_dir: str | None = None):
+        """A driver with runOptions allowed (EV-41); None when the driver takes no runOptions."""
+        return CliContainerDriver(self.device, self.runtime, allowed, secrets_dir=secrets_dir)
+
+    def volumes(self) -> list[str]:
+        p = self._rt("volume", "ls", "-q", "--filter", f"label=dev.flex.device={self.device}")
+        return sorted(p.stdout.split())
+
+    def exec(self, dep_id: str, *cmd: str) -> subprocess.CompletedProcess:
+        return self._rt("exec", f"flex_{self.device}_{dep_id}", *cmd)
 
     def transfers(self):
         return sum(1 for c in self.calls if len(c) > 1 and c[1] == "load")
@@ -77,6 +107,8 @@ class _ContainerBase(Harness):
         p = self._rt("ps", "-a", "-q", "--filter", f"label=dev.flex.device={self.device}")
         for cid in p.stdout.split():
             self._rt("rm", "-f", cid)
+        for vol in self.volumes():
+            self._rt("volume", "rm", "-f", vol)
 
     @contextmanager
     def unreachable(self):
@@ -108,7 +140,8 @@ class FakeCliHarness(_ContainerBase):
         p = self.tmp / "payloads" / f"ct_app-{version}.image.json"
         p.parent.mkdir(exist_ok=True)
         p.write_text(json.dumps({"fakeoci": 1, "images": {ref: img}}))
-        ann = {"dev.flex.profile": "container", "dev.flex.imageRef": ref, "dev.flex.imageTag": f"flexnode/ct_app:{version}"}
+        ann = {"dev.flex.profile": "container", "dev.flex.imageRef": ref, "dev.flex.imageTag": f"flexnode/ct_app:{version}",
+               "dev.flex.arch": self.arch}
         return str(p), ann, digest_of(p.read_bytes())
 
     def workload(self, version="1.0.0", dep_id=None):
@@ -149,6 +182,14 @@ class FakeAnkaiosHarness(FakeCliHarness):
     def make_driver(self):
         return AnkaiosDriver(self.device, "ank", "http://127.0.0.1:25551", "agent_A")
 
+    def option_driver(self, allowed, secrets_dir=None):
+        return None   # Ankaios takes no runOptions (refused at preflight)
+
+    def exec(self, dep_id, *cmd):
+        p = self._rt("ps", "-q", "--filter", f"label=dev.flex.device={self.device}",
+                     "--filter", f"label=dev.flex.deployment={dep_id}")
+        return self._rt("exec", (p.stdout.split() or ["none"])[0], *cmd)
+
 
 # ---- nightly tier: real runtime ---------------------------------------------------------------------------
 _BUILT: dict[tuple[str, str], tuple[str, str, str]] = {}
@@ -164,6 +205,12 @@ def runtime_ok(rt: str) -> bool:
 
 
 class RealCliHarness(_ContainerBase):
+    real_fs = True
+
+    def exec_command(self, ok):
+        # /run.sh exists only inside the stand-in image: proves the probe runs in the container, not on the host
+        return ["sh", "-c", "test -f /run.sh"] if ok else ["sh", "-c", "test -f /no/such/file"]
+
     def setup(self):
         if not runtime_ok(self.runtime):
             pytest.skip(f"{self.runtime} not installed or not usable (`{self.runtime} ps` failed)")
@@ -194,7 +241,8 @@ class RealCliHarness(_ContainerBase):
 
     def _wl(self, version, ready, exit_after, restart, dep_id):
         tar, ref, dg = self._image(version, ready, exit_after)
-        ann = {"dev.flex.profile": "container", "dev.flex.imageRef": ref, "dev.flex.imageTag": f"ct_app:{version}"}
+        ann = {"dev.flex.profile": "container", "dev.flex.imageRef": ref, "dev.flex.imageTag": f"ct_app:{version}",
+               "dev.flex.arch": self.arch}
         return Workload(dep_id=dep_id or self.dep_id, module="ct_app", version=version, digest=dg, payload_path=tar,
                         payload_annotations=ann, health={**HEALTH, "port": 8080, "timeoutSeconds": 30},
                         restart=restart)
@@ -234,3 +282,6 @@ class RealPodmanAnkaiosHarness(RealCliHarness):
 
     def make_driver(self):
         return AnkaiosDriver(self.device, "ank", "http://127.0.0.1:25551", "agent_A")
+
+    option_driver = FakeAnkaiosHarness.option_driver
+    exec = FakeAnkaiosHarness.exec

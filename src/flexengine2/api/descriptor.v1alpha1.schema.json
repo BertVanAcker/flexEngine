@@ -41,9 +41,11 @@
       "additionalProperties": false,
       "description": "Health gate spec. The engine runs drv.health(dep, probe) every periodSeconds; the gate passes after successThreshold consecutive successes once minSeconds have passed (forward installs only), fails at timeoutSeconds or at once when the driver reports a terminal failure (fail-fast). Engine defaults when absent: successThreshold 1, periodSeconds 0.25, timeoutSeconds 10, minSeconds 0.",
       "properties": {
-        "type": {"enum": ["http", "process", "mcu-heartbeat", "mcu-base", "applab-handshake", "plc-hash", "os-rauc", "arduino-ota"], "description": "Informational: what the profile's driver checks (drivers do not dispatch on it, except native: \"process\" = the workload's main process is alive / its unit active, without an HTTP endpoint, e.g. a flexCommunicator node; EV-36). os-rauc: booted slot = target slot, not marked bad, device-side healthChecks; plus an http probe on 127.0.0.1 when port is set. arduino-ota: the node's flexCloud version key = dev.flex.firmwareVersion, status key RUNNING (driver healthyStatus) and a live heartbeat key; status ERROR fails fast."},
+        "type": {"enum": ["http", "exec", "process", "mcu-heartbeat", "mcu-base", "applab-handshake", "plc-hash", "os-rauc", "arduino-ota"], "description": "What the profile's driver checks. Dispatched by native (\"process\" = the workload's main process is alive / its unit active, without an HTTP endpoint, e.g. a flexCommunicator node; EV-36) and container (EV-39, docker/podman/Ankaios: \"http\" (default) = GET on the container IP; \"exec\" = `command` run in the container (docker|podman exec), exit 0 = healthy, bounded by execTimeoutSeconds; \"process\" = the container runs and is not restarting); informational for the other drivers. os-rauc: booted slot = target slot, not marked bad, device-side healthChecks; plus an http probe on 127.0.0.1 when port is set. arduino-ota: the node's flexCloud version key = dev.flex.firmwareVersion, status key RUNNING (driver healthyStatus) and a live heartbeat key; status ERROR fails fast."},
         "port": {"oneOf": [{"type": "integer", "minimum": 1, "maximum": 65535}, {"type": "string", "pattern": "^\\$\\{[A-Z_][A-Z0-9_]*\\}$"}], "description": "http: container port probed on the container IP (default 8080). The native driver allocates the port itself and passes it as FLEX_HEALTH_PORT, so native releases say \"${FLEX_HEALTH_PORT}\"."},
         "path": {"type": "string", "pattern": "^/", "description": "http: path (default /healthz); 2xx = healthy."},
+        "command": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "description": "exec (container, EV-39): argv run in the container (no shell unless given, e.g. [\"/bin/sh\", \"-c\", \"...\"]); exit 0 = healthy. Required for type exec (preflight refuses it otherwise)."},
+        "execTimeoutSeconds": {"type": "number", "exclusiveMinimum": 0, "description": "exec: a probe that takes longer counts as unhealthy (default 2)."},
         "periodSeconds": {"type": "number", "exclusiveMinimum": 0},
         "successThreshold": {"type": "integer", "minimum": 1},
         "timeoutSeconds": {"type": "number", "exclusiveMinimum": 0},
@@ -63,12 +65,16 @@
     "RunOptions": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Extra docker/podman run options (container profile only, not Ankaios). Every value must be on the device's allow-list (engine config drivers.container.allowedRunOptions), else apply fails.",
+      "description": "Extra docker/podman run options (container profile only, not Ankaios). Every value must be on the device's allow-list (engine config drivers.container.allowedRunOptions, deny by default), else preflight refuses the release (S4: only the signed descriptor can ask, only the device can allow).",
       "properties": {
         "devices": {"$ref": "#/$defs/StrOrList", "description": "--device"},
         "gpus": {"$ref": "#/$defs/StrOrList", "description": "--gpus"},
         "runtime": {"$ref": "#/$defs/StrOrList", "description": "--runtime"},
-        "groupAdd": {"$ref": "#/$defs/StrOrList", "description": "--group-add"}
+        "groupAdd": {"$ref": "#/$defs/StrOrList", "description": "--group-add"},
+        "env": {"type": "object", "propertyNames": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$", "not": {"pattern": "^[Ff][Ll][Ee][Xx]_"}}, "additionalProperties": {"type": "string"}, "description": "EV-41: container environment (-e NAME=value). Names must match allowedRunOptions.env; secret-looking names (TOKEN, SECRET, KEY, PASSWORD, CREDENTIAL, PRIVATE ...) or values (PEM private keys, token prefixes) are refused: use envFrom. FLEX_* is reserved (deployment parameters are FLEX_PARAM_<NAME>)."},
+        "envFrom": {"type": "object", "propertyNames": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$", "not": {"pattern": "^[Ff][Ll][Ee][Xx]_"}}, "additionalProperties": {"type": "object", "additionalProperties": false, "required": ["file"], "properties": {"file": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,63}$"}}}, "description": "EV-41: secret environment values: {NAME: {file: <name>}} reads the device-local file <drivers.container.secretsDir>/<name> (0600, owned by the engine user, identity/secrets.py rules) at apply; the value never enters the release, the desired state or the CLI's argv. Names must match allowedRunOptions.env."},
+        "ports": {"type": "array", "items": {"type": "string", "pattern": "^(([0-9]{1,3}[.]){3}[0-9]{1,3}:|\\[[0-9A-Fa-f:]+\\]:)?[0-9]{1,5}:[0-9]{1,5}(/(tcp|udp|sctp))?$"}, "description": "EV-41: published ports \"[hostIp:]hostPort:containerPort[/proto]\" (-p); the host port/protocol (and address) must be covered by allowedRunOptions.ports."},
+        "volumes": {"type": "array", "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,63}:/[^:,]*(:(ro|rw))?$"}, "description": "EV-41: named volumes \"name:/container/path[:ro]\", never a host path. The engine creates the runtime volume flex_<device>_<deployment>_<name> (labelled dev.flex.device/deployment/volume); it survives updates and rollbacks and is deleted when the deployment is removed. Names must match allowedRunOptions.volumes."}
       }
     },
     "StrOrList": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}]},

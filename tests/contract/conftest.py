@@ -47,17 +47,23 @@ NIGHTLY = [(RealDockerHarness, "docker"), (RealSystemdHarness, "docker"), (RealP
            (QemuMcuModuleHarness, "qemu"), (QemuMcuFirmwareHarness, "qemu"), (RealRaucHarness, "docker"),
            (SimArduinoContainersHarness, "docker")]
 NIGHTLY_MARKS = ("docker", "podman", "qemu")
+# container-specific cases (EV-39 health types, EV-41 run options): test_container.py, fixture `ctr_harness`
+CONTAINER = (FakeDockerHarness, FakePodmanHarness, FakeAnkaiosHarness, RealDockerHarness, RealPodmanHarness,
+             RealPodmanAnkaiosHarness)
 
 
-def harness_params():
-    out = [pytest.param(h, id=h.id) for h in PUSH]
-    out += [pytest.param(h, id=h.id, marks=[getattr(pytest.mark, m), pytest.mark.slow]) for h, m in NIGHTLY]
+def harness_params(only=None):
+    out = [pytest.param(h, id=h.id) for h in PUSH if only is None or h in only]
+    out += [pytest.param(h, id=h.id, marks=[getattr(pytest.mark, m), pytest.mark.slow]) for h, m in NIGHTLY
+            if only is None or h in only]
     return out
 
 
 def pytest_generate_tests(metafunc):
     if "harness" in metafunc.fixturenames:
         metafunc.parametrize("harness", harness_params(), indirect=True)
+    if "ctr_harness" in metafunc.fixturenames:
+        metafunc.parametrize("ctr_harness", harness_params(CONTAINER), indirect=True)
 
 
 def pytest_collection_modifyitems(config, items):
@@ -69,7 +75,7 @@ def pytest_collection_modifyitems(config, items):
             it.add_marker(pytest.mark.skip(reason='nightly tier: select with -m "docker or podman or qemu"'))
             continue
         cs = getattr(it, "callspec", None)
-        h = cs.params.get("harness") if cs else None
+        h = (cs.params.get("harness") or cs.params.get("ctr_harness")) if cs else None
         if h is None:
             continue
         case = it.originalname.removeprefix("test_")
@@ -85,6 +91,16 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture
 def harness(request, tmp_path, monkeypatch):
+    h = request.param(tmp_path, monkeypatch)
+    try:
+        h.setup()
+        yield h
+    finally:
+        h.cleanup()
+
+
+@pytest.fixture
+def ctr_harness(request, tmp_path, monkeypatch):
     h = request.param(tmp_path, monkeypatch)
     try:
         h.setup()
