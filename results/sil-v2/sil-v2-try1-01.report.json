@@ -1,0 +1,666 @@
+{
+ "run": "sil-v2-try1-01",
+ "generatedAt": "2026-10-17T16:43:38+00:00",
+ "milestone": "D1-SIL",
+ "commit": "52e7172",
+ "model": "/tmp/sl-sil/work/sil-v2-try1-01/model",
+ "stack": {
+  "model": "/tmp/sl-sil/work/sil-v2-try1-01/model",
+  "urls": {
+   "p2": "http://127.0.0.1:21700",
+   "as": "http://127.0.0.1:21801",
+   "mcp": "http://127.0.0.1:21802/mcp",
+   "console": "http://127.0.0.1:21803"
+  },
+  "tls": false,
+  "otel": true,
+  "otlpEndpoint": null
+ },
+ "environment": {
+  "host": "vm",
+  "python": "3.13.16",
+  "machine": "x86_64"
+ },
+ "green": true,
+ "metrics": {
+  "M1": {
+   "status": "met",
+   "value": {
+    "maxS": 18.794,
+    "plans": [
+     {
+      "planHash": "sha256:0900823e37d5d2a42d730e27f035628bda7346593d770e36aaff38260b9dc0fc",
+      "device": "unoq",
+      "risk": "R2-deploy",
+      "kind": "deploy",
+      "approvalToAllInstalledS": 2.408,
+      "perTarget": {
+       "unoq/panel": 2.408
+      },
+      "approvedBy": [
+       "bob"
+      ]
+     },
+     {
+      "planHash": "sha256:25c226f8b3990f4c2a0e2e6fcb15bb7f93faec7ad4408b767fde48159b67908a",
+      "device": "panda.portenta",
+      "risk": "R2-deploy",
+      "kind": "deploy",
+      "approvalToAllInstalledS": 18.688,
+      "perTarget": {
+       "panda.portenta/servo": 18.675,
+       "panda.portenta/gripper": 18.688
+      },
+      "approvedBy": [
+       "bob"
+      ]
+     },
+     {
+      "planHash": "sha256:41aed474f120d4322d186b230d72d17b96abdcbd9ff9c3cca1c7bd75dc6274ba",
+      "device": "panda.portenta",
+      "risk": "R2-deploy",
+      "kind": "deploy",
+      "approvalToAllInstalledS": null,
+      "perTarget": {
+       "panda.portenta/servo": null
+      },
+      "approvedBy": [
+       "bob"
+      ]
+     },
+     {
+      "planHash": "sha256:5979d5842097fb11bdd73a977720f5bc5e10079a6dbc18b790c0a035ac7b2a24",
+      "device": "panda",
+      "risk": "R2-deploy",
+      "kind": "deploy",
+      "approvalToAllInstalledS": 9.59,
+      "perTarget": {
+       "panda/planner": 9.59
+      },
+      "approvedBy": [
+       "bob"
+      ]
+     },
+     {
+      "planHash": "sha256:6cf80d7d5100dba416f531457431dab75b735ea31006a67240ff3be6beebeb48",
+      "device": "panda.portenta",
+      "risk": "R2-deploy",
+      "kind": "deploy",
+      "approvalToAllInstalledS": 18.794,
+      "perTarget": {
+       "panda.portenta/servo": 18.762,
+       "panda.portenta/gripper": 18.794
+      },
+      "approvedBy": [
+       "bob"
+      ]
+     },
+     {
+      "planHash": "sha256:e1272e72e01131d45e754217346faf13dec0b2baae055d97212fd53e0dbc840d",
+      "device": "panda",
+      "risk": "R2-deploy",
+      "kind": "deploy",
+      "approvalToAllInstalledS": 3.201,
+      "perTarget": {
+       "panda/cell": 3.201
+      },
+      "approvedBy": [
+       "bob"
+      ]
+     },
+     {
+      "planHash": "sha256:e46b58716cbd086f729e15c8cdb37bf1db59167c951cd82433155b7bfe3ff50a",
+      "device": "panda",
+      "risk": "R3-safety",
+      "kind": "deploy",
+      "approvalToAllInstalledS": 11.777,
+      "perTarget": {
+       "panda/cx-bridge": 11.729,
+       "panda/opta-stack": 11.743,
+       "panda/cell": 11.754,
+       "panda/planner": 11.765,
+       "panda/guard": 11.777
+      },
+      "approvedBy": [
+       "bob",
+       "erin"
+      ]
+     },
+     {
+      "planHash": "sha256:ebe735f404b6ae84762167e66457403b2ebae6646a7178e08e0d7232839cd864",
+      "device": "unoq",
+      "risk": "R2-deploy",
+      "kind": "deploy",
+      "approvalToAllInstalledS": 4.632,
+      "perTarget": {
+       "unoq/panel": 4.632
+      },
+      "approvedBy": [
+       "bob"
+      ]
+     },
+     {
+      "planHash": "sha256:f9393d643c31eeb31f909527f057b987c83d8b2a98b71fc945aac1a00552ef4e",
+      "device": "panda.portenta",
+      "risk": "R2-deploy",
+      "kind": "deploy",
+      "approvalToAllInstalledS": 1.218,
+      "perTarget": {
+       "panda.portenta/servo": 1.218
+      },
+      "approvedBy": [
+       "bob"
+      ]
+     }
+    ]
+   },
+   "target": "<= 120 s",
+   "unit": "s",
+   "source": "gateway plans (approval time) + status history (Installed)",
+   "note": "D1: stand-in targets, no image pull; indicative"
+  },
+  "M2": {
+   "status": "met",
+   "value": {
+    "automatic": [
+     {
+      "device": "panda.portenta",
+      "deployment": "servo",
+      "failed": "2.2.0",
+      "rolledBackTo": "2.1.0",
+      "detectS": 1.922,
+      "totalS": 4.935,
+      "failFast": true,
+      "failure": "module fault on panda.portenta: fail-fast: step() error (last rc -5) -> reverted"
+     }
+    ],
+    "agentRollback": [],
+    "worstAutomaticS": 4.935,
+    "perClass": {
+     "mcu": {
+      "faultToHealthyS": 1.369,
+      "applyToHealthyS": 4.935,
+      "detectS": 1.922,
+      "failFast": true,
+      "targetS": 6,
+      "met": true
+     }
+    }
+   },
+   "target": "container <= 15 s, MCU <= 6 s, App <= 20 s (per target class)",
+   "unit": "s",
+   "source": "status history (Failed + rolledBackTo, detect/total seconds), rollback plans",
+   "note": "perClass from the scenario's fault markers (MCU stall, container crash loop); App rollback is not part of the scenario"
+  },
+  "M3": {
+   "status": "measured",
+   "value": {
+    "leadTimeS": 41.67,
+    "arm": "scripted",
+    "planHash": "sha256:6cf80d7d5100dba416f531457431dab75b735ea31006a67240ff3be6beebeb48"
+   },
+   "target": "reported; hypothesis: with context <= without",
+   "unit": "s",
+   "source": "agent session agent-session.jsonl + status history",
+   "note": "includes the human approval wait"
+  },
+  "M4": {
+   "status": "measured",
+   "value": {
+    "chainS": {
+     "b_doorToCellHoldS": 0.04,
+     "c_cellToOptaRelayS": 0.002
+    },
+    "consoleBridgeMs": {
+     "dpick/sil/cx/state": {
+      "n": 1972,
+      "p50": 1.021,
+      "p99": 8.488
+     },
+     "dpick/sil/rt/state": {
+      "n": 1972,
+      "p50": 1.165,
+      "p99": 8.603
+     },
+     "dpick/cell/status": {
+      "n": 651,
+      "p50": 1.094,
+      "p99": 6.756
+     }
+    }
+   },
+   "target": "reported",
+   "unit": "s (chain), ms (bridge)",
+   "source": "scenario (timed on one host clock) + console Zenoh bridge",
+   "note": "(a) MCU publish -> ros2 echo is relay-limited (<= 10 Hz) and not timed; indicative, stand-ins"
+  },
+  "M5": {
+   "status": "partial",
+   "value": {
+    "declared": {
+     "targetClasses": [
+      "T2",
+      "T3",
+      "T4",
+      "T5"
+     ],
+     "runtimes": [
+      "c",
+      "cpp",
+      "oci",
+      "python3",
+      "python3.12",
+      "python3.13",
+      "rust-no_std",
+      "st"
+     ]
+    },
+    "reached": {
+     "T2 LattePanda (container, linux/amd64)": [
+      "python3 (cell_controller, grasp_planner, perception_guard)"
+     ],
+     "T3 UNO Q Linux side (App Lab, simboard)": [
+      "python3 (station_panel)"
+     ],
+     "T4 MCU": [
+      "c (servo_drive, QEMU M3 layer of a cortex-m3 + cortex-m7-hard release)",
+      "rust no_std (gripper_station core, QEMU M3)",
+      "cpp sketch (panel_io, host build on the simboard)"
+     ],
+     "T5 PLC (verify only)": [
+      "st TwinCAT bridge FB (CX: cell over the generated ADS bridge transport + plc-verify Hello, sim RT host behind the ADS stand-in)",
+      "st/Modbus map (Opta: hash registers on the stand-in)"
+     ]
+    }
+   },
+   "target": ">= 6 runtimes, 4 classes (T2, T3, T4, T5)",
+   "source": "model /tmp/sl-sil/work/sil-v2-try1-01/model + scenario",
+   "note": "D1: T4/T5 on stand-ins (QEMU M3, simboard host build, PLC programs hash-verified only)"
+  },
+  "M6": {
+   "status": "met",
+   "value": 0,
+   "target": "0",
+   "source": "scenario"
+  },
+  "M7": {
+   "status": "met",
+   "value": {
+    "genUntouched": true,
+    "modelUntouched": true,
+    "srcChanged": true,
+    "genToSrcLocRatioAtGen": 37.48,
+    "target": "rust-nostd",
+    "module": "gripper_station"
+   },
+   "target": "0 edits in gen/ and model/",
+   "source": "agent workspace manifest (tree hashes)"
+  },
+  "M8": {
+   "status": "met",
+   "value": {
+    "gatewayChain": {
+     "ok": true,
+     "count": 68,
+     "errors": []
+    },
+    "backendChain": {
+     "ok": true,
+     "count": 29,
+     "errors": []
+    },
+    "appliedPlans": 9,
+    "completePlans": 9,
+    "completePct": 100.0,
+    "plans": [
+     {
+      "planHash": "sha256:e46b58716cbd086f729e15c8cdb37bf1db59167c951cd82433155b7bfe3ff50a",
+      "backendEvidence": true,
+      "trace": {
+       "correlationId": "e46b58716cbd086f729e15c8cdb37bf1",
+       "spans": 35,
+       "services": [
+        "flex-backend",
+        "flex-engine",
+        "flex-gateway"
+       ],
+       "hasRoot": true,
+       "chain": {
+        "gateway.plan.created": true,
+        "console.approve": true,
+        "backend.apply": true,
+        "engine.install": true,
+        "driver.apply": true,
+        "device.status": true
+       }
+      },
+      "expected": [
+       "backend.apply",
+       "console.approve",
+       "device.status",
+       "driver.apply",
+       "engine.install",
+       "gateway.plan.created"
+      ]
+     },
+     {
+      "planHash": "sha256:25c226f8b3990f4c2a0e2e6fcb15bb7f93faec7ad4408b767fde48159b67908a",
+      "backendEvidence": true,
+      "trace": {
+       "correlationId": "25c226f8b3990f4c2a0e2e6fcb15bb7f",
+       "spans": 18,
+       "services": [
+        "flex-backend",
+        "flex-engine",
+        "flex-gateway"
+       ],
+       "hasRoot": true,
+       "chain": {
+        "gateway.plan.created": true,
+        "console.approve": true,
+        "backend.apply": true,
+        "engine.install": true,
+        "driver.apply": true,
+        "device.status": true
+       }
+      },
+      "expected": [
+       "backend.apply",
+       "console.approve",
+       "device.status",
+       "driver.apply",
+       "engine.install",
+       "gateway.plan.created"
+      ]
+     },
+     {
+      "planHash": "sha256:ebe735f404b6ae84762167e66457403b2ebae6646a7178e08e0d7232839cd864",
+      "backendEvidence": true,
+      "trace": {
+       "correlationId": "ebe735f404b6ae84762167e66457403b",
+       "spans": 13,
+       "services": [
+        "flex-backend",
+        "flex-engine",
+        "flex-gateway"
+       ],
+       "hasRoot": true,
+       "chain": {
+        "gateway.plan.created": true,
+        "console.approve": true,
+        "backend.apply": true,
+        "engine.install": true,
+        "driver.apply": true,
+        "device.status": true
+       }
+      },
+      "expected": [
+       "backend.apply",
+       "console.approve",
+       "device.status",
+       "driver.apply",
+       "engine.install",
+       "gateway.plan.created"
+      ]
+     },
+     {
+      "planHash": "sha256:6cf80d7d5100dba416f531457431dab75b735ea31006a67240ff3be6beebeb48",
+      "backendEvidence": true,
+      "trace": {
+       "correlationId": "6cf80d7d5100dba416f531457431dab7",
+       "spans": 18,
+       "services": [
+        "flex-backend",
+        "flex-engine",
+        "flex-gateway"
+       ],
+       "hasRoot": true,
+       "chain": {
+        "gateway.plan.created": true,
+        "console.approve": true,
+        "backend.apply": true,
+        "engine.install": true,
+        "driver.apply": true,
+        "device.status": true
+       }
+      },
+      "expected": [
+       "backend.apply",
+       "console.approve",
+       "device.status",
+       "driver.apply",
+       "engine.install",
+       "gateway.plan.created"
+      ]
+     },
+     {
+      "planHash": "sha256:e1272e72e01131d45e754217346faf13dec0b2baae055d97212fd53e0dbc840d",
+      "backendEvidence": true,
+      "trace": {
+       "correlationId": "e1272e72e01131d45e754217346faf13",
+       "spans": 13,
+       "services": [
+        "flex-backend",
+        "flex-engine",
+        "flex-gateway"
+       ],
+       "hasRoot": true,
+       "chain": {
+        "gateway.plan.created": true,
+        "console.approve": true,
+        "backend.apply": true,
+        "engine.install": true,
+        "driver.apply": true,
+        "device.status": true
+       }
+      },
+      "expected": [
+       "backend.apply",
+       "console.approve",
+       "device.status",
+       "driver.apply",
+       "engine.install",
+       "gateway.plan.created"
+      ]
+     },
+     {
+      "planHash": "sha256:0900823e37d5d2a42d730e27f035628bda7346593d770e36aaff38260b9dc0fc",
+      "backendEvidence": true,
+      "trace": {
+       "correlationId": "0900823e37d5d2a42d730e27f035628b",
+       "spans": 13,
+       "services": [
+        "flex-backend",
+        "flex-engine",
+        "flex-gateway"
+       ],
+       "hasRoot": true,
+       "chain": {
+        "gateway.plan.created": true,
+        "console.approve": true,
+        "backend.apply": true,
+        "engine.install": true,
+        "driver.apply": true,
+        "device.status": true
+       }
+      },
+      "expected": [
+       "backend.apply",
+       "console.approve",
+       "device.status",
+       "driver.apply",
+       "engine.install",
+       "gateway.plan.created"
+      ]
+     },
+     {
+      "planHash": "sha256:41aed474f120d4322d186b230d72d17b96abdcbd9ff9c3cca1c7bd75dc6274ba",
+      "backendEvidence": true,
+      "trace": {
+       "correlationId": "41aed474f120d4322d186b230d72d17b",
+       "spans": 16,
+       "services": [
+        "flex-backend",
+        "flex-engine",
+        "flex-gateway"
+       ],
+       "hasRoot": true,
+       "chain": {
+        "gateway.plan.created": true,
+        "console.approve": true,
+        "backend.apply": true,
+        "engine.install": true,
+        "driver.apply": true,
+        "device.status": true
+       }
+      },
+      "expected": [
+       "backend.apply",
+       "console.approve",
+       "device.status",
+       "driver.apply",
+       "engine.install",
+       "gateway.plan.created"
+      ]
+     },
+     {
+      "planHash": "sha256:f9393d643c31eeb31f909527f057b987c83d8b2a98b71fc945aac1a00552ef4e",
+      "backendEvidence": true,
+      "trace": {
+       "correlationId": "f9393d643c31eeb31f909527f057b987",
+       "spans": 9,
+       "services": [
+        "flex-backend",
+        "flex-gateway"
+       ],
+       "hasRoot": true,
+       "chain": {
+        "gateway.plan.created": true,
+        "console.approve": true,
+        "backend.apply": true,
+        "engine.install": false,
+        "driver.apply": false,
+        "device.status": true
+       }
+      },
+      "expected": [
+       "backend.apply",
+       "console.approve",
+       "device.status",
+       "gateway.plan.created"
+      ]
+     },
+     {
+      "planHash": "sha256:5979d5842097fb11bdd73a977720f5bc5e10079a6dbc18b790c0a035ac7b2a24",
+      "backendEvidence": true,
+      "trace": {
+       "correlationId": "5979d5842097fb11bdd73a977720f5bc",
+       "spans": 13,
+       "services": [
+        "flex-backend",
+        "flex-engine",
+        "flex-gateway"
+       ],
+       "hasRoot": true,
+       "chain": {
+        "gateway.plan.created": true,
+        "console.approve": true,
+        "backend.apply": true,
+        "engine.install": true,
+        "driver.apply": true,
+        "device.status": true
+       }
+      },
+      "expected": [
+       "backend.apply",
+       "console.approve",
+       "device.status",
+       "driver.apply",
+       "engine.install",
+       "gateway.plan.created"
+      ]
+     }
+    ]
+   },
+   "target": "100 %; both chains verify; one trace per plan",
+   "unit": "%",
+   "source": "gateway audit (signed), P2 audit chain, spans (one trace id per plan)",
+   "note": "'complete' = backend verified the approvals and the plan trace has root, gateway, console (not for policy pre-authorised rollbacks), backend, engine and driver (when the device acted on the plan) and device-status spans"
+  },
+  "M9": {
+   "status": "partial",
+   "value": {
+    "P1 gripper_station v2, visible (agent workspace, rust-nostd host)": {
+     "d1": "pass"
+    },
+    "P1 gripper_station v2, all 18 (local CI)": {
+     "d1": "pass"
+    },
+    "P1 gripper_station v1 through the P10 bridge (sim RT host)": {
+     "d1": "pass"
+    },
+    "P1 gripper_station v1 through the bridge Transport plugin (py-node view, shm)": {
+     "d1": "pass"
+    },
+    "P1 gripper_station v1, all 18 on the MCU target (QEMU mps2/an385, Zephyr)": {
+     "d1": "pass"
+    },
+    "Bridge contract handshake (UNO Q App, simboard)": {
+     "d1": "pass"
+    },
+    "P4 Bridge contract vectors (UNO Q App 1.1: static, stubs, MCU decoder via the router; simboard)": {
+     "d1": "pass"
+    }
+   },
+   "target": "all sets pass in D1 and D2",
+   "source": "scenario",
+   "note": "D1 only until D2 runs"
+  },
+  "M10": {
+   "status": "met",
+   "value": {
+    "appliedWithoutApproval": [],
+    "deniedAttempts": 9,
+    "deniedByReason": {
+     "approval_required": 9
+    }
+   },
+   "target": "0 applied",
+   "source": "gateway + backend audit",
+   "note": "attempt counts include ordinary approval_required answers"
+  },
+  "M11": {
+   "status": "not-measured",
+   "target": "100 %",
+   "note": "no skew injected in this run"
+  },
+  "M12": {
+   "status": "measured",
+   "value": {
+    "consecutiveGreen": 1
+   },
+   "target": "D1 10/10, D2 3/3",
+   "source": "/tmp/sl-sil/rep"
+  },
+  "M13": {
+   "status": "met",
+   "value": {
+    "duplicateApplies": {
+     "/tmp/sl-sil/work/sil-v2-try1-01/edge/data/panda": 0,
+     "/tmp/sl-sil/work/sil-v2-try1-01/edge/data/panda.portenta": 0,
+     "/tmp/sl-sil/work/sil-v2-try1-01/edge/data/unoq": 0
+    },
+    "linkReturnToInSyncS": 0.453
+   },
+   "target": "0 duplicates; <= 10 s",
+   "source": "scenario + engine actions + status history"
+  }
+ },
+ "counts": {
+  "statusReports": 29,
+  "spans": 223,
+  "gatewayAudit": 68,
+  "backendAudit": 29
+ },
+ "note": "D1 numbers are indicative (cloud VM, stand-ins); see docs/demonstrator-plan.md \u00a77"
+}

@@ -621,7 +621,7 @@ def test_labinv_rendered_configs_validate(tmp_path, monkeypatch, unoq_engine):
     inv["hosts"]["unoq"]["engine"] = unoq_engine
     files = labinv.render(inv, tmp_path)
     engine_cfgs = [n for n, t in files.items() if n.endswith(".yaml") and "devices:" in t and "cloud:" in t]
-    assert sorted(engine_cfgs) == ["edge-unoq.yaml", "edge.yaml"]
+    assert sorted(engine_cfgs) == ["edge-unoq.yaml", "edge.yaml", "engine.yaml"]
     for name in engine_cfgs:
         r = cl.check(tmp_path / name)
         assert r["valid"], (name, r["errors"])
@@ -636,8 +636,23 @@ def test_labinv_cli_render_validates(tmp_path, monkeypatch):
                    capture_output=True)
     for k, v in LAB_ENV.items():
         monkeypatch.setenv(k, v)
-    for name in ("edge.yaml", "edge-unoq.yaml"):
+    for name in ("edge.yaml", "edge-unoq.yaml", "engine.yaml"):
         assert cl.check(out / name)["valid"], name
+
+
+def test_labinv_engine_yaml_trusts_the_release_public_key(tmp_path, monkeypatch):
+    """engine.yaml (flexEngineV2 on the LattePanda): release trust is FLEX_RELEASE_PUBKEY from flex.env, which
+    lattepanda-install.sh fills in; rendered but not filled in, the config is invalid on exactly those keys."""
+    for k, v in LAB_ENV.items():
+        monkeypatch.setenv(k, v)
+    labinv = _labinv()
+    labinv.render(labinv.load(REPO / "demo" / "lab" / "inventory.example.yaml"), tmp_path)
+    cfg = cl.parse(tmp_path / "engine.yaml")
+    assert cfg["cloud"]["releasePublicKeys"] == [K2] and cfg["cloud"]["allowPlainHttp"] is True
+    monkeypatch.setenv("FLEX_RELEASE_PUBKEY", "")
+    monkeypatch.setenv("FLEX_MODULE_PUBKEY_HEX", "")
+    assert [e["path"] for e in cl.check(tmp_path / "engine.yaml")["errors"]] == [
+        "/cloud/releasePublicKeys/0", "/devices/1/mcu/modulePublicKey"]
 
 
 def test_labinv_flex_env_leaves_the_module_key_empty(tmp_path, monkeypatch):
@@ -662,6 +677,10 @@ self = ns(dir=work, shim={"url": "http://127.0.0.1:8690"}, stack={"cloudPublicKe
           mcu=ns(port=5555), module_pub=sys.argv[4],
           board=ns(sock=work / "router.sock", tty=work / "tty", sim=work / "sim"),
           admin=lambda m, p, b=None: {"token": "tok-" + b["deviceId"]}, spawn=lambda *a, **k: None)
+self.engine = sys.argv[5] if len(sys.argv) > 5 else "probe"
+self.env_base = {}
+self.logs = work / "logs"; self.logs.mkdir(exist_ok=True)
+harness.sh = lambda *a, **k: ns(returncode=0, stdout="", stderr="")   # `flexengine config check` (tested below)
 harness.Run.start_edge(self)
 print((work / "edge" / "edge.yaml").read_text())
 """
@@ -681,6 +700,24 @@ def test_sil_harness_edge_config_validates(tmp_path):
     cfg = yaml.safe_load(cfg_path.read_text())
     assert [d["deviceId"] for d in cfg["devices"]] == ["panda", "panda.portenta", "unoq"]
     assert cfg["devices"][1]["relay"]["listen"] == "tcp/127.0.0.1:0"
+
+
+def test_sil_harness_v2_engine_config_validates(tmp_path):
+    """--engine v2 (EV-10): the harness renders engine.yaml from the same SIL devices; it validates, allows the plain
+    HTTP link shim (DA-4), puts the local API socket into the run dir and writes the spans next to the stack's."""
+    p = subprocess.run([sys.executable, "-c", SIL_SCRIPT, str(REPO / "demo" / "sil"), str(tmp_path), K, HEX, "v2"],
+                       capture_output=True, text=True, timeout=120)
+    if p.returncode != 0 and "ModuleNotFoundError" in p.stderr:
+        pytest.skip(f"demo/sil harness not importable here: {p.stderr.strip().splitlines()[-1]}")
+    assert p.returncode == 0, p.stderr
+    r = cl.check(tmp_path / "edge" / "engine.yaml")
+    assert r["valid"], r["errors"]
+    cfg = yaml.safe_load((tmp_path / "edge" / "engine.yaml").read_text())
+    edge = yaml.safe_load((tmp_path / "edge" / "edge.yaml").read_text())
+    assert cfg["devices"] == edge["devices"] and cfg["dataDir"] == edge["dataDir"]
+    assert cfg["cloud"]["allowPlainHttp"] is True
+    assert cfg["local"]["socket"] == str(tmp_path / "edge" / "api.sock")
+    assert cfg["otel"] == {"enabled": True, "file": str(tmp_path / "stack" / "obs" / "spans-edge.jsonl")}
 
 
 # ---- `flexengine config check` -------------------------------------------------------------------------------------
