@@ -1,0 +1,283 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/flexengine/v2alpha1/engine-config.json",
+  "title": "flexEngineV2 engine configuration",
+  "$comment": "EV-04 canonical form decision: the CANONICAL form is the one demo/edge/edge.example.yaml uses (also rendered by demo/lab/labinv.py and written by demo/sil/harness.py) because host.build() and core/reconciler.py consume exactly it and the plan's section 3.6 form is not a superset of it (it has no model/deployment, cloud.stackInfo, cloud.releaseKeyFiles, devices[].onboardingToken/safeStateFile/link, drivers.native as a bool, relay listen/mode/zenoh). The plan 3.6 form (apiVersion: flexengine/v2alpha1, cloud.releaseTrust/caFile, identity, local, observability, safeState, drivers.native {mode}, drivers.os-rauc) is converted to this form by flexengine2.config.load.from_plan_v2() (load() does it automatically when apiVersion or a plan-only top-level key is present). From the plan form the schema takes over mcu.smp {tty, baud} (d2-prep request R5, optional part: accepted by the schema, implemented later; the host still needs {host, port} today) and relay.model. ${VAR} references are expanded from the environment BEFORE validation; a reference to an unset variable is reported as an error. Paths are strings and are taken as given (relative = relative to the working directory). Unknown keys are errors at every level.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["cloud", "dataDir", "devices"],
+  "properties": {
+    "cloud": {"$ref": "#/$defs/cloud"},
+    "dataDir": {"type": "string", "minLength": 1,
+                "description": "Root of the engine state. Each device keeps `<dataDir>/<deviceId>/` (state.json, actions.jsonl, driver state, device.key) unless it sets its own `dataDir`."},
+    "model": {"type": "string", "minLength": 1,
+              "description": "flexModel workspace directory used by the MCU relay (types, rmw_zenoh keys). Required when a relay is enabled and does not set `relay.model`."},
+    "deployment": {"type": "string", "minLength": 1,
+                   "description": "Deployment id in `model` the MCU relay maps (e.g. `d_pick_lab`). Required when a relay is enabled and does not set `relay.deployment`."},
+    "devices": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/device"},
+                "description": "The devices this host runs one engine each for (one host process, several device engines)."}
+  },
+  "$defs": {
+    "b64key": {"type": "string", "pattern": "^[A-Za-z0-9+/]{43}=$",
+               "description": "Ed25519 public key, standard base64 of the 32 raw bytes."},
+    "endpoint": {"type": ["string", "null"], "pattern": "^(tcp|udp|tls|quic|ws|unixsock-stream)/.+$",
+                 "description": "Zenoh endpoint, e.g. `tcp/127.0.0.1:7447`."},
+    "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+    "pollInterval": {"type": "number", "exclusiveMinimum": 0, "default": 1.0,
+                     "description": "Seconds between desired-state polls when nothing is in flight."},
+    "backoff": {"type": "array", "prefixItems": [{"type": "number", "exclusiveMinimum": 0}, {"type": "number", "exclusiveMinimum": 0}],
+                "minItems": 2, "maxItems": 2, "items": false, "default": [0.25, 4.0],
+                "description": "`[initial, maximum]` seconds of the exponential back-off while the cloud is unreachable."},
+    "httpTimeout": {"type": "number", "exclusiveMinimum": 0, "default": 5,
+                    "description": "Timeout in seconds of one HTTP request to the cloud."},
+    "healthEveryTicks": {"type": "integer", "minimum": 1, "default": 3,
+                         "description": "Run the health check of installed deployments every N engine ticks."},
+    "safeStateFile": {"type": "string", "minLength": 1,
+                      "description": "JSON file `{\"machine_parked\": bool, \"operator_confirmed\": bool}` with the safe-state signals that gate safety-relevant activations (FE-S6). Unset = no signal is ever true."},
+    "cloud": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Connection to flexCloud and the trust anchors. Needs `apiUrl` or `stackInfo`, and `cloudPublicKey` or `stackInfo`.",
+      "properties": {
+        "apiUrl": {"type": "string", "pattern": "^https?://.+",
+                   "description": "Base URL of the flexCloud device API (CP-1), e.g. `http://127.0.0.1:8700`. Taken from `stackInfo` when unset."},
+        "cloudPublicKey": {"$ref": "#/$defs/b64key",
+                           "description": "Trust anchor for desired-state signatures (Ed25519, base64). Taken from `stackInfo` when unset."},
+        "stackInfo": {"type": "string", "minLength": 1,
+                      "description": "demo/cloud's `stack.json`; fills `apiUrl` (its `internal.p2`, else `urls.p2`) and `cloudPublicKey` when they are unset."},
+        "releasePublicKeys": {"type": "array", "items": {"$ref": "#/$defs/b64key"}, "default": [],
+                              "description": "Trusted release signing keys (Ed25519, base64)."},
+        "releaseKeyFiles": {"type": "array", "items": {"type": "string", "minLength": 1}, "default": [],
+                            "description": "Ed25519 release key files (`flex release` key format, base64 private key); their public keys are added to `releasePublicKeys`."},
+        "pollInterval": {"$ref": "#/$defs/pollInterval"},
+        "backoff": {"$ref": "#/$defs/backoff"},
+        "httpTimeout": {"$ref": "#/$defs/httpTimeout"},
+        "healthEveryTicks": {"$ref": "#/$defs/healthEveryTicks"},
+        "safeStateFile": {"$ref": "#/$defs/safeStateFile",
+                          "description": "Host-wide default of `devices[].safeStateFile`."}
+      }
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deviceId"],
+      "dependentRequired": {"mcu": ["parent"], "parent": ["mcu"], "relay": ["mcu"]},
+      "properties": {
+        "deviceId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                     "description": "Device id as registered in flexCloud (e.g. `panda`, `panda.portenta`, `unoq`). Unique per host."},
+        "role": {"enum": ["gateway", "standalone-device"],
+                 "description": "Engine role reported in the capabilities. Default: `gateway` when another device names this one as `parent`, else `standalone-device`. Not allowed on an MCU child (always `child-device`)."},
+        "parent": {"type": "string", "minLength": 1,
+                   "description": "deviceId of the gateway an MCU child is attached to (see-thru mode). Only with `mcu`."},
+        "modelDevice": {"type": "string", "minLength": 1,
+                        "description": "Device name of this device in the flexModel deployment (used by the MCU relay)."},
+        "link": {"type": "string",
+                 "description": "Free text describing the gateway-child link, reported in the gateway's capabilities (default `smp/uart`)."},
+        "onboardingToken": {"type": "string", "minLength": 1,
+                            "description": "One-time onboarding token (`POST /api/v1/admin/onboarding-tokens`). Only needed until the device is onboarded."},
+        "onboardingTokenFile": {"type": "string", "minLength": 1,
+                                "description": "File holding the onboarding token; read into `onboardingToken` at load when that is unset."},
+        "dataDir": {"type": "string", "minLength": 1,
+                    "description": "State directory of this device (default `<dataDir>/<deviceId>`)."},
+        "safeStateFile": {"$ref": "#/$defs/safeStateFile"},
+        "pollInterval": {"$ref": "#/$defs/pollInterval", "description": "Per-device override of `cloud.pollInterval`."},
+        "backoff": {"$ref": "#/$defs/backoff", "description": "Per-device override of `cloud.backoff`."},
+        "httpTimeout": {"$ref": "#/$defs/httpTimeout", "description": "Per-device override of `cloud.httpTimeout`."},
+        "healthEveryTicks": {"$ref": "#/$defs/healthEveryTicks", "description": "Per-device override of `cloud.healthEveryTicks`."},
+        "drivers": {"$ref": "#/$defs/drivers"},
+        "mcu": {"$ref": "#/$defs/mcu"},
+        "relay": {"$ref": "#/$defs/relay"}
+      }
+    },
+    "drivers": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Drivers of a (non-MCU) device; a device only gets the drivers it lists.",
+      "properties": {
+        "container": {"$ref": "#/$defs/container"},
+        "native": {"type": "boolean", "default": false,
+                   "description": "`true` adds the native process driver (tests only; the systemd native driver is not in alpha)."},
+        "plc-verify": {"$ref": "#/$defs/plcVerify"},
+        "applab": {"$ref": "#/$defs/applab"}
+      }
+    },
+    "container": {
+      "type": "object",
+      "description": "OCI container driver. `runtime: docker|podman` uses the CLI driver, `runtime: ankaios` the Ankaios driver.",
+      "required": ["runtime"],
+      "properties": {
+        "runtime": {"enum": ["docker", "podman", "ankaios"],
+                    "description": "Container executor (`quadlet` is planned, not in alpha)."}
+      },
+      "if": {"properties": {"runtime": {"const": "ankaios"}}, "required": ["runtime"]},
+      "then": {"$ref": "#/$defs/containerAnkaios"},
+      "else": {"$ref": "#/$defs/containerCli"}
+    },
+    "containerCli": {
+      "title": "runtime: docker | podman",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runtime": {"enum": ["docker", "podman"]},
+        "allowedRunOptions": {
+          "type": "object",
+          "additionalProperties": false,
+          "default": {},
+          "description": "Allow-list of the `runOptions` a signed release may request; anything else fails the deployment (S4).",
+          "properties": {
+            "devices": {"type": "array", "items": {"type": "string"}, "description": "Permitted `--device` values, e.g. `/dev/dri`."},
+            "gpus": {"type": "array", "items": {"type": "string"}, "description": "Permitted `--gpus` values, e.g. `all`."},
+            "runtime": {"type": "array", "items": {"type": "string"}, "description": "Permitted `--runtime` values, e.g. `nvidia`."},
+            "groupAdd": {"type": "array", "items": {"type": "string"}, "description": "Permitted `--group-add` values."}
+          }
+        }
+      }
+    },
+    "containerAnkaios": {
+      "title": "runtime: ankaios",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime", "ankBin", "serverUrl", "agent"],
+      "properties": {
+        "runtime": {"const": "ankaios"},
+        "ankBin": {"type": "string", "minLength": 1, "description": "Path of the `ank` CLI."},
+        "serverUrl": {"type": "string", "minLength": 1, "description": "Ankaios server URL, e.g. `http://127.0.0.1:25551`."},
+        "agent": {"type": "string", "minLength": 1, "description": "Ankaios agent name workloads are placed on."}
+      }
+    },
+    "plcVerify": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "PLC interface verification (no download to the PLC): reads the running interface hash and holds/gates deployments on it.",
+      "properties": {
+        "plcs": {"type": "object", "default": {}, "additionalProperties": {"$ref": "#/$defs/plcConnection"},
+                 "description": "PLC target (as in `flex-plc.json` `target` or the `plc` parameter, e.g. `panda/cx`, `opta`) -> connection."},
+        "cacheSeconds": {"type": "number", "minimum": 0, "default": 0.5,
+                         "description": "How long a read interface hash is reused."}
+      }
+    },
+    "plcConnection": {
+      "type": "object",
+      "description": "Connection to one PLC; `via` selects the form.",
+      "required": ["via"],
+      "properties": {
+        "via": {"enum": ["ads", "modbus", "shm"], "description": "Transport: Beckhoff ADS, Modbus/TCP, or the shared-memory RT host of the SIL."}
+      },
+      "allOf": [
+        {"if": {"properties": {"via": {"const": "ads"}}, "required": ["via"]}, "then": {"$ref": "#/$defs/plcAds"}},
+        {"if": {"properties": {"via": {"const": "modbus"}}, "required": ["via"]}, "then": {"$ref": "#/$defs/plcModbus"}},
+        {"if": {"properties": {"via": {"const": "shm"}}, "required": ["via"]}, "then": {"$ref": "#/$defs/plcShm"}}
+      ]
+    },
+    "plcAds": {
+      "title": "via: ads",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["via", "amsNetId", "ip"],
+      "properties": {
+        "via": {"const": "ads"},
+        "amsNetId": {"type": "string", "pattern": "^[0-9]{1,3}(\\.[0-9]{1,3}){5}$", "description": "AMS Net ID of the PLC, e.g. `192.168.50.30.1.1`."},
+        "ip": {"type": "string", "minLength": 1, "description": "IP address of the PLC."},
+        "amsPort": {"$ref": "#/$defs/port", "default": 851, "description": "AMS port of the PLC runtime (default from the release's flex-plc.json, else 851)."},
+        "localNetId": {"type": "string", "pattern": "^[0-9]{1,3}(\\.[0-9]{1,3}){5}$", "description": "Local AMS Net ID of the ADS client (needed on Linux)."},
+        "timeout": {"type": "number", "exclusiveMinimum": 0, "default": 2.0, "description": "Read timeout in seconds."},
+        "instance": {"type": "string", "minLength": 1, "default": "MAIN.fbBridge", "description": "Bridge FB instance (the release's flex-plc.json `instance` wins)."}
+      }
+    },
+    "plcModbus": {
+      "title": "via: modbus",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["via", "host"],
+      "properties": {
+        "via": {"const": "modbus"},
+        "host": {"type": "string", "minLength": 1, "description": "Modbus/TCP server host."},
+        "port": {"$ref": "#/$defs/port", "default": 502, "description": "Modbus/TCP port (default from the release's flex-plc.json, else 502)."},
+        "unitId": {"type": "integer", "minimum": 0, "maximum": 255, "default": 1, "description": "Modbus unit id."},
+        "timeout": {"type": "number", "exclusiveMinimum": 0, "default": 2.0, "description": "Read timeout in seconds."}
+      }
+    },
+    "plcShm": {
+      "title": "via: shm",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["via"],
+      "properties": {
+        "via": {"const": "shm"},
+        "path": {"type": "string", "minLength": 1, "description": "Shared-memory region of the RT host (default `/dev/shm/<bridge>` of the release)."}
+      }
+    },
+    "applab": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Arduino App Lab driver (UNO Q) over `arduino-app-cli`, locally or over SSH (remote mode).",
+      "properties": {
+        "board": {"type": "string", "minLength": 1, "default": "unoq", "description": "Board name."},
+        "cli": {"type": "string", "minLength": 1, "default": "arduino-app-cli", "description": "`arduino-app-cli` binary (on the board in remote mode)."},
+        "routerSocket": {"type": "string", "minLength": 1, "default": "/var/run/arduino-router.sock", "description": "arduino-router socket used by `healthVia: router`."},
+        "healthVia": {"enum": ["router", "logs"], "default": "router", "description": "Health source of the App: router RPC or app logs. Default `logs` when `ssh` is set."},
+        "takeoverForeignApps": {"type": "boolean", "default": false, "description": "Stop an App the engine did not start instead of failing."},
+        "keepReleases": {"type": "integer", "minimum": 1, "default": 2, "description": "Installed App releases kept for rollback."},
+        "cliTimeout": {"type": "number", "exclusiveMinimum": 0, "default": 600, "description": "Timeout in seconds of one CLI call."},
+        "ssh": {"type": "string", "minLength": 1, "description": "Remote mode: `user@host` of the board (the engine runs elsewhere)."},
+        "sshCmd": {"type": "array", "items": {"type": "string"}, "minItems": 1, "default": ["ssh", "-o", "BatchMode=yes"], "description": "SSH command prefix (remote mode)."},
+        "scpCmd": {"type": "array", "items": {"type": "string"}, "minItems": 1, "default": ["scp", "-q", "-o", "BatchMode=yes"], "description": "SCP command prefix (remote mode)."},
+        "remoteStaging": {"type": "string", "minLength": 1, "default": "/tmp/flex-applab", "description": "Staging directory on the board (remote mode)."}
+      }
+    },
+    "mcu": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["smp", "modulePublicKey"],
+      "description": "Makes the device an MCU child (see-thru): mcu-module and mcu-firmware drivers over SMP (mcumgr). Needs `parent`; no `drivers`.",
+      "properties": {
+        "smp": {"$ref": "#/$defs/smp"},
+        "modulePublicKey": {"type": "string", "pattern": "^[0-9a-fA-F]{128}$", "description": "Raw P-256 public key (x||y, 64 bytes as hex) of the FLXM module signing key."},
+        "timeout": {"type": "number", "exclusiveMinimum": 0, "default": 10, "description": "SMP request timeout in seconds."}
+      }
+    },
+    "smp": {
+      "type": "object",
+      "description": "SMP link: either `{host, port}` (TCP: QEMU or a serial-to-TCP bridge) or `{tty, baud}` (serial, accepted by the schema, implemented later: d2-prep request R5).",
+      "if": {"anyOf": [{"required": ["tty"]}, {"required": ["baud"]}]},
+      "then": {"$ref": "#/$defs/smpSerial"},
+      "else": {"$ref": "#/$defs/smpTcp"}
+    },
+    "smpTcp": {
+      "title": "TCP form",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host", "port"],
+      "properties": {
+        "host": {"type": "string", "minLength": 1, "description": "SMP-over-TCP host (QEMU serial socket or socat bridge)."},
+        "port": {"$ref": "#/$defs/port", "description": "SMP-over-TCP port."}
+      }
+    },
+    "smpSerial": {
+      "title": "serial form (accepted by schema, implemented later: R5)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tty"],
+      "properties": {
+        "tty": {"type": "string", "pattern": "^/", "description": "Serial device of the SMP UART, e.g. `/dev/ttyUSB0` (pyserial, no socat). Accepted by the schema, implemented later (R5)."},
+        "baud": {"type": "integer", "minimum": 1, "default": 115200, "description": "Baud rate of the SMP UART."}
+      }
+    },
+    "relay": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "MCU <-> Zenoh relay (rmw_zenoh keys of the MCU modules). Only on an MCU child.",
+      "properties": {
+        "enabled": {"type": "boolean", "default": false, "description": "Run the relay."},
+        "maxRateHz": {"type": "number", "exclusiveMinimum": 0, "maximum": 10, "default": 10, "description": "Sampling rate MCU -> Zenoh (capped at 10 Hz)."},
+        "connect": {"$ref": "#/$defs/endpoint", "description": "Zenoh endpoint to connect to (zenohd / rmw_zenoh router). Unset or null = none."},
+        "listen": {"$ref": "#/$defs/endpoint", "description": "Zenoh endpoint to listen on. Unset or null = none."},
+        "mode": {"enum": ["peer", "client"], "default": "peer", "description": "Zenoh session mode."},
+        "zenoh": {"type": "boolean", "default": true, "description": "`false` runs the relay without a Zenoh session (tests)."},
+        "model": {"type": "string", "minLength": 1, "description": "flexModel workspace (default: top-level `model`)."},
+        "deployment": {"type": "string", "minLength": 1, "description": "Deployment id (default: top-level `deployment`)."},
+        "modelDevice": {"type": "string", "minLength": 1, "description": "Device name in the model (default: the device's `modelDevice`)."}
+      }
+    }
+  }
+}

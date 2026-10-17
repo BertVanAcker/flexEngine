@@ -18,7 +18,10 @@ from __future__ import annotations
 import gzip
 import io
 import json
+import os
+import shutil
 import subprocess
+import sys
 import tarfile
 from pathlib import Path
 
@@ -29,18 +32,28 @@ from flexengine2.util import canonical_json, iso, sha256_digest
 from flexengine2.artefacts.oci import (AT_NODE, AT_SIGNATURE, EMPTY_JSON, MT_DESCRIPTOR, MT_EMPTY, MT_MANIFEST,
                   MT_PAYLOAD_IMAGE, MT_PAYLOAD_NATIVE, MT_SBOM, Layout)
 
-PROBE = Path(__file__).resolve().parents[1]
-REPO = PROBE.parents[1]
-APPS = PROBE / "apps"
+# Repo checkout: $FLEX_REPO, default computed from this file (src/flexengine2/testing/release.py -> repo root).
+REPO = Path(os.environ.get("FLEX_REPO") or Path(__file__).resolve().parents[4]).resolve()
+# Stand-in flexNode apps (container: alpine + busybox nc health endpoint; native: Python). Default: probe P2's apps,
+# used read-only; $FLEX_TEST_APPS overrides.
+APPS = Path(os.environ.get("FLEX_TEST_APPS") or REPO / "probes" / "p2-reconciling-engine" / "apps")
+
+
+def flex_cli() -> Path:
+    """The flexmodel `flex` CLI: $FLEX_CLI, the repo venv, flexengine's venv, this interpreter's venv, PATH."""
+    cands = [os.environ.get("FLEX_CLI"), REPO / ".venv" / "bin" / "flex", REPO / "flexengine" / ".venv" / "bin" / "flex",
+             Path(sys.prefix) / "bin" / "flex", shutil.which("flex")]
+    for c in cands:
+        if c and Path(c).exists():
+            return Path(c)
+    raise RuntimeError("flex CLI not found: install flexmodel (pip install -e flexmodel) or set FLEX_CLI")
 
 
 # ---- flexModel -> descriptor ---------------------------------------------------------------------
 
 def module_hashes(model_dir: Path) -> dict:
     """FLEX01 interface hashes from the P0/P1 `flex hash` tool (read-only use of flexmodel/)."""
-    flex = REPO / ".venv" / "bin" / "flex"
-    if not flex.exists():
-        raise RuntimeError(f"{flex} not found: run probes/p0-contract-wire/run.sh or install flexmodel first")
+    flex = flex_cli()
     out = subprocess.run([str(flex), "hash", str(model_dir)], check=True, capture_output=True, text=True)
     return json.loads(out.stdout)["modules"]
 
@@ -49,9 +62,7 @@ def model_safety(*model_dirs: Path) -> dict:
     """Model-derived safety classification from `flex safety --json` (flexmodel/safety.py, S4): the one rule
     shared by `flex check`, this release tool, the flexCloud stub and the P6 gateway.
     Returns {"modules": {name: {"class", "why", ...}}, "interferencePaths": [...]}."""
-    flex = REPO / ".venv" / "bin" / "flex"
-    if not flex.exists():
-        raise RuntimeError(f"{flex} not found: install flexmodel first")
+    flex = flex_cli()
     out = subprocess.run([str(flex), "safety", *map(str, model_dirs), "--json"], check=True, capture_output=True,
                          text=True)
     return json.loads(out.stdout)
