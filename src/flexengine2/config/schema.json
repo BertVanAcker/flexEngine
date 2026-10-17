@@ -404,6 +404,11 @@
               "minLength": 1,
               "pattern": "^[a-z_][a-z0-9_.-]*[$]?$",
               "description": "systemd, system scope: User= of the workload units (default: the engine's user; no User= line when the engine runs as root)."
+            },
+            "python": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Payload interpreter (EV-36/37, both runtimes): runs app.py / {python} of payloads without requirements.lock, creates the per-payload venv of payloads with requirements.lock + wheels/, and defines the driver's platform() (dev.flex.arch, dev.flex.pyabi). Default: the engine's interpreter (its own venv is never modified)."
             }
           }
         },

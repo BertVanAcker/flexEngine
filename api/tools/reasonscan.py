@@ -27,7 +27,7 @@ from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[2] / "src" / "flexengine2"
 FILES = ["core/reconciler.py", "artefacts/store.py", "cloud/client.py", "drivers/base.py", "drivers/container.py", "drivers/process.py",
-         "drivers/native/systemd.py",
+         "drivers/native/systemd.py", "drivers/native/pyenv.py",
          "drivers/applab/driver.py", "drivers/applab/ard.py", "drivers/mcu/driver.py", "drivers/mcu/flxm.py",
          "drivers/mcu/link.py", "drivers/plc/verify.py", "drivers/os_rauc.py", "drivers/arduino_ota.py"]
 RAISES = {"VerificationError", "DriverError", "ReleaseError", "SmpError", "ValueError", "RuntimeError",

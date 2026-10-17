@@ -35,8 +35,11 @@ referrer  signature manifest (artifactType application/vnd.flex.signature.v1+jso
 ```
 
 Layer selection [V]: layers whose `dev.flex.profile` equals the deployment's `x-flex-driver`; if the driver has a
-`platform()` (mcu-module: `{dev.flex.arch, dev.flex.floatAbi}`), the layer whose annotations match it; a single
-layer without platform annotations still fits. Required annotations per profile (schema): container
+`platform()` (mcu-module: `{dev.flex.arch, dev.flex.floatAbi}`; native, EV-37: `{dev.flex.arch, dev.flex.pyabi}`),
+the layers whose annotations do not contradict it (an annotation key the layer does not carry fits any value), the
+one matching most keys first; no such layer among several → FE-ART-REL-002; a single layer is always selected (a
+single layer without platform annotations fits; one annotated for another platform is refused by the driver's
+preflight with a precise reason, e.g. FE-NAT-PRE-001). Required annotations per profile (schema): container
 `dev.flex.imageRef` (`…@sha256:…`, run by digest); applab `dev.flex.releaseName`; mcu-module `dev.flex.arch`,
 `dev.flex.floatAbi`; os-rauc `dev.flex.compatible` (matched against the driver's `platform()`); arduino-ota
 `dev.flex.board` (FQBN, matched against `platform()` / the target board) and `dev.flex.firmwareVersion`. Payload media types:
@@ -44,7 +47,7 @@ layer without platform annotations still fits. Required annotations per profile 
 | Profile | Payload mediaType |
 |---|---|
 | container | `application/vnd.flex.payload.image.docker-archive.v1.tar` (docker save / podman oci-archive) |
-| native | `application/vnd.flex.payload.native.v1.tar+gzip` (app.py or unit.json, release.json) |
+| native | `application/vnd.flex.payload.native.v1.tar+gzip` (app.py or unit.json, release.json; optionally `requirements.lock` + `wheels/`, see below) |
 | applab | `application/vnd.flex.payload.applab-release.v1.tar+gzip` (`.ard`, CP-6) |
 | mcu-module | `application/vnd.flex.payload.mcu-module.v1+flxm` (FLXM v1, CP-6) |
 | mcu-firmware | `application/vnd.flex.payload.mcu-firmware.v1+mcuboot` (MCUboot image) |
@@ -52,6 +55,23 @@ layer without platform annotations still fits. Required annotations per profile 
 | os-rauc | `application/vnd.flex.payload.os-rauc.v1+raucb` (signed RAUC bundle; annotation `dev.flex.compatible` = RAUC compatible, required; RAUC re-verifies the CMS signature with its keyring) |
 | arduino-ota | `application/vnd.flex.payload.arduino-ota.v1+ota` (Arduino_Portenta_OTA image, `make_ota.py`; annotations `dev.flex.board`, `dev.flex.firmwareVersion` required; the board checks no signature, see CP-6 §5) |
 | system | `application/vnd.flex.payload.system.v1+json` (record only; no driver deploys it) |
+
+Native payload [V] (EV-36/EV-37, drivers/native/pyenv.py):
+
+| Member | Content |
+|---|---|
+| `app.py` | entry point, run by the payload interpreter (cwd = the unpacked tree), or |
+| `unit.json` | `{"ExecStart": [...]}`: `{python}` = the payload interpreter; a relative program path (`bin/node`) is resolved in the tree (binaries keep mode 0755) |
+| `requirements.lock` (optional) | every distribution pinned `name==version` with `--hash=sha256:<hex>` (continuation lines, comments and markers allowed; no index options) |
+| `wheels/*.whl` (with the lock) | exactly the locked distributions, built for the target CPU and Python (no sdists: the device never builds) |
+
+With `requirements.lock` the native drivers build `<tree>/.venv` per digest at unpack, offline (`--no-index
+--require-hashes --only-binary :all:`), with the configured interpreter (`drivers.native.python`, default the
+engine's); its python runs the payload. Layer annotations (optional, string values): `dev.flex.arch` = the CPU the
+payload is built for (normalised `uname -m`: `x86_64`, `aarch64`, `armv7l`, …; set when a wheel or binary is
+CPU-specific), `dev.flex.pyabi` = the Python ABI of the wheels (`cp312`, `cp313t`, …; set when a wheel is ABI-specific).
+A multi-platform release carries one native layer per platform (e.g. a Rust binary for x86_64 and aarch64, or flcpy
+wheels for cp312 and cp313); producer: `flexengine/tools/native_release.py` (`py-payload`, `flcrs`, `release`).
 
 Descriptor checks [V]: config mediaType (FE-ART-REL-001), `safetyClass` = deployment class (FE-ART-SAF-002), payload
 for the profile (FE-ART-REL-002/003). The descriptor supplies the workload's `health`, `restartPolicy`, `runOptions`.

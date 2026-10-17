@@ -30,7 +30,7 @@ from flexengine2.drivers.native import systemd as systemd_mod
 from flexengine2.drivers.native.systemd import SystemdDriver, unit_name
 
 from .base import DEVICE, FAKES, Harness, Release, digest_of, failing_shim, shim, targz
-from .process import APP, _markers
+from .process import APP, _markers, native_annotations
 
 HERE = Path(__file__).resolve().parent
 FLEXENGINE = HERE.parents[2]
@@ -52,17 +52,20 @@ class _SystemdBase(Harness):
         p.chmod(0o644)
         return str(p), digest_of(data + version.encode())
 
+    def annotations(self) -> dict:
+        return native_annotations()
+
     def workload(self, version="1.0.0", dep_id=None):
         path, dg = self._payload(version)
         return Workload(dep_id=dep_id or self.dep_id, module="ct_native", version=version, digest=dg,
-                        payload_path=path, payload_annotations={"dev.flex.profile": "native"}, health=dict(HEALTH),
+                        payload_path=path, payload_annotations=self.annotations(), health=dict(HEALTH),
                         parameters={"greeting": "hello world"},
                         restart={"policy": "on-failure", "maxRetries": 2, "restartSec": 0.2})
 
     def bad_workload(self, dep_id=None):
         path, dg = self._payload("9.9.9-bad", ready=False, exit_after=self.fail_delay, exit_code=3)
         return Workload(dep_id=dep_id or self.dep_id, module="ct_native", version="9.9.9-bad", digest=dg,
-                        payload_path=path, payload_annotations={"dev.flex.profile": "native"}, health=dict(HEALTH),
+                        payload_path=path, payload_annotations=self.annotations(), health=dict(HEALTH),
                         restart={"policy": "never"})
 
     def refused_release(self):
@@ -319,6 +322,11 @@ class RealSystemdHarness(_SystemdBase):
 
     def make_driver(self):
         return RemoteSystemdDriver(self.box, self.device, self.cdata)
+
+    def annotations(self) -> dict:
+        if "platform" not in _BOX:                       # the box's interpreter (EV-37 platform())
+            _BOX["platform"] = self.make_driver().platform()
+        return {"dev.flex.profile": "native", **_BOX["platform"]}
 
     def transfers(self):
         out = self.box.sh(f"cat {self.cdata}/.ct-extracts 2>/dev/null").stdout

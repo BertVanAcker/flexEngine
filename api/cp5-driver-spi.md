@@ -105,13 +105,28 @@ image's sha256 and size, checked by the patched library) bind what the board ins
 |---|---|---|---|---|
 | `container` | `docker`, `podman` | `drivers/container.py` `CliContainerDriver` | docker / podman CLI (labels, digest-pinned) | `container: {runtime: docker\|podman}` |
 | `container` | `ankaios` | `drivers/container.py` `AnkaiosDriver` | `ank` CLI → Ankaios server | `container: {runtime: ankaios, …}` |
-| `native` | `process` | `drivers/process.py` `ProcessDriver` | local processes; plays systemd itself (tests, dev, Mac) | `native: true` or `{runtime: process}` |
-| `native` | `systemd` | `drivers/native/systemd.py` `SystemdDriver` | real systemd unit files (EV-19) | `native: {runtime: systemd, scope, unitDir, user}` |
+| `native` | `process` | `drivers/process.py` `ProcessDriver` | local processes; plays systemd itself (tests, dev, Mac) | `native: true` or `{runtime: process, python}` |
+| `native` | `systemd` | `drivers/native/systemd.py` `SystemdDriver` | real systemd unit files (EV-19) | `native: {runtime: systemd, scope, unitDir, user, python}` |
 | `applab` | `arduino-app-cli` | `drivers/applab/driver.py` | arduino-app-cli (local or over ssh); exclusive, one app | `applab: {…}` |
 | `mcu-module`, `mcu-firmware` | `mcumgr-llext`, `mcumgr-mcuboot` | `drivers/mcu/driver.py` | SMP to the MCU base image | `mcu: {…}` (MCU child) |
 | `plc-verify` | `plc-verify` | `drivers/plc/verify.py` | ADS / Modbus / shm interface-hash reads | `plc-verify: {…}` |
 | `os-rauc` | `rauc` | `drivers/os_rauc.py` | RAUC A/B OS update (EV-17) | `os-rauc: {sharedDataPath, …}` |
 | `arduino-ota` | `portenta-ota` | `drivers/arduino_ota.py` | flexNode-arduino boards: MQTT command + flexCloud Redis keys + LAN image server (EV-38) | `arduino-ota: {boards, mqtt, redis, serve, …}` |
+
+### `native`, both drivers: own Python dependencies and platform layers (EV-36, EV-37)
+
+Shared code: `drivers/native/pyenv.py`; producer side `flexengine2/testing/native_release.py` and the CLI
+`flexengine/tools/native_release.py`; payload format CP-3 (bundle.v1alpha1.md §2).
+
+| SPI | behaviour |
+|---|---|
+| `platform` | `{"dev.flex.arch": <normalised uname -m of the payload interpreter: x86_64, aarch64, armv7l …>, "dev.flex.pyabi": <cp312, cp313t, pp310 …>}`; the payload interpreter is `drivers.native.python` (default: the engine's). Not runnable → `DriverError` (FE-NAT-023, deferred) |
+| `preflight` | layer annotated for another CPU (FE-NAT-PRE-001) or Python ABI (-002); with `requirements.lock`: every line pinned `name==version` with `--hash=sha256:` (-003/-004), `wheels/` only wheels (-005) whose tags fit the interpreter, CPU and glibc/musl (-006), each wheel locked (-007) with a matching hash (-008), each locked name has a wheel (-009); not a tar.gz → FE-SYD-PRE-001 (the process driver too) |
+| `apply` | after the unpack (per digest): payload with `requirements.lock` → `<python> -m venv <tree>/.venv` + `pip install --no-index --find-links wheels --require-hashes --only-binary :all: -r requirements.lock` (environment: PATH only, `PIP_CONFIG_FILE=/dev/null`; no index, no proxy), fsync of the venv, then the marker `<tree>/.venv.complete` (no marker → the next apply rebuilds the venv). Failure → `DriverError` FE-NAT-020/-021/-022, the venv is removed. The venv's python runs `app.py` and replaces `{python}` in `unit.json`; without `requirements.lock` nothing changes (engine interpreter, no venv). The engine's own venv is never touched |
+| `health` | probe `type: "process"`: the main process alive (process driver) / unit `active` (systemd), no HTTP endpoint (flexCommunicator nodes); any other type: the HTTP probe as before |
+
+The process driver now also honours `unit.json` `ExecStart` (a relative program path is resolved in the payload
+tree: Rust/C++ binaries); an unusable `unit.json` next to an `app.py` falls back to `app.py` as before.
 
 ### `native` / `systemd` (EV-19)
 
@@ -125,7 +140,7 @@ image's sha256 and size, checked by the patched library) bind what the board ins
   `apply`). Supervision baseline (`NRestarts` already reported) in `<dataDir>/native/<dep>/systemd-state.json`.
 - Payload: unpacked once per digest to `<dataDir>/native/<dep>/<digest16>/` (atomic; current, previous and
   rolled-back-from trees kept: rollback without re-unpack). `ExecStart` = `<engine python> app.py` or the payload's
-  `unit.json` `ExecStart` list (`{python}` = the engine's interpreter). Writable: `<dataDir>/native/<dep>/data`.
+  `unit.json` `ExecStart` list (`{python}` = the engine's interpreter, or the payload venv's python, EV-36). Writable: `<dataDir>/native/<dep>/data`.
 - `restartPolicy` → `Restart=` on-failure | always | no, `RestartSec=restartSec` (0.5 s), `StartLimitIntervalSec=60`,
   `StartLimitBurst=maxRetries+1`. systemd restarts; the driver only reports (`supervise()`: `restarted` on an
   `NRestarts` increase, `start-limit-hit`, `exited`).

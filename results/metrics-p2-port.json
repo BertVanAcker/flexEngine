@@ -1,62 +1,62 @@
 {
-  "a_engine_rss_kb": 38208,
-  "a_fresh_deploy_1_node_seconds": 1.438,
-  "a_fresh_deploy_2_nodes_seconds": 2.165,
+  "a_engine_rss_kb": 38352,
+  "a_fresh_deploy_1_node_seconds": 1.43,
+  "a_fresh_deploy_2_nodes_seconds": 1.966,
   "ankaios_binary_bytes": {
     "ank": 14767632,
     "ank-agent": 11826032,
     "ank-server": 12342048
   },
   "ankaios_rss_kb": {
-    "agent": 7016,
-    "server": 7056
+    "agent": 7008,
+    "server": 7032
   },
   "ankaios_server_restart": {
-    "outage_s": 0.406,
-    "workload_deleted_after_s": 1.474
+    "outage_s": 0.875,
+    "workload_deleted_after_s": 1.473
   },
-  "b_container_apply_seconds": 1.091,
-  "b_container_health_gate_seconds": 0.612,
-  "b_native_apply_seconds": 0.816,
-  "b_update_2_nodes_seconds": 2.526,
+  "b_container_apply_seconds": 1.124,
+  "b_container_health_gate_seconds": 0.623,
+  "b_native_apply_seconds": 0.975,
+  "b_update_2_nodes_seconds": 2.679,
   "c1_offline_seconds": 4,
-  "c1_requests_dropped_while_offline": 10,
-  "c1_restore_to_converged_seconds": 3.915,
-  "c2_restore_to_status_converged_seconds": 0.489,
-  "c3_503_window_to_converged_seconds": 5.847,
-  "d_container_detect_seconds": 8.231,
-  "d_container_total_rollback_seconds": 9.859,
+  "c1_requests_dropped_while_offline": 8,
+  "c1_restore_to_converged_seconds": 2.632,
+  "c2_restore_to_status_converged_seconds": 0.52,
+  "c3_503_window_to_converged_seconds": 5.553,
+  "d_container_detect_seconds": 8.125,
+  "d_container_total_rollback_seconds": 9.895,
   "d_health_timeout_configured_seconds": 8,
-  "d_native_total_rollback_seconds": 9.399,
-  "d_publish_to_both_rolled_back_seconds": 19.855,
+  "d_native_total_rollback_seconds": 9.629,
+  "d_publish_to_both_rolled_back_seconds": 20.198,
   "driver_ankaios": {
-    "failed_update_and_rollback": 10.94,
-    "install": 1.567,
-    "remove": 0.978,
-    "update": 2.003
+    "failed_update_and_rollback": 11.091,
+    "install": 1.513,
+    "remove": 0.992,
+    "update": 2.137
   },
   "driver_docker": {
-    "failed_update_and_rollback": 10.518,
-    "install": 1.486,
-    "remove": 0.703,
-    "update": 1.62
+    "failed_update_and_rollback": 10.468,
+    "install": 1.584,
+    "remove": 0.798,
+    "update": 1.798
   },
   "driver_podman": {
-    "failed_update_and_rollback": 10.659,
-    "install": 1.038,
-    "remove": 0.94,
-    "update": 1.986
+    "failed_update_and_rollback": 10.972,
+    "install": 1.03,
+    "remove": 1.017,
+    "update": 1.864
   },
-  "e_remove_one_seconds": 0.968,
+  "e_remove_one_seconds": 1.002,
   "f_reject_reasons": {
     "1.3.0": "artefact rejected: digest mismatch: flexnodes/perception_guard blobs/sha256:26e92aa9c8e1ef8676acbe8ad7c1707e7290a43f5d5ed85c1a1627014a4f5288 hashes to sha256:55af9745ee40568285b722b783f50a97724d849703abdd8ef22f0c77318c6c0b",
     "1.4.0": "artefact rejected: release not signed by a trusted key (no signature)",
-    "1.5.0": "artefact rejected: release not signed by a trusted key (untrusted key ed25519:e459f62f52c6beaf)"
+    "1.5.0": "artefact rejected: release not signed by a trusted key (untrusted key ed25519:03d0656c988eaa93)"
   },
-  "g_safe_state_to_installed_seconds": 1.395,
-  "h_crash_restart_to_converged_seconds": 7.434,
+  "g_safe_state_to_installed_seconds": 1.515,
+  "h_crash_restart_to_converged_seconds": 6.904,
   "i_bundle_bytes": 3676160,
-  "i_bundle_to_running_seconds": 1.377,
+  "i_bundle_to_running_seconds": 1.158,
   "j_native_restart_seconds": 1.619,
-  "release_build_12_releases_seconds_warm": 0.35
+  "release_build_12_releases_seconds_warm": 0.31
 }

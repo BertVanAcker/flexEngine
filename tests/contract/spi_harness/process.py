@@ -13,9 +13,10 @@ from types import SimpleNamespace
 
 from flexengine2.drivers import process as process_mod
 from flexengine2.drivers.base import Workload
+from flexengine2.drivers.native import pyenv
 from flexengine2.drivers.process import ProcessDriver
 
-from .base import DEVICE, Harness, digest_of, targz
+from .base import DEVICE, Harness, Release, digest_of, targz
 
 APP = r'''"""contract-suite native app: GET /healthz on 127.0.0.1:$FLEX_HEALTH_PORT"""
 import json, os, signal, sys, threading, time
@@ -36,6 +37,11 @@ if REL.get("exit_after"):
     time.sleep(REL["exit_after"]); os._exit(REL.get("exit_code", 1))
 threading.Event().wait()
 '''
+
+
+def native_annotations() -> dict:
+    """Layer annotations of a valid native payload for this host's interpreter (EV-37: platform() must match)."""
+    return {"dev.flex.profile": "native", **pyenv.platform_of(pyenv.interpreter_info())}
 
 
 def _markers(device: str) -> dict[str, list[int]]:
@@ -61,8 +67,7 @@ class ProcessHarness(Harness):
     driver_cls = ProcessDriver
     profile = "native"
     fail_delay = 1.5
-    na = {"preflight_refusal": "the process driver has no preflight checks",
-          "unreachable": "local processes: the executor cannot be unreachable",
+    na = {"unreachable": "local processes: the executor cannot be unreachable",
           "drift_repair": "no out-of-band removal for a process unit (a killed process is supervised, not missing)"}
 
     def setup(self):
@@ -89,7 +94,7 @@ class ProcessHarness(Harness):
     def workload(self, version="1.0.0", dep_id=None):
         path, dg = self._payload(version)
         return Workload(dep_id=dep_id or self.dep_id, module="ct_native", version=version, digest=dg,
-                        payload_path=path, payload_annotations={"dev.flex.profile": "native"},
+                        payload_path=path, payload_annotations=native_annotations(),
                         health={"type": "http", "path": "/healthz", "periodSeconds": 0.1, "successThreshold": 2,
                                 "timeoutSeconds": 10},
                         restart={"policy": "on-failure", "maxRetries": 2, "restartSec": 0.2})
@@ -97,10 +102,19 @@ class ProcessHarness(Harness):
     def bad_workload(self, dep_id=None):
         path, dg = self._payload("9.9.9-bad", ready=False, exit_after=self.fail_delay, exit_code=3)
         return Workload(dep_id=dep_id or self.dep_id, module="ct_native", version="9.9.9-bad", digest=dg,
-                        payload_path=path, payload_annotations={"dev.flex.profile": "native"},
+                        payload_path=path, payload_annotations=native_annotations(),
                         health={"type": "http", "path": "/healthz", "periodSeconds": 0.1, "successThreshold": 2,
                                 "timeoutSeconds": 10},
                         restart={"policy": "never"})
+
+    def refused_release(self):
+        """EV-37: a layer built for another CPU (preflight refuses it before anything is unpacked)."""
+        path, _ = self._payload("1.0.0")
+        other = "aarch64" if pyenv.interpreter_info()["arch"] != "aarch64" else "x86_64"
+        rel = Release(path, {**native_annotations(), "dev.flex.arch": other}, {"health": {}, "restartPolicy": {}})
+        return rel, {"metadata": {"id": self.dep_id}, "x-flex-driver": "native",
+                     "spec": {"applicationId": "ct_native", "parameters": {},
+                              "deploymentProfile": {"components": [{"properties": {"revision": "1.0.0"}}]}}}
 
     def transfers(self):
         return self.n_extract

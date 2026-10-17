@@ -522,6 +522,123 @@
    "meaning": "fail-fast"
   },
   {
+   "code": "FE-NAT-020",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "cannot create the payload venv with {python}: {error}",
+   "pattern": "^cannot\\ create\\ the\\ payload\\ venv\\ with\\ (.+?):\\ (.+?)$",
+   "meaning": "`<python> -m venv` failed at unpack (interpreter without the venv module / ensurepip, e.g. Debian without python3-venv; disk full)"
+  },
+  {
+   "code": "FE-NAT-021",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "offline install of the payload's requirements.lock failed: {error}",
+   "pattern": "^offline\\ install\\ of\\ the\\ payload's\\ requirements\\.lock\\ failed:\\ (.+?)$",
+   "meaning": "pip install --no-index --require-hashes from the payload's wheels/ failed (hash mismatch, missing or unfitting wheel); the venv is removed, no marker is written"
+  },
+  {
+   "code": "FE-NAT-022",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "payload venv ({step}): no answer within {timeout} s",
+   "pattern": "^payload\\ venv\\ \\((.+?)\\):\\ no\\ answer\\ within\\ (.+?)\\ s$",
+   "meaning": "venv creation or the offline install exceeded the driver's venv timeout"
+  },
+  {
+   "code": "FE-NAT-023",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "payload interpreter {python} cannot run: {error}",
+   "pattern": "^payload\\ interpreter\\ (.+?)\\ cannot\\ run:\\ (.+?)$",
+   "meaning": "drivers.native.python is not runnable: executor problem (platform()/preflight raise DriverError: deferred, never a refusal)"
+  },
+  {
+   "code": "FE-NAT-PRE-001",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "native payload is built for {arch} (dev.flex.arch), this device is {device}",
+   "pattern": "^native\\ payload\\ is\\ built\\ for\\ (.+?)\\ \\(dev\\.flex\\.arch\\),\\ this\\ device\\ is\\ (.+?)$",
+   "meaning": "the selected layer is annotated for another CPU (e.g. an arm64-only release on an x86_64 device)"
+  },
+  {
+   "code": "FE-NAT-PRE-002",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "native payload is built for Python {pyabi} (dev.flex.pyabi), the device's interpreter is {device}",
+   "pattern": "^native\\ payload\\ is\\ built\\ for\\ Python\\ (.+?)\\ \\(dev\\.flex\\.pyabi\\),\\ the\\ device's\\ interpreter\\ is\\ (.+?)$",
+   "meaning": "the selected layer's wheels are for another Python ABI"
+  },
+  {
+   "code": "FE-NAT-PRE-003",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "requirements.lock line {n} is not a pinned requirement with --hash: {line}",
+   "pattern": "^requirements\\.lock\\ line\\ (.+?)\\ is\\ not\\ a\\ pinned\\ requirement\\ with\\ \\-\\-hash:\\ (.+?)$",
+   "meaning": "every requirement must be name==version with --hash=sha256:..."
+  },
+  {
+   "code": "FE-NAT-PRE-004",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "requirements.lock is not UTF-8 text",
+   "pattern": "^requirements\\.lock\\ is\\ not\\ UTF\\-8\\ text$",
+   "meaning": ""
+  },
+  {
+   "code": "FE-NAT-PRE-005",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "{member} is not a wheel (the device never builds from source)",
+   "pattern": "^(.+?)\\ is\\ not\\ a\\ wheel\\ \\(the\\ device\\ never\\ builds\\ from\\ source\\)$",
+   "meaning": "wheels/ holds an sdist or another file"
+  },
+  {
+   "code": "FE-NAT-PRE-006",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "wheel {file} does not fit this device (Python {pyabi}, {arch}, {libc})",
+   "pattern": "^wheel\\ (.+?)\\ does\\ not\\ fit\\ this\\ device\\ \\(Python\\ (.+?),\\ (.+?),\\ (.+?)\\)$",
+   "meaning": "wheel tags (python/abi/platform) do not fit the payload interpreter, CPU or glibc/musl"
+  },
+  {
+   "code": "FE-NAT-PRE-007",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "wheel {file} is not in requirements.lock",
+   "pattern": "^wheel\\ (.+?)\\ is\\ not\\ in\\ requirements\\.lock$",
+   "meaning": ""
+  },
+  {
+   "code": "FE-NAT-PRE-008",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "wheel {file} does not match its --hash in requirements.lock",
+   "pattern": "^wheel\\ (.+?)\\ does\\ not\\ match\\ its\\ \\-\\-hash\\ in\\ requirements\\.lock$",
+   "meaning": "tampered or rebuilt wheel"
+  },
+  {
+   "code": "FE-NAT-PRE-009",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "requirements.lock pins {name}=={version} but wheels/ has no wheel for it",
+   "pattern": "^requirements\\.lock\\ pins\\ (.+?)==(.+?)\\ but\\ wheels/\\ has\\ no\\ wheel\\ for\\ it$",
+   "meaning": "incomplete payload (the install would need an index)"
+  },
+  {
    "code": "FE-SYD-001",
    "field": "detail",
    "stage": "apply",
@@ -609,7 +726,7 @@
    "profile": "native",
    "template": "native payload is not a tar.gz archive: {error}",
    "pattern": "^native\\ payload\\ is\\ not\\ a\\ tar\\.gz\\ archive:\\ (.+?)$",
-   "meaning": ""
+   "meaning": "both native drivers (the process driver since EV-36)"
   },
   {
    "code": "FE-SYD-PRE-002",
