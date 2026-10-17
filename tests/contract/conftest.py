@@ -100,3 +100,18 @@ def _remove_contract_images():
         for ref in p.stdout.split():
             if "flexnode/ct_app_" in ref:
                 subprocess.run([rt, "rmi", "-f", ref], capture_output=True, timeout=60)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _stop_shared_ads_standin():
+    """The ADS stand-in is shared by the contract tests (AMS TCP port 48898 is fixed). Stop it after each contract
+    test module (it restarts on demand), so later suites in the same pytest session (tests/integration/edge) can bind the port."""
+    yield
+    from spi_harness import plc as _plc
+
+    srv = _plc._ADS.pop("plc", None)
+    if srv is not None:
+        srv.stop()
+        th = getattr(srv, "server", None)          # pyads AdsTestServer is a Thread: wait until it released the port
+        if hasattr(th, "join"):
+            th.join(timeout=10)
