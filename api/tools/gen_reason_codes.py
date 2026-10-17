@@ -43,6 +43,8 @@ T = [
     ("FE-REC-006", "reason", "drift", "engine", "drift repaired (workload was missing)", "a committed workload disappeared and was re-created"),
     ("FE-REC-007", "reason", "supervise", "engine", "supervisor: {event}", "local supervision event: restarted (state Installed) or start-limit-hit (state Failed)",
      {"pattern": "^supervisor: (restarted|start-limit-hit)$", "example": "supervisor: start-limit-hit"}),
+    ("FE-REC-008", "reason", "drift", "engine", "drift repaired (executor ran another release)", "supervise(): a committed workload's executor ran another digest than the committed one (drift by digest); the committed release was re-applied (EV-13)"),
+    ("FE-REC-009", "reason", "resume", "engine", "interrupted install of {version} abandoned (no longer desired)", "restart after a crash during an install the accepted desired state no longer asks for: the uncommitted release was taken off the executor -- the committed version restored (state Installed) or the deployment removed (state Removed) (EV-13)"),
     # ---- activation gate (state Pending) ----
     ("FE-GATE-001", "reason", "gate", "engine", "awaiting safe state: {signals}", "required safe-state signals are not true (FE-S6; implicit machine_parked, operator_confirmed for safety-relevant)"),
     ("FE-GATE-002", "reason", "gate", "engine", "outside activation window {start}-{end} UTC", "x-flex-activation.window is closed"),

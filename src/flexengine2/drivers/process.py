@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import io
 import os
+import shutil
 import signal
 import socket
 import subprocess
@@ -21,7 +22,7 @@ import tarfile
 import time
 from pathlib import Path
 
-from flexengine2.util import atomic_write_json, read_json
+from flexengine2.util import atomic_write_bytes, atomic_write_json, fsync_dir, fsync_tree, read_json
 from flexengine2.drivers.base import Driver, DriverError, Observed, Workload, http_probe, wait_until
 
 
@@ -43,6 +44,8 @@ class ProcessDriver(Driver):
         self.root.mkdir(parents=True, exist_ok=True)
         self.units_path = self.root / "units.json"
         self.units: dict = read_json(self.units_path, {})
+        if sys.platform.startswith("linux"):
+            self._reap_unknown()
 
     def _save(self):
         atomic_write_json(self.units_path, self.units)
@@ -68,16 +71,28 @@ class ProcessDriver(Driver):
         return f"FLEX_UNIT={u['marker']}".encode() in env.split(b"\0")
 
     def _unpack(self, wl: Workload) -> Path:
+        """Unpack the payload once per digest. Durable before it is marked complete (EV-13): every extracted file and
+        directory is fsynced, then `.complete` is written atomically (write + fsync + rename + dir fsync), so after
+        a power cut the marker never stands next to files whose data did not reach the disk. A directory without
+        the marker (interrupted unpack) is unpacked again from scratch."""
         d = self.root / wl.dep_id / wl.digest.split(":")[1][:16]
         if not (d / ".complete").exists():
+            if d.exists():
+                shutil.rmtree(d)
             d.mkdir(parents=True, exist_ok=True)
             with tarfile.open(wl.payload_path, "r:gz") as tf:
                 tf.extractall(d, filter="data")
-            (d / ".complete").write_text(wl.digest)
+            fsync_tree(d)
+            fsync_dir(d.parent)
+            atomic_write_bytes(d / ".complete", wl.digest.encode())
         return d
 
     def _spawn(self, dep_id: str):
         u = self.units[dep_id]
+        # "spawning" first (EV-13): a kill between Popen and the save below leaves a process the unit table does not
+        # know; the next driver start finds it by its FLEX_UNIT marker and adopts or kills it (_reap_unknown)
+        u.update(pid=None, spawning=time.time())
+        self._save()
         log = open(Path(u["dir"]) / "app.log", "ab")
         env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "FLEX_UNIT": u["marker"],
                "FLEX_HEALTH_PORT": str(u["port"]), "PYTHONDONTWRITEBYTECODE": "1"}
@@ -86,8 +101,68 @@ class ProcessDriver(Driver):
         p = subprocess.Popen([sys.executable, "app.py"], cwd=u["dir"], env=env, stdout=log, stderr=log,
                              stdin=subprocess.DEVNULL, start_new_session=True)
         log.close()
+        u.pop("spawning", None)
         u.update(pid=p.pid, startedAt=time.time())
         self._save()
+
+    def _marked_processes(self) -> dict[str, list[tuple[int, str]]]:
+        """{dep_id: [(pid, cwd)]} of live process-group leaders owned by this user, running from a directory of this
+        driver (<data>/native/...) and carrying this device's FLEX_UNIT marker in their environment (Linux /proc;
+        empty elsewhere). The directory check keeps another data directory with the same device id out."""
+        out: dict[str, list[tuple[int, str]]] = {}
+        pre = f"FLEX_UNIT={self.device}/".encode()
+        root = os.path.realpath(self.root) + os.sep
+        try:
+            pids = [int(p) for p in os.listdir("/proc") if p.isdigit()]
+        except OSError:
+            return out
+        uid = os.getuid()
+        for pid in pids:
+            try:
+                if pid == os.getpid() or os.stat(f"/proc/{pid}").st_uid != uid or os.getpgid(pid) != pid:
+                    continue
+                with open(f"/proc/{pid}/stat") as f:
+                    if f.read().split(") ")[-1].startswith("Z"):
+                        continue
+                cwd = os.readlink(f"/proc/{pid}/cwd")
+                if not (cwd + os.sep).startswith(root):
+                    continue
+                env = Path(f"/proc/{pid}/environ").read_bytes().split(b"\0")
+            except (OSError, ProcessLookupError):
+                continue
+            for e in env:
+                if e.startswith(pre):
+                    out.setdefault(e[len(pre):].decode("utf-8", "replace"), []).append((pid, cwd))
+                    break
+        return out
+
+    def _reap_unknown(self):
+        """At driver start: workload processes of this device the unit table does not know (an engine killed between
+        Popen and the unit-table save, EV-13). A unit caught `spawning` whose process runs from the unit's directory
+        adopts it; every other unknown process with this device's marker is killed (it would hold the port and run
+        unsupervised)."""
+        changed = False
+        for dep_id, procs in self._marked_processes().items():
+            u = self.units.get(dep_id)
+            known = u.get("pid") if u and self._alive(u) else None
+            for pid, cwd in procs:
+                if pid == known:
+                    continue
+                if (u is not None and known is None and u.get("spawning") and u.get("wantRunning")
+                        and cwd == os.path.realpath(u.get("dir", ""))):
+                    u.pop("spawning", None)
+                    u.update(pid=pid, startedAt=time.time())
+                    known, changed = pid, True
+                    continue
+                try:
+                    os.killpg(pid, signal.SIGKILL)
+                except (ProcessLookupError, PermissionError):
+                    pass
+        for u in self.units.values():
+            if u.pop("spawning", None) is not None:
+                changed = True
+        if changed:
+            self._save()
 
     def _stop(self, u: dict | None, timeout: float = 5):
         if not self._alive(u):

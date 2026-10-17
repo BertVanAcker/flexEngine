@@ -1,7 +1,8 @@
 """flexCloud desired-state API stub (Margo-shaped, stdlib only).
 
 Southbound (device) API, every request Ed25519-signed by the device key registered at onboarding:
-  POST /api/v1/onboarding                                   one-time token + device public key
+  POST /api/v1/onboarding                                   one-time token + device public key (a repeat with the
+                                                            used token, same device and key = same answer)
   PUT  /api/v1/devices/{id}/capabilities                    capabilities document (POST accepted too)
   GET  /api/v1/devices/{id}/deployments                     desired state; ETag / If-None-Match -> 304
   POST /api/v1/devices/{id}/deployments/{dep}/status        deployment status (idempotent by seq)
@@ -383,10 +384,22 @@ def make_handler(st: CloudState, base_url_holder: dict):
             if method == "POST" and path == "/api/v1/onboarding":
                 req = json.loads(body)
                 with st.lock:
+                    used = st.s.setdefault("usedTokens", {}).get(req["token"])
+                    if (used is not None and used.get("deviceId") == req["deviceId"]
+                            and used.get("publicKey") == req["publicKey"]
+                            and (st.s["devices"].get(req["deviceId"]) or {}).get("publicKey") == req["publicKey"]):
+                        # idempotent retry (EV-13): the device lost the reply or was killed before it saved its
+                        # onboarded state; same token + same device + same key -> the same answer. A different key
+                        # with a used token is still refused below.
+                        st.audit(f"device:{req['deviceId']}", "device.onboarding-repeated",
+                                 {"keyId": crypto.key_id(req["publicKey"])})
+                        st.save()
+                        return self._json(201, {"deviceId": req["deviceId"], "cloudPublicKey": crypto.public_b64(st.key)})
                     dev = st.s["tokens"].pop(req["token"], None)
                     if dev is None or dev != req["deviceId"]:
                         raise Problem(403, "Invalid or used onboarding token")
                     crypto.load_public(req["publicKey"])  # validates the key
+                    st.s["usedTokens"][req["token"]] = {"deviceId": dev, "publicKey": req["publicKey"], "at": iso()}
                     st.s["devices"][dev] = {"publicKey": req["publicKey"], "keyId": crypto.key_id(req["publicKey"]),
                                             "onboardedAt": iso(), "capabilities": None, "lastSeen": iso()}
                     st.audit(f"device:{dev}", "device.onboarded", {"keyId": crypto.key_id(req["publicKey"])})

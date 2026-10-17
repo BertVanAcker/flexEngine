@@ -26,8 +26,7 @@ import prop_oracle as O
 from prop_lab import budget
 
 CLOSED = "http://127.0.0.1:9"
-# unsigned releases (1.3.0) are excluded here: known bug, test_bug_unsigned_release_in_bundle_never_rejected
-VERSIONS = st.sampled_from(L.GOOD * 3 + ("1.2.0",))
+VERSIONS = st.sampled_from(L.GOOD * 3 + ("1.2.0", "1.3.0"))
 SPEC = st.dictionaries(st.sampled_from(L.DEPS), VERSIONS, min_size=1, max_size=2)
 KILLS = st.one_of(st.none(), st.builds(lambda e, k, w: f"{e}:{k}:{w}",
                                        st.sampled_from(("write:cas", "write:state.json", "action:apply",
@@ -96,16 +95,16 @@ def test_bundle_only_converges_and_replays_refused(lab, schedule):
 @pytest.mark.slow
 @budget(push=0, nightly=20, shrink=False)
 @example(schedule=([{"dl-b": "1.1.0"}, {"dl-a": "1.2.0"}], [(2, None), (2, None), (1, "gate:1:after")]))
+@example(schedule=([{"dl-b": "1.0.0"}, {"dl-b": "1.0.0"}], [(0, "write:cas:1:after")]))   # nothing ever saved
 @given(schedule=SCHEDULE)
 def test_bundle_only_converges_and_replays_refused_nightly(lab, schedule):
     run_bundles(lab, schedule)
 
 
-@pytest.mark.xfail(strict=True, reason="bug: bundle-only, a release without signature is never rejected: import_bundle "
-                   "indexes only signatures that exist, ArtefactStore.referrers() then asks the (unreachable) cloud, "
-                   "Offline -> 'prepare deferred' every tick: no Failed report, the manifest's removals held forever")
+# regression (EV-13): bundle-only, a release without signature is rejected offline (FE-ART-SIG-001; import_bundle
+# records an empty referrer index for it) instead of being deferred forever by an unreachable cloud
 @settings(phases=[Phase.explicit])
 @example(schedule=([{"dl-b": "1.1.0"}, {"dl-a": "1.3.0"}], [(0, None), (1, None)]))
 @given(schedule=SCHEDULE)
-def test_bug_unsigned_release_in_bundle_never_rejected(lab, schedule):
+def test_unsigned_release_in_bundle_rejected(lab, schedule):
     run_bundles(lab, schedule, bound=8)

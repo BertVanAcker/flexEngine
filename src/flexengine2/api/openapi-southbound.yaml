@@ -130,6 +130,11 @@ paths:
   /api/v1/onboarding:
     post:
       summary: Register the device public key with a one-time token (unsigned)
+      description: >-
+        Idempotent (requirement, EV-13): a repeated request with an already used token, the same deviceId and the
+        same publicKey the token was used with gets the same answer as the first one (201, same body), so a device
+        that lost the reply or was killed before it saved its onboarded state can retry. A used token with another
+        publicKey or deviceId is refused with 403 (CP-4, trust.v1alpha1.md section 1, Onboarding).
       operationId: onboard
       requestBody:
         required: true

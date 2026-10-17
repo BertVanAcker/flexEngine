@@ -282,14 +282,12 @@ class InprocDevice:
         return True
 
     # ---- final invariants -------------------------------------------------------------------------------
-    def converged(self, known: frozenset = frozenset()) -> list[str]:
+    def converged(self) -> list[str]:
         st = self.engine.state
         errs: list[str] = []
         applied = {d: r["wl"]["digest"] for d, r in st["applied"].items()}
         units = {d: u["digest"] for d, u in self.exec.units.items()}
         j = st.get("journal")
-        if "stale-journal" in known:   # known bug (test_bug_stale_journal_*): tolerate what such a journal left
-            j = O.tolerate_stale(st, self.crashes, applied, units, j)
         O.check(j is None, f"journal left open: {j}", errs)
         O.check(applied == units, f"applied {applied} != executor {units}", errs)
         O.check(all(u["running"] for u in self.exec.units.values()), "a committed workload is not running", errs)
@@ -300,8 +298,6 @@ class InprocDevice:
             want = {d["metadata"]["id"]: d["spec"]["deploymentProfile"]["components"][0]["properties"]["digest"]
                     for d in doc["deployments"]}
             for dep, dg in want.items():
-                if dep not in applied and dep in O.stale_journals(st, self.crashes) and "stale-journal" in known:
-                    continue
                 if DIGEST_KIND[dg] == "good":
                     O.check(applied.get(dep) == dg, f"{dep}: desired good {dg[:15]} not applied ({applied.get(dep)})",
                             errs)
@@ -311,25 +307,23 @@ class InprocDevice:
                 O.check(dep in want, f"{dep}: still applied but absent from the desired state", errs)
         return errs
 
-    def settle(self, bound: int = 8, known: frozenset = frozenset()) -> list[str]:
+    def settle(self, bound: int = 8) -> list[str]:
         """Eventual convergence within `bound` undisturbed ticks."""
         errs = []
         for _ in range(bound):
             self.engine.tick()
-            errs = self.converged(known)
+            errs = self.converged()
             if not errs:
                 break
         self.observe()
         return errs
 
-    def final_check(self, known: frozenset = frozenset()):
-        """`known`: known-bug tolerances (KNOWN_BUGS) the broad properties apply so they keep exploring; every
-        tolerated bug has its own strict xfail test with the minimal schedule."""
+    def final_check(self):
         errs = list(self.errs)
-        errs += [f"not converged within bound: {e}" for e in self.settle(known=known)]
+        errs += [f"not converged within bound: {e}" for e in self.settle()]
         acts, bad = O.read_actions(self.data / "actions.jsonl")
         errs += [f"unparseable action record (fsynced records must survive): {b[:80]!r}" for b in bad]
-        errs += O.duplicate_applies(acts, self.crashes, strict="reapply-after-rollback-crash" not in known)
+        errs += O.duplicate_applies(acts, self.crashes)
         O.raise_if(errs, f"crashes={self.crashes}\nactions={[(a['action'], a['dep'], a.get('version')) for a in acts]}")
 
     def close(self):

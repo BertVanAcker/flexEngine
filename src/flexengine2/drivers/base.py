@@ -141,6 +141,9 @@ class DriverError(RuntimeError):
 class Driver(ABC):
     profile: str = "?"
     name: str = "?"
+    # supervise(): a running workload whose status().digest is another release than the committed one is repaired
+    # (re-applied). A driver whose executor may legitimately run another digest for a while sets this False.
+    repairs_digest_drift: bool = True
 
     @abstractmethod
     def plan(self, current: Workload | None, desired: Workload | None) -> list[str]: ...

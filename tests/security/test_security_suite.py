@@ -96,6 +96,7 @@ INDEX = {
     "token-file-reuse": "TokenConsumedError",
     "token-value-reuse": "FE-CLD-001",
     "token-other-device": "FE-CLD-001",
+    "token-reuse-other-key": "FE-CLD-001",
     # offline bundle
     "bundle-tampered-blob": "FE-ART-DIG-001",
     "bundle-garbage": "ReadError",
@@ -594,6 +595,25 @@ def test_onboarding_token_reuse_refused(lab, tmp_path):
     for x in (second, third, fourth):
         assert not x.eng.state["onboarded"]
         x.untouched()
+
+
+def test_onboarding_repeat_is_idempotent_for_the_same_key_only(lab):
+    """EV-13 requirement (trust.v1alpha1.md, Onboarding): a repeat with the used token, the same device and the same
+    public key gets the first answer (the device lost the reply / was killed before saving); another key is refused."""
+    value = token(lab.srv, "sec-dev")
+    d = lab.engine(onboard_token=False, onboardingToken=value)
+    d.tick()
+    assert d.eng.state["onboarded"]
+    body = {"deviceId": d.dev, "publicKey": crypto.public_b64(d.eng.key), "token": value}
+    status, _, data = d.eng.client.post_json("/api/v1/onboarding", body, signed=False)
+    assert status == 201 and json.loads(data) == {"deviceId": d.dev, "cloudPublicKey": d.eng.cloud_pub}
+    rogue = crypto.public_b64(crypto.generate())
+    with pytest.raises(Rejected) as ei:
+        d.eng.client.post_json("/api/v1/onboarding", dict(body, publicKey=rogue), signed=False)
+    _rejected("token-reuse-other-key", ei.value, 403, "Invalid or used onboarding token")
+    assert lab.srv.state.s["devices"][d.dev]["publicKey"] == body["publicKey"]   # the registered key is kept
+    d.tick()
+    assert d.eng.metrics()["lastError"] is None
 
 
 # ---- offline bundle -----------------------------------------------------------------------------------------------

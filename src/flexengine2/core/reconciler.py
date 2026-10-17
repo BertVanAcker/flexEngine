@@ -43,7 +43,7 @@ import traceback
 from pathlib import Path
 
 from flexengine2.identity import crypto, keys, secrets
-from flexengine2.util import read_json
+from flexengine2.util import read_json, repair_jsonl_tail
 from flexengine2.artefacts.store import ArtefactStore, VerificationError
 from flexengine2 import __version__
 from flexengine2.drivers.base import SPI_VERSION, Driver, DriverError, Workload, wait_until
@@ -122,6 +122,7 @@ class Engine:
         self._backpressure = False
         self.drivers = drivers if drivers is not None else build_drivers(cfg, self.dir)
         self.actions_path = self.dir / "actions.jsonl"
+        repair_jsonl_tail(self.actions_path)   # a power cut inside the last append leaves a torn line (EV-13)
         self.history = history_mod.History(self.dir, self.device, int(cfg.get("historyMax", history_mod.DEFAULT_MAX)))
         self._hist_seen: dict[str, set] = {}
         if not tracing.enabled() and cfg.get("otel"):
@@ -473,6 +474,7 @@ class Engine:
                 tracing.set_attrs(sp, **{"flex.seconds": round(time.time() - t0, 3)})
 
     def reconcile(self):
+        self.resolve_journal()   # crash-resume: an install journal left by a crash (EV-13)
         desired_doc = self.state["desired"]
         if not desired_doc:
             return
@@ -575,7 +577,8 @@ class Engine:
         wl = self._workload(d, rel)
         cur = applied.get(dep_id)
         cur_wl = Workload.from_dict(cur["wl"]) if cur else None
-        self.state["journal"] = {"dep": dep_id, "digest": wl.digest, "phase": "applying", "at": time.time()}
+        self.state["journal"] = {"dep": dep_id, "digest": wl.digest, "version": wl.version, "driver": prof,
+                                 "phase": "applying", "at": time.time()}
         self.save()
         obs = drv.status(dep_id)
         t0 = time.time()
@@ -607,18 +610,35 @@ class Engine:
             self.report(dep_id, "Installed", version=wl.version, digest=wl.digest, health="healthy",
                         interfaceHash=rel.descriptor.get("interfaceHash"), applySeconds=round(time.time() - t0, 3), healthGateSeconds=round(dt, 3))
             return
-        # apply or health gate failed -> automatic rollback
+        # apply or health gate failed -> automatic rollback. The verdict (digest failed) and the rollback phase are
+        # made durable *before* the rollback starts, so a crash inside it resumes the rollback at the restart
+        # (resolve_journal) and never starts the known-bad release again (EV-13).
         self.state["failed"][dep_id] = wl.digest
         reason = "apply failed" if apply_error is not None else "health check failed"
+        self.state["journal"].update(phase="rolling-back", reason=reason, failure=why, detectSeconds=round(dt, 3),
+                                     startedAt=t0)
+        self.save()
+        self._rollback(dep_id, drv, prof, wl.version, wl.digest, wl, cur_wl, self.state["journal"])
+
+    def _rollback(self, dep_id: str, drv: Driver, prof: str, version: str, digest: str, failed_wl, cur_wl,
+                  j: dict, resumed: bool = False):
+        """ROLLING_BACK: re-apply the committed previous version (or remove a failed first install), close the
+        journal and report Failed. Also run from the persisted journal after a crash (`resumed`): then a previous
+        version the executor already runs again is not applied a second time."""
+        reason, why = j.get("reason") or "health check failed", j.get("failure")
+        dt, t0 = float(j.get("detectSeconds") or 0), float(j.get("startedAt") or j.get("at") or time.time())
         detail = {"failure": why, "failFast": bool(why) and not str(why).startswith("timeout")}
+        again = {"resumed": True} if resumed else {}
         if cur_wl:
-            self._hist(dep_id, "ROLLING_BACK", version=cur_wl.version, failed=wl.version)
-            self.action("rollback", dep_id, version=cur_wl.version, digest=cur_wl.digest, failed=wl.version)
+            self._hist(dep_id, "ROLLING_BACK", version=cur_wl.version, failed=version)
+            self.action("rollback", dep_id, version=cur_wl.version, digest=cur_wl.digest, failed=version, **again)
             with self.tracer.span("engine.rollback", self._mv_traceparent(),
                                   **{"flex.deployment": dep_id, "flex.version": cur_wl.version,
-                                     "flex.failed_version": wl.version}) as sp:
+                                     "flex.failed_version": version}) as sp:
                 try:
-                    self._driver_call("apply", drv, prof, drv.apply, wl, cur_wl)
+                    obs = drv.status(dep_id) if resumed else None
+                    if not (obs is not None and obs.present and obs.running and obs.digest == cur_wl.digest):
+                        self._driver_call("apply", drv, prof, drv.apply, failed_wl, cur_wl)
                     back, _ = self.health_gate(drv, dep_id, cur_wl.health, rollback=True)
                 except DriverError as e:
                     back = False
@@ -627,16 +647,76 @@ class Engine:
             self.state["journal"] = None
             fd = getattr(drv, "failure_detail", None)   # e.g. when the fault became visible on the device
             extra = (fd(dep_id, time.time()) or {}) if fd and back else {}
-            self.report(dep_id, "Failed", version=wl.version, digest=wl.digest, reason=reason,
+            self.report(dep_id, "Failed", version=version, digest=digest, reason=reason,
                         rolledBackTo=cur_wl.version, rollbackHealthy=back, **detail,
                         detectSeconds=round(dt, 3), totalSeconds=round(time.time() - t0, 3), **extra)
         else:
-            self._hist(dep_id, "ROLLING_BACK", version=None, failed=wl.version)
-            self.action("remove", dep_id, version=wl.version, digest=wl.digest, why="failed first install")
+            self._hist(dep_id, "ROLLING_BACK", version=None, failed=version)
+            self.action("remove", dep_id, version=version, digest=digest, why="failed first install", **again)
             self._driver_call("remove", drv, prof, drv.remove, dep_id)
             self.state["journal"] = None
-            self.report(dep_id, "Failed", version=wl.version, digest=wl.digest, reason=reason,
+            self.report(dep_id, "Failed", version=version, digest=digest, reason=reason,
                         rolledBackTo=None, **detail, detectSeconds=round(dt, 3))
+
+    def resolve_journal(self):
+        """Crash-resume of an install journal found at the start of a reconcile (EV-13):
+
+        * phase `rolling-back`: the failed verdict is already durable; finish the rollback (re-apply the committed
+          version, or remove a failed first install) and report Failed -- the known-bad release is not started again
+        * phase `applying` whose (deployment, digest) the accepted desired state still asks for: left to the install
+          path (it adopts what the executor already runs, or applies again)
+        * phase `applying` no longer desired (desired state changed, deployment dropped, manifest rejected): the
+          uncommitted release is taken off the executor -- the committed version is restored (action `repair`,
+          report Installed) or, without one, the deployment is removed (report Removed)."""
+        j = self.state.get("journal")
+        if not j:
+            return
+        dep_id, digest = j.get("dep"), j.get("digest")
+        version = j.get("version") or (digest or "?")[:19]
+        cur = self.state["applied"].get(dep_id)
+        cur_wl = Workload.from_dict(cur["wl"]) if cur else None
+        prof = j.get("driver") or (cur["dep"]["x-flex-driver"] if cur else None)
+        doc = self.state.get("desired") or {}
+        want = None
+        if doc and (self.state.get("rejected") or {}).get("manifestVersion") != doc.get("manifestVersion"):
+            want = next((d for d in doc.get("deployments", []) if d["metadata"]["id"] == dep_id), None)
+        if prof is None and want is not None:
+            prof = want.get("x-flex-driver")
+        drv = self.drivers.get(prof) if prof else None
+        if drv is None:
+            self.log(f"install journal of {dep_id} names no available driver ({prof}); dropped", "warning",
+                     "journal.dropped", dep=dep_id)
+            self.state["journal"] = None
+            self.save()
+            return
+        self._dep = dep_id
+        if j.get("phase") == "rolling-back":
+            self.log(f"resuming the rollback of {dep_id} {version} after a restart", "warning", "rollback.resumed",
+                     dep=dep_id, version=version)
+            self.state["failed"][dep_id] = digest
+            self._rollback(dep_id, drv, prof, version, digest, None, cur_wl, j, resumed=True)
+            return
+        if want is not None and self._rev(want)["digest"] == digest and self.state["failed"].get(dep_id) != digest:
+            return   # still desired: the install path resumes it (adopt or apply)
+        obs = drv.status(dep_id)
+        if obs.present and not obs.running and str(obs.detail).startswith("executor unreachable"):
+            raise Offline(f"{prof} executor unreachable: {obs.detail}")   # resolved once it answers again
+        why = f"interrupted install of {version} abandoned (no longer desired)"
+        self.log(f"{dep_id}: {why}", "warning", "journal.abandoned", dep=dep_id, version=version)
+        if cur_wl is not None:
+            if not (obs.present and obs.running and obs.digest == cur_wl.digest):
+                self._hist(dep_id, "REPAIR", version=cur_wl.version, abandoned=version)
+                self.action("repair", dep_id, version=cur_wl.version, digest=cur_wl.digest, abandoned=version)
+                self._driver_call("apply", drv, prof, drv.apply, None, cur_wl)
+            self.state["journal"] = None
+            self.report(dep_id, "Installed", version=cur_wl.version, digest=cur_wl.digest, reason=why)
+        else:
+            if obs.present:
+                self.action("remove", dep_id, version=version, digest=digest, why="abandoned install")
+                self._driver_call("remove", drv, prof, drv.remove, dep_id)
+            self.state["journal"] = None
+            self.report(dep_id, "Removed", version=version, reason=why)
+        self._dep = None
 
     # ---- supervision / drift ------------------------------------------------------------------
     def supervise(self):
@@ -663,6 +743,17 @@ class Engine:
                 self.action("repair", dep_id, version=wl.version, digest=wl.digest)
                 self._driver_call("apply", drv, rec["dep"]["x-flex-driver"], drv.apply, None, wl)
                 self.report(dep_id, "Installed", version=wl.version, reason="drift repaired (workload was missing)")
+                continue
+            j = self.state.get("journal") or {}
+            if (obs.running and obs.digest and obs.digest != wl.digest and getattr(drv, "repairs_digest_drift", True)
+                    and not (j.get("dep") == dep_id and j.get("digest") == obs.digest)):
+                # drift by digest (EV-13): the executor runs another release than the committed one (e.g. what an
+                # interrupted install left behind) -> restore the committed version
+                self._hist(dep_id, "REPAIR", version=wl.version, observed=obs.version)
+                self.action("repair", dep_id, version=wl.version, digest=wl.digest, observed=obs.digest)
+                self._driver_call("apply", drv, rec["dep"]["x-flex-driver"], drv.apply, None, wl)
+                self.report(dep_id, "Installed", version=wl.version, digest=wl.digest,
+                            reason="drift repaired (executor ran another release)")
                 continue
             if check_health:
                 try:

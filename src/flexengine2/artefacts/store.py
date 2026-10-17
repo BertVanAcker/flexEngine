@@ -189,12 +189,14 @@ class ArtefactStore:
             raise VerificationError("bundle desired state is not signed by the cloud key")
         for digest, b in blobs.items():
             self.put(digest, b)
+        signed = set()
         for digest, b in blobs.items():
             try:
                 man = json.loads(b)
             except (ValueError, UnicodeDecodeError):
                 continue
             if isinstance(man, dict) and man.get("artifactType") == AT_SIGNATURE and man.get("subject"):
+                signed.add(man["subject"]["digest"])
                 idx_path = self.root.parent / "referrers" / man["subject"]["digest"].split(":", 1)[1]
                 try:
                     have = json.loads(idx_path.read_bytes())["manifests"]
@@ -203,4 +205,33 @@ class ArtefactStore:
                 if all(e.get("digest") != digest for e in have):
                     have.append({"mediaType": man["mediaType"], "digest": digest, "artifactType": AT_SIGNATURE})
                     atomic_write_bytes(idx_path, json.dumps({"manifests": have}).encode())
+        # A release the (accepted) desired state names without a signature in the bundle gets an empty referrer
+        # index (EV-13): the bundle is the complete offline answer, so verification fails "no signature"
+        # (FE-ART-SIG-001) at once instead of asking an unreachable cloud forever. verify_release still asks the cloud
+        # once more when a cached index verifies nothing, so a signature published later is found online.
+        for digest in _release_digests(desired):
+            if digest in signed:
+                continue
+            idx_path = self.root.parent / "referrers" / digest.split(":", 1)[1]
+            if not idx_path.exists():
+                atomic_write_bytes(idx_path, json.dumps({"manifests": []}).encode())
         return desired, sig
+
+
+def _release_digests(desired: bytes) -> list[str]:
+    """sha256 release digests named by the components of a desired-state document (malformed parts skipped)."""
+    try:
+        doc = json.loads(desired)
+    except (ValueError, UnicodeDecodeError):
+        return []
+    out = []
+    for d in (doc.get("deployments") or []) if isinstance(doc, dict) else []:
+        try:
+            comps = d["spec"]["deploymentProfile"]["components"]
+        except (KeyError, TypeError):
+            continue
+        for c in comps if isinstance(comps, list) else []:
+            dg = ((c or {}).get("properties") or {}).get("digest") if isinstance(c, dict) else None
+            if isinstance(dg, str) and dg.startswith("sha256:") and len(dg) == 71:
+                out.append(dg)
+    return out

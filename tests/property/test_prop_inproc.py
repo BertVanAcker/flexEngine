@@ -46,7 +46,9 @@ def steps(power_cut=st.booleans()):
     return _with_crash(st.tuples(SPEC, st.lists(step, max_size=11)), st.tuples(st.just("crash"), KILL, power_cut))
 
 
-def run_schedule(tmp_root, schedule, known=O.KNOWN_BUGS, torn_action: bool = False):
+def run_schedule(tmp_root, schedule):
+    """A power cut at an `action:<kind>` "before" point also leaves a torn prefix of that record in actions.jsonl
+    (the append was in flight; prop_model.InprocDevice.crash)."""
     first, rest = schedule
     dev = M.InprocDevice(tmp_root)
     try:
@@ -61,10 +63,10 @@ def run_schedule(tmp_root, schedule, known=O.KNOWN_BUGS, torn_action: bool = Fal
                     dev.ticks(s[1])
                 elif s[0] == "crash":
                     kp = M.KillPoint(s[1].event, s[1].k, s[1].when)
-                    dev.crash(kp, power_cut=s[2], torn_action=torn_action)
+                    dev.crash(kp, power_cut=s[2], torn_action=s[2])
                 elif s[0] == "drift":
                     dev.drift(s[1])
-            dev.final_check(known=known)
+            dev.final_check()
     finally:
         dev.close()
 
@@ -104,44 +106,43 @@ def test_inproc_power_cut_converges_nightly(tmp_root, schedule):
     run_schedule(tmp_root, schedule)
 
 
-# ---- bugs found by these properties: minimal schedules, strict oracle --------------------------------------
-# Each test runs only its explicit examples (Phase.explicit) without the tolerance of its bug, so it XPASSes --
-# and fails, strict -- once the engine is fixed; then drop the entry from prop_oracle.KNOWN_BUGS.
+# ---- regressions of the bugs these properties found (EV-13), with their minimal schedules ------------------
+# Each ran as a strict xfail until its fix landed; the broad properties above cover the triggers again.
 
 KP = M.KillPoint
 
 
-@pytest.mark.xfail(strict=True, reason="bug: an install journal left by a crash is never resolved when the next "
-                   "desired state no longer asks for that (dep, digest); the uncommitted workload keeps running "
-                   "(after a revert the engine even believes the old version runs: supervise() checks presence, "
-                   "not the digest)")
+# stale install journal: an install journal left by a crash whose (dep, digest) the next desired state no longer
+# asks for is resolved (committed version restored / deployment removed); supervise() repairs drift by digest
 @settings(phases=[Phase.explicit])
 @example(schedule=({"a": "1.0.0"}, [("tick", 1), ("publish", {"a": "1.1.0"}), ("crash", KP("drv:apply", 1, "after"),
                                                                               False), ("publish", {"a": "1.0.0"})]))
 @example(schedule=({"a": "1.0.0"}, [("crash", KP("drv:apply", 1, "after"), False), ("publish", {})]))
 @example(schedule=({"a": "1.0.0"}, [("crash", KP("action:commit", 1, "before"), False), ("publish", {"b": "1.0.0"})]))
+@example(schedule=({"a": "1.0.0"}, [("tick", 1), ("publish", {"a": "1.1.0"}), ("crash", KP("drv:apply", 1, "after"),
+                                                                              False), ("publish", {"a": "2.3.0"})]))
 @given(schedule=steps())
-def test_bug_stale_journal_orphan_workload(tmp_root, schedule):
-    run_schedule(tmp_root, schedule, known=O.KNOWN_BUGS - {"stale-journal"})
+def test_stale_journal_resolved(tmp_root, schedule):
+    run_schedule(tmp_root, schedule)
 
 
-@pytest.mark.xfail(strict=True, reason="bug: a crash after the engine declared a release failed (rollback or "
-                   "'failed first install' remove) but before the Failed report is saved re-applies the known-bad "
-                   "release after the restart (state['failed'] is only persisted with the report)")
+# a crash after the engine declared a release failed (rollback / "failed first install" remove) resumes the
+# rollback from the persisted journal and never starts the known-bad release again
 @settings(phases=[Phase.explicit])
 @example(schedule=({"a": "2.1.0"}, [("crash", KP("action:remove", 1, "after"), False)]))
 @example(schedule=({"a": "1.0.0"}, [("tick", 1), ("publish", {"a": "2.0.0"}), ("crash", KP("drv:apply", 2, "after"),
                                                                               False)]))
+@example(schedule=({"a": "1.0.0"}, [("tick", 1), ("publish", {"a": "2.2.0"}), ("crash", KP("action:rollback", 1,
+                                                                                              "before"), True)]))
 @given(schedule=steps())
-def test_bug_reapply_after_crash_in_rollback(tmp_root, schedule):
-    run_schedule(tmp_root, schedule, known=O.KNOWN_BUGS - {"reapply-after-rollback-crash"})
+def test_no_reapply_after_crash_in_rollback(tmp_root, schedule):
+    run_schedule(tmp_root, schedule)
 
 
-@pytest.mark.xfail(strict=True, reason="bug: a power cut inside the actions.jsonl append leaves a torn last line; the "
-                   "next (fsynced) record is appended to it and becomes unparseable (Engine.action never repairs "
-                   "the tail)")
+# a power cut inside the actions.jsonl append leaves a torn last line; the engine cuts it off at the start, so the
+# next (fsynced) record stays parseable
 @settings(phases=[Phase.explicit])
 @example(schedule=({"a": "1.0.0"}, [("crash", KP("action:apply", 1, "before"), True)]))
 @given(schedule=steps())
-def test_bug_torn_action_line_hides_next_record(tmp_root, schedule):
-    run_schedule(tmp_root, schedule, torn_action=True)
+def test_torn_action_line_repaired(tmp_root, schedule):
+    run_schedule(tmp_root, schedule)

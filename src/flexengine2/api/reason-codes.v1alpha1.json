@@ -148,6 +148,24 @@
    "example": "supervisor: start-limit-hit"
   },
   {
+   "code": "FE-REC-008",
+   "field": "reason",
+   "stage": "drift",
+   "profile": "engine",
+   "template": "drift repaired (executor ran another release)",
+   "pattern": "^drift\\ repaired\\ \\(executor\\ ran\\ another\\ release\\)$",
+   "meaning": "supervise(): a committed workload's executor ran another digest than the committed one (drift by digest); the committed release was re-applied (EV-13)"
+  },
+  {
+   "code": "FE-REC-009",
+   "field": "reason",
+   "stage": "resume",
+   "profile": "engine",
+   "template": "interrupted install of {version} abandoned (no longer desired)",
+   "pattern": "^interrupted\\ install\\ of\\ (.+?)\\ abandoned\\ \\(no\\ longer\\ desired\\)$",
+   "meaning": "restart after a crash during an install the accepted desired state no longer asks for: the uncommitted release was taken off the executor -- the committed version restored (state Installed) or the deployment removed (state Removed) (EV-13)"
+  },
+  {
    "code": "FE-GATE-001",
    "field": "reason",
    "stage": "gate",

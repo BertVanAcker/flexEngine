@@ -10,6 +10,8 @@ Events
   drv:apply / drv:remove   ProcessDriver.apply / remove
   gate                Engine.health_gate
   spawn               ProcessDriver._spawn after Popen, before the unit table records the pid
+
+Every fsync of a file under native/ is logged to fsynced.log next to the config (power-cut model of the payload).
 """
 
 from __future__ import annotations
@@ -53,6 +55,23 @@ def main(argv=None) -> int:
                 s.seen += 1
             if s.seen == s.k and s.when == when:
                 die()
+
+    # power-cut model of the native payload (test_prop_crash.lose_unsynced_payload): which files under native/ were
+    # fsynced; the harness empties every other payload file after a simulated power cut
+    synced_log = Path(a.config).resolve().parent / "fsynced.log"
+    real_fsync = os.fsync
+
+    def fsync(fd):
+        real_fsync(fd)
+        try:
+            p = os.readlink(f"/proc/self/fd/{fd}")
+        except OSError:
+            return
+        if f"{os.sep}native{os.sep}" in p:
+            with open(synced_log, "a") as f:
+                f.write(p + "\n")
+
+    os.fsync = fsync
 
     in_spawn = [False]
     orig_write = util.atomic_write_bytes

@@ -44,7 +44,7 @@ import tarfile
 from pathlib import Path
 
 from flexengine2.drivers.base import Driver, DriverError, Observed, Workload, http_probe, wait_until
-from flexengine2.util import atomic_write_bytes, atomic_write_json, read_json
+from flexengine2.util import atomic_write_bytes, atomic_write_json, fsync_dir, fsync_tree, read_json
 
 __all__ = ["SystemdDriver", "unit_name", "sanitize"]
 
@@ -245,9 +245,11 @@ class SystemdDriver(Driver):
         except (tarfile.TarError, OSError) as e:
             shutil.rmtree(part, ignore_errors=True)
             raise DriverError(f"native payload unusable: {e}") from None
+        fsync_tree(part)   # durable before it is marked complete (EV-13: power cut after unpack)
         atomic_write_bytes(part / ".complete", wl.digest.encode())
         shutil.rmtree(d, ignore_errors=True)
         os.replace(part, d)
+        fsync_dir(d.parent)
         return d
 
     def _exec_start(self, workdir: Path) -> list[str]:

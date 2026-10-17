@@ -8,7 +8,8 @@
 On disk: `<dataDir>/history.jsonl`, one JSON object per line ({"t", "device", "dep", "state", "kind", ...}). When the
 file holds `max_entries` lines it is rotated to `history.jsonl.1` (the previous `.1` is dropped), so the disk use is
 bounded by 2 x N lines and `read()` always sees at least the last N transitions. Appends are flushed but not fsynced:
-the history is diagnostic, the outbox and state.json are the durable record. A torn last line (power cut) is skipped.
+the history is diagnostic, the outbox and state.json are the durable record. A torn last line (power cut) is skipped
+by readers and cut off when the engine starts (util.repair_jsonl_tail), so the next record is not glued to it.
 """
 
 from __future__ import annotations
@@ -19,6 +20,8 @@ import os
 import threading
 import time
 from pathlib import Path
+
+from flexengine2.util import repair_jsonl_tail
 
 FILE = "history.jsonl"
 DEFAULT_MAX = 500
@@ -61,6 +64,10 @@ class History:
         self.max = max(1, int(max_entries))
         self.path = self.dir / FILE
         self._lock = threading.Lock()
+        try:
+            repair_jsonl_tail(self.path, fsync=False)
+        except OSError:
+            pass
         cur = _read_file(self.path)
         self._lines = len(cur)
         self.ring: collections.deque = collections.deque(read(self.dir, limit=self.max), maxlen=self.max)

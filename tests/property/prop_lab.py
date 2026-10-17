@@ -196,8 +196,8 @@ class SubDev:
         return self
 
     def onboard(self, timeout: float = 15):
-        """Start unarmed until the onboarded state is saved, then stop gracefully (keeps the onboarding window out of
-        the kill points: bug onboarding-not-idempotent, test_bug_kill_during_onboarding_bricks_device)."""
+        """Start unarmed until the onboarded state is saved, then stop gracefully (schedules that keep the onboarding
+        window out of the kill points; run_phases(onboard=False) puts it inside)."""
         self.start()
         ok = wait(lambda: self.state().get("onboarded"), timeout)
         self.stop(signal.SIGTERM)
@@ -317,12 +317,14 @@ class SubDev:
         return {d["metadata"]["id"]: d["spec"]["deploymentProfile"]["components"][0]["properties"]["digest"]
                 for d in doc["deployments"]}
 
-    def converged(self, online: bool = True, cloud_mv: int | None = None,
-                  known: frozenset = O.KNOWN_BUGS) -> list[str]:
+    def converged(self, online: bool = True, cloud_mv: int | None = None) -> list[str]:
         st = self.state()
         errs: list[str] = []
-        if not st or "_unreadable" in st:
+        if "_unreadable" in st:
             return ["no readable state yet"]
+        if not st:   # never saved (e.g. a bundle import killed before anything was accepted): a fresh device
+            from flexengine2.core.state import fresh
+            st = fresh(self.dev)
         if cloud_mv is not None:
             O.check(st.get("manifestVersion") == cloud_mv, f"accepted v{st.get('manifestVersion')} != cloud v{cloud_mv}",
                     errs)
@@ -330,17 +332,12 @@ class SubDev:
         units = self.units()
         digests = {d: u["digest"] for d, u in units.items()}
         j = st.get("journal")
-        if "stale-journal" in known:
-            j = O.tolerate_stale(st, self.crashes, applied, digests, j)
-        skip = set(units) - set(digests)            # deployments the stale-journal tolerance took out
         O.check(j is None, f"journal open: {j}", errs)
         v = self.lab.version_of.get
         O.check(digests == applied, f"executor {[(d, v(g)) for d, g in digests.items()]} != applied "
                 f"{[(d, v(g)) for d, g in applied.items()]}", errs)
         procs = unit_procs(self.dev)
         for d, u in units.items():
-            if d in skip:
-                continue
             O.check(procs.get(d) == [u.get("pid")], f"{d}: live unit processes {procs.get(d)} != unit pid {u.get('pid')}",
                     errs)
             O.check(bool(u.get("port")) and http_probe("127.0.0.1", u["port"], "/healthz"), f"{d}: not healthy", errs)
@@ -349,8 +346,6 @@ class SubDev:
         want = self.expected(st)
         if want is not None:
             for d, g in want.items():
-                if d in skip or (d not in applied and d in O.stale_journals(st, self.crashes) and "stale-journal" in known):
-                    continue
                 if KIND[v(g)] == "good":
                     O.check(applied.get(d) == g, f"{d}: desired {v(g)} not applied", errs)
                 else:
@@ -360,13 +355,13 @@ class SubDev:
         if online:
             O.check(not st.get("outbox"), f"outbox not drained ({len(st.get('outbox') or [])})", errs)
             if not errs:
-                errs += self.delivery_errors(st, applied, skip)
+                errs += self.delivery_errors(st, applied)
         else:   # never had a link: the outbox holds every report since the device started
-            rep = {d: g for d, g in O.committed_from_reports(st.get("outbox") or []).items() if d not in skip}
+            rep = O.committed_from_reports(st.get("outbox") or [])
             O.check(rep == applied, f"offline outbox reports {rep} != applied {applied}", errs)
         return errs
 
-    def delivery_errors(self, st: dict, applied: dict, skip=()) -> list[str]:
+    def delivery_errors(self, st: dict, applied: dict) -> list[str]:
         """Cloud side: every report the device persisted reached flexCloud once (seq dedup), in seq order, and the
         cloud's view of what runs equals the device's."""
         errs: list[str] = []
@@ -387,33 +382,32 @@ class SubDev:
             O.check(r is not None and r.get("state") == h["state"] and r.get("deploymentId") == h["dep"],
                     f"report seq {h['seq']} ({h['dep']} {h['state']}) not delivered as such: {r and r.get('state')}",
                     errs)
-        committed = {d: g for d, g in O.committed_from_reports(log).items() if d not in skip}
+        committed = O.committed_from_reports(log)
         O.check(committed == applied, f"cloud view {committed} != device {applied}", errs)
         return errs
 
-    def settle(self, timeout: float = 25, online: bool = True, cloud_mv: int | None = None,
-               known: frozenset = O.KNOWN_BUGS) -> list[str]:
+    def settle(self, timeout: float = 25, online: bool = True, cloud_mv: int | None = None) -> list[str]:
         """Run undisturbed until converged (twice in a row, 0.3 s apart) or `timeout`."""
         errs: list[str] = ["not checked"]
         end = time.time() + timeout
         while time.time() < end:
             if not self.alive():
                 return [f"engine exited with {self.proc.returncode}"]
-            errs = self.converged(online, cloud_mv, known)
+            errs = self.converged(online, cloud_mv)
             if not errs:
                 time.sleep(0.3)
-                errs = self.converged(online, cloud_mv, known)
+                errs = self.converged(online, cloud_mv)
                 if not errs:
                     return []
             time.sleep(0.1)
         return [f"not converged within {timeout:g} s: {e}" for e in errs]
 
-    def final_errors(self, known: frozenset = O.KNOWN_BUGS) -> list[str]:
+    def final_errors(self) -> list[str]:
         self.observe()
         errs = list(self.errs)
         acts, bad = O.read_actions(self.data / "actions.jsonl")
         errs += [f"unparseable action record: {b[:80]!r}" for b in bad]
-        errs += O.duplicate_applies(acts, self.crashes, strict="reapply-after-rollback-crash" not in known)
+        errs += O.duplicate_applies(acts, self.crashes)
         return errs
 
     def context(self) -> str:

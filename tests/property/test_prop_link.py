@@ -12,7 +12,8 @@ Invariants: convergence within 25 s of the link returning; every report the devi
 exactly once as itself (resends after a lost ack are deduplicated by seq <= last seen), seq strictly increasing,
 cloud lastSeq == device seq, the cloud's view of what runs == the device's; no crash happened, so strictly <= 1
 apply per (deployment, digest) run; manifestVersion never goes down; no orphan workload.
-Onboarding with a lost reply is excluded here (test_bug_onboarding_ack_lost).
+Optionally the device's very first request (onboarding) is cut too, delivered or not (`first`): onboarding is
+idempotent, the retry with the same token and key is answered like the first request.
 """
 
 from __future__ import annotations
@@ -43,6 +44,8 @@ CUT = st.tuples(st.just("cut"), st.sampled_from(sorted(set(CATEGORIES) - {"onboa
                 st.booleans(), st.floats(0, 2).map(lambda x: round(x, 2)))
 STORM = st.tuples(st.just("storm"), st.floats(0.5, 2.5).map(lambda x: round(x, 2)))
 PHASES = st.lists(st.tuples(SPEC, st.lists(st.one_of(CUT, CUT, STORM), max_size=2)), min_size=1, max_size=3)
+FIRST = st.one_of(st.none(), st.tuples(st.just("cut"), st.just("onboarding"), st.just(1), st.booleans(),
+                                       st.floats(0, 1).map(lambda x: round(x, 2))))
 
 
 def kth(pattern: str, k: int):
@@ -63,6 +66,10 @@ def run_link(lab, schedule, first_event=None, bound: float = 25):
         if first_event:   # an event armed before the engine's first request (onboarding)
             _arm(shim, first_event)
         dev.start()
+        if first_event:
+            L.wait(lambda: shim.down, 4)
+            time.sleep(first_event[4])
+            shim.restore()
         mv = 0
         for spec, events in schedule:
             mv = lab.publish(dev.dev, spec)
@@ -75,10 +82,6 @@ def run_link(lab, schedule, first_event=None, bound: float = 25):
                     L.wait(lambda: shim.down, 4)
                     time.sleep(ev[4])
                     shim.restore()
-            if first_event:
-                L.wait(lambda: shim.down, 4)
-                time.sleep(first_event[4])
-                shim.restore()
             time.sleep(0.3)
         lab.storm(0)
         shim.restore()
@@ -101,24 +104,24 @@ def _arm(shim, ev):
 
 @budget(push=4, nightly=4, shrink=False)
 @example(schedule=[({"dl-a": "1.0.0"}, [("cut", "status", 1, True, 1.0)]),
-                   ({"dl-a": "1.1.0", "dl-b": "1.0.0"}, [("storm", 1.5), ("cut", "registry", 2, False, 0.5)])])
-@given(schedule=PHASES)
-def test_link_cuts_and_503_storms_converge(lab, schedule):
-    run_link(lab, schedule)
+                   ({"dl-a": "1.1.0", "dl-b": "1.0.0"}, [("storm", 1.5), ("cut", "registry", 2, False, 0.5)])],
+         first=None)
+@given(schedule=PHASES, first=FIRST)
+def test_link_cuts_and_503_storms_converge(lab, schedule, first):
+    run_link(lab, schedule, first_event=first)
 
 
 @pytest.mark.slow
 @budget(push=0, nightly=35, shrink=False)
-@given(schedule=PHASES)
-def test_link_cuts_and_503_storms_converge_nightly(lab, schedule):
-    run_link(lab, schedule)
+@given(schedule=PHASES, first=FIRST)
+def test_link_cuts_and_503_storms_converge_nightly(lab, schedule, first):
+    run_link(lab, schedule, first_event=first)
 
 
-@pytest.mark.xfail(strict=True, reason="bug: onboarding is not idempotent: when the onboarding reply is lost the "
-                   "cloud has consumed the token, every retry gets 403 'Invalid or used onboarding token' "
-                   "(Rejected) and the device never onboards, pulls or reports")
+# regression (EV-13): the onboarding reply is lost after the cloud consumed the token; the retry with the same token
+# and key is answered like the first request (idempotent onboarding) and the device onboards, pulls and reports
 @settings(phases=[Phase.explicit])
 @example(schedule=[({"dl-a": "1.0.0"}, [])])
 @given(schedule=PHASES)
-def test_bug_onboarding_ack_lost(lab, schedule):
+def test_onboarding_ack_lost_retries(lab, schedule):
     run_link(lab, schedule, first_event=("cut", "onboarding", 1, True, 0.5), bound=8)

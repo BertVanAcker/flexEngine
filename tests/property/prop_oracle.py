@@ -52,16 +52,17 @@ def read_actions(path: Path) -> tuple[list[dict], list[str]]:
     return recs, bad
 
 
-def duplicate_applies(actions: list[dict], crashes: list[dict], strict: bool = True) -> list[str]:
+def duplicate_applies(actions: list[dict], crashes: list[dict]) -> list[str]:
     """At most one forward `apply` per (deployment, digest) "run", except what a crash makes necessary.
 
-    A run of (dep, D) starts with the first apply of D and ends with an apply of another digest or a removal by
-    absence (re-adding later is a new run). `rollback` and `repair` are declared actions and never count. A second
-    apply of D inside the run is allowed only when a crash happened since the previous apply of D while the on-disk
-    journal named (dep, D) and the executor did not run D at the restart (the apply never completed). It is never
-    allowed once the engine declared D failed in that run (rollback with failed=D, or "failed first install" remove):
-    a known-bad release must not be started again. `strict=False` tolerates that last case after a crash (known bug,
-    see test_prop_inproc.py::test_bug_reapply_after_crash_in_rollback)."""
+    A run of (dep, D) starts with the first apply of D and ends with an apply of another digest, a removal by
+    absence (or of an abandoned install), or a `repair` that took D off the executor (`abandoned` / `observed`: the
+    engine restored the committed release over an interrupted install). Re-adding later is a new run. `rollback` and
+    the other `repair`s are declared actions and never count. A second apply of D inside the run is allowed only when
+    a crash happened since the previous apply of D while the on-disk journal named (dep, D) and the executor did not
+    run D at the restart (the apply never completed). It is never allowed once the engine declared D failed in that
+    run (rollback with failed=D, or "failed first install" remove): a known-bad release must not be started again,
+    not even after a crash inside the rollback."""
     out = []
     runs: dict[str, dict] = {}
     marks = sorted(crashes, key=lambda c: c["line"])
@@ -75,15 +76,18 @@ def duplicate_applies(actions: list[dict], crashes: list[dict], strict: bool = T
                 continue
             between = [c for c in marks if r["last"] < c["line"] <= i]
             ok_crash = [c for c in between if c.get("journal") == (dep, d) and c.get("running", {}).get(dep) != d]
-            if r["failed"] and (strict or not between):
+            if r["failed"]:
                 out.append(f"{dep}: apply #{i} re-applies {a.get('version')} ({d[:19]}) after it was declared failed "
                            f"in the same run (crashes in between: {len(between)})")
-            elif not r["failed"] and not ok_crash:
+            elif not ok_crash:
                 out.append(f"{dep}: duplicate apply #{i} of {a.get('version')} ({d[:19]}) without a crash that left "
                            f"it incomplete (crashes in between: {between})")
             r["last"] = i
         elif kind == "rollback" and r is not None and a.get("failed") == r["version"]:
             r["failed"] = True
+        elif kind == "repair":
+            if r is not None and a.get("digest") != r["digest"] and ("abandoned" in a or "observed" in a):
+                runs.pop(dep, None)
         elif kind == "remove":
             if a.get("why") == "failed first install":
                 if r is not None and r["digest"] == a.get("digest"):
@@ -93,33 +97,11 @@ def duplicate_applies(actions: list[dict], crashes: list[dict], strict: bool = T
     return out
 
 
-# Known engine bugs found by these properties (see the xfail tests and the EV-13 report). The broad properties
-# tolerate exactly these so they keep exploring; remove an entry once its fix lands (its xfail test then XPASSes).
-KNOWN_BUGS = frozenset({"stale-journal", "reapply-after-rollback-crash"})
-
-
-def stale_journals(state: dict, crashes: list[dict]) -> dict[str, str]:
-    """{dep: digest} of crash-time install journals the engine never resolves: the desired state (as accepted now) no
-    longer asks for that (dep, digest), so no install of it runs again to adopt or roll it back (bug
-    "stale-journal"). Whatever such a journal left on the executor stays there."""
-    doc = state.get("desired") or {}
-    want = {d["metadata"]["id"]: d["spec"]["deploymentProfile"]["components"][0]["properties"]["digest"]
-            for d in doc.get("deployments", [])}
-    rejected = (state.get("rejected") or {}).get("manifestVersion") == doc.get("manifestVersion")
-    return {c["journal"][0]: c["journal"][1] for c in crashes
-            if c.get("journal") and (rejected or want.get(c["journal"][0]) != c["journal"][1])}
-
-
-def tolerate_stale(state: dict, crashes: list[dict], applied: dict, units: dict, journal):
-    """Apply the stale-journal tolerance in place; returns the journal still to be checked (None if tolerated)."""
-    stale = stale_journals(state, crashes)
-    for dep, dg in stale.items():
-        if units.get(dep) == dg and applied.get(dep) != dg:
-            units.pop(dep, None)
-            applied.pop(dep, None)
-    if journal and stale.get(journal["dep"]) == journal["digest"]:
-        return None
-    return journal
+# Known engine bugs found by these properties: the broad properties tolerate exactly these so they keep exploring,
+# every entry has a strict xfail test with its minimal schedule; remove an entry once its fix lands. The eight EV-13
+# findings (stale journal, re-apply after a crash in the rollback, torn action line, unsynced payload, orphan after a
+# kill in spawn, onboarding not idempotent x2, unsigned release in a bundle) are fixed: none is tolerated any more.
+KNOWN_BUGS: frozenset = frozenset()
 
 
 def committed_from_reports(reports: list[dict]) -> dict[str, str | None]:

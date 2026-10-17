@@ -23,6 +23,19 @@ checked (or `tlsServerName`); `https` without `caFile` is refused unless `allowS
 (`cloud/client.py`, EV-06 tests in `tests/security/test_tls.py`). Plain `http` is accepted for the lab/SIL [I: a
 production config check should refuse it]. mTLS device identity is beta (EV-21).
 
+**Onboarding (one-time token).** `POST /api/v1/onboarding` `{deviceId, publicKey, token}` (unsigned) registers the
+device key; the answer `{deviceId, cloudPublicKey}` must name the provisioned cloud key (else FE-ONB-001). Device
+rules [V]: the device key is created (atomic write + fsync) before the first onboarding request and never regenerated
+on a retry; the token file (`onboardingTokenFile`) is destroyed only after the cloud confirmed and the `onboarded`
+state is durably saved. **Requirement for flexCloud (EV-13): onboarding must be idempotent.** A repeated request
+with an already used token, the same `deviceId` and the same `publicKey` the token was used with gets the same
+answer as the first one (201, same body) — the device lost the reply, or was killed or lost power between the
+cloud's acceptance and its own save, and retries with exactly the same request; without this rule such a device is
+bricked (every retry 403). A used token with another `publicKey` or `deviceId`, an unknown token or a token issued
+for another device is refused (403 "Invalid or used onboarding token"); a token presented with the wrong device id
+is consumed. Reference: `testing/fakecloud.py` (`usedTokens`); tests `tests/property/test_prop_crash.py::
+test_kill_during_onboarding_retries`, `tests/property/test_prop_link.py::test_onboarding_ack_lost_retries`.
+
 ## 2. Desired-state (manifest) signature
 
 The cloud signs the **exact response body bytes** of `GET …/deployments` (canonical JSON of the DesiredState) and
