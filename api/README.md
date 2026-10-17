@@ -44,9 +44,10 @@ contracts.reason_code("health check failed")            # -> {"code": "FE-REC-00
 - **Unknown keys.** Flex-owned objects (DesiredState, `x-flex-activation`, the `x-flex` capabilities block, driver
   fragments, status records, health/restart/runOptions) are closed. Margo-owned objects accept unknown Margo keys
   (ignored) but reject every unregistered `x-` key. Registered: `x-flex-driver`, `x-flex-safetyClass`,
-  `x-flex-activation` (ApplicationDeployment), `x-flex` (DeviceCapabilities), `x-flex-mcu` (release descriptor).
+  `x-flex-activation`, `x-flex-dependsOn` (ApplicationDeployment), `x-flex` (DeviceCapabilities), `x-flex-mcu` (release descriptor).
 - Rules JSON Schema cannot express are checked by `contracts.validate` (desired state: unique deployment ids,
-  `metadata.deviceId` = `deviceId`) [V].
+  `metadata.deviceId` = `deviceId`; `x-flex-dependsOn` names other deployments of the document, once each, without
+  cycles) [V].
 - Since 2026-10-17 the engine validates every desired state against CP-1 before acceptance (see the decisions
   section at the end).
 - Reason codes are stable: never reused or renumbered; since 2026-10-17 the engine sends the code as `reasonCode`
@@ -75,6 +76,7 @@ contracts.reason_code("health check failed")            # -> {"code": "FE-REC-00
 | `.x-flex-safetyClass` | `none\|safety-relevant` (default none) | – | store (= descriptor class, 2 approvers), gate (implicit FE-S6 signals) |
 | `.x-flex-activation.requires[]` | signal name or `plc:<dep>[@FLEX01_…]` | – | reconciler `_gate` (+ plc-verify `verified()`) |
 | `.x-flex-activation.window` | `{start, end}` `HH:MM` UTC | – | `SafeState.check` |
+| `.x-flex-dependsOn[]` | `{deployment: <id in this document>, condition: started\|healthy}` (default healthy); no unknown id, duplicate or cycle (else the document is refused, FE-DS-006) | – | reconciler (install order + hold FE-GATE-004, reverse removal order FE-GATE-005, crash-resume FE-REC-010) |
 
 Health spec, restart policy and run options are **not** in the desired state: they come from the signed release
 descriptor (`descriptor.v1alpha1.schema.json`), so the cloud cannot widen them.
@@ -95,7 +97,7 @@ cd flexengine
 
 - **CP-1 is enforced:** the engine checks every signed desired state against `desired-state.v1alpha1` before it reads
   it. A document that fails is refused as a whole (FE-DS-005) and the previous state keeps running.
-- **Refusals are reported:** a refused desired state (FE-DS-001…005: bad signature, not JSON, schema, another device,
+- **Refusals are reported:** a refused desired state (FE-DS-001…006: bad signature, not JSON, schema, another device,
   downgrade) is sent once per distinct (document, reason) as a `DeviceEvent` to `POST /api/v1/devices/{id}/events`
   (`device-event.v1alpha1.schema.json`, same seq space as the status records) and shown as `lastRefusal` in the local
   API (`GET /v1/status`) and `flexengine status`.
@@ -113,6 +115,15 @@ cd flexengine
   reason codes FE-RAU-PRE-001…007 and FE-RAU-001…014; CP-5: optional class attribute `reboots_on_apply` (the
   reconciler journals a rollback before a rebooting apply and reports it after the next start, see
   [cp5-driver-spi.md](cp5-driver-spi.md#driver-os-rauc-ev-17-driversos_raucpy)).
+- **2026-10-17, EV-42 `x-flex-dependsOn`** (deployment ordering on one device): CP-1 ApplicationDeployment key
+  `x-flex-dependsOn` (`$defs/DependsOn`: `[{deployment, condition: started|healthy}]`, default healthy) with the
+  semantic rules above; the engine installs and updates in dependency order, holds a deployment whose dependency is
+  not ready yet at the GATE (Pending `held: waiting for <ids>`, FE-GATE-004, reported once, re-checked every tick) on
+  its previous version, removes dependents before their dependencies (`held: waiting for removal of <ids>`,
+  FE-GATE-005) and, after a crash, takes an uncommitted release off again when its dependency is not ready
+  (FE-REC-010). A failed dependency holds its dependents; its rollback does not cascade to them. A document with an
+  unknown id, a duplicate or a cycle is refused as a whole (FE-DS-006). CP-2 status field `waitingFor`. Southbound
+  plan item `dependsOn` (reference cloud: served as `x-flex-dependsOn`, checked against CP-1 at plan time).
 - **2026-10-17, EV-38 `arduino-ota`** (flexNode-arduino board firmware over the Portenta OTA path): CP-1
   `DriverProfile` + `arduino-ota` (desired state, descriptor `profiles`, descriptor `health.type` `arduino-ota`; the
   deployment parameter `board` names the board); CP-3 payload media type `application/vnd.flex.payload.arduino-ota.v1+ota`,

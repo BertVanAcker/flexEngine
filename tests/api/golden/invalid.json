@@ -211,6 +211,95 @@
   "error": "differs from deviceId 'vec-dev'"
  },
  {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "safety-app",
+     "condition": "running"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "$.deployments[0].x-flex-dependsOn[0].condition"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "safety-app",
+     "after": 1
+    }
+   ]
+  },
+  "delete": [],
+  "error": "$.deployments[0].x-flex-dependsOn[0]"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "nowhere"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "unknown deployment 'nowhere' (not in this desired state)"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "native-app"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "'native-app' depends on itself"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "safety-app"
+    },
+    {
+     "deployment": "safety-app",
+     "condition": "started"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "duplicate dependency 'safety-app'"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "safety-app"
+    }
+   ],
+   "/deployments/1/x-flex-dependsOn": [
+    {
+     "deployment": "native-app"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "dependency cycle native-app -> safety-app -> native-app"
+ },
+ {
   "schema": "status",
   "base": "golden:status/valid/crafted-removing.json",
   "set": {

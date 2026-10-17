@@ -8,8 +8,10 @@ works offline and after a restart) with what the drivers observe, and converges:
   1. prepare  download + verify every changed release (all-or-nothing per manifest: one bad digest or
               signature keeps the whole previous state, as Margo requires), pick the payload layer for the
               driver's platform, run the driver's preflight (refusal = rejected like a bad signature)
-  2. remove   deployments absent from the manifest (absence = removal); safety-gated like installs
-  3. install  per changed deployment: activation gate (safe state / window) -> driver.apply ->
+  2. remove   deployments absent from the manifest (absence = removal); safety-gated like installs; dependents
+              before their dependencies (reverse x-flex-dependsOn order, EV-42)
+  3. install  per changed deployment, dependencies first (x-flex-dependsOn: held Pending until each dependency
+              runs its desired release, healthy by default): activation gate (safe state / window) -> driver.apply ->
               health gate (fail-fast via driver.failed) -> driver.commit -> commit (keep previous as rollback
               target) or automatic rollback
   4. drift    a committed workload that disappeared is re-created; health changes are reported
@@ -327,8 +329,12 @@ class Engine:
         errs = contracts.errors("desired-state", doc)
         if errs:
             detail = "; ".join(errs[:3]) + (f" (+{len(errs) - 3} more)" if len(errs) > 3 else "")
+            offered = doc.get("manifestVersion") if isinstance(doc, dict) else None
+            if _only_dependency_errors(doc, errs):   # EV-42: unknown id, duplicate or cycle in x-flex-dependsOn
+                return self.refuse(body, reason=f"desired state has invalid deployment dependencies: {detail}",
+                                   offered=offered)
             return self.refuse(body, reason=f"desired state does not match the CP-1 schema: {detail}",
-                               offered=doc.get("manifestVersion") if isinstance(doc, dict) else None)
+                               offered=offered)
         if doc.get("deviceId") != self.device:
             return self.refuse(body, reason="desired state for another device ignored", offered=doc["manifestVersion"])
         mv = int(doc["manifestVersion"])
@@ -408,6 +414,25 @@ class Engine:
         if dep.get("x-flex-safetyClass", "none") != "none":  # FE-S6 interlock is implicit for safety class
             req = sorted(set(req) | {"machine_parked", "operator_confirmed"})
         return self.safe.check(req, act.get("window"))
+
+    def _waiting_for(self, dep: dict, desired: dict[str, dict]) -> list[str]:
+        """x-flex-dependsOn (EV-42): the dependencies of `dep` that are not ready yet. A dependency is ready when it is
+        committed at its desired release (digest and parameters; condition `started`) and, for condition `healthy`
+        (the default), its last observed health is healthy. A dependency that is Pending, Installing, Failed (rolled
+        back to its previous version) or not installed is not ready, so its dependents keep their previous version."""
+        out = []
+        for other, cond in contracts.depends_on(dep):
+            want = desired.get(other)
+            if want is None:
+                continue   # refused by the semantic rule; a hand-made state does not block on it
+            cur = self.state["applied"].get(other)
+            rv = self._rev(want)
+            ready = (cur is not None and cur["wl"]["digest"] == rv["digest"]
+                     and cur["wl"]["parameters"] == want["spec"].get("parameters", {})
+                     and (cond == "started" or bool(self.state["health"].get(other))))
+            if not ready:
+                out.append(other)
+        return out
 
     def _workload(self, dep: dict, rel) -> Workload:
         rv = self._rev(dep)
@@ -534,10 +559,19 @@ class Engine:
                 return
             targets[dep_id] = (d, rel)
 
-        # 2. removals (absence = removal)
-        for dep_id in [k for k in applied if k not in desired]:
+        # 2. removals (absence = removal), dependents before their dependencies (reverse x-flex-dependsOn order, EV-42)
+        removing = [k for k in applied if k not in desired]
+        for dep_id in reversed([d["metadata"]["id"] for d in contracts.dependency_order([applied[k]["dep"]
+                                                                                         for k in removing])]):
             self._dep = dep_id
             cur = applied[dep_id]
+            first = [k for k in removing if k != dep_id and k in applied
+                     and dep_id in {o for o, _ in contracts.depends_on(applied[k]["dep"])}]
+            if first:   # a dependent's removal is still held (e.g. at its safe-state gate)
+                why = "held: waiting for removal of " + ", ".join(first)
+                self.notice(dep_id, f"pending-remove:{why}", "Pending", reason=why, operation="remove",
+                            waitingFor=first)
+                continue
             ok, why = self._gate(cur["dep"])
             if not ok:
                 self.notice(dep_id, f"pending-remove:{why}", "Pending", reason=why, operation="remove")
@@ -550,11 +584,22 @@ class Engine:
             self.state["notices"].pop(dep_id, None)
             self.report(dep_id, "Removed", version=cur["wl"]["version"])
 
-        # 3. installs / updates
-        for dep_id, (d, rel) in targets.items():
+        # 3. installs / updates, dependencies first (x-flex-dependsOn, EV-42): a deployment whose dependencies are not
+        # ready yet is held at the GATE (Pending, reported once, re-checked every tick) on its previous version
+        for dep_id in [d["metadata"]["id"] for d in contracts.dependency_order(list(desired.values()))]:
+            if dep_id not in targets:
+                continue
+            d, rel = targets[dep_id]
             self._dep = dep_id
-            ok, why = self._gate(d)
             rv = self._rev(d)
+            wait = self._waiting_for(d, desired)
+            if wait:
+                why = "held: waiting for " + ", ".join(wait)
+                self._hist(dep_id, "GATE", once=(rv["digest"], why), version=rv["revision"], reason=why)
+                self.notice(dep_id, f"pending:{rv['digest']}:{why}", "Pending", reason=why, version=rv["revision"],
+                            waitingFor=wait)
+                continue
+            ok, why = self._gate(d)
             if not ok:
                 self._hist(dep_id, "GATE", once=(rv["digest"], why), version=rv["revision"], reason=why)
                 self.notice(dep_id, f"pending:{rv['digest']}:{why}", "Pending", reason=why, version=rv["revision"])
@@ -672,7 +717,10 @@ class Engine:
           path (it adopts what the executor already runs, or applies again)
         * phase `applying` no longer desired (desired state changed, deployment dropped, manifest rejected): the
           uncommitted release is taken off the executor -- the committed version is restored (action `repair`,
-          report Installed) or, without one, the deployment is removed (report Removed)."""
+          report Installed) or, without one, the deployment is removed (report Removed).
+        * phase `applying` still desired but a dependency (x-flex-dependsOn, EV-42) is not ready: taken off the same
+          way (FE-REC-010), so the new release never runs ahead of its dependency; the install path then holds it
+          and installs it in order."""
         j = self.state.get("journal")
         if not j:
             return
@@ -704,12 +752,20 @@ class Engine:
             self.state["failed"][dep_id] = digest
             self._rollback(dep_id, drv, prof, version, digest, None, cur_wl, j, resumed=True)
             return
+        wait: list[str] = []
         if want is not None and self._rev(want)["digest"] == digest and self.state["failed"].get(dep_id) != digest:
-            return   # still desired: the install path resumes it (adopt or apply)
+            wait = self._waiting_for(want, {d["metadata"]["id"]: d for d in doc.get("deployments", [])})
+            if not wait:
+                return   # still desired: the install path resumes it (adopt or apply)
+            # EV-42: still desired, but a dependency is not ready (any more), e.g. a newer desired state also changed
+            # it: the uncommitted release must not keep running ahead of its dependency; it is taken off like an
+            # abandoned install and installed again, in order, once the dependency is ready
         obs = drv.status(dep_id)
         if obs.present and not obs.running and str(obs.detail).startswith("executor unreachable"):
             raise Offline(f"{prof} executor unreachable: {obs.detail}")   # resolved once it answers again
         why = f"interrupted install of {version} abandoned (no longer desired)"
+        if wait:
+            why = f"interrupted install of {version} held: waiting for {', '.join(wait)}"
         self.log(f"{dep_id}: {why}", "warning", "journal.abandoned", dep=dep_id, version=version)
         if cur_wl is not None:
             if not (obs.present and obs.running and obs.digest == cur_wl.digest):
@@ -942,6 +998,15 @@ class Engine:
             raise
         if self.accept_manifest(desired, sig, None):
             self.log("desired state imported from offline bundle", event="bundle.imported")
+
+
+def _only_dependency_errors(doc, errs: list[str]) -> bool:
+    """True when every CP-1 violation of a desired state is an x-flex-dependsOn rule (FE-DS-006, EV-42)."""
+    try:
+        dep = set(contracts.dependency_errors(doc))
+    except Exception:  # noqa: BLE001  (schema-invalid document: the generic FE-DS-005 reason)
+        return False
+    return bool(dep) and set(errs) <= dep
 
 
 def _run_into(fut, fn, args, kw):

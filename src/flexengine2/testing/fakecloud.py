@@ -203,6 +203,8 @@ class CloudState:
         }
         if item.get("activation"):
             dep["x-flex-activation"] = item["activation"]
+        if item.get("dependsOn"):   # EV-42: [{deployment, condition}]; CP-1 (semantic rules too) checks them at plan time
+            dep["x-flex-dependsOn"] = item["dependsOn"]
         return dep
 
 

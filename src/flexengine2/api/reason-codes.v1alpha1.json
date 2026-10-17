@@ -57,6 +57,15 @@
    "meaning": "the signed document fails desired-state.v1alpha1 (first three violations, '; '-joined)"
   },
   {
+   "code": "FE-DS-006",
+   "field": "event",
+   "stage": "accept",
+   "profile": "engine",
+   "template": "desired state has invalid deployment dependencies: {errors}",
+   "pattern": "^desired\\ state\\ has\\ invalid\\ deployment\\ dependencies:\\ (.+?)$",
+   "meaning": "x-flex-dependsOn (EV-42) names a deployment absent from the document, itself or one twice, or the dependencies form a cycle; refused as a whole, the previous state keeps running (first three violations, '; '-joined)"
+  },
+  {
    "code": "FE-ONB-001",
    "field": "log",
    "stage": "onboarding",
@@ -166,6 +175,15 @@
    "meaning": "restart after a crash during an install the accepted desired state no longer asks for: the uncommitted release was taken off the executor -- the committed version restored (state Installed) or the deployment removed (state Removed) (EV-13)"
   },
   {
+   "code": "FE-REC-010",
+   "field": "reason",
+   "stage": "resume",
+   "profile": "engine",
+   "template": "interrupted install of {version} held: waiting for {deployments}",
+   "pattern": "^interrupted\\ install\\ of\\ (.+?)\\ held:\\ waiting\\ for\\ (.+?)$",
+   "meaning": "restart after a crash during an install the desired state still asks for, but a dependency (x-flex-dependsOn) is not ready: the uncommitted release was taken off the executor (committed version restored, state Installed, or deployment removed, state Removed) and is installed again once the dependency is ready (EV-42)"
+  },
+  {
    "code": "FE-GATE-001",
    "field": "reason",
    "stage": "gate",
@@ -191,6 +209,24 @@
    "template": "held: PLC not verified: {requires}",
    "pattern": "^held:\\ PLC\\ not\\ verified:\\ (.+?)$",
    "meaning": "plc:<dep>[@hash] requirement not yet verified by plc-verify"
+  },
+  {
+   "code": "FE-GATE-004",
+   "field": "reason",
+   "stage": "gate",
+   "profile": "engine",
+   "template": "held: waiting for {deployments}",
+   "pattern": "^held:\\ waiting\\ for\\ (.+?)$",
+   "meaning": "x-flex-dependsOn (EV-42): a dependency does not run its desired release yet (or is not healthy, condition healthy); the install/update waits on its previous version, re-checked every tick"
+  },
+  {
+   "code": "FE-GATE-005",
+   "field": "reason",
+   "stage": "gate",
+   "profile": "engine",
+   "template": "held: waiting for removal of {deployments}",
+   "pattern": "^held:\\ waiting\\ for\\ removal\\ of\\ (.+?)$",
+   "meaning": "x-flex-dependsOn (EV-42), operation remove: dependents of this deployment are still being removed (removals run in reverse dependency order)"
   },
   {
    "code": "FE-HG-001",

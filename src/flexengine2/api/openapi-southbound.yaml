@@ -116,6 +116,7 @@ components:
               parameters: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/Parameters'}
               safetyClass: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/SafetyClass'}
               activation: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/Activation'}
+              dependsOn: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DependsOn', description: 'served as x-flex-dependsOn (EV-42)'}
     Plan:
       type: object
       properties:

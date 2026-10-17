@@ -31,6 +31,7 @@ T = [
     ("FE-DS-003", "event", "accept", "engine", "manifestVersion {mv} <= accepted {accepted}: rollback attack? ignored", "lower manifestVersion, or equal with a different body (counted in state.downgradesRefused)"),
     ("FE-DS-004", "event", "accept", "engine", "desired state is not valid JSON: {error}", "the signed body does not parse as JSON"),
     ("FE-DS-005", "event", "accept", "engine", "desired state does not match the CP-1 schema: {errors}", "the signed document fails desired-state.v1alpha1 (first three violations, '; '-joined)"),
+    ("FE-DS-006", "event", "accept", "engine", "desired state has invalid deployment dependencies: {errors}", "x-flex-dependsOn (EV-42) names a deployment absent from the document, itself or one twice, or the dependencies form a cycle; refused as a whole, the previous state keeps running (first three violations, '; '-joined)"),
     ("FE-ONB-001", "log", "onboarding", "engine", "cloud key at onboarding does not match the provisioned trust anchor", "onboarding response cloudPublicKey differs from cfg cloudPublicKey; the device stays un-onboarded"),
     ("FE-BUN-001", "log", "bundle", "engine", "bundle without desired state", "offline bundle lacks desired.json or desired.sig"),
     ("FE-BUN-002", "log", "bundle", "engine", "bundle desired state is not signed by the cloud key", "the bundle's desired.sig does not verify with cloudPublicKey; nothing from the bundle is stored"),
@@ -45,10 +46,13 @@ T = [
      {"pattern": "^supervisor: (restarted|start-limit-hit)$", "example": "supervisor: start-limit-hit"}),
     ("FE-REC-008", "reason", "drift", "engine", "drift repaired (executor ran another release)", "supervise(): a committed workload's executor ran another digest than the committed one (drift by digest); the committed release was re-applied (EV-13)"),
     ("FE-REC-009", "reason", "resume", "engine", "interrupted install of {version} abandoned (no longer desired)", "restart after a crash during an install the accepted desired state no longer asks for: the uncommitted release was taken off the executor -- the committed version restored (state Installed) or the deployment removed (state Removed) (EV-13)"),
+    ("FE-REC-010", "reason", "resume", "engine", "interrupted install of {version} held: waiting for {deployments}", "restart after a crash during an install the desired state still asks for, but a dependency (x-flex-dependsOn) is not ready: the uncommitted release was taken off the executor (committed version restored, state Installed, or deployment removed, state Removed) and is installed again once the dependency is ready (EV-42)"),
     # ---- activation gate (state Pending) ----
     ("FE-GATE-001", "reason", "gate", "engine", "awaiting safe state: {signals}", "required safe-state signals are not true (FE-S6; implicit machine_parked, operator_confirmed for safety-relevant)"),
     ("FE-GATE-002", "reason", "gate", "engine", "outside activation window {start}-{end} UTC", "x-flex-activation.window is closed"),
     ("FE-GATE-003", "reason", "gate", "engine", "held: PLC not verified: {requires}", "plc:<dep>[@hash] requirement not yet verified by plc-verify"),
+    ("FE-GATE-004", "reason", "gate", "engine", "held: waiting for {deployments}", "x-flex-dependsOn (EV-42): a dependency does not run its desired release yet (or is not healthy, condition healthy); the install/update waits on its previous version, re-checked every tick"),
+    ("FE-GATE-005", "reason", "gate", "engine", "held: waiting for removal of {deployments}", "x-flex-dependsOn (EV-42), operation remove: dependents of this deployment are still being removed (removals run in reverse dependency order)"),
     # ---- health gate (status.failure) ----
     ("FE-HG-001", "failure", "health-gate", "engine", "timeout after {timeoutSeconds} s", "no successThreshold consecutive healthy probes within timeoutSeconds"),
     ("FE-HG-002", "failure", "commit", "engine", "commit failed: {error}", "two-phase driver commit raised DriverError after a passed gate"),

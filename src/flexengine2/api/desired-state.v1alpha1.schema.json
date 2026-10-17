@@ -3,7 +3,7 @@
   "$id": "https://flex.dev/schemas/desired-state.v1alpha1.schema.json",
   "title": "CP-1 DesiredState v1alpha1",
   "description": "Body of GET /api/v1/devices/{deviceId}/deployments (and desired.json in an offline bundle). Margo ApplicationDeployment shape with registered x-flex-* extensions. Derived from what flexengine2.core.reconciler reads and flexengine2.testing.fakecloud writes.",
-  "$comment": "Compatibility (v1alpha1): changes are additive only (new optional fields, new enum values such as a new driver profile, new registered x-flex-* keys). Removing or retyping a field, or making an optional field required, needs v1alpha2. Objects owned by flex (DesiredState, x-flex-activation, its window) are closed. Margo-owned objects (ApplicationDeployment, metadata, spec, deploymentProfile, component) accept unknown Margo keys (the engine ignores them) but reject every unknown key starting with 'x-'. Semantic rules not expressible here (checked by flexengine2.contracts): deployment ids unique; metadata.deviceId, when present, equals deviceId.",
+  "$comment": "Compatibility (v1alpha1): changes are additive only (new optional fields, new enum values such as a new driver profile, new registered x-flex-* keys). Removing or retyping a field, or making an optional field required, needs v1alpha2. Objects owned by flex (DesiredState, x-flex-activation, its window) are closed. Margo-owned objects (ApplicationDeployment, metadata, spec, deploymentProfile, component) accept unknown Margo keys (the engine ignores them) but reject every unknown key starting with 'x-'. Semantic rules not expressible here (checked by flexengine2.contracts): deployment ids unique; metadata.deviceId, when present, equals deviceId; x-flex-dependsOn names other deployments of this document, without duplicates or cycles.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -139,6 +139,31 @@
         }
       }
     },
+    "DependsOn": {
+      "type": "array",
+      "description": "Deployment ordering on this device (EV-42): this deployment is installed or updated only once every listed deployment of the same desired state runs its desired release (condition started) and is healthy (condition healthy, the default); until then it stays Pending ('held: waiting for <ids>', FE-GATE-004) on its previous version. Removals run in reverse order (a dependency is removed after its dependents, FE-GATE-005). A failed or rolled-back dependency holds its dependents (no cascade rollback). Semantic rules (flexengine2.contracts): every id names another deployment of the same desired state, no duplicates, no cycles; a document that breaks them is refused as a whole (FE-DS-006).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deployment"
+        ],
+        "properties": {
+          "deployment": {
+            "$ref": "#/$defs/DeploymentId",
+            "description": "metadata.id of another deployment in this desired state."
+          },
+          "condition": {
+            "enum": [
+              "started",
+              "healthy"
+            ],
+            "default": "healthy",
+            "description": "started: the dependency is committed at its desired release (Installed, any health); healthy: committed and its last observed health is healthy (compose service_started / service_healthy)."
+          }
+        }
+      }
+    },
     "ComponentProperties": {
       "type": "object",
       "required": [
@@ -212,7 +237,8 @@
             "enum": [
               "x-flex-driver",
               "x-flex-safetyClass",
-              "x-flex-activation"
+              "x-flex-activation",
+              "x-flex-dependsOn"
             ]
           }
         ]
@@ -308,6 +334,9 @@
         },
         "x-flex-activation": {
           "$ref": "#/$defs/Activation"
+        },
+        "x-flex-dependsOn": {
+          "$ref": "#/$defs/DependsOn"
         }
       }
     }

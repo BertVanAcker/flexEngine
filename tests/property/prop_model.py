@@ -79,6 +79,7 @@ class ModelExec(FakeDriver):
     def __init__(self):
         super().__init__()
         self.kill: KillPoint | None = None
+        self.on_apply = None   # ordering oracle (EV-42): called with the workload of every executor apply
 
     def _hit(self, ev, when):
         if self.kill:
@@ -86,6 +87,8 @@ class ModelExec(FakeDriver):
 
     def apply(self, current, desired):
         self._hit("drv:apply", "before")
+        if self.on_apply is not None:
+            self.on_apply(desired)
         self.calls.append(("apply", desired.dep_id))
         if DIGEST_KIND.get(desired.digest) == "apply-fail":
             self.units.pop(desired.dep_id, None)       # worst case: the old one was already stopped
@@ -134,8 +137,13 @@ class ModelExec(FakeDriver):
         return {d: u["digest"] for d, u in self.units.items() if u["running"]}
 
 
-def manifest(device: str, mv: int, spec: dict[str, str]) -> dict:
-    deps = [dict(deployment(d, v, digest=f"{d}-{v}")) for d, v in sorted(spec.items())]
+def manifest(device: str, mv: int, spec: dict[str, str], order: dict[str, tuple] | None = None) -> dict:
+    """`order` {dependent: dependencies} (EV-42): x-flex-dependsOn for the pairs present in `spec`."""
+    deps = [dict(deployment(d, v, digest=f"{d}-{v}")) for d, v in sorted(spec.items(), reverse=bool(order))]
+    for x in deps:
+        after = [a for a in (order or {}).get(x["metadata"]["id"], ()) if a in spec]
+        if after:
+            x["x-flex-dependsOn"] = [{"deployment": a} for a in after]
     return {"apiVersion": "flex.dev/v1alpha1", "kind": "DesiredState", "deviceId": device, "manifestVersion": mv,
             "deployments": [dict(x, metadata=dict(x["metadata"], deviceId=device)) for x in deps]}
 
@@ -150,10 +158,13 @@ def _fake_verify(repo, dg, drv, cls, platform=None):
 class InprocDevice:
     """One device: data dir + persistent executor; `engine` is the current incarnation."""
 
-    def __init__(self, root: Path, device: str = "prop-dev"):
+    def __init__(self, root: Path, device: str = "prop-dev", order: dict[str, tuple] | None = None):
         self.root = Path(tempfile.mkdtemp(prefix="inproc-", dir=root))
         self.device = device
+        self.order = order or {}
         self.exec = ModelExec()
+        if self.order:
+            self.exec.on_apply = self._check_order
         self.crashes: list[dict] = []
         self.mv_seen: list[int] = []
         self.seq_floor = 0
@@ -197,7 +208,7 @@ class InprocDevice:
     # ---- steps ---------------------------------------------------------------------------------------
     def publish(self, spec: dict[str, str]) -> int:
         mv = max([0] + [p[2]["manifestVersion"] for p in self.published]) + 1
-        doc = manifest(self.device, mv, spec)
+        doc = manifest(self.device, mv, spec, self.order)
         body = canonical_json(doc)
         self.published.append((body, crypto.sign(CLOUD_KEY, body), doc))
         self.engine.accept_manifest(body, self.published[-1][1], None)
@@ -281,6 +292,34 @@ class InprocDevice:
         self.fresh_boot = True
         return True
 
+    def _check_order(self, wl):
+        """Ordering invariant (EV-42): the executor starts a new release of a deployment (one the accepted desired
+        state asks for and that is not its committed one) only while every dependency is committed at its desired
+        release and healthy, as far as the engine knows. Rollbacks and repairs apply the committed/previous release
+        and are not checked."""
+        st = self.engine.state
+        doc = st.get("desired") or {}
+        want = {d["metadata"]["id"]: d for d in doc.get("deployments", [])}
+
+        def unready(dep_id):
+            return [e["deployment"] for e in want[dep_id].get("x-flex-dependsOn") or []
+                    if not ((st["applied"].get(e["deployment"]) or {}).get("wl", {}).get("digest")
+                            == _dg(want[e["deployment"]]) and st["health"].get(e["deployment"]))]
+
+        def new_release(dep_id, digest):   # a desired release of dep_id that is not its committed one
+            cur = st["applied"].get(dep_id)
+            return dep_id in want and _dg(want[dep_id]) == digest and not (cur and cur["wl"]["digest"] == digest)
+
+        if new_release(wl.dep_id, wl.digest) and unready(wl.dep_id):
+            self.errs.append(f"{wl.dep_id} {wl.version} applied while its dependencies {unready(wl.dep_id)} are not "
+                             "ready")
+        # nothing else runs an uncommitted new release ahead of its dependencies meanwhile (e.g. one an interrupted
+        # install left behind, EV-13 crash-resume)
+        for x, u in list(self.exec.units.items()):
+            if x != wl.dep_id and u["running"] and new_release(x, u["digest"]) and unready(x):
+                self.errs.append(f"{x} {u['version']} runs ahead of its dependencies {unready(x)} while "
+                                 f"{wl.dep_id} {wl.version} is applied")
+
     # ---- final invariants -------------------------------------------------------------------------------
     def converged(self) -> list[str]:
         st = self.engine.state
@@ -297,8 +336,16 @@ class InprocDevice:
         if doc and (st.get("rejected") or {}).get("manifestVersion") != doc["manifestVersion"]:
             want = {d["metadata"]["id"]: d["spec"]["deploymentProfile"]["components"][0]["properties"]["digest"]
                     for d in doc["deployments"]}
+            deps = {d["metadata"]["id"]: [e["deployment"] for e in d.get("x-flex-dependsOn") or []]
+                    for d in doc["deployments"]}
+
+            def ready(dep, seen=()):   # good desired release whose dependencies are all ready (EV-42)
+                return DIGEST_KIND[want[dep]] == "good" and all(ready(x, seen + (dep,)) for x in deps[dep]
+                                                                 if x not in seen)
             for dep, dg in want.items():
-                if DIGEST_KIND[dg] == "good":
+                if DIGEST_KIND[dg] == "good" and not ready(dep):
+                    pass   # held behind a dependency that is not ready: keeps its previous release (or none)
+                elif DIGEST_KIND[dg] == "good":
                     O.check(applied.get(dep) == dg, f"{dep}: desired good {dg[:15]} not applied ({applied.get(dep)})",
                             errs)
                 else:
@@ -319,8 +366,9 @@ class InprocDevice:
         return errs
 
     def final_check(self):
-        errs = list(self.errs)
-        errs += [f"not converged within bound: {e}" for e in self.settle()]
+        unsettled = self.settle()
+        errs = list(self.errs)   # after settle(): what its ticks observed counts too
+        errs += [f"not converged within bound: {e}" for e in unsettled]
         acts, bad = O.read_actions(self.data / "actions.jsonl")
         errs += [f"unparseable action record (fsynced records must survive): {b[:80]!r}" for b in bad]
         errs += O.duplicate_applies(acts, self.crashes)
@@ -332,6 +380,10 @@ class InprocDevice:
         except OSError:
             pass
         shutil.rmtree(self.root, ignore_errors=True)
+
+
+def _dg(d: dict) -> str:
+    return d["spec"]["deploymentProfile"]["components"][0]["properties"]["digest"]
 
 
 class quiet_logs:

@@ -108,6 +108,83 @@ def _desired_state_rules(doc: dict) -> list[str]:
         dev = d["metadata"].get("deviceId")
         if dev is not None and dev != doc["deviceId"]:
             out.append(f"$.deployments[{i}].metadata.deviceId: {dev!r} differs from deviceId {doc['deviceId']!r}")
+    return out + dependency_errors(doc)
+
+
+def depends_on(dep: dict) -> list[tuple[str, str]]:
+    """[(deployment id, condition)] of an ApplicationDeployment's x-flex-dependsOn (EV-42; condition default healthy)."""
+    return [(str(e["deployment"]), e.get("condition") or "healthy") for e in dep.get("x-flex-dependsOn") or []]
+
+
+def dependency_cycle(graph: dict[str, list[str]]) -> list[str] | None:
+    """One cycle of a {node: [nodes it depends on]} graph as [a, b, ..., a], or None (iterative DFS, stable order)."""
+    color: dict[str, int] = {}
+    for root in graph:
+        if color.get(root):
+            continue
+        stack, path = [(root, iter(graph.get(root, ())))], [root]
+        color[root] = 1
+        while stack:
+            node, it = stack[-1]
+            nxt = next(it, None)
+            if nxt is None:
+                color[node] = 2
+                stack.pop()
+                path.pop()
+            elif color.get(nxt) == 1:
+                return path[path.index(nxt):] + [nxt]
+            elif not color.get(nxt) and nxt in graph:
+                color[nxt] = 1
+                stack.append((nxt, iter(graph.get(nxt, ()))))
+                path.append(nxt)
+    return None
+
+
+def dependency_errors(doc: dict) -> list[str]:
+    """Semantic rules of x-flex-dependsOn (EV-42) on a schema-valid desired state: every entry names another
+    deployment of the same document, at most once, and the dependencies form no cycle."""
+    out: list[str] = []
+    ids = {d["metadata"]["id"] for d in doc["deployments"]}
+    graph: dict[str, list[str]] = {}
+    for i, d in enumerate(doc["deployments"]):
+        dep_id, seen = d["metadata"]["id"], set()
+        for j, (other, _) in enumerate(depends_on(d)):
+            where = f"$.deployments[{i}].x-flex-dependsOn[{j}].deployment"
+            if other == dep_id:
+                out.append(f"{where}: {dep_id!r} depends on itself")
+            elif other not in ids:
+                out.append(f"{where}: unknown deployment {other!r} (not in this desired state)")
+            elif other in seen:
+                out.append(f"{where}: duplicate dependency {other!r}")
+            seen.add(other)
+        graph.setdefault(dep_id, []).extend(o for o in seen if o in ids and o != dep_id)
+    cyc = dependency_cycle({k: sorted(v) for k, v in graph.items()})
+    if cyc:
+        out.append(f"$.deployments: dependency cycle {' -> '.join(cyc)}")
+    return out
+
+
+def dependency_order(deps: list[dict]) -> list[dict]:
+    """ApplicationDeployments in x-flex-dependsOn order (dependencies first), otherwise in document order. Ids
+    outside `deps` are ignored; a cycle (refused by the semantic rule, so only in a hand-made state) keeps the
+    document order for its members."""
+    by = {d["metadata"]["id"]: d for d in deps}
+    out, done, active = [], set(), set()
+
+    def visit(d):
+        i = d["metadata"]["id"]
+        if i in done or i in active:
+            return
+        active.add(i)
+        for other, _ in depends_on(d):
+            if other in by:
+                visit(by[other])
+        active.discard(i)
+        done.add(i)
+        out.append(d)
+
+    for d in deps:
+        visit(d)
     return out
 
 
