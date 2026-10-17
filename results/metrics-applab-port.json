@@ -10,11 +10,11 @@
     "remove"
   ],
   "engine_timings_seconds": {
-    "deploy_1.0.0": 2.38,
-    "refuse_1.3.0_total": 1.43,
-    "rollback_1.2.0_detect": 0.151,
-    "rollback_1.2.0_total": 2.69,
-    "update_1.1.0": 2.38
+    "deploy_1.0.0": 1.94,
+    "refuse_1.3.0_total": 1.5,
+    "rollback_1.2.0_detect": 0.126,
+    "rollback_1.2.0_total": 2.64,
+    "update_1.1.0": 2.57
   },
-  "pipeline_build_seconds": 0.51
+  "pipeline_build_seconds": 0.23
 }

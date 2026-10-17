@@ -31,16 +31,16 @@
       "child-device"
     ]
   },
-  "a_deploy_two_modules_s": 17.681,
+  "a_deploy_two_modules_s": 17.726,
   "a_gripper_upload": {
     "device": {
-      "load_us": 1436,
+      "load_us": 882,
       "state": "testing",
-      "switch_us": 3017,
-      "verify_us": 65215
+      "switch_us": 2167,
+      "verify_us": 39611
     },
-    "rpc_ms": 124.0,
-    "upload_s": 7.453,
+    "rpc_ms": 99.8,
+    "upload_s": 7.422,
     "uploaded_bytes": 37904
   },
   "a_llext_bytes": {
@@ -48,47 +48,47 @@
     "servo_drive": 3473
   },
   "a_local_bus": {
-    "gripper_pubs": 180,
-    "gripper_rx": 566,
-    "servo_pubs": 2624
+    "gripper_pubs": 190,
+    "gripper_rx": 587,
+    "servo_pubs": 2663
   },
   "a_servo_upload": {
     "device": {
-      "load_us": 3876,
+      "load_us": 2653,
       "state": "testing",
-      "switch_us": 885,
-      "verify_us": 51933
+      "switch_us": 854,
+      "verify_us": 34580
     },
-    "rpc_ms": 111.8,
-    "upload_s": 1.138,
+    "rpc_ms": 98.6,
+    "upload_s": 1.101,
     "uploaded_bytes": 5980
   },
   "b_swap": {
-    "activate_rpc_ms": 107.9,
-    "cloud_apply_to_installed_s": 6.32,
+    "activate_rpc_ms": 87.9,
+    "cloud_apply_to_installed_s": 6.264,
     "device_at_activate": {
-      "load_us": 551,
+      "load_us": 433,
       "state": "testing",
-      "switch_us": 577,
-      "verify_us": 51777
+      "switch_us": 489,
+      "verify_us": 34369
     },
-    "device_init_us": 534,
-    "device_llext_load_us": 551,
-    "device_switch_us": 577,
-    "device_unload_old_us": 321,
-    "device_verify_us": 51777,
-    "driver_upload_s": 1.117,
-    "engine_apply_plus_health_s": 5.673,
-    "gripper_steps_during_swap": 208,
-    "health_gate_s": 4.176,
+    "device_init_us": 454,
+    "device_llext_load_us": 433,
+    "device_switch_us": 489,
+    "device_unload_old_us": 251,
+    "device_verify_us": 34369,
+    "driver_upload_s": 1.11,
+    "engine_apply_plus_health_s": 5.722,
+    "gripper_steps_during_swap": 239,
+    "health_gate_s": 4.284,
     "mcu_reboots": 0,
-    "service_gap_us": 4000,
+    "service_gap_us": 2000,
     "step_period_ms": 5,
     "uploaded_bytes": 5980
   },
   "c_rollback": {
-    "cloud_apply_to_failed_s": 3.015,
-    "detect_s": 0.52,
+    "cloud_apply_to_failed_s": 2.814,
+    "detect_s": 0.529,
     "device_fault_reverts": 1,
     "device_reverts": 1,
     "device_switch_back_us": 563,
@@ -97,7 +97,7 @@
     "reason": "health check failed",
     "revert_rpc_ms": null,
     "rollback_path": "already active (no device action)",
-    "total_s": 2.628,
+    "total_s": 2.491,
     "window_s": 6.0
   },
   "d2_device_side_rejections": {
@@ -109,15 +109,15 @@
     "servo_drive-unsigned": "module not signed"
   },
   "d_reject_4.0.0-abi2": {
-    "cloud_apply_to_failed_s": 0.564,
+    "cloud_apply_to_failed_s": 0.615,
     "reason": "artefact rejected: module ABI 2.0 incompatible with base ABI 1.0 on gw1.mcu0"
   },
   "d_reject_4.0.0-m33": {
-    "cloud_apply_to_failed_s": 0.536,
+    "cloud_apply_to_failed_s": 0.415,
     "reason": "artefact rejected: module built for armv8m.main/hard-float, gw1.mcu0 is armv7m/soft-float"
   },
   "d_reject_5.0.0-iface": {
-    "cloud_apply_to_failed_s": 0.421,
+    "cloud_apply_to_failed_s": 0.45,
     "reason": "artefact rejected: interface hash mismatch: deployment expects FLEX01_51f4685e4a6d7\u2026, module has FLEX01_aa108d0dfc409\u2026"
   },
   "e_reject_6.0.0-rogue": "artefact rejected: module container: bad module signature",
@@ -125,23 +125,23 @@
   "e_reject_6.0.2-nosig": "artefact rejected: release not signed by a trusted key (no signature)",
   "e_reject_6.0.3-tamper": "artefact rejected: digest mismatch: flexnodes/servo_drive blobs/sha256:65c352d6749065db1f28ebc5eae135d2cdb7fe6cffcc64110113ccd4f472ff57 hashes to sha256:4215be9429f830d8ff5df787da49e23de37026e53d85f28c8b442c10d106f451",
   "f_full_image_revert": {
-    "cloud_apply_to_failed_s": 26.374,
-    "detect_s": 8.342,
+    "cloud_apply_to_failed_s": 26.375,
+    "detect_s": 8.019,
     "revert_path": "reset without confirm (MCUboot revert)",
-    "revert_reset_s": 1.052,
-    "total_s": 26.177,
-    "upload_s": 14.696
+    "revert_reset_s": 1.06,
+    "total_s": 26.125,
+    "upload_s": 14.92
   },
   "f_full_image_update": {
-    "cloud_apply_to_installed_s": 17.818,
-    "health_gate_s": 0.866,
+    "cloud_apply_to_installed_s": 17.553,
+    "health_gate_s": 0.888,
     "path": "upload + test + reset (MCUboot swap)",
-    "reset_swap_boot_s": 1.055,
-    "upload_s": 15.316,
+    "reset_swap_boot_s": 1.052,
+    "upload_s": 14.972,
     "uploaded_bytes": 77147
   },
   "g_power_cycle": {
-    "power_on_to_modules_running_s": 0.203
+    "power_on_to_modules_running_s": 0.253
   },
   "g_testing_power_cut": {
     "auto_reverts": 1,
@@ -174,5 +174,5 @@
       "llext_heap_used_B": 3473
     }
   },
-  "mcu_cold_boot_to_ready_s": 0.152
+  "mcu_cold_boot_to_ready_s": 0.101
 }

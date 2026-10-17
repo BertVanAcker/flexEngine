@@ -15,6 +15,17 @@ def dist() -> Path:
     """flexengine/dist with the engine wheel and the wheelhouses (built by build-wheels.sh when missing;
     FLEXENGINE_PKG_REBUILD=1 forces a rebuild)."""
     have = list(DIST.glob(f"flexengine_v2-{VERSION}-py3-none-any.whl")) and (DIST / "wheelhouse").is_dir()
+    if have:  # a cached engine wheel older than the source would test yesterday's engine
+        whl = DIST / f"flexengine_v2-{VERSION}-py3-none-any.whl"
+        src = DIST.parent / "src" / "flexengine2"
+        newest = max(f.stat().st_mtime for f in src.rglob("*") if f.is_file() and "__pycache__" not in f.parts)
+        if newest > whl.stat().st_mtime:
+            import sys
+
+            r = sh([sys.executable, "-m", "pip", "wheel", "--no-deps", "--no-build-isolation", "-w", str(DIST),
+                    str(DIST.parent)], timeout=600)
+            if r.returncode != 0:
+                pytest.fail(f"rebuilding the engine wheel failed:\n{r.stdout[-2000:]}\n{r.stderr[-2000:]}")
     if not have or os.environ.get("FLEXENGINE_PKG_REBUILD") == "1":
         r = sh(["bash", str(PACKAGING / "build-wheels.sh"), "--no-bundle"], timeout=1800)
         if r.returncode != 0:

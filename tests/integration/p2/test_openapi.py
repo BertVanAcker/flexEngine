@@ -6,16 +6,16 @@ import yaml
 
 import flexengine2.testing.fakecloud as fakecloud
 
-from .p2lab import PROBE
 
-# The stub's spec is still the probe's (read-only); flexengine/api/openapi-southbound.yaml is EV-11's frozen copy.
-SPEC = PROBE / "openapi.yaml"
+# Since EV-00 the reference cloud is checked against V2's own frozen southbound contract (it serves the
+# device-event route added on 2026-10-17, which the probe's spec does not know).
+SPEC = Path(fakecloud.__file__).resolve().parents[1] / "api" / "openapi-southbound.yaml"
 
 
 def test_openapi_valid_and_complete():
     from openapi_spec_validator import validate
     spec = yaml.safe_load(SPEC.read_text())
-    validate(spec)
+    validate(spec, base_uri=SPEC.parent.as_uri() + "/")  # relative $refs to the CP schemas
     src = Path(fakecloud.__file__).read_text()
     documented = {re.sub(r"\{[^}]+\}", "X", p) for p in spec["paths"]}
     served = set()

@@ -257,7 +257,9 @@ def test_f_bad_manifest_signature_ignored(tmp_path, keys):
     cfg = {"deviceId": "x", "apiUrl": "http://127.0.0.1:9", "dataDir": str(tmp_path), "onboardingToken": "t",
            "cloudPublicKey": crypto.public_b64(keys["cloud"]), "releasePublicKeys": [crypto.public_b64(keys["release"])]}
     eng = Engine(cfg, drivers={})
-    doc = canonical_json({"deviceId": "x", "manifestVersion": 5, "deployments": []})
+    # CP-1-valid since the 2026-10-17 decision (validate before accepting); the probe used a bare document
+    doc = canonical_json({"apiVersion": "flex.dev/v1alpha1", "kind": "DesiredState", "deviceId": "x", "manifestVersion": 5,
+                          "deployments": []})
     assert not eng.accept_manifest(doc, crypto.sign(keys["rogue"], doc), None)
     assert not eng.accept_manifest(doc, "", None)
     assert eng.accept_manifest(doc, crypto.sign(keys["cloud"], doc), None)

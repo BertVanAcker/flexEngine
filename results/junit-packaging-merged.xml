@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="3" tests="45" time="63.253" timestamp="2026-10-17T10:46:57.138285+00:00" hostname="vm"><testcase classname="tests.packaging.test_pkg_docker" name="test_fresh_install" time="16.473" /><testcase classname="tests.packaging.test_pkg_docker" name="test_systemd_analyze_verify" time="0.287" /><testcase classname="tests.packaging.test_pkg_docker" name="test_reinstall_is_idempotent" time="0.726" /><testcase classname="tests.packaging.test_pkg_docker" name="test_service_notify_and_watchdog" time="0.784" /><testcase classname="tests.packaging.test_pkg_docker" name="test_service_runs_real_engine" time="0.482"><failure message="AssertionError: /cloud/allowPlainHttp: unknown key 'allowPlainHttp' (allowed: apiUrl, backoff, cloudPublicKey, healthEveryTicks, httpTimeout, pollInterval, releaseKeyFiles, releasePublicKeys, safeStateFile, stackInfo)&#10;  &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['docker', 'exec', 'fe-pkg-5053', 'bash', '-c', '/opt/flexengine/bin/flexengine config check /et...althEveryTicks, httpTimeout, pollInterval, releaseKeyFiles, releasePublicKeys, safeStateFile, stackInfo)\n&quot;, stderr='').returncode">box = &lt;fe_pkg.Container object at 0x7f8cd2247620&gt;
+
+    def test_service_runs_real_engine(box):
+        """The real `flexengine run` under the hardened unit (Type=simple drop-in until host.run sends READY=1): reads
+        the root:flex config, writes its dataDir, stays up while flexCloud is unreachable."""
+        if not box.systemd:
+            pytest.skip("systemd does not run as PID 1 in this container")
+        from cryptography.hazmat.primitives import serialization as s
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    
+        key = base64.b64encode(Ed25519PrivateKey.generate().public_key().public_bytes(
+            s.Encoding.Raw, s.PublicFormat.Raw)).decode()
+        # the operator's edit of the installed engine.yaml: the key and a reachable-later cloud URL
+        box.ok(f"sed -i 's|  # cloudPublicKey: &lt;b64&gt;.*|  cloudPublicKey: {key}|; "
+               "s|apiUrl: https://lattepanda.lab:8700|apiUrl: http://127.0.0.1:9\\n  allowPlainHttp: true|; /container: {runtime: docker}/d; "
+               "/^    drivers:$/d' /etc/flexengine/engine.yaml")
+        box.ok("echo one-time-token &gt; /etc/flexengine/tokens/panda &amp;&amp; chgrp flex /etc/flexengine/tokens/panda &amp;&amp; "
+               "chmod 0640 /etc/flexengine/tokens/panda")
+        chk = box.sh("/opt/flexengine/bin/flexengine config check /etc/flexengine/engine.yaml --resolve")
+        if "invalid choice" not in chk.stderr:
+&gt;           assert chk.returncode == 0, chk.stdout + chk.stderr
+E           AssertionError: /cloud/allowPlainHttp: unknown key 'allowPlainHttp' (allowed: apiUrl, backoff, cloudPublicKey, healthEveryTicks, httpTimeout, pollInterval, releaseKeyFiles, releasePublicKeys, safeStateFile, stackInfo)
+E             
+E           assert 1 == 0
+E            +  where 1 = CompletedProcess(args=['docker', 'exec', 'fe-pkg-5053', 'bash', '-c', '/opt/flexengine/bin/flexengine config check /et...althEveryTicks, httpTimeout, pollInterval, releaseKeyFiles, releasePublicKeys, safeStateFile, stackInfo)\n", stderr='').returncode
+
+tests/packaging/test_pkg_docker.py:131: AssertionError</failure></testcase><testcase classname="tests.packaging.test_pkg_docker" name="test_dry_run_changes_nothing" time="0.884" /><testcase classname="tests.packaging.test_pkg_docker" name="test_upgrade_keeps_config_and_data" time="6.419" /><testcase classname="tests.packaging.test_pkg_docker" name="test_uninstall_keeps_state" time="0.675"><failure message="AssertionError: $ test -f /etc/flexengine/engine.yaml &amp;&amp; test -f /var/lib/flexengine/panda/device.key &amp;&amp; id flex">box = &lt;fe_pkg.Container object at 0x7f8cd2247620&gt;
+
+    def test_uninstall_keeps_state(box):
+        r = inst(box, "--uninstall")
+        assert "kept (/etc/flexengine)" in r.stdout and "kept (/var/lib/flexengine)" in r.stdout
+        assert box.sh("test -e /opt/flexengine").returncode != 0
+        assert box.sh("test -e /etc/systemd/system/flexengine.service").returncode != 0
+        assert box.sh("test -e /etc/systemd/system/flexengine.service.d/10-groups.conf").returncode != 0
+&gt;       box.ok("test -f /etc/flexengine/engine.yaml &amp;&amp; test -f /var/lib/flexengine/panda/device.key &amp;&amp; id flex")
+
+tests/packaging/test_pkg_docker.py:174: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;fe_pkg.Container object at 0x7f8cd2247620&gt;
+script = 'test -f /etc/flexengine/engine.yaml &amp;&amp; test -f /var/lib/flexengine/panda/device.key &amp;&amp; id flex'
+timeout = 600
+
+    def ok(self, script: str, timeout: float = 600) -&gt; str:
+        r = self.sh(script, timeout)
+&gt;       assert r.returncode == 0, f"$ {script}\n{r.stdout}\n{r.stderr}"
+               ^^^^^^^^^^^^^^^^^
+E       AssertionError: $ test -f /etc/flexengine/engine.yaml &amp;&amp; test -f /var/lib/flexengine/panda/device.key &amp;&amp; id flex
+
+tests/packaging/fe_pkg.py:112: AssertionError</failure></testcase><testcase classname="tests.packaging.test_pkg_docker" name="test_reinstall_after_uninstall_reuses_state" time="8.481" /><testcase classname="tests.packaging.test_pkg_docker" name="test_purge_removes_everything" time="1.336" /><testcase classname="tests.packaging.test_pkg_install" name="test_bash_syntax[install.sh]" time="0.005" /><testcase classname="tests.packaging.test_pkg_install" name="test_bash_syntax[build-wheels.sh]" time="0.005" /><testcase classname="tests.packaging.test_pkg_install" name="test_shellcheck[install.sh]" time="0.001"><skipped type="pytest.skip" message="shellcheck not installed">/home/user/modular-interoperable-framework/flexengine/tests/packaging/test_pkg_install.py:52: shellcheck not installed</skipped></testcase><testcase classname="tests.packaging.test_pkg_install" name="test_shellcheck[build-wheels.sh]" time="0.001"><skipped type="pytest.skip" message="shellcheck not installed">/home/user/modular-interoperable-framework/flexengine/tests/packaging/test_pkg_install.py:52: shellcheck not installed</skipped></testcase><testcase classname="tests.packaging.test_pkg_install" name="test_help_and_bad_options" time="0.026" /><testcase classname="tests.packaging.test_pkg_install" name="test_units_render_and_options" time="0.001" /><testcase classname="tests.packaging.test_pkg_install" name="test_systemd_analyze_verify_host" time="0.235" /><testcase classname="tests.packaging.test_pkg_install" name="test_wheel_is_pure_python" time="0.003" /><testcase classname="tests.packaging.test_pkg_install" name="test_checksums" time="3.283" /><testcase classname="tests.packaging.test_pkg_install" name="test_lock_is_current" time="0.185" /><testcase classname="tests.packaging.test_pkg_install" name="test_template_validates" time="0.383" /><testcase classname="tests.packaging.test_pkg_install" name="test_dry_run_on_empty_root_changes_nothing" time="0.187" /><testcase classname="tests.packaging.test_pkg_install" name="test_root_lifecycle" time="14.340" /><testcase classname="tests.packaging.test_pkg_install" name="test_root_no_service" time="4.518" /><testcase classname="tests.packaging.test_pkg_install" name="test_refuses_foreign_prefix" time="0.163" /><testcase classname="tests.packaging.test_pkg_install" name="test_arm64_wheelhouse_resolves[cp311]" time="1.248" /><testcase classname="tests.packaging.test_pkg_install" name="test_arm64_wheelhouse_resolves[cp313]" time="1.255" /><testcase classname="tests.packaging.test_pkg_install" name="test_arm64_emulated_install" time="0.675"><skipped type="pytest.skip" message="docker cannot run linux/arm64 here (no qemu-user binfmt): exec /usr/bin/true: exec format error; arm64 is covered by test_arm64_wheelhouse_resolves">/home/user/modular-interoperable-framework/flexengine/tests/packaging/test_pkg_install.py:309: docker cannot run linux/arm64 here (no qemu-user binfmt): exec /usr/bin/true: exec format error; arm64 is covered by test_arm64_wheelhouse_resolves</skipped></testcase><testcase classname="tests.packaging.test_pkg_install" name="test_flexengine_dir_layout" time="0.001" /><testcase classname="tests.packaging.test_sdnotify" name="test_noop_without_socket" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_noop_uses_process_env" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_ready_status" time="0.001" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_status_stopping" time="0.001" /><testcase classname="tests.packaging.test_sdnotify" name="test_process_env" time="0.001" /><testcase classname="tests.packaging.test_sdnotify" name="test_abstract_socket" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_send_errors_are_swallowed" time="0.001" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_interval[env0-None]" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_interval[env1-15.0]" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_interval[env2-None]" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_interval[env3-None]" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_interval[env4-None]" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_interval[env5-None]" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_interval[env6-None]" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_interval[env7-15.0]" time="0.000" /><testcase classname="tests.packaging.test_sdnotify" name="test_watchdog_interval_process_env" time="0.000" /></testsuite></testsuites>
