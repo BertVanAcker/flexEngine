@@ -1,0 +1,15 @@
+fast EXIT 0 918 passed in 106.77s (0:01:46)
+contract EXIT 0 231 passed, 166 skipped, 2 xfailed in 216.23s (0:03:36)
+property EXIT 0 14 passed, 6 skipped in 103.96s (0:01:43)
+p2 EXIT 0 32 passed in 185.89s (0:03:05)
+applab EXIT 0 11 passed in 47.49s
+edge EXIT 0 8 passed in 43.33s
+mcu EXIT 0 14 passed in 95.54s (0:01:35)
+native EXIT 0 3 passed in 17.89s
+nativepy EXIT 0 7 passed in 133.58s (0:02:13)
+rauc EXIT 0 6 passed, 6 skipped in 35.18s
+arduino EXIT 0 3 passed, 3 skipped in 9.94s
+flexia EXIT 0 3 passed in 77.70s (0:01:17)
+packaging EXIT 0 42 passed, 3 skipped in 57.60s
+flexmodel EXIT 0 204 passed, 6 skipped in 41.97s
+DONE
