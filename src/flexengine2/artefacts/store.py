@@ -28,6 +28,10 @@ class VerificationError(Exception):
     pass
 
 
+# profiles whose payload layers must carry these platform annotations (DA-15: MCU module layers stay strict)
+STRICT_PLATFORM = {"mcu-module": ("dev.flex.arch", "dev.flex.floatAbi")}
+
+
 @dataclass
 class Release:
     digest: str
@@ -141,11 +145,23 @@ class ArtefactStore:
             raise VerificationError(f"safety class mismatch: release descriptor says "
                                     f"{descriptor.get('safetyClass', 'none')!r}, desired state says {safety_class!r}")
         layers = [l for l in man["layers"] if (l.get("annotations") or {}).get("dev.flex.profile") == profile]
+        strict = STRICT_PLATFORM.get(profile)
+        if strict and layers:
+            # DA-15: the permissive match below stays for native / container layers, but an MCU module layer is
+            # selectable only when it names its CPU profile and float ABI (a module for another core or float ABI
+            # must never be picked by an "absent key fits any value" rule)
+            named = [l for l in layers if all((l.get("annotations") or {}).get(k) for k in strict)]
+            if not named:
+                missing = sorted({k for l in layers for k in strict if not (l.get("annotations") or {}).get(k)})
+                raise VerificationError(f"{profile} layer without {', '.join(missing)} cannot be selected "
+                                        f"(DA-15: {profile} layers must name {', '.join(strict)})")
+            layers = named
         if platform:
             # multi-platform release (D-PICK: one FLXM layer per MCU profile; EV-37: one native layer per CPU /
-            # Python): pick the layer whose platform annotations do not contradict the executor's (an absent key
-            # fits any value: a Rust binary layer names only dev.flex.arch), the most specific one first; a
-            # single-platform release without annotations still fits
+            # Python; EV-40: one container image per CPU): pick the layer whose platform annotations do not
+            # contradict the executor's (an absent key fits any value: a Rust binary layer names only dev.flex.arch),
+            # the most specific one first; a single-platform release without annotations still fits (a single
+            # layer for another platform is the driver preflight's refusal)
             def _score(l):
                 ann = l.get("annotations") or {}
                 if any(k in ann and ann[k] != v for k, v in platform.items()):

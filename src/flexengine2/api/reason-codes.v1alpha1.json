@@ -392,6 +392,15 @@
    "meaning": "no layer annotated dev.flex.profile = x-flex-driver"
   },
   {
+   "code": "FE-ART-REL-004",
+   "field": "detail",
+   "stage": "prepare",
+   "profile": "engine",
+   "template": "{profile} layer without {keys} cannot be selected (DA-15: {profile} layers must name {required})",
+   "pattern": "^(.+?)\\ layer\\ without\\ (.+?)\\ cannot\\ be\\ selected\\ \\(DA\\-15:\\ (.+?)\\ layers\\ must\\ name\\ (.+?)\\)$",
+   "meaning": "DA-15: no mcu-module layer of the release names both dev.flex.arch and dev.flex.floatAbi (MCU module layers are selected strictly; native/container keep the permissive match)"
+  },
+  {
    "code": "FE-ART-REL-098",
    "field": "detail",
    "stage": "prepare",
@@ -434,29 +443,29 @@
   {
    "code": "FE-CTR-003",
    "field": "detail",
-   "stage": "apply",
+   "stage": "preflight",
    "profile": "container",
    "template": "runOptions.{key} is not supported (supported: {keys})",
    "pattern": "^runOptions\\.(.+?)\\ is\\ not\\ supported\\ \\(supported:\\ (.+?)\\)$",
-   "meaning": "descriptor runOptions key unknown"
+   "meaning": "descriptor runOptions key unknown (preflight refusal; apply re-checks)"
   },
   {
    "code": "FE-CTR-004",
    "field": "detail",
-   "stage": "apply",
+   "stage": "preflight",
    "profile": "container",
    "template": "runOptions.{key}={value} is not in this device's allow-list",
    "pattern": "^runOptions\\.(.+?)=(.+?)\\ is\\ not\\ in\\ this\\ device's\\ allow\\-list$",
-   "meaning": "runOptions value not in allowedRunOptions"
+   "meaning": "runOptions value not in allowedRunOptions (preflight refusal; apply re-checks)"
   },
   {
    "code": "FE-CTR-005",
    "field": "detail",
-   "stage": "apply",
+   "stage": "preflight",
    "profile": "container",
    "template": "runOptions are not supported by the Ankaios driver (use docker/podman)",
    "pattern": "^runOptions\\ are\\ not\\ supported\\ by\\ the\\ Ankaios\\ driver\\ \\(use\\ docker/podman\\)$",
-   "meaning": "Ankaios with runOptions"
+   "meaning": "Ankaios with runOptions (preflight refusal; apply re-checks)"
   },
   {
    "code": "FE-CTR-006",
@@ -511,6 +520,141 @@
    "template": "{cmd}...: unreadable output ({error})",
    "pattern": "^(.+?)\\.\\.\\.:\\ unreadable\\ output\\ \\((.+?)\\)$",
    "meaning": "runtime CLI answered with output that is not JSON"
+  },
+  {
+   "code": "FE-CTR-014",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "{cmd}...: no architecture ({error})",
+   "pattern": "^(.+?)\\.\\.\\.:\\ no\\ architecture\\ \\((.+?)\\)$",
+   "meaning": "EV-40: the runtime did not report its architecture (platform() raises DriverError: deferred, never a refusal)"
+  },
+  {
+   "code": "FE-CTR-PRE-001",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "container image is built for {arch} (dev.flex.arch), this device is {device}",
+   "pattern": "^container\\ image\\ is\\ built\\ for\\ (.+?)\\ \\(dev\\.flex\\.arch\\),\\ this\\ device\\ is\\ (.+?)$",
+   "meaning": "EV-40: the selected image layer is for another CPU than the runtime's"
+  },
+  {
+   "code": "FE-CTR-PRE-002",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "health type exec needs a non-empty command list",
+   "pattern": "^health\\ type\\ exec\\ needs\\ a\\ non\\-empty\\ command\\ list$",
+   "meaning": "EV-39: exec probe without command"
+  },
+  {
+   "code": "FE-CTR-PRE-003",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.{key} must be a map of variable names",
+   "pattern": "^runOptions\\.(.+?)\\ must\\ be\\ a\\ map\\ of\\ variable\\ names$",
+   "meaning": "EV-41: env / envFrom is not an object"
+  },
+  {
+   "code": "FE-CTR-PRE-004",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.{key}.{name}: invalid variable name (FLEX_* is the engine's)",
+   "pattern": "^runOptions\\.(.+?)\\.(.+?):\\ invalid\\ variable\\ name\\ \\(FLEX_\\*\\ is\\ the\\ engine's\\)$",
+   "meaning": "EV-41: not a shell variable name, or a reserved FLEX_* name"
+  },
+  {
+   "code": "FE-CTR-PRE-005",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.{key}.{name} is not in this device's allow-list",
+   "pattern": "^runOptions\\.(.+?)\\.(.+?)\\ is\\ not\\ in\\ this\\ device's\\ allow\\-list$",
+   "meaning": "EV-41: variable name matches no allowedRunOptions.env pattern"
+  },
+  {
+   "code": "FE-CTR-PRE-006",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.env.{name} must be a string",
+   "pattern": "^runOptions\\.env\\.(.+?)\\ must\\ be\\ a\\ string$",
+   "meaning": "EV-41: env value not a string"
+  },
+  {
+   "code": "FE-CTR-PRE-007",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.env.{name} looks like a secret: use runOptions.envFrom with a device-local secret file",
+   "pattern": "^runOptions\\.env\\.(.+?)\\ looks\\ like\\ a\\ secret:\\ use\\ runOptions\\.envFrom\\ with\\ a\\ device\\-local\\ secret\\ file$",
+   "meaning": "EV-41: secret-looking name (TOKEN, SECRET, KEY, PASSWORD ...) or value (PEM private key, token prefix) in plain env"
+  },
+  {
+   "code": "FE-CTR-PRE-008",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.envFrom.{name}: expected an object naming a secret file (file: <name>)",
+   "pattern": "^runOptions\\.envFrom\\.(.+?):\\ expected\\ an\\ object\\ naming\\ a\\ secret\\ file\\ \\(file:\\ <name>\\)$",
+   "meaning": "EV-41: envFrom entry without a plain file name"
+  },
+  {
+   "code": "FE-CTR-PRE-009",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.envFrom.{name}: this device has no drivers.container.secretsDir",
+   "pattern": "^runOptions\\.envFrom\\.(.+?):\\ this\\ device\\ has\\ no\\ drivers\\.container\\.secretsDir$",
+   "meaning": "EV-41: envFrom on a device without a secrets directory"
+  },
+  {
+   "code": "FE-CTR-PRE-010",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.envFrom.{name}: secret file {file} is not usable ({error})",
+   "pattern": "^runOptions\\.envFrom\\.(.+?):\\ secret\\ file\\ (.+?)\\ is\\ not\\ usable\\ \\((.+?)\\)$",
+   "meaning": "EV-41: the secret file is missing, empty, not 0600 or not owned by the engine user"
+  },
+  {
+   "code": "FE-CTR-PRE-011",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.ports={value}: expected [ip:]hostPort:containerPort[/tcp|udp|sctp]",
+   "pattern": "^runOptions\\.ports=(.+?):\\ expected\\ \\[ip:\\]hostPort:containerPort\\[/tcp\\|udp\\|sctp\\]$",
+   "meaning": "EV-41: malformed published port"
+  },
+  {
+   "code": "FE-CTR-PRE-012",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.ports={value} is not in this device's allow-list",
+   "pattern": "^runOptions\\.ports=(.+?)\\ is\\ not\\ in\\ this\\ device's\\ allow\\-list$",
+   "meaning": "EV-41: host port/protocol/address not covered by allowedRunOptions.ports"
+  },
+  {
+   "code": "FE-CTR-PRE-013",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.volumes={value}: expected name:/absolute/target[:ro] (named volumes only, never a host path)",
+   "pattern": "^runOptions\\.volumes=(.+?):\\ expected\\ name:/absolute/target\\[:ro\\]\\ \\(named\\ volumes\\ only,\\ never\\ a\\ host\\ path\\)$",
+   "meaning": "EV-41: malformed volume or a host bind mount"
+  },
+  {
+   "code": "FE-CTR-PRE-014",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions.volumes={value} is not in this device's allow-list",
+   "pattern": "^runOptions\\.volumes=(.+?)\\ is\\ not\\ in\\ this\\ device's\\ allow\\-list$",
+   "meaning": "EV-41: volume name matches no allowedRunOptions.volumes pattern"
   },
   {
    "code": "FE-CTR-010",

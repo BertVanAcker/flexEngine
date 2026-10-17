@@ -1052,7 +1052,8 @@ def build_drivers(cfg: dict, data_dir: Path) -> dict[str, Driver]:
         if dc["runtime"] == "ankaios":
             out["container"] = AnkaiosDriver(cfg["deviceId"], dc["ankBin"], dc["serverUrl"], dc["agent"])
         else:
-            out["container"] = CliContainerDriver(cfg["deviceId"], dc["runtime"], dc.get("allowedRunOptions"))
+            out["container"] = CliContainerDriver(cfg["deviceId"], dc["runtime"], dc.get("allowedRunOptions"),
+                                                  secrets_dir=dc.get("secretsDir"))   # EV-41 envFrom files
     nat = cfg.get("drivers", {}).get("native", True)
     if isinstance(nat, dict) and nat.get("runtime", "systemd") == "systemd":   # EV-19: real systemd units
         from flexengine2.drivers.native.systemd import SystemdDriver

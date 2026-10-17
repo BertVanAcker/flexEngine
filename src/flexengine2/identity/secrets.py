@@ -3,6 +3,8 @@
   read_secret_file(path)            stripped contents; refuses group/other-readable or foreign-owned files
   consume_onboarding_token(path)    two-step: read -> caller onboards -> mark_consumed() destroys the file
   scrub_env(env)                    child-process environment without FLEX_* and secret-looking variables
+  looks_secret(name, value)         the heuristic behind scrub_env (+ obvious secret values), e.g. for a release's
+                                    container environment (EV-41: such values must come from a secret file)
 """
 
 from __future__ import annotations
@@ -73,6 +75,14 @@ def consume_onboarding_token(path: str | Path, *, allow_insecure: bool = False) 
 
 
 _SECRETISH = re.compile(r"TOKEN|SECRET|KEY|PASSWORD|PASSWD|CREDENTIAL|PRIVATE", re.I)
+# values that are secrets whatever their name: PEM private keys, well-known token prefixes
+_SECRET_VALUE = re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----|^(ghp_|gho_|github_pat_|glpat-|xox[abpr]-|AKIA|"
+                           r"sk-[A-Za-z0-9])")
+
+
+def looks_secret(name: str, value: str | None = None) -> bool:
+    """True for a secret-looking variable name (scrub_env's heuristic) or an obviously secret value."""
+    return bool(_SECRETISH.search(name) or (value is not None and _SECRET_VALUE.search(str(value))))
 
 
 def scrub_env(env: dict[str, str] | None = None, *, keep: tuple[str, ...] = ()) -> dict[str, str]:

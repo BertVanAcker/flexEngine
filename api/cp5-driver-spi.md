@@ -103,7 +103,7 @@ image's sha256 and size, checked by the patched library) bind what the board ins
 
 | Profile | Driver (`name`) | Module | Executor | Config (`devices[].drivers`) |
 |---|---|---|---|---|
-| `container` | `docker`, `podman` | `drivers/container.py` `CliContainerDriver` | docker / podman CLI (labels, digest-pinned) | `container: {runtime: docker\|podman}` |
+| `container` | `docker`, `podman` | `drivers/container.py` `CliContainerDriver` | docker / podman CLI (labels, digest-pinned) | `container: {runtime: docker\|podman, allowedRunOptions, secretsDir}` |
 | `container` | `ankaios` | `drivers/container.py` `AnkaiosDriver` | `ank` CLI → Ankaios server | `container: {runtime: ankaios, …}` |
 | `native` | `process` | `drivers/process.py` `ProcessDriver` | local processes; plays systemd itself (tests, dev, Mac) | `native: true` or `{runtime: process, python}` |
 | `native` | `systemd` | `drivers/native/systemd.py` `SystemdDriver` | real systemd unit files (EV-19) | `native: {runtime: systemd, scope, unitDir, user, python}` |
@@ -112,6 +112,17 @@ image's sha256 and size, checked by the patched library) bind what the board ins
 | `plc-verify` | `plc-verify` | `drivers/plc/verify.py` | ADS / Modbus / shm interface-hash reads | `plc-verify: {…}` |
 | `os-rauc` | `rauc` | `drivers/os_rauc.py` | RAUC A/B OS update (EV-17) | `os-rauc: {sharedDataPath, …}` |
 | `arduino-ota` | `portenta-ota` | `drivers/arduino_ota.py` | flexNode-arduino boards: MQTT command + flexCloud Redis keys + LAN image server (EV-38) | `arduino-ota: {boards, mqtt, redis, serve, …}` |
+
+### `container`: health types, CPU layers, run options (EV-39, EV-40, EV-41)
+
+| SPI | behaviour |
+|---|---|
+| `platform` | `{"dev.flex.arch": <runtime CPU>}` from `docker version` Server.Arch / `podman info` Host.Arch (Go names normalised: amd64 → x86_64, arm64 → aarch64, arm → armv7l …), cached per instance; no answer → `DriverError` (FE-CTR-014, deferred). Ankaios: the podman underneath |
+| `preflight` | image layer annotated for another CPU (FE-CTR-PRE-001); `exec` probe without a command (-002); every `runOptions` value checked against `allowedRunOptions` and the secret / volume rules (FE-CTR-003/004, FE-CTR-PRE-003…014; Ankaios: any run option, FE-CTR-005). Reads `envFrom` files (existence, 0600, owner) but never sends anything to the runtime |
+| `apply` | re-checks the run options (backstop), reads the `envFrom` secrets, replaces the container only (named volumes `flex_<device>_<dep>_<name>` are created once and kept across updates and rollbacks), secrets reach `docker run -e NAME` through the CLI's environment |
+| `remove` | container and the deployment's named volumes (label `dev.flex.deployment`) |
+| `health` | `type: http` (default) GET on the container IP; `exec`: `docker\|podman exec <id> <command>` within `execTimeoutSeconds` (default 2), exit 0; `process`: running, not restarting, no restart since the previous probe. Ankaios: the same on the workload's podman container (ank itself has no exec probe) |
+| `capabilities` | adds `platform`, `healthTypes` (`http`, `exec`, `process`) and, for docker/podman, `runOptions` (supported keys) |
 
 ### `native`, both drivers: own Python dependencies and platform layers (EV-36, EV-37)
 

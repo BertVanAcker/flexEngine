@@ -104,7 +104,10 @@ class Engine:
                     "onboardingToken": cloud.onboarding_token(dev), "cloudPublicKey": crypto.public_b64(cloud_key),
                     "releasePublicKeys": [release_pub], "pollInterval": 0.5, "backoff": [0.2, 2.0],
                     "safeStateFile": str(safe), "httpTimeout": 5,
-                    "drivers": {"container": {"runtime": "docker"}, "native": True}}
+                    "drivers": {"container": {"runtime": "docker", "allowedRunOptions": {
+                        # EV-41: what the e2e packages publish / mount (compose ports, -p, a named volume)
+                        "ports": ["127.0.0.1:38081", "127.0.0.1:38082"], "volumes": ["worker-state"]}},
+                        "native": True}}
         (self.dir / "engine.json").write_text(json.dumps(self.cfg, indent=1))
         self.log = self.dir / "engine.log"
         self.proc = subprocess.Popen([sys.executable, "-m", "flexengine2.testing.single", "--config",
@@ -123,6 +126,10 @@ class Engine:
                              capture_output=True, text=True).stdout.split()
         if ids:
             subprocess.run(["docker", "rm", "-f", *ids], capture_output=True)
+        vols = subprocess.run(["docker", "volume", "ls", "-q", "--filter", f"label=dev.flex.device={self.dev}"],
+                              capture_output=True, text=True).stdout.split()
+        if vols:  # EV-41 named volumes outlive their containers (deleted with the deployment, not by a kill)
+            subprocess.run(["docker", "volume", "rm", "-f", *vols], capture_output=True)
         for u in self.units().values():
             try:
                 os.killpg(u["pid"], 9)

@@ -322,6 +322,27 @@
         "runtimeVersion": {
           "type": "string"
         },
+        "platform": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "EV-40: Driver.platform() of the container runtime, {dev.flex.arch} (normalised uname -m, e.g. x86_64, aarch64); the engine picks the image layer of a multi-CPU release that fits it. Omitted when the runtime does not report its architecture."
+        },
+        "healthTypes": {
+          "type": "array",
+          "items": {
+            "enum": ["http", "exec", "process"]
+          },
+          "description": "EV-39: the health probe types this driver runs (descriptor health.type)."
+        },
+        "runOptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "EV-41: the descriptor runOptions keys this driver understands (each value still needs the device's allowedRunOptions)."
+        },
         "supportedRuntimes": {
           "type": "array",
           "items": {
@@ -371,6 +392,20 @@
           "items": {
             "type": "string"
           }
+        },
+        "platform": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "EV-40: Driver.platform() of the container runtime, {dev.flex.arch} (normalised uname -m, e.g. x86_64, aarch64); the engine picks the image layer of a multi-CPU release that fits it. Omitted when the runtime does not report its architecture."
+        },
+        "healthTypes": {
+          "type": "array",
+          "items": {
+            "enum": ["http", "exec", "process"]
+          },
+          "description": "EV-39: the health probe types this driver runs (descriptor health.type)."
         },
         "supportedRuntimes": {
           "type": "array",

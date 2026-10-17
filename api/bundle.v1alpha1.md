@@ -35,11 +35,14 @@ referrer  signature manifest (artifactType application/vnd.flex.signature.v1+jso
 ```
 
 Layer selection [V]: layers whose `dev.flex.profile` equals the deployment's `x-flex-driver`; if the driver has a
-`platform()` (mcu-module: `{dev.flex.arch, dev.flex.floatAbi}`; native, EV-37: `{dev.flex.arch, dev.flex.pyabi}`),
-the layers whose annotations do not contradict it (an annotation key the layer does not carry fits any value), the
-one matching most keys first; no such layer among several → FE-ART-REL-002; a single layer is always selected (a
-single layer without platform annotations fits; one annotated for another platform is refused by the driver's
-preflight with a precise reason, e.g. FE-NAT-PRE-001). Required annotations per profile (schema): container
+`platform()` (mcu-module: `{dev.flex.arch, dev.flex.floatAbi}`; native, EV-37: `{dev.flex.arch, dev.flex.pyabi}`;
+container, EV-40: `{dev.flex.arch}` of the docker/podman runtime), the layers whose annotations do not contradict it
+(an annotation key the layer does not carry fits any value), the one matching most keys first; no such layer among
+several → FE-ART-REL-002; a single layer is always selected (a single layer without platform annotations fits; one
+annotated for another platform is refused by the driver's preflight with a precise reason, e.g. FE-NAT-PRE-001,
+FE-CTR-PRE-001). DA-15: the permissive match holds for native and container layers only; an **mcu-module** layer is
+selectable only when it carries both `dev.flex.arch` and `dev.flex.floatAbi` (unannotated mcu-module layers are
+skipped; none left → FE-ART-REL-004). Required annotations per profile (schema): container
 `dev.flex.imageRef` (`…@sha256:…`, run by digest); applab `dev.flex.releaseName`; mcu-module `dev.flex.arch`,
 `dev.flex.floatAbi`; os-rauc `dev.flex.compatible` (matched against the driver's `platform()`); arduino-ota
 `dev.flex.board` (FQBN, matched against `platform()` / the target board) and `dev.flex.firmwareVersion`. Payload media types:
@@ -73,8 +76,31 @@ CPU-specific), `dev.flex.pyabi` = the Python ABI of the wheels (`cp312`, `cp313t
 A multi-platform release carries one native layer per platform (e.g. a Rust binary for x86_64 and aarch64, or flcpy
 wheels for cp312 and cp313); producer: `flexengine/tools/native_release.py` (`py-payload`, `flcrs`, `release`).
 
+Container payload [V] (EV-40): one release may carry one image layer per CPU type (docker-archive of that CPU's
+image, annotated `dev.flex.arch` = normalised `uname -m` and `dev.flex.imageRef` = that image's digest); the engine
+loads and runs only the layer of its runtime's CPU (`docker version` Server.Arch / `podman info` Host.Arch). Producer:
+`flex import-flexia --arch x86_64,aarch64` (one release, no `<v>-<arch>` versions).
+
 Descriptor checks [V]: config mediaType (FE-ART-REL-001), `safetyClass` = deployment class (FE-ART-SAF-002), payload
-for the profile (FE-ART-REL-002/003). The descriptor supplies the workload's `health`, `restartPolicy`, `runOptions`.
+for the profile (FE-ART-REL-002/003/004). The descriptor supplies the workload's `health`, `restartPolicy`, `runOptions`.
+
+Container health and run options [V] (EV-39, EV-41; descriptor schema `HealthProbe`, `RunOptions`):
+
+| Descriptor | Engine (docker / podman; Ankaios: health only) |
+|---|---|
+| `health.type: http` (default) | GET `path` on the container IP:`port`, 2xx = healthy |
+| `health.type: exec`, `command: [...]`, `execTimeoutSeconds` (default 2) | `docker\|podman exec <container> <command>`, exit 0 = healthy; slower = unhealthy; no command → preflight refusal FE-CTR-PRE-002 |
+| `health.type: process` | the container runs, is not restarting and has not restarted since the previous probe |
+| `runOptions.devices / gpus / runtime / groupAdd` | `--device` / `--gpus` / `--runtime` / `--group-add` |
+| `runOptions.env: {NAME: value}` | `-e NAME=value`; secret-looking names (TOKEN, SECRET, KEY, PASSWORD, CREDENTIAL, PRIVATE) or values (PEM private keys, token prefixes) are refused (FE-CTR-PRE-007); `FLEX_*` is reserved |
+| `runOptions.envFrom: {NAME: {file: <name>}}` | reads the device-local file `<drivers.container.secretsDir>/<name>` (0600, owned by the engine user) at apply and passes it as `-e NAME` through the CLI's environment (never in an argv, the release or the desired state) |
+| `runOptions.ports: ["[ip:]host:container[/proto]"]` | `-p` |
+| `runOptions.volumes: ["name:/target[:ro]"]` | runtime named volume `flex_<device>_<deployment>_<name>` (labels `dev.flex.device`, `dev.flex.deployment`, `dev.flex.volume`), created before the first run; kept across updates and rollbacks, deleted when the deployment is removed; never a host path |
+
+S4: only the signed descriptor can ask for a run option, and every value must also be on the device's
+`drivers.container.allowedRunOptions` (deny by default: `env` and `volumes` entries are fnmatch patterns of names,
+`ports` entries `[ip:]port[-port][/proto]`); anything else is refused at preflight (the previous version keeps
+running, FE-CTR-003/004, FE-CTR-PRE-003…014) and re-checked at apply. Ankaios refuses run options (FE-CTR-005).
 
 ## 3. Offline bundle (`bundle.tar`)
 

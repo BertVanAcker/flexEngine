@@ -53,11 +53,15 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `devices[].drivers.container.ankBin` | string |  | yes | *[runtime: ankaios]* Path of the `ank` CLI. |
 | `devices[].drivers.container.serverUrl` | string |  | yes | *[runtime: ankaios]* Ankaios server URL, e.g. `http://127.0.0.1:25551`. |
 | `devices[].drivers.container.agent` | string |  | yes | *[runtime: ankaios]* Ankaios agent name workloads are placed on. |
-| `devices[].drivers.container.allowedRunOptions` | object | `{}` |  | *[runtime: docker \| podman]* Allow-list of the `runOptions` a signed release may request; anything else fails the deployment (S4). |
+| `devices[].drivers.container.allowedRunOptions` | object | `{}` |  | *[runtime: docker \| podman]* Allow-list of the `runOptions` a signed release may request (deny by default); anything else is refused at preflight (S4). |
 | `devices[].drivers.container.allowedRunOptions.devices` | array of string |  |  | Permitted `--device` values, e.g. `/dev/dri`. |
 | `devices[].drivers.container.allowedRunOptions.gpus` | array of string |  |  | Permitted `--gpus` values, e.g. `all`. |
 | `devices[].drivers.container.allowedRunOptions.runtime` | array of string |  |  | Permitted `--runtime` values, e.g. `nvidia`. |
 | `devices[].drivers.container.allowedRunOptions.groupAdd` | array of string |  |  | Permitted `--group-add` values. |
+| `devices[].drivers.container.allowedRunOptions.env` | array of string |  |  | EV-41: permitted variable names of `runOptions.env` / `runOptions.envFrom` (fnmatch patterns, e.g. `APP_*`); secret-looking names are refused in `env` whatever this list says (use `envFrom`). |
+| `devices[].drivers.container.allowedRunOptions.ports` | array of string |  |  | EV-41: permitted published host ports `[hostIp:]port[-port][/proto]` (default tcp), e.g. `8080`, `9000-9010/udp`, `127.0.0.1:8443`; an entry with an address only allows that address. |
+| `devices[].drivers.container.allowedRunOptions.volumes` | array of string |  |  | EV-41: permitted named volume names (fnmatch patterns, e.g. `data`, `*`); volumes are runtime named volumes per deployment, never host paths. |
+| `devices[].drivers.container.secretsDir` | string |  |  | *[runtime: docker \| podman]* EV-41: directory of device-local secret files for `runOptions.envFrom` (`{NAME: {file: <name>}}` reads `<secretsDir>/<name>`; each file 0600 and owned by the engine user). Unset: envFrom is refused. |
 | `devices[].drivers.native` | boolean \| object | `false` |  | Native (container-free) driver. `true` = the process driver (plays systemd itself; tests and dev), an object selects the runtime: `{runtime: systemd}` writes real systemd units (EV-19). |
 | `devices[].drivers.native.runtime` | `process` \| `systemd` | `"systemd"` |  | `systemd`: workloads are unit files `flex-<deviceId>-<depId>.service` owned by systemd (they survive an engine restart and a reboot); `process`: the process driver (same as `native: true`). |
 | `devices[].drivers.native.scope` | `system` \| `user` | `"system"` |  | systemd: the system manager (engine runs as root, or as the flex user with the polkit rule packaging/polkit/50-flexengine-systemd.rules) or the user manager of the engine's user (`systemctl --user`, dev; enable lingering for boot). |
