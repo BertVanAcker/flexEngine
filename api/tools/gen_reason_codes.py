@@ -33,6 +33,7 @@ T = [
     ("FE-DS-005", "event", "accept", "engine", "desired state does not match the CP-1 schema: {errors}", "the signed document fails desired-state.v1alpha1 (first three violations, '; '-joined)"),
     ("FE-ONB-001", "log", "onboarding", "engine", "cloud key at onboarding does not match the provisioned trust anchor", "onboarding response cloudPublicKey differs from cfg cloudPublicKey; the device stays un-onboarded"),
     ("FE-BUN-001", "log", "bundle", "engine", "bundle without desired state", "offline bundle lacks desired.json or desired.sig"),
+    ("FE-BUN-002", "log", "bundle", "engine", "bundle desired state is not signed by the cloud key", "the bundle's desired.sig does not verify with cloudPublicKey; nothing from the bundle is stored"),
     # ---- reconciler: top-level reasons ----
     ("FE-REC-001", "reason", "prepare", "engine", "no driver for {profile}", "x-flex-driver names a profile with no driver on this device; manifest version rejected"),
     ("FE-REC-002", "reason", "prepare", "engine", "artefact rejected: {detail}", "release verification or driver preflight refused the artefact; the whole manifest version is rejected and the previous state keeps running (detail = an FE-ART/-CLD/-*-PRE code)"),

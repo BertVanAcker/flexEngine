@@ -822,7 +822,21 @@ class Engine:
         self.log("engine stop", event="engine.stop")
 
     def import_bundle(self, path: str):
-        desired, sig = self.store.import_bundle(Path(path).read_bytes())
+        """Offline bundle: the desired state must be signed by the cloud before anything from the bundle is stored;
+        an unsigned one is refused like an online answer (FE-DS-001 device event) and the store stays untouched."""
+        refused = []
+
+        def accept(d: bytes, s: str) -> bool:
+            if crypto.verify(self.cloud_pub, d, s):
+                return True
+            refused.append(self.refuse(d, reason="desired state with bad/missing cloud signature ignored"))
+            return False
+        try:
+            desired, sig = self.store.import_bundle(Path(path).read_bytes(), accept=accept)
+        except VerificationError:
+            if refused:
+                return
+            raise
         if self.accept_manifest(desired, sig, None):
             self.log("desired state imported from offline bundle", event="bundle.imported")
 

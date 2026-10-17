@@ -159,7 +159,7 @@ def _accept_bundle(engine, data: bytes) -> dict:
     from flexengine2.identity import crypto
 
     try:
-        desired, sig = engine.store.import_bundle(data)
+        desired, sig = engine.store.import_bundle(data, accept=lambda d, s: crypto.verify(engine.cloud_pub, d, s))
     except (VerificationError, tarfile.TarError, ValueError) as e:
         raise ApiError(422, "bundle refused", f"FE-BUN-001: {e}") from None
     if not crypto.verify(engine.cloud_pub, desired, sig):

@@ -703,12 +703,6 @@ def test_bundle_for_another_device_refused(tmp_path):
     _after_bundle(d)
 
 
-@pytest.mark.xfail(strict=True, reason="bug (engine): ArtefactStore.import_bundle stores the blobs and rewrites the "
-                                       "cached referrers index (cas/referrers/<release>) from any signature manifest "
-                                       "in the tar BEFORE the bundle's desired state is authenticated; the cached "
-                                       "index is then trusted forever (referrers() never refetches), so one refused "
-                                       "bundle carrying a forged signature manifest for a release makes every later "
-                                       "online install of that release fail with FE-ART-SIG-002 (denial of service)")
 def test_refused_bundle_does_not_poison_the_artefact_cache(lab, tmp_path):
     from flexengine2.artefacts.oci import AT_SIGNATURE, EMPTY_JSON, MT_EMPTY, MT_MANIFEST
     from flexengine2.util import sha256_digest

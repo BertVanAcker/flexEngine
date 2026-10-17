@@ -12,6 +12,7 @@ Blobs already in the CAS (verified earlier, or imported from an offline bundle) 
 from __future__ import annotations
 
 import io
+import itertools
 import json
 import tarfile
 from dataclasses import dataclass
@@ -20,7 +21,7 @@ from pathlib import Path
 from flexengine2.identity import crypto
 from flexengine2.util import atomic_write_bytes, sha256_digest
 from flexengine2.artefacts.oci import AT_SIGNATURE, MT_DESCRIPTOR, MT_SBOM
-from flexengine2.cloud.client import CloudClient
+from flexengine2.cloud.client import CloudClient, Offline, Rejected
 
 
 class VerificationError(Exception):
@@ -68,9 +69,9 @@ class ArtefactStore:
         atomic_write_bytes(p, data)
         return data
 
-    def referrers(self, repo: str, digest: str) -> list[dict]:
+    def referrers(self, repo: str, digest: str, refresh: bool = False) -> list[dict]:
         idx_path = self.root.parent / "referrers" / digest.split(":", 1)[1]
-        if idx_path.exists():
+        if idx_path.exists() and not (refresh and self.client is not None):
             return json.loads(idx_path.read_bytes())["manifests"]
         if self.client is None:
             raise VerificationError("no referrers cached and no cloud client")
@@ -80,12 +81,28 @@ class ArtefactStore:
             atomic_write_bytes(idx_path, data)
         return found
 
+    def _fresh_referrers(self, repo: str, digest: str, have: list[dict]):
+        """Lazily yields cloud referrers not in `have` (only consulted when the cached ones did not verify)."""
+        seen = {r.get("digest") for r in have}
+        try:
+            for r in self.referrers(repo, digest, refresh=True):
+                if r.get("digest") not in seen:
+                    yield r
+        except (Offline, Rejected):
+            return
+
     def verify_release(self, repo: str, digest: str, profile: str, safety_class: str = "none",
                        platform: dict | None = None) -> Release:
         man = json.loads(self.get(repo, digest, "manifests"))
         # --- signature (referrers) ---
         sig_ok, sig_payload, reasons = False, None, []
-        for ref in self.referrers(repo, digest):
+        cached = (self.root.parent / "referrers" / digest.split(":", 1)[1]).exists()
+        refs = self.referrers(repo, digest)
+        if cached and self.client is not None:
+            # a cached index that verifies nothing is fetched once more from the cloud (a stale or foreign index
+            # must not block a release the cloud has properly signed)
+            refs = itertools.chain(refs, self._fresh_referrers(repo, digest, refs))   # lazy: only after a miss
+        for ref in refs:
             if ref.get("artifactType") != AT_SIGNATURE:
                 continue
             sman = json.loads(self.get(repo, ref["digest"], "manifests"))
@@ -142,9 +159,16 @@ class ArtefactStore:
         return Release(digest=digest, descriptor=descriptor, payload_path=str(self.path(layer["digest"])),
                        payload_annotations=layer.get("annotations") or {}, signature=sig_payload)
 
-    def import_bundle(self, data: bytes) -> tuple[bytes, str]:
-        """Load an offline bundle: every blob is hash-checked on the way in. Returns (desired, signature)."""
-        desired, sig = None, None
+    def import_bundle(self, data: bytes, accept=None) -> tuple[bytes, str]:
+        """Load an offline bundle. Returns (desired, signature).
+
+        Nothing is stored until the whole bundle has been read, every blob hash-checked, and -- when `accept` is given
+        (the engine passes a check of the desired state's signature against its cloud key) -- the bundle's desired
+        state is authenticated. A refused bundle therefore leaves the content-addressed store and the referrer
+        indexes untouched (EV-12 finding: a forged signature manifest in a refused bundle used to block later online
+        installs). Referrer indexes are extended only with the bundle's own signature manifests, merged with what
+        is cached."""
+        desired, sig, blobs = None, None, {}
         with tarfile.open(fileobj=io.BytesIO(data)) as tf:
             for m in tf.getmembers():
                 if not m.isfile():
@@ -155,17 +179,28 @@ class ArtefactStore:
                 elif m.name == "desired.sig":
                     sig = b.decode()
                 elif m.name.startswith("blobs/sha256/"):
-                    self.put("sha256:" + m.name.rsplit("/", 1)[1], b)
-        # rebuild referrer indexes from the signature manifests found in the bundle
-        for p in self.root.iterdir():
+                    digest = "sha256:" + m.name.rsplit("/", 1)[1]
+                    if sha256_digest(b) != digest:
+                        raise VerificationError(f"digest mismatch for {digest}")
+                    blobs[digest] = b
+        if desired is None or sig is None:
+            raise VerificationError("bundle without desired state")
+        if accept is not None and not accept(desired, sig):
+            raise VerificationError("bundle desired state is not signed by the cloud key")
+        for digest, b in blobs.items():
+            self.put(digest, b)
+        for digest, b in blobs.items():
             try:
-                man = json.loads(p.read_bytes())
+                man = json.loads(b)
             except (ValueError, UnicodeDecodeError):
                 continue
             if isinstance(man, dict) and man.get("artifactType") == AT_SIGNATURE and man.get("subject"):
                 idx_path = self.root.parent / "referrers" / man["subject"]["digest"].split(":", 1)[1]
-                entry = {"mediaType": man["mediaType"], "digest": "sha256:" + p.name, "artifactType": AT_SIGNATURE}
-                atomic_write_bytes(idx_path, json.dumps({"manifests": [entry]}).encode())
-        if desired is None or sig is None:
-            raise VerificationError("bundle without desired state")
+                try:
+                    have = json.loads(idx_path.read_bytes())["manifests"]
+                except (FileNotFoundError, ValueError, KeyError):
+                    have = []
+                if all(e.get("digest") != digest for e in have):
+                    have.append({"mediaType": man["mediaType"], "digest": digest, "artifactType": AT_SIGNATURE})
+                    atomic_write_bytes(idx_path, json.dumps({"manifests": have}).encode())
         return desired, sig

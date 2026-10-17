@@ -75,6 +75,15 @@
    "meaning": "offline bundle lacks desired.json or desired.sig"
   },
   {
+   "code": "FE-BUN-002",
+   "field": "log",
+   "stage": "bundle",
+   "profile": "engine",
+   "template": "bundle desired state is not signed by the cloud key",
+   "pattern": "^bundle\\ desired\\ state\\ is\\ not\\ signed\\ by\\ the\\ cloud\\ key$",
+   "meaning": "the bundle's desired.sig does not verify with cloudPublicKey; nothing from the bundle is stored"
+  },
+  {
    "code": "FE-REC-001",
    "field": "reason",
    "stage": "prepare",

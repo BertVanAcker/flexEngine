@@ -37,7 +37,7 @@ Every exchange matched exactly one operation and validated (request and response
 ## Spec notes (not failures)
 
 - Requests dropped by the proxy during the link cut are excluded from validation (no response).
-- 503 is documented only for putCapabilities, getDesiredState, postStatus and postDeviceEvent; the fake returns it on every device route (strict xfail `test_503_on_artefact_and_bundle_routes_is_documented`).
+- 503 is documented on every device route since 2026-10-17 (it was missing on onboard, getBundle and the OCI routes; found by this capture).
 - `postDeviceEvent`: 200 carries an undocumented body (application/json); the spec documents no response body.
 - `postStatus`: 200 carries an undocumented body (application/json); the spec documents no response body.
 - `putCapabilities`: 200 carries an undocumented body (application/json); the spec documents no response body.

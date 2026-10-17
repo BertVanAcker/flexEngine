@@ -309,12 +309,6 @@ def test_validator_is_not_vacuous(lifecycle):
     assert mut(ob, req_headers={**ob.req_headers, "x-flex-signature": st.req_headers["x-flex-signature"]})
 
 
-@pytest.mark.xfail(strict=True, reason="bug (spec): openapi-southbound.yaml documents 503 only for capabilities, "
-                                       "deployments, status and events, but the reference fake (and any real backend "
-                                       "behind a load balancer) answers every device route with 503 + Retry-After; "
-                                       "the client treats it as Offline everywhere. Patch: add "
-                                       "'503': {$ref: '#/components/responses/Unavailable'} to onboard, getBundle, "
-                                       "getManifest, getBlob and getReferrers")
 def test_503_on_artefact_and_bundle_routes_is_documented(tmp_path):
     srv = start_cloud(tmp_path / "cloud")
     proxy = CaptureProxy(srv.port).start()
@@ -462,8 +456,8 @@ def _report(lifecycle) -> str:
     notes = sorted({(c.op, n) for _, c in lifecycle["checked"] for n in c.notes if not n.startswith("dropped")})
     out += ["", "## Spec notes (not failures)", "",
             "- Requests dropped by the proxy during the link cut are excluded from validation (no response).",
-            "- 503 is documented only for putCapabilities, getDesiredState, postStatus and postDeviceEvent; the fake "
-            "returns it on every device route (strict xfail `test_503_on_artefact_and_bundle_routes_is_documented`)."]
+            "- 503 is documented on every device route since 2026-10-17 (it was missing on onboard, getBundle and the "
+            "OCI routes; found by this capture)."]
     out += [f"- `{op}`: {n}; the spec documents no response body." for op, n in notes]
     return "\n".join(out) + "\n"
 

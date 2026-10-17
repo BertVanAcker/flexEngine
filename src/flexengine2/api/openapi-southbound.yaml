@@ -139,6 +139,7 @@ paths:
           description: onboarded; cloudPublicKey must equal the provisioned trust anchor
           content: {application/json: {schema: {$ref: '#/components/schemas/OnboardingResponse'}}}
         '403': {description: invalid or used token, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+        '503': {$ref: '#/components/responses/Unavailable'}
   /api/v1/devices/{deviceId}/capabilities:
     put:
       operationId: putCapabilities
@@ -202,6 +203,7 @@ paths:
         '200': {description: bundle, content: {application/x-tar: {}}}
         '401': {$ref: '#/components/responses/Unauthorized'}
         '403': {$ref: '#/components/responses/OtherDevice'}
+        '503': {$ref: '#/components/responses/Unavailable'}
   /v2/{repository}/manifests/{digest}:
     get:
       operationId: getManifest
@@ -216,6 +218,7 @@ paths:
               schema: {oneOf: [{$ref: '#/components/schemas/ReleaseManifest'}, {$ref: '#/components/schemas/SignatureManifest'}]}
         '401': {$ref: '#/components/responses/Unauthorized'}
         '404': {description: unknown, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+        '503': {$ref: '#/components/responses/Unavailable'}
   /v2/{repository}/blobs/{digest}:
     get:
       operationId: getBlob
@@ -225,6 +228,7 @@ paths:
         '200': {description: 'blob; sha256(body) == digest', content: {application/octet-stream: {}}}
         '401': {$ref: '#/components/responses/Unauthorized'}
         '404': {description: unknown, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+        '503': {$ref: '#/components/responses/Unavailable'}
   /v2/{repository}/referrers/{digest}:
     get:
       operationId: getReferrers
@@ -235,6 +239,7 @@ paths:
           description: OCI image index of referrers (signatures)
           content: {application/json: {schema: {$ref: '#/components/schemas/ReferrersIndex'}}}
         '401': {$ref: '#/components/responses/Unauthorized'}
+        '503': {$ref: '#/components/responses/Unavailable'}
   /api/v1/admin/onboarding-tokens:
     post:
       security: [{admin: []}]
