@@ -538,7 +538,7 @@ Closed object: other keys are refused.
 
 ### `reason-codes.v1alpha1.json` (reason-code registry)
 
-- Version: `v1alpha1`, 218 codes (0 retired)
+- Version: `v1alpha1`, 221 codes (0 retired)
 - Fields: `reason` = status `reason`, `failure` = status `failure`, `event` = device event, `detail` = text inside another entry's `{detail}`, `log` = logged only.
 
 | Code | Field | Stage | Profile | Text |
@@ -552,6 +552,9 @@ Closed object: other keys are refused.
 | `FE-ONB-001` | log | onboarding | engine | cloud key at onboarding does not match the provisioned trust anchor |
 | `FE-BUN-001` | log | bundle | engine | bundle without desired state |
 | `FE-BUN-002` | log | bundle | engine | bundle desired state is not signed by the cloud key |
+| `FE-LOC-001` | log | local-api | engine | local API socket path is {bytes} bytes, longer than the {max} this platform allows: {path} (set local.socket to a shorter path) |
+| `FE-LOC-002` | log | local-api | engine | {path}: another engine already serves the local API |
+| `FE-LOC-003` | log | local-api | engine | local.tcp needs tokenFile |
 | `FE-REC-001` | reason | prepare | engine | no driver for {profile} |
 | `FE-REC-002` | reason | prepare | engine | artefact rejected: {detail} |
 | `FE-REC-003` | reason | apply | engine | apply failed |

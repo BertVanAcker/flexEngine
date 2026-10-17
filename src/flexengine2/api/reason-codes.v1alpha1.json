@@ -93,6 +93,33 @@
    "meaning": "the bundle's desired.sig does not verify with cloudPublicKey; nothing from the bundle is stored"
   },
   {
+   "code": "FE-LOC-001",
+   "field": "log",
+   "stage": "local-api",
+   "profile": "engine",
+   "template": "local API socket path is {bytes} bytes, longer than the {max} this platform allows: {path} (set local.socket to a shorter path)",
+   "pattern": "^local\\ API\\ socket\\ path\\ is\\ (.+?)\\ bytes,\\ longer\\ than\\ the\\ (.+?)\\ this\\ platform\\ allows:\\ (.+?)\\ \\(set\\ local\\.socket\\ to\\ a\\ shorter\\ path\\)$",
+   "meaning": "the Unix socket path (local.socket, default <dataDir>/api.sock without /run/flexengine) does not fit sun_path: 107 bytes on Linux, 103 on macOS; config check flags an explicit local.socket"
+  },
+  {
+   "code": "FE-LOC-002",
+   "field": "log",
+   "stage": "local-api",
+   "profile": "engine",
+   "template": "{path}: another engine already serves the local API",
+   "pattern": "^(.+?):\\ another\\ engine\\ already\\ serves\\ the\\ local\\ API$",
+   "meaning": "a live engine answers on the configured socket; this one does not take it over"
+  },
+  {
+   "code": "FE-LOC-003",
+   "field": "log",
+   "stage": "local-api",
+   "profile": "engine",
+   "template": "local.tcp needs tokenFile",
+   "pattern": "^local\\.tcp\\ needs\\ tokenFile$",
+   "meaning": "the read-only TCP bind is configured without a bearer token file (the config schema refuses it first)"
+  },
+  {
    "code": "FE-REC-001",
    "field": "reason",
    "stage": "prepare",

@@ -88,7 +88,7 @@ def test_spec_is_valid_openapi():
 
 
 @pytest.fixture
-def served(tmp_path):
+def served(tmp_path, sock_dir):
     from flexengine2.local.api import ApiClient, EngineProvider, LocalApi
 
     cfg, _ = write_config(tmp_path)
@@ -96,9 +96,9 @@ def served(tmp_path):
     tok = tmp_path / "token"
     tok.write_text("tok\n")
     os.chmod(tok, 0o600)
-    api = LocalApi(EngineProvider([eng], cfg, config_file="engine.yaml"), socket_path=str(tmp_path / "api.sock"),
+    api = LocalApi(EngineProvider([eng], cfg, config_file="engine.yaml"), socket_path=str(sock_dir / "api.sock"),
                    tcp_bind="127.0.0.1:0", token_file=str(tok), log=lambda m: None).start()
-    yield cfg, eng, ApiClient(str(tmp_path / "api.sock")), api.tcp_address[1]
+    yield cfg, eng, ApiClient(str(sock_dir / "api.sock")), api.tcp_address[1]
     api.stop()
 
 

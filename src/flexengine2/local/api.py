@@ -44,6 +44,7 @@ import select
 import socket
 import socketserver
 import stat
+import sys
 import tarfile
 import threading
 import time
@@ -53,6 +54,8 @@ from urllib.parse import parse_qs, quote, urlsplit
 from flexengine2 import __version__
 
 DEFAULT_SOCKET = "/run/flexengine/api.sock"
+# sizeof(sockaddr_un.sun_path) minus the terminating NUL: 108 on Linux, 104 on macOS and the BSDs
+SUN_PATH_MAX = 107 if sys.platform.startswith("linux") else 103
 API_VERSION = "flexengine.local/v1"
 ID_RE = re.compile(r"^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$")
 MAX_BODY = 1 << 30            # 1 GiB offline bundle
@@ -126,6 +129,11 @@ def default_socket(cfg: dict | None) -> str:
     if Path(DEFAULT_SOCKET).parent.is_dir() or not (cfg or {}).get("dataDir"):
         return DEFAULT_SOCKET
     return str(Path(cfg["dataDir"]) / "api.sock")
+
+
+def socket_path_fits(path: str | os.PathLike) -> bool:
+    """True when `path` fits an AF_UNIX address (sun_path) on this platform."""
+    return len(os.fsencode(path)) <= SUN_PATH_MAX
 
 
 def local_settings(cfg: dict | None) -> dict:
@@ -441,6 +449,9 @@ class LocalApi:
         return None
 
     def _bind_unix(self, path: Path):
+        if not socket_path_fits(path):                  # instead of a bare "OSError: AF_UNIX path too long"
+            raise ValueError(f"local API socket path is {len(os.fsencode(path))} bytes, longer than the "
+                             f"{SUN_PATH_MAX} this platform allows: {path} (set local.socket to a shorter path)")
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.exists() or path.is_symlink():
             if not stat.S_ISSOCK(os.lstat(path).st_mode):

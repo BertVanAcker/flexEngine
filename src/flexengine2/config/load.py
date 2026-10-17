@@ -452,4 +452,21 @@ def check(path: str | Path, *, resolve_files: bool = False) -> dict:
             errors = validate(resolve(cfg, check_tokens=True, warnings=notes))
     except ConfigError as e:
         errors = e.errors
+    if not errors:
+        notes += _socket_warnings(cfg)
     return {"valid": not errors, "errors": errors, "warnings": notes}
+
+
+def _socket_warnings(cfg: dict) -> list[str]:
+    """The local API's Unix socket path (local.socket, or the default <dataDir>/api.sock) must fit sun_path. A
+    warning, not an error: the engine runs its devices without the local API (FE-LOC-001 in its log)."""
+    from flexengine2.local.api import SUN_PATH_MAX, local_settings, socket_path_fits
+
+    if (cfg.get("local") or {}).get("enabled", True) is False:
+        return []
+    sock = local_settings(cfg)["socket_path"]
+    if socket_path_fits(sock):
+        return []
+    where = "/local/socket" if (cfg.get("local") or {}).get("socket") else "/dataDir"
+    return [f"{where}: the local API socket {sock} is {len(sock.encode())} bytes, longer than the {SUN_PATH_MAX} "
+            f"this platform allows for a Unix socket; set local.socket to a shorter path"]

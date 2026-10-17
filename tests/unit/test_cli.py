@@ -110,8 +110,8 @@ def offline_host(tmp_path, monkeypatch):
 
 
 @pytest.fixture
-def online_host(tmp_path, monkeypatch):
-    cfg, path = write_config(tmp_path)
+def online_host(tmp_path, sock_dir, monkeypatch):
+    cfg, path = write_config(tmp_path, sock_dir=sock_dir)
     eng = installed_engine(cfg)
     api = LocalApi.from_config(cfg, EngineProvider([eng], cfg, config_file=str(path)), log=lambda m: None).start()
     monkeypatch.setenv("FLEXENGINE_CONFIG", str(path))
@@ -188,8 +188,8 @@ def test_logs(capsys, online_host):
 
 
 # ---- bundle import -----------------------------------------------------------------------------------------------
-def test_bundle_import_offline_and_online(capsys, tmp_path, monkeypatch):
-    cfg, path = write_config(tmp_path)
+def test_bundle_import_offline_and_online(capsys, tmp_path, sock_dir, monkeypatch):
+    cfg, path = write_config(tmp_path, sock_dir=sock_dir)
     monkeypatch.setenv("FLEXENGINE_CONFIG", str(path))
     rc, out, _ = run(capsys, "bundle", "import", str(BUNDLE))
     assert rc == 0 and out.strip() == (f"{DEVICE}: manifestVersion 3 imported into state.json (installed at the next "
@@ -267,10 +267,10 @@ def test_doctor_healthy_host(tmp_path):
     assert checks["local API"]["status"] == "warn"            # engine not running
 
 
-def test_doctor_with_running_engine_and_drivers(tmp_path):
+def test_doctor_with_running_engine_and_drivers(tmp_path, sock_dir):
     import yaml
 
-    cfg, path = write_config(tmp_path)
+    cfg, path = write_config(tmp_path, sock_dir=sock_dir)
     eng = installed_engine(cfg)
     cfg["devices"][0]["drivers"].update({"container": {"runtime": "podman"}, "applab": {"ssh": "arduino@unoq"},
                                          "plc-verify": {"plcs": {"cx": {"via": "ads", "amsNetId": "1.2.3.4.1.1",

@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -58,3 +59,15 @@ def work_dir() -> Path:
 @pytest.fixture(scope="session")
 def repo_root() -> Path:
     return REPO
+
+
+@pytest.fixture
+def sock_dir():
+    """A short directory for AF_UNIX sockets. sun_path holds 104 bytes on macOS (108 on Linux), and macOS's tmp_path
+    (/private/var/folders/<..>/T/pytest-of-<user>/pytest-<n>/<test>/) alone comes close to that, so a socket under
+    tmp_path does not bind there. Removed after the test."""
+    d = Path(tempfile.mkdtemp(prefix="fe-", dir="/tmp" if os.path.isdir("/tmp") else None))
+    try:
+        yield d
+    finally:
+        shutil.rmtree(d, ignore_errors=True)

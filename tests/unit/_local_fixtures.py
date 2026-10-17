@@ -62,7 +62,9 @@ class FakeDriver(Driver):
         return None if self.healthy else self.fail_reason
 
 
-def write_config(tmp: Path, *, socket: bool = True, parked: bool = True, **local) -> tuple[dict, Path]:
+def write_config(tmp: Path, *, socket: bool = True, parked: bool = True, sock_dir: Path | None = None,
+                 **local) -> tuple[dict, Path]:
+    """Engine config under `tmp`; its local API socket in `sock_dir` (the `sock_dir` fixture: tests that bind it)."""
     v = vectors()
     safe = tmp / "safe.json"
     safe.write_text(json.dumps({"machine_parked": parked, "operator_confirmed": parked}))
@@ -73,7 +75,7 @@ def write_config(tmp: Path, *, socket: bool = True, parked: bool = True, **local
            "devices": [{"deviceId": DEVICE, "onboardingToken": "t", "safeStateFile": str(safe),
                         "drivers": {"native": True}}]}
     if socket or local:
-        cfg["local"] = {**({"socket": str(tmp / "api.sock")} if socket else {}), **local}
+        cfg["local"] = {**({"socket": str((sock_dir or tmp) / "api.sock")} if socket else {}), **local}
     p = tmp / "engine.yaml"
     p.write_text(yaml.safe_dump(cfg))
     return cfg, p

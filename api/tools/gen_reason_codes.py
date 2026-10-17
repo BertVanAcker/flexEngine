@@ -35,6 +35,10 @@ T = [
     ("FE-ONB-001", "log", "onboarding", "engine", "cloud key at onboarding does not match the provisioned trust anchor", "onboarding response cloudPublicKey differs from cfg cloudPublicKey; the device stays un-onboarded"),
     ("FE-BUN-001", "log", "bundle", "engine", "bundle without desired state", "offline bundle lacks desired.json or desired.sig"),
     ("FE-BUN-002", "log", "bundle", "engine", "bundle desired state is not signed by the cloud key", "the bundle's desired.sig does not verify with cloudPublicKey; nothing from the bundle is stored"),
+    # ---- local API (CP-7): the engine runs on without it; logged as host.on-ready-failed ----
+    ("FE-LOC-001", "log", "local-api", "engine", "local API socket path is {bytes} bytes, longer than the {max} this platform allows: {path} (set local.socket to a shorter path)", "the Unix socket path (local.socket, default <dataDir>/api.sock without /run/flexengine) does not fit sun_path: 107 bytes on Linux, 103 on macOS; config check flags an explicit local.socket"),
+    ("FE-LOC-002", "log", "local-api", "engine", "{path}: another engine already serves the local API", "a live engine answers on the configured socket; this one does not take it over"),
+    ("FE-LOC-003", "log", "local-api", "engine", "local.tcp needs tokenFile", "the read-only TCP bind is configured without a bearer token file (the config schema refuses it first)"),
     # ---- reconciler: top-level reasons ----
     ("FE-REC-001", "reason", "prepare", "engine", "no driver for {profile}", "x-flex-driver names a profile with no driver on this device; manifest version rejected"),
     ("FE-REC-002", "reason", "prepare", "engine", "artefact rejected: {detail}", "release verification or driver preflight refused the artefact; the whole manifest version is rejected and the previous state keeps running (detail = an FE-ART/-CLD/-*-PRE code)"),

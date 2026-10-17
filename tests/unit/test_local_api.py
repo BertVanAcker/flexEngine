@@ -308,9 +308,9 @@ def test_no_operation_changes_desired_state(setup):
 
 
 # ---- socket / TCP -----------------------------------------------------------------------------------------------
-def test_unix_socket_server_mode_and_client(setup, tmp_path):
+def test_unix_socket_server_mode_and_client(setup, sock_dir):
     cfg, _, eng = setup
-    sock = tmp_path / "run" / "api.sock"
+    sock = sock_dir / "run" / "api.sock"
     api = LocalApi(EngineProvider([eng], cfg), socket_path=str(sock), log=lambda m: None).start()
     try:
         assert stat.S_ISSOCK(os.lstat(sock).st_mode) and stat.S_IMODE(os.lstat(sock).st_mode) == 0o660
@@ -328,24 +328,24 @@ def test_unix_socket_server_mode_and_client(setup, tmp_path):
     assert not sock.exists()
 
 
-def test_stale_socket_replaced_and_regular_file_refused(setup, tmp_path):
+def test_stale_socket_replaced_and_regular_file_refused(setup, sock_dir):
     cfg, _, eng = setup
-    sock = tmp_path / "api.sock"
+    sock = sock_dir / "api.sock"
     s = socket.socket(socket.AF_UNIX)
     s.bind(str(sock))
     s.close()                                   # stale socket file of a crashed engine
     api = LocalApi(EngineProvider([eng]), socket_path=str(sock), log=lambda m: None).start()
     assert ApiClient(str(sock)).reachable()
     api.stop()
-    f = tmp_path / "file.sock"
+    f = sock_dir / "file.sock"
     f.write_text("x")
     with pytest.raises(FileExistsError):
         LocalApi(EngineProvider([eng]), socket_path=str(f), log=lambda m: None).start()
 
 
-def test_logs_follow_streams_over_socket(setup, tmp_path):
+def test_logs_follow_streams_over_socket(setup, sock_dir):
     cfg, _, eng = setup
-    sock = tmp_path / "api.sock"
+    sock = sock_dir / "api.sock"
     api = LocalApi(EngineProvider([eng], cfg), socket_path=str(sock), log=lambda m: None).start()
     try:
         r = ApiClient(str(sock), timeout=10).request("GET", "/v1/logs?follow=1&tail=0")
@@ -399,6 +399,29 @@ def test_tcp_token_file_must_be_private(setup, tmp_path):
         LocalApi(EngineProvider([eng]), socket_path=None, tcp_bind="127.0.0.1:0", token_file=str(tok)).start()
 
 
+def test_socket_path_too_long_is_a_registered_error_and_a_config_warning(tmp_path, sock_dir):
+    """sun_path holds 108 bytes on Linux, 104 on macOS: a longer local.socket (or <dataDir>/api.sock) is refused with
+    a clear, registered text (FE-LOC-001; the host logs it and runs on without the API), and `config check` warns."""
+    import yaml
+
+    from flexengine2.config.load import check
+    from flexengine2.local.api import SUN_PATH_MAX
+
+    long = sock_dir / ("d" * (SUN_PATH_MAX - len(str(sock_dir)))) / "api.sock"
+    with pytest.raises(ValueError) as ei:
+        LocalApi(OfflineProvider({}), socket_path=str(long), log=lambda m: None).start()
+    assert contracts.reason_code(str(ei.value), "log")["code"] == "FE-LOC-001" and str(long) in str(ei.value)
+    assert not long.parent.exists()                     # nothing created
+    cfg, path = write_config(tmp_path)
+    cfg["local"]["socket"] = str(long)
+    path.write_text(yaml.safe_dump(cfg))
+    r = check(path)
+    assert r["valid"] and [w for w in r["warnings"] if w.startswith("/local/socket: ") and "set local.socket" in w]
+    cfg["local"]["socket"] = str(sock_dir / "api.sock")
+    path.write_text(yaml.safe_dump(cfg))
+    assert check(path)["warnings"] == []
+
+
 def test_settings_from_config(tmp_path):
     cfg, _ = write_config(tmp_path, group="flex", tcp={"bind": "127.0.0.1:8781", "tokenFile": "/t"})
     from flexengine2.config.load import validate
@@ -423,14 +446,14 @@ def test_config_devices_roles_and_profiles():
         {"deviceId": "u", "dataDir": "/x", "role": "standalone-device", "parent": None, "drivers": ["applab", "native"]}]
 
 
-def test_serve_host_hook_with_refused_device(tmp_path):
+def test_serve_host_hook_with_refused_device(tmp_path, sock_dir):
     """host.run(cfg, on_ready=serve_host): running engines live, a refused device read from its data dir; the API
     stops with the host."""
     import yaml
 
     from flexengine2.local.api import serve_host
 
-    cfg, path = write_config(tmp_path)
+    cfg, path = write_config(tmp_path, sock_dir=sock_dir)
     eng = installed_engine(cfg)
     cfg["devices"].append({"deviceId": "broken", "drivers": {"native": True}})
     path.write_text(yaml.safe_dump(cfg))
