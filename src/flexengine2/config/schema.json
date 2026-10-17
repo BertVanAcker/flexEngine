@@ -388,6 +388,9 @@
         },
         "applab": {
           "$ref": "#/$defs/applab"
+        },
+        "os-rauc": {
+          "$ref": "#/$defs/osRauc"
         }
       }
     },
@@ -918,6 +921,87 @@
           "type": "string",
           "minLength": 1,
           "description": "Device name in the model (default: the device's `modelDevice`)."
+        }
+      }
+    },
+    "osRauc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sharedDataPath"
+      ],
+      "description": "RAUC whole-OS A/B driver (EV-17): `rauc install` into the other slot, reboot, health gate after the boot, `rauc status mark-good`. Needs rauc + rauc-service (D-Bus; packaging/polkit/50-flexengine-rauc.rules) and the engine data dir on the shared data partition.",
+      "properties": {
+        "rauc": {
+          "type": "string",
+          "minLength": 1,
+          "default": "rauc",
+          "description": "`rauc` binary."
+        },
+        "conf": {
+          "type": "string",
+          "minLength": 1,
+          "description": "RAUC system.conf passed as `--conf` (default: RAUC's own, /etc/rauc/system.conf)."
+        },
+        "keyring": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Keyring passed to `rauc info --keyring` in preflight (default: the system.conf keyring). `rauc install` always uses the keyring of the RAUC service."
+        },
+        "rebootCommand": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "default": [
+            "systemctl",
+            "reboot"
+          ],
+          "description": "Command that reboots into the new slot after `rauc install`; the reboot ends the engine, which adopts the new slot at its next start."
+        },
+        "sharedDataPath": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Mount point of the data partition both slots share; the device's data dir must lie under it (else every os-rauc deployment is refused at preflight), so manifestVersion, the outbox and the driver state survive the slot switch."
+        },
+        "bootTimeoutSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 600,
+          "description": "How long apply waits for the requested reboot to end the engine; then the booted slot is made primary again and the deployment fails (rolled back)."
+        },
+        "installTimeoutSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1800,
+          "description": "Timeout of `rauc install`."
+        },
+        "cliTimeout": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 60,
+          "description": "Timeout of the other rauc calls (status, info, mark-*) and of the reboot command."
+        },
+        "bootIdFile": {
+          "type": "string",
+          "minLength": 1,
+          "default": "/proc/sys/kernel/random/boot_id",
+          "description": "Source of the boot id that tells a reboot from an engine restart (tests: the boot simulator's file)."
+        },
+        "healthChecks": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "default": [],
+          "description": "Device-side checks of the new OS after the boot: each command must exit 0 for the health gate to pass (in addition to: booted slot = target, not marked bad, and the release's http probe if it names a port)."
         }
       }
     }

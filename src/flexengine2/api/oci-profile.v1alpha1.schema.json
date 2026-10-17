@@ -15,6 +15,7 @@
         "application/vnd.flex.payload.mcu-module.v1+flxm",
         "application/vnd.flex.payload.mcu-firmware.v1+mcuboot",
         "application/vnd.flex.payload.plc-artefact.v1.tar+gzip",
+        "application/vnd.flex.payload.os-rauc.v1+raucb",
         "application/vnd.flex.payload.system.v1+json"
       ]
     },
@@ -65,7 +66,7 @@
           "propertyNames": {
             "anyOf": [
               {
-                "pattern": "^dev\\.flex\\.(profile|platform|imageDigest|imageRef|imageTag|releaseName|contractHash|board|arch|floatAbi|moduleAbi|cpuProfile|ifaceHash|verify)$"
+                "pattern": "^dev\\.flex\\.(profile|platform|imageDigest|imageRef|imageTag|releaseName|contractHash|board|arch|floatAbi|moduleAbi|cpuProfile|ifaceHash|verify|compatible)$"
               },
               {
                 "not": {
@@ -83,6 +84,7 @@
                 "mcu-module",
                 "mcu-firmware",
                 "plc-verify",
+                "os-rauc",
                 "system"
               ],
               "description": "The engine picks the layer whose profile equals the deployment's x-flex-driver."
@@ -120,6 +122,11 @@
                 "modbus",
                 "shm"
               ]
+            },
+            "dev.flex.compatible": {
+              "type": "string",
+              "minLength": 1,
+              "description": "os-rauc: the RAUC compatible string of the bundle (= `rauc status` compatible of the target device); the engine picks the layer whose compatible equals the device's (Driver.platform()), the driver's preflight refuses a mismatch."
             }
           },
           "allOf": [
@@ -163,6 +170,23 @@
                 "required": [
                   "dev.flex.arch",
                   "dev.flex.floatAbi"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "dev.flex.profile": {
+                    "const": "os-rauc"
+                  }
+                },
+                "required": [
+                  "dev.flex.profile"
+                ]
+              },
+              "then": {
+                "required": [
+                  "dev.flex.compatible"
                 ]
               }
             }

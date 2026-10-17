@@ -32,6 +32,7 @@ def base() -> dict:
         "devices": [
             {"deviceId": "panda", "role": "gateway", "onboardingToken": "t",
              "drivers": {"container": {"runtime": "docker"},
+                         "os-rauc": {"sharedDataPath": "/tmp/fe-data"},
                          "plc-verify": {"plcs": {
                              "panda/cx": {"via": "ads", "amsNetId": "127.0.0.1.1.1", "ip": "127.0.0.1"},
                              "opta": {"via": "modbus", "host": "127.0.0.1"},
@@ -78,6 +79,7 @@ def paths_of(errors):
 D0, D1, D2 = "/devices/0", "/devices/1", "/devices/2"
 CX, OPTA, SIM = f"{D0}/drivers/plc-verify/plcs/panda~1cx", f"{D0}/drivers/plc-verify/plcs/opta", f"{D0}/drivers/plc-verify/plcs/sim"
 CONT, APP, MCU, RELAY = f"{D0}/drivers/container", f"{D2}/drivers/applab", f"{D1}/mcu", f"{D1}/relay"
+RAU = f"{D0}/drivers/os-rauc"
 
 # (documented key, base, pointer, valid value, invalid value) -- one row per key of the generated reference
 CASES = [
@@ -172,6 +174,18 @@ CASES = [
     ("devices[].drivers.applab.sshCmd", "std", f"{APP}/sshCmd", ["ssh", "-p", "2222"], []),
     ("devices[].drivers.applab.scpCmd", "std", f"{APP}/scpCmd", ["scp"], "scp"),
     ("devices[].drivers.applab.remoteStaging", "std", f"{APP}/remoteStaging", "/tmp/x", ""),
+    ("devices[].drivers.os-rauc", "std", RAU, {"sharedDataPath": "/data"}, {}),
+    ("devices[].drivers.os-rauc.rauc", "std", f"{RAU}/rauc", "/usr/bin/rauc", ""),
+    ("devices[].drivers.os-rauc.conf", "std", f"{RAU}/conf", "/etc/rauc/system.conf", 1),
+    ("devices[].drivers.os-rauc.keyring", "std", f"{RAU}/keyring", "/etc/rauc/keyring.pem", ""),
+    ("devices[].drivers.os-rauc.rebootCommand", "std", f"{RAU}/rebootCommand", ["systemctl", "reboot"], []),
+    ("devices[].drivers.os-rauc.sharedDataPath", "std", f"{RAU}/sharedDataPath", "/data", ""),
+    ("devices[].drivers.os-rauc.bootTimeoutSeconds", "std", f"{RAU}/bootTimeoutSeconds", 300, 0),
+    ("devices[].drivers.os-rauc.installTimeoutSeconds", "std", f"{RAU}/installTimeoutSeconds", 600, -1),
+    ("devices[].drivers.os-rauc.cliTimeout", "std", f"{RAU}/cliTimeout", 10, "10"),
+    ("devices[].drivers.os-rauc.bootIdFile", "std", f"{RAU}/bootIdFile", "/run/boot_id", ""),
+    ("devices[].drivers.os-rauc.healthChecks", "std", f"{RAU}/healthChecks", [["systemctl", "is-system-running"]],
+     ["systemctl is-system-running"]),
     ("devices[].mcu", "std", MCU, {"smp": {"host": "h", "port": 1}, "modulePublicKey": HEX}, {}),
     ("devices[].mcu.smp", "std", f"{MCU}/smp", {"tty": "/dev/ttyACM0", "baud": 115200}, {}),
     ("devices[].mcu.smp.tty", "serial", f"{MCU}/smp/tty", "/dev/ttyACM0", "ttyACM0"),
@@ -221,7 +235,7 @@ def test_key_invalid(key, b, ptr, good, bad):
 REQUIRED = [("/cloud", ""), ("/dataDir", ""), ("/devices", ""), (f"{D0}/deviceId", D0),
             (f"{CONT}/runtime", CONT), (f"{CX}/via", CX), (f"{CX}/amsNetId", CX), (f"{CX}/ip", CX),
             (f"{OPTA}/host", OPTA), (f"{MCU}/smp", MCU), (f"{MCU}/modulePublicKey", MCU),
-            (f"{MCU}/smp/host", f"{MCU}/smp"), (f"{MCU}/smp/port", f"{MCU}/smp")]
+            (f"{MCU}/smp/host", f"{MCU}/smp"), (f"{MCU}/smp/port", f"{MCU}/smp"), (f"{RAU}/sharedDataPath", RAU)]
 
 
 @pytest.mark.parametrize("ptr,parent", REQUIRED, ids=[r[0] for r in REQUIRED])
@@ -250,7 +264,7 @@ def test_ankaios_requires_its_keys_and_refuses_run_options():
 LEVELS = [("std", ""), ("std", "/cloud"), ("std", D0), ("std", f"{D0}/drivers"), ("std", CONT),
           ("ankaios", CONT), ("std", f"{CONT}/allowedRunOptions"), ("std", f"{D0}/drivers/plc-verify"),
           ("std", CX), ("std", OPTA), ("std", SIM), ("std", APP), ("std", MCU), ("std", f"{MCU}/smp"),
-          ("serial", f"{MCU}/smp"), ("std", RELAY)]
+          ("serial", f"{MCU}/smp"), ("std", RELAY), ("std", RAU)]
 
 
 @pytest.mark.parametrize("b,ptr", LEVELS, ids=[f"{b}:{p or '/'}" for b, p in LEVELS])

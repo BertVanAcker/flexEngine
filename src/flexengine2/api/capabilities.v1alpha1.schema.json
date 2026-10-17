@@ -186,6 +186,9 @@
             },
             "plc-verify": {
               "$ref": "#/$defs/PlcVerify"
+            },
+            "os-rauc": {
+              "$ref": "#/$defs/OsRauc"
             }
           }
         },
@@ -655,6 +658,115 @@
         "maxDeployments": {
           "type": "integer",
           "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "OsRauc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver",
+        "exclusive",
+        "maxDeployments"
+      ],
+      "description": "os-rauc driver (EV-17): one OS image per device (exclusive). Executor facts come from `rauc status --detailed --output-format=json`; they are omitted when rauc is unreachable.",
+      "properties": {
+        "profile": {
+          "const": "os-rauc"
+        },
+        "driver": {
+          "const": "rauc"
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "const": 1
+        },
+        "compatible": {
+          "type": "string",
+          "description": "RAUC compatible of this device (bundles must match)."
+        },
+        "booted": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Booted slot name (e.g. rootfs.0)."
+        },
+        "bootPrimary": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Slot the next boot takes (rauc boot_primary)."
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "bootname": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "class": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "bootStatus": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Bundle version RAUC recorded for the slot."
+              }
+            }
+          }
+        },
+        "sharedDataPath": {
+          "type": "string",
+          "description": "The data partition both slots mount (driver config)."
+        },
+        "dataDirOnSharedPartition": {
+          "type": "boolean",
+          "description": "false: the engine data dir is not under sharedDataPath; every os-rauc deployment is refused at preflight."
         },
         "available": {
           "type": "boolean",

@@ -126,7 +126,7 @@
    "profile": "engine",
    "template": "apply failed: {error}",
    "pattern": "^apply\\ failed:\\ (.+?)$",
-   "meaning": "the DriverError text of the failed apply (an FE-CTR/-NAT/-APL/-MCU/-PLC code)"
+   "meaning": "the DriverError text of the failed apply (an FE-CTR/-NAT/-APL/-MCU/-PLC/-RAU code)"
   },
   {
    "code": "FE-REC-006",
@@ -953,6 +953,195 @@
    "template": "uploaded image not visible in slot1: {images}",
    "pattern": "^uploaded\\ image\\ not\\ visible\\ in\\ slot1:\\ (.+?)$",
    "meaning": ""
+  },
+  {
+   "code": "FE-RAU-PRE-001",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "os-rauc",
+   "template": "os-rauc needs sharedDataPath (the data partition both slots mount) in its driver config: without it manifestVersion and the outbox would not survive the slot switch",
+   "pattern": "^os\\-rauc\\ needs\\ sharedDataPath\\ \\(the\\ data\\ partition\\ both\\ slots\\ mount\\)\\ in\\ its\\ driver\\ config:\\ without\\ it\\ manifestVersion\\ and\\ the\\ outbox\\ would\\ not\\ survive\\ the\\ slot\\ switch$",
+   "meaning": "driver config lacks sharedDataPath; every os-rauc deployment is refused"
+  },
+  {
+   "code": "FE-RAU-PRE-002",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "os-rauc",
+   "template": "engine data dir {dataDir} is not on the shared data partition {sharedDataPath} (sharedDataPath): manifestVersion and the outbox would not survive the slot switch",
+   "pattern": "^engine\\ data\\ dir\\ (.+?)\\ is\\ not\\ on\\ the\\ shared\\ data\\ partition\\ (.+?)\\ \\(sharedDataPath\\):\\ manifestVersion\\ and\\ the\\ outbox\\ would\\ not\\ survive\\ the\\ slot\\ switch$",
+   "meaning": "the engine's data dir is not under sharedDataPath (plan section 3.5)"
+  },
+  {
+   "code": "FE-RAU-PRE-003",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "os-rauc",
+   "template": "os-rauc payload lacks the dev.flex.compatible annotation",
+   "pattern": "^os\\-rauc\\ payload\\ lacks\\ the\\ dev\\.flex\\.compatible\\ annotation$",
+   "meaning": "bundle layer without its RAUC compatible annotation"
+  },
+  {
+   "code": "FE-RAU-PRE-004",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "os-rauc",
+   "template": "bundle is for compatible {compatible}, this device is {device}",
+   "pattern": "^bundle\\ is\\ for\\ compatible\\ (.+?),\\ this\\ device\\ is\\ (.+?)$",
+   "meaning": "dev.flex.compatible differs from `rauc status` compatible"
+  },
+  {
+   "code": "FE-RAU-PRE-005",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "os-rauc",
+   "template": "rauc info refused the bundle: {error}",
+   "pattern": "^rauc\\ info\\ refused\\ the\\ bundle:\\ (.+?)$",
+   "meaning": "`rauc info` (with the device keyring) failed: bad CMS signature, untrusted signer, not a bundle"
+  },
+  {
+   "code": "FE-RAU-PRE-006",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "os-rauc",
+   "template": "rauc info refused the bundle: unreadable output ({error})",
+   "pattern": "^rauc\\ info\\ refused\\ the\\ bundle:\\ unreadable\\ output\\ \\((.+?)\\)$",
+   "meaning": "`rauc info --output-format=json` printed no JSON"
+  },
+  {
+   "code": "FE-RAU-PRE-007",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "os-rauc",
+   "template": "bundle manifest says compatible {bundle}, its annotation says {annotation}",
+   "pattern": "^bundle\\ manifest\\ says\\ compatible\\ (.+?),\\ its\\ annotation\\ says\\ (.+?)$",
+   "meaning": "the signed bundle's manifest and the release's layer annotation disagree"
+  },
+  {
+   "code": "FE-RAU-001",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "os-rauc: cannot execute {binary} (not found: {error})",
+   "pattern": "^os\\-rauc:\\ cannot\\ execute\\ (.+?)\\ \\(not\\ found:\\ (.+?)\\)$",
+   "meaning": "rauc (or the reboot command) is not installed; capabilities() reports available: false"
+  },
+  {
+   "code": "FE-RAU-002",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "os-rauc: cannot execute {binary} ({error})",
+   "pattern": "^os\\-rauc:\\ cannot\\ execute\\ (.+?)\\ \\((.+?)\\)$",
+   "meaning": "rauc (or the reboot command) is not executable"
+  },
+  {
+   "code": "FE-RAU-003",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "os-rauc: {cmd} gave no answer within {timeout} s",
+   "pattern": "^os\\-rauc:\\ (.+?)\\ gave\\ no\\ answer\\ within\\ (.+?)\\ s$",
+   "meaning": "rauc call hung (cliTimeout / installTimeoutSeconds): executor unreachable"
+  },
+  {
+   "code": "FE-RAU-004",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "os-rauc: {cmd} failed: {error} (exit {rc})",
+   "pattern": "^os\\-rauc:\\ (.+?)\\ failed:\\ (.+?)\\ \\(exit\\ (.+?)\\)$",
+   "meaning": "rauc call (status, install, mark-*) or the reboot command failed; status/D-Bus failures make the executor unreachable"
+  },
+  {
+   "code": "FE-RAU-005",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "rauc status: unreadable output ({error})",
+   "pattern": "^rauc\\ status:\\ unreadable\\ output\\ \\((.+?)\\)$",
+   "meaning": "`rauc status --output-format=json` printed no JSON"
+  },
+  {
+   "code": "FE-RAU-006",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "one OS image per device: deployment {dep} already owns the OS",
+   "pattern": "^one\\ OS\\ image\\ per\\ device:\\ deployment\\ (.+?)\\ already\\ owns\\ the\\ OS$",
+   "meaning": "exclusive executor already used by another deployment"
+  },
+  {
+   "code": "FE-RAU-007",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "rauc install did not activate another slot (primary {primary}, booted {booted})",
+   "pattern": "^rauc\\ install\\ did\\ not\\ activate\\ another\\ slot\\ \\(primary\\ (.+?),\\ booted\\ (.+?)\\)$",
+   "meaning": "after a successful install the boot primary is not the other slot"
+  },
+  {
+   "code": "FE-RAU-008",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "reboot request failed: {error}",
+   "pattern": "^reboot\\ request\\ failed:\\ (.+?)$",
+   "meaning": "rebootCommand failed; the booted slot is made primary again"
+  },
+  {
+   "code": "FE-RAU-009",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "no reboot within {seconds} s after the request ({cmd}); slot {slot} stays active",
+   "pattern": "^no\\ reboot\\ within\\ (.+?)\\ s\\ after\\ the\\ request\\ \\((.+?)\\);\\ slot\\ (.+?)\\ stays\\ active$",
+   "meaning": "the reboot did not end the engine within bootTimeoutSeconds; the booted slot is made primary again"
+  },
+  {
+   "code": "FE-RAU-010",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "bootloader fell back to slot {slot}: {version} in slot {target} did not boot or was not committed",
+   "pattern": "^bootloader\\ fell\\ back\\ to\\ slot\\ (.+?):\\ (.+?)\\ in\\ slot\\ (.+?)\\ did\\ not\\ boot\\ or\\ was\\ not\\ committed$",
+   "meaning": "fail fast: the boot after the install went to the old slot (image did not come up, boot counter exhausted); also failed() during the gate"
+  },
+  {
+   "code": "FE-RAU-011",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "{version} was rolled back: rebooted from slot {from} into slot {to} ({previous}) after its health gate failed",
+   "pattern": "^(.+?)\\ was\\ rolled\\ back:\\ rebooted\\ from\\ slot\\ (.+?)\\ into\\ slot\\ (.+?)\\ \\((.+?)\\)\\ after\\ its\\ health\\ gate\\ failed$",
+   "meaning": "re-apply of a digest the driver rolled back while the engine was down (reported once)"
+  },
+  {
+   "code": "FE-RAU-012",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "os-rauc",
+   "template": "{version} was removed before it was committed: rebooted from slot {from} into slot {to}",
+   "pattern": "^(.+?)\\ was\\ removed\\ before\\ it\\ was\\ committed:\\ rebooted\\ from\\ slot\\ (.+?)\\ into\\ slot\\ (.+?)$",
+   "meaning": "re-apply of a never committed image that remove() rolled back (reported once)"
+  },
+  {
+   "code": "FE-RAU-013",
+   "field": "failure",
+   "stage": "health-gate",
+   "profile": "os-rauc",
+   "template": "booted slot {slot} is marked bad",
+   "pattern": "^booted\\ slot\\ (.+?)\\ is\\ marked\\ bad$",
+   "meaning": "fail fast: the target slot is booted but RAUC reports boot status bad"
+  },
+  {
+   "code": "FE-RAU-014",
+   "field": "detail",
+   "stage": "commit",
+   "profile": "os-rauc",
+   "template": "booted slot {slot} is not the target slot {target}: not marking it good",
+   "pattern": "^booted\\ slot\\ (.+?)\\ is\\ not\\ the\\ target\\ slot\\ (.+?):\\ not\\ marking\\ it\\ good$",
+   "meaning": "commit (rauc status mark-good) refused: the device did not boot the target slot"
   },
   {
    "code": "FE-PLC-PRE-001",

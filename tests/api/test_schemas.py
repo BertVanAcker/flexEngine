@@ -110,7 +110,8 @@ def _driver_profiles() -> set[str]:
 
 def test_driver_enum_equals_driver_profiles():
     enum = set(contracts.load("desired-state")["$defs"]["DriverProfile"]["enum"])
-    assert enum == _driver_profiles() == {"container", "native", "applab", "mcu-module", "mcu-firmware", "plc-verify"}
+    assert enum == _driver_profiles() == {"container", "native", "applab", "mcu-module", "mcu-firmware", "plc-verify",
+                                          "os-rauc"}
     caps = contracts.load("capabilities")["properties"]["x-flex"]["properties"]["drivers"]["properties"]
     assert set(caps) == enum
     desc = set(contracts.load("descriptor")["properties"]["profiles"]["items"]["enum"])

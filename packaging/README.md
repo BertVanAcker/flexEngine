@@ -9,6 +9,8 @@
 | `requirements-lock.txt` | pinned base + `[mcu,applab,plc,otel]` closure, used as pip constraints |
 | `gen-lock.py` | regenerates the lock from a working venv |
 | `build-wheels.sh` | engine wheel + offline wheelhouses (x86_64, aarch64) + per-arch bundles in `flexengine/dist/` |
+| `polkit/50-flexengine-rauc.rules` | os-rauc: lets user `flex` reboot (`systemctl reboot` → logind) into the new slot |
+| `dbus/flexengine-rauc.conf` | os-rauc, optional hardening: RAUC D-Bus calls only for root and group `flex` (stock policy: every user) |
 
 Layout on the target:
 
@@ -49,8 +51,34 @@ or `--from-source flexengine` (online, or with a wheelhouse that holds setuptool
 
 Groups: install.sh adds a drop-in `SupplementaryGroups=` with whichever of `dialout` (MCU serial) and `docker`
 (container driver, `runtime: docker`) exist; Docker CE must be installed first for `docker` to be picked up
-(`--groups dialout,docker` to force, `--groups none` for none). RAUC (D-Bus policy) and the native systemd driver
-(polkit rule) need host policy files that are not part of alpha — see the unit header.
+(`--groups dialout,docker` to force, `--groups none` for none). RAUC needs the polkit rule below; the native
+systemd driver's polkit rule is not part of alpha — see the unit header.
+
+### OS updates with RAUC (`drivers.os-rauc`, EV-17)
+
+The engine installs a signed RAUC bundle into the inactive slot, reboots, and after the boot commits it
+(`rauc status mark-good`) only when the health gate passes; otherwise it reboots back (or the bootloader's boot
+counter falls back). What the device needs:
+
+- **Data dir on the shared data partition.** `/var/lib/flexengine` (state.json with `manifestVersion`, the status
+  outbox, the artefact store, `os-rauc/state.json`) must live on a partition both rootfs slots mount, e.g. mount
+  the data partition at `/data` in both slots and bind or symlink `/var/lib/flexengine` → `/data/flexengine`. Set
+  `sharedDataPath: /data` in the driver config; the driver refuses every OS deployment (FE-RAU-PRE-002) when the
+  device's data dir is not under it, because the engine on the new slot would start from an empty state.
+  `/etc/flexengine` (config, tokens) must be on it too, or be part of both images.
+- **RAUC**: `apt install rauc rauc-service` (1.11.3 on Ubuntu 24.04), `/etc/rauc/system.conf` with the two rootfs
+  slots, the bootloader backend (`efi` or `grub` on the LattePanda) and the keyring (`/etc/rauc/keyring.pem`) that
+  signs your bundles. The bundle's `compatible` must equal `system.conf`'s.
+- **Reboot permission**: `sudo install -m 0644 packaging/polkit/50-flexengine-rauc.rules /etc/polkit-1/rules.d/`
+  (the engine runs `systemctl reboot` as user `flex`). Optional: `packaging/dbus/flexengine-rauc.conf` into
+  `/etc/dbus-1/system.d/` so only root and group `flex` may talk to RAUC.
+- **Every regular boot**: the engine marks the committed slot good again once per boot (boot counters); a slot whose
+  image has no running engine is never marked, so the bootloader falls back after its attempts.
+
+```yaml
+    drivers:
+      os-rauc: {sharedDataPath: /data, healthChecks: [["systemctl", "is-system-running", "--wait"]]}
+```
 
 Upgrade: run the new bundle's `install.sh` with the same options. The venv is updated, the units are rewritten,
 a running service is restarted; `engine.yaml`, `tokens/` and `/var/lib/flexengine` are kept. Re-running with the
