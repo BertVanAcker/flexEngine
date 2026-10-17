@@ -111,15 +111,7 @@ def _desired_state_rules(doc: dict) -> list[str]:
     return out
 
 
-def _capabilities_rules(doc: dict) -> list[str]:
-    out = []
-    for prof, frag in doc["x-flex"]["drivers"].items():
-        if frag.get("profile") != prof:
-            out.append(f"$.x-flex.drivers.{prof}.profile: {frag.get('profile')!r} differs from its key")
-    return out
-
-
-_SEMANTIC = {"desired-state": _desired_state_rules, "capabilities": _capabilities_rules}
+_SEMANTIC = {"desired-state": _desired_state_rules}
 
 
 # ---- reason codes (CP-2) ----------------------------------------------------------------------------------------

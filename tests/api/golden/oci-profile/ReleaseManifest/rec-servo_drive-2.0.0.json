@@ -1,0 +1,52 @@
+{
+ "annotations": {
+  "dev.flex.interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+  "dev.flex.safetyClass": "none",
+  "org.opencontainers.image.title": "servo_drive",
+  "org.opencontainers.image.version": "2.0.0"
+ },
+ "artifactType": "application/vnd.flex.node.v1+json",
+ "config": {
+  "digest": "sha256:e4fb4cb9ed3e116e2673cf975dee810c9f75a8077125009bcb7c3c3e538bdb4c",
+  "mediaType": "application/vnd.flex.node.descriptor.v1+json",
+  "size": 1506
+ },
+ "layers": [
+  {
+   "annotations": {
+    "dev.flex.arch": "armv7m",
+    "dev.flex.cpuProfile": "cortex-m7-hard",
+    "dev.flex.floatAbi": "hard",
+    "dev.flex.moduleAbi": "1.0",
+    "dev.flex.profile": "mcu-module",
+    "org.opencontainers.image.title": "servo_drive-2.0.0-cortex-m7-hard.flxm"
+   },
+   "digest": "sha256:96d13f698c6e3937ff36263283f5a0ee00dd295e0eb2a3918a7803b8d6a213ba",
+   "mediaType": "application/vnd.flex.payload.mcu-module.v1+flxm",
+   "size": 3268
+  },
+  {
+   "annotations": {
+    "dev.flex.arch": "armv7m",
+    "dev.flex.cpuProfile": "cortex-m3",
+    "dev.flex.floatAbi": "soft",
+    "dev.flex.moduleAbi": "1.0",
+    "dev.flex.profile": "mcu-module",
+    "org.opencontainers.image.title": "servo_drive-2.0.0-cortex-m3.flxm"
+   },
+   "digest": "sha256:c73b678f0db13fd2fb8708f8295308ed4951b1fa4446b51cfd68d3dc91a49242",
+   "mediaType": "application/vnd.flex.payload.mcu-module.v1+flxm",
+   "size": 5980
+  },
+  {
+   "annotations": {
+    "dev.flex.role": "sbom"
+   },
+   "digest": "sha256:7ca869e2262be2121f56b1bbb6c09c1b9cb26effd98a878518d745c2ded269ce",
+   "mediaType": "application/spdx+json",
+   "size": 729
+  }
+ ],
+ "mediaType": "application/vnd.oci.image.manifest.v1+json",
+ "schemaVersion": 2
+}

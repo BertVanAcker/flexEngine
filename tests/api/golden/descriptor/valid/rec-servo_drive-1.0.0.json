@@ -1,0 +1,58 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "health": {
+  "minSeconds": 4.0,
+  "periodSeconds": 0.1,
+  "successThreshold": 2,
+  "timeoutSeconds": 6.0,
+  "type": "mcu-heartbeat"
+ },
+ "interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+ "kind": "FlexNodeDescriptor",
+ "language": "c",
+ "module": "servo_drive",
+ "moduleVersion": "0.1.0",
+ "parameters": [],
+ "ports": [
+  {
+   "direction": "out",
+   "name": "joint",
+   "pattern": "pubsub",
+   "rate_hz": 200.0,
+   "topic": 769602031,
+   "type": "uc2/JointSample"
+  }
+ ],
+ "profiles": [
+  "mcu-module"
+ ],
+ "releaseVersion": "1.0.0",
+ "requires": {
+  "features": [
+   "localbus",
+   "pwm"
+  ],
+  "target_classes": [
+   "T4"
+  ]
+ },
+ "restartPolicy": {},
+ "safetyClass": "none",
+ "x-flex-mcu": {
+  "abi": "1.0",
+  "arch": "armv7m",
+  "caps": [
+   "pwm",
+   "localbus"
+  ],
+  "elfSha256": "94e162538a051b19ff82351f4bfb5e56dfcbed1a9a7326e2c7e3b4bc69f5e064",
+  "elfSize": 5752,
+  "floatAbi": "soft",
+  "interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+  "name": "servo_drive",
+  "ramEstimate": 3153,
+  "stepPeriodMs": 5,
+  "testWindowMs": 4000,
+  "version": "1.0.0"
+ }
+}

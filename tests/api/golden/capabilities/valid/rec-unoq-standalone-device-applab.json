@@ -1,0 +1,54 @@
+{
+ "apiVersion": "device.margo.org/v1alpha1",
+ "kind": "DeviceCapabilities",
+ "properties": {
+  "id": "unoq",
+  "interfaces": [
+   {
+    "type": "ethernet"
+   }
+  ],
+  "modelNumber": "cloud-vm",
+  "otelCollector": false,
+  "peripherals": [],
+  "resources": {
+   "cpu": {
+    "architecture": "x86_64",
+    "cores": 4
+   },
+   "memory": "16093Mi"
+  },
+  "roles": [
+   "standalone-device"
+  ],
+  "serialNumber": "unoq",
+  "supportedDeploymentTypes": [
+   "custom"
+  ],
+  "supportedRuntimes": [],
+  "vendor": "probe"
+ },
+ "x-flex": {
+  "drivers": {
+   "applab": {
+    "board": "unoq",
+    "cli": {
+     "board": "unoq",
+     "version": "0.14.0-fake-p4"
+    },
+    "driver": "arduino-app-cli",
+    "exclusive": true,
+    "health": "app running + FLEX01 handshake via router",
+    "maxDeployments": 1,
+    "maxRunningApps": 1,
+    "profile": "applab"
+   }
+  },
+  "engine": {
+   "impl": "flexengine2",
+   "spi": "1.0",
+   "version": "2.0.0a1"
+  },
+  "safeStateSignals": []
+ }
+}

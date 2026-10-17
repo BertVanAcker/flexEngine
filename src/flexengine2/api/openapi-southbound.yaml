@@ -1,0 +1,293 @@
+openapi: 3.1.0
+info:
+  title: flexCloud device API (southbound), as flexEngineV2 uses it
+  version: v1alpha1
+  summary: CP-1/CP-2/CP-3 contract between flexCloud and flexEngineV2. Frozen copy of probes/p2-reconciling-engine/openapi.yaml (0.1.0-p2), bumped to v1alpha1.
+  description: |
+    Changes against 0.1.0-p2: the bodies reference the standalone JSON Schemas next to this file
+    (desired-state, status, capabilities, onboarding, oci-profile, trust .v1alpha1.schema.json); the driver enum
+    is the set of driver profiles that exist (container, native, applab, mcu-module, mcu-firmware, plc-verify);
+    the desired state types parameters, child-device ids, the activation gate and forbids unknown x- keys;
+    401/403/404 responses are listed as the reference fake (flexengine2.testing.fakecloud) returns them.
+
+    Every southbound request except onboarding carries an Ed25519 request signature (CP-4, trust.v1alpha1.md)
+    made with the device key registered at onboarding; the cloud scopes every request to that device identity.
+    Alpha transport: HTTP(S) with a pinned CA (caFile); mTLS with SPIFFE SVIDs is beta (EV-21).
+
+    The desired state is pulled. `ETag` + `If-None-Match` give 304 when unchanged. `manifestVersion` is strictly
+    increasing; the device refuses lower values, and an equal value with another body. Each deployment names its
+    release by sha256 digest; any digest or signature mismatch keeps the previous state (all-or-nothing per
+    manifest version). A deployment absent from the manifest is removed. Each desired-state body is signed by the
+    cloud key (`X-Flex-Manifest-Signature`), so an offline bundle is as trustworthy as an online pull.
+
+    The northbound (admin) operations are listed for completeness (unchanged from 0.1.0-p2 apart from the driver
+    enum); they are not part of the engine's contract.
+servers:
+  - url: http://127.0.0.1:8700
+components:
+  securitySchemes:
+    deviceSignature:
+      type: apiKey
+      in: header
+      name: X-Flex-Signature
+      description: |
+        Ed25519 over "METHOD\nPATH?QUERY\nX-Flex-Date\nX-Flex-Nonce\nhex(sha256(body))", base64.
+        Also required: X-Flex-Device, X-Flex-Date (unix ms, +-300 s), X-Flex-Nonce (24 hex; unique, bounded replay cache).
+    admin:
+      type: http
+      scheme: bearer
+      description: Stub only. Target is OIDC/OAuth2 with RBAC (synthesis K3); X-Flex-User names the human.
+  parameters:
+    DeviceId:
+      name: deviceId
+      in: path
+      required: true
+      schema: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DeviceId'}
+    DeploymentId:
+      name: deploymentId
+      in: path
+      required: true
+      schema: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DeploymentId'}
+    Repository:
+      name: repository
+      in: path
+      required: true
+      description: repository path, e.g. flexnodes/perception_guard (may contain '/')
+      schema: {type: string}
+    Digest:
+      name: digest
+      in: path
+      required: true
+      schema: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/Digest'}
+    XFlexDevice: {name: X-Flex-Device, in: header, required: true, schema: {$ref: 'trust.v1alpha1.schema.json#/$defs/RequestSignatureHeaders/properties/X-Flex-Device'}}
+    XFlexDate: {name: X-Flex-Date, in: header, required: true, schema: {$ref: 'trust.v1alpha1.schema.json#/$defs/RequestSignatureHeaders/properties/X-Flex-Date'}}
+    XFlexNonce: {name: X-Flex-Nonce, in: header, required: true, schema: {$ref: 'trust.v1alpha1.schema.json#/$defs/RequestSignatureHeaders/properties/X-Flex-Nonce'}}
+  headers:
+    ETag:
+      schema: {type: string, pattern: '^"sha256:[0-9a-f]{64}"$'}
+      description: '"sha256:<hex of the body>"'
+    ManifestSignature:
+      schema: {$ref: 'trust.v1alpha1.schema.json#/$defs/Ed25519Signature'}
+      description: base64 Ed25519 signature of the exact response body by the flexCloud key.
+  responses:
+    Unauthorized:
+      description: unsigned, unknown device, request time outside the window, bad signature or replayed nonce
+      content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    OtherDevice:
+      description: the signed device may only access its own resources
+      content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    Unavailable:
+      description: unavailable; honour Retry-After (the engine backs off, never changes local state)
+      headers: {Retry-After: {schema: {type: integer}}}
+      content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}
+  schemas:
+    Problem:
+      type: object
+      description: RFC 9457 problem details
+      properties: {type: {type: string}, title: {type: string}, status: {type: integer}, detail: {type: string}}
+    DesiredState: {$ref: 'desired-state.v1alpha1.schema.json'}
+    ApplicationDeployment: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/ApplicationDeployment'}
+    Capabilities: {$ref: 'capabilities.v1alpha1.schema.json'}
+    DeploymentStatus: {$ref: 'status.v1alpha1.schema.json'}
+    OnboardingRequest: {$ref: 'onboarding.v1alpha1.schema.json#/$defs/OnboardingRequest'}
+    OnboardingResponse: {$ref: 'onboarding.v1alpha1.schema.json#/$defs/OnboardingResponse'}
+    ReleaseManifest: {$ref: 'oci-profile.v1alpha1.schema.json#/$defs/ReleaseManifest'}
+    SignatureManifest: {$ref: 'oci-profile.v1alpha1.schema.json#/$defs/SignatureManifest'}
+    ReferrersIndex: {$ref: 'oci-profile.v1alpha1.schema.json#/$defs/ReferrersIndex'}
+    PlanRequest:
+      type: object
+      required: [deviceId, deployments]
+      properties:
+        deviceId: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DeviceId'}
+        reason: {type: string}
+        allowUnknownDevice: {type: boolean, description: stub/test only}
+        deployments:
+          type: array
+          items:
+            type: object
+            required: [module, version]
+            properties:
+              id: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DeploymentId'}
+              name: {type: string}
+              module: {type: string}
+              version: {type: string}
+              driver: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DriverProfile'}
+              parameters: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/Parameters'}
+              safetyClass: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/SafetyClass'}
+              activation: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/Activation'}
+    Plan:
+      type: object
+      properties:
+        planHash: {type: string, description: 'sha256 over {deviceId, baseManifestVersion, resolved deployments}'}
+        deviceId: {type: string}
+        baseManifestVersion: {type: integer}
+        requiresApproval: {type: boolean}
+        diff:
+          type: array
+          items: {type: object, properties: {op: {enum: [add, update, remove]}, id: {type: string}, from: {type: object}, to: {type: object}}}
+paths:
+  /api/v1/onboarding:
+    post:
+      summary: Register the device public key with a one-time token (unsigned)
+      operationId: onboard
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/OnboardingRequest'}}}
+      responses:
+        '201':
+          description: onboarded; cloudPublicKey must equal the provisioned trust anchor
+          content: {application/json: {schema: {$ref: '#/components/schemas/OnboardingResponse'}}}
+        '403': {description: invalid or used token, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+  /api/v1/devices/{deviceId}/capabilities:
+    put:
+      operationId: putCapabilities
+      security: [{deviceSignature: []}]
+      parameters: [{$ref: '#/components/parameters/DeviceId'}, {$ref: '#/components/parameters/XFlexDevice'}, {$ref: '#/components/parameters/XFlexDate'}, {$ref: '#/components/parameters/XFlexNonce'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Capabilities'}}}}
+      responses:
+        '200': {description: stored}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/OtherDevice'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/v1/devices/{deviceId}/deployments:
+    get:
+      operationId: getDesiredState
+      security: [{deviceSignature: []}]
+      parameters:
+        - {$ref: '#/components/parameters/DeviceId'}
+        - {$ref: '#/components/parameters/XFlexDevice'}
+        - {$ref: '#/components/parameters/XFlexDate'}
+        - {$ref: '#/components/parameters/XFlexNonce'}
+        - {name: If-None-Match, in: header, schema: {type: string}}
+      responses:
+        '200':
+          description: desired state (exact bytes are signed; the engine verifies before parsing)
+          headers: {ETag: {$ref: '#/components/headers/ETag'}, X-Flex-Manifest-Signature: {$ref: '#/components/headers/ManifestSignature'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/DesiredState'}}}
+        '304': {description: unchanged}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/OtherDevice'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/v1/devices/{deviceId}/deployments/{deploymentId}/status:
+    post:
+      operationId: postStatus
+      security: [{deviceSignature: []}]
+      parameters: [{$ref: '#/components/parameters/DeviceId'}, {$ref: '#/components/parameters/DeploymentId'}, {$ref: '#/components/parameters/XFlexDevice'}, {$ref: '#/components/parameters/XFlexDate'}, {$ref: '#/components/parameters/XFlexNonce'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DeploymentStatus'}}}}
+      responses:
+        '200': {description: 'stored, or {duplicate: true} when seq <= last seen (idempotent re-send)'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/OtherDevice'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/v1/devices/{deviceId}/bundle:
+    get:
+      operationId: getBundle
+      security: [{deviceSignature: []}]
+      summary: 'Offline bundle (tar, bundle.v1alpha1.md): desired.json, desired.sig and every referenced blob'
+      parameters: [{$ref: '#/components/parameters/DeviceId'}, {$ref: '#/components/parameters/XFlexDevice'}, {$ref: '#/components/parameters/XFlexDate'}, {$ref: '#/components/parameters/XFlexNonce'}]
+      responses:
+        '200': {description: bundle, content: {application/x-tar: {}}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/OtherDevice'}
+  /v2/{repository}/manifests/{digest}:
+    get:
+      operationId: getManifest
+      security: [{deviceSignature: []}]
+      parameters: [{$ref: '#/components/parameters/Repository'}, {$ref: '#/components/parameters/Digest'}, {$ref: '#/components/parameters/XFlexDevice'}, {$ref: '#/components/parameters/XFlexDate'}, {$ref: '#/components/parameters/XFlexNonce'}]
+      responses:
+        '200':
+          description: 'OCI image manifest (flexNode release or signature); sha256(body) == digest'
+          headers: {Docker-Content-Digest: {schema: {type: string}}}
+          content:
+            application/vnd.oci.image.manifest.v1+json:
+              schema: {oneOf: [{$ref: '#/components/schemas/ReleaseManifest'}, {$ref: '#/components/schemas/SignatureManifest'}]}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {description: unknown, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+  /v2/{repository}/blobs/{digest}:
+    get:
+      operationId: getBlob
+      security: [{deviceSignature: []}]
+      parameters: [{$ref: '#/components/parameters/Repository'}, {$ref: '#/components/parameters/Digest'}, {$ref: '#/components/parameters/XFlexDevice'}, {$ref: '#/components/parameters/XFlexDate'}, {$ref: '#/components/parameters/XFlexNonce'}]
+      responses:
+        '200': {description: 'blob; sha256(body) == digest', content: {application/octet-stream: {}}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {description: unknown, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+  /v2/{repository}/referrers/{digest}:
+    get:
+      operationId: getReferrers
+      security: [{deviceSignature: []}]
+      parameters: [{$ref: '#/components/parameters/Repository'}, {$ref: '#/components/parameters/Digest'}, {$ref: '#/components/parameters/XFlexDevice'}, {$ref: '#/components/parameters/XFlexDate'}, {$ref: '#/components/parameters/XFlexNonce'}]
+      responses:
+        '200':
+          description: OCI image index of referrers (signatures)
+          content: {application/json: {schema: {$ref: '#/components/schemas/ReferrersIndex'}}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /api/v1/admin/onboarding-tokens:
+    post:
+      security: [{admin: []}]
+      responses: {'201': {description: '{token, deviceId}'}}
+  /api/v1/admin/devices:
+    get:
+      security: [{admin: []}]
+      summary: fleet.read
+      responses: {'200': {description: 'devices with manifestVersion, lastSeen and latest status per deployment'}}
+  /api/v1/admin/devices/{deviceId}:
+    get:
+      security: [{admin: []}]
+      parameters: [{$ref: '#/components/parameters/DeviceId'}]
+      responses: {'200': {description: 'desired state, capabilities, status, status history, counters'}}
+  /api/v1/admin/devices/{deviceId}/bundle:
+    get:
+      security: [{admin: []}]
+      parameters: [{$ref: '#/components/parameters/DeviceId'}]
+      responses: {'200': {description: offline bundle for sneakernet/USB delivery}}
+  /api/v1/admin/plans:
+    post:
+      security: [{admin: []}]
+      summary: deploy.plan - resolve releases to digests, diff against current desired state, hash
+      requestBody: {content: {application/json: {schema: {$ref: '#/components/schemas/PlanRequest'}}}}
+      responses:
+        '201': {description: plan, content: {application/json: {schema: {$ref: '#/components/schemas/Plan'}}}}
+        '422': {description: 'unknown release, safety class differs from the model, or placement refused (exclusive executor)'}
+  /api/v1/admin/plans/{planHash}/approve:
+    post:
+      security: [{admin: []}]
+      summary: second-person approval (approver != requester)
+      parameters: [{name: planHash, in: path, required: true, schema: {type: string}}]
+      responses: {'200': {description: approved}, '403': {description: requester tried to approve}}
+  /api/v1/admin/plans/{planHash}/apply:
+    post:
+      security: [{admin: []}]
+      summary: deploy.apply - publishes exactly the planned desired state as manifestVersion+1
+      parameters: [{name: planHash, in: path, required: true, schema: {type: string}}]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approvals: {type: array, items: {type: object}}
+                preauthorized: {type: string, enum: [rollback-known-good]}
+      responses:
+        '200': {description: '{manifestVersion}'}
+        '403': {description: approval required / approvals not verified}
+        '409': {description: 'stale plan (desired state moved) or already applied'}
+  /api/v1/admin/releases:
+    post:
+      security: [{admin: []}]
+      summary: upload a release (tar of an OCI image layout)
+      requestBody: {required: true, content: {application/x-tar: {schema: {type: string, format: binary}}}}
+      responses:
+        '201': {description: '{imported, releases}'}
+        '422': {description: digest mismatch or safety class differs from the model}
+  /api/v1/admin/audit:
+    get:
+      security: [{admin: []}]
+      summary: append-only, hash-chained audit log (FC-S4)
+      responses: {'200': {description: 'entries with prev/hash'}}
+  /api/v1/admin/faults:
+    post:
+      security: [{admin: []}]
+      summary: test-only fault injection (503 + Retry-After for N seconds)
+      responses: {'200': {description: ok}}

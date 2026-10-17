@@ -1,0 +1,11 @@
+{
+ "correlationId": "047f2604032a37a49bba4f9bcc1bf2a6",
+ "dep": "planner",
+ "deviceTime": 1792131074.038988,
+ "manifestVersion": 4,
+ "reason": "held: PLC not verified: plc:cx-bridge@FLEX01_f4574d6f05c5ad86322215f088f9b59b72d02b12a3768f24cdf5976313e360a6",
+ "seq": 17,
+ "state": "Pending",
+ "traceparent": "00-047f2604032a37a49bba4f9bcc1bf2a6-c714f085c1ffeb2e-01",
+ "version": "1.0.2"
+}

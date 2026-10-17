@@ -1,0 +1,71 @@
+{
+ "apiVersion": "device.margo.org/v1alpha1",
+ "kind": "DeviceCapabilities",
+ "properties": {
+  "id": "panda",
+  "interfaces": [
+   {
+    "type": "ethernet"
+   }
+  ],
+  "modelNumber": "cloud-vm",
+  "otelCollector": false,
+  "peripherals": [],
+  "resources": {
+   "cpu": {
+    "architecture": "x86_64",
+    "cores": 4
+   },
+   "memory": "16093Mi"
+  },
+  "roles": [
+   "gateway"
+  ],
+  "serialNumber": "panda",
+  "supportedDeploymentTypes": [
+   "custom"
+  ],
+  "supportedRuntimes": [
+   "oci"
+  ],
+  "vendor": "probe"
+ },
+ "x-flex": {
+  "children": [
+   {
+    "deviceId": "panda.portenta",
+    "kind": "mcu",
+    "link": "smp/uart (QEMU tcp)",
+    "mode": "see-thru"
+   }
+  ],
+  "drivers": {
+   "container": {
+    "driver": "docker",
+    "profile": "container",
+    "runtimeVersion": "29.8.2",
+    "supportedRuntimes": [
+     "oci"
+    ]
+   },
+   "plc-verify": {
+    "download": false,
+    "driver": "plc-verify",
+    "plcs": {
+     "opta": "modbus",
+     "panda/cx": "ads"
+    },
+    "profile": "plc-verify"
+   }
+  },
+  "engine": {
+   "impl": "flexengine2",
+   "spi": "1.0",
+   "version": "2.0.0a1"
+  },
+  "safeStateSignals": [
+   "machine_parked",
+   "operator_confirmed"
+  ]
+ }
+}

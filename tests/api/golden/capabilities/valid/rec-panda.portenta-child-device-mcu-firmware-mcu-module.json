@@ -1,0 +1,69 @@
+{
+ "apiVersion": "device.margo.org/v1alpha1",
+ "kind": "DeviceCapabilities",
+ "properties": {
+  "id": "panda.portenta",
+  "interfaces": [
+   {
+    "protocol": "smp",
+    "type": "uart"
+   }
+  ],
+  "modelNumber": "mps2/an385",
+  "otelCollector": false,
+  "peripherals": [],
+  "resources": {
+   "cpu": {
+    "architecture": "armv7m",
+    "cores": 1
+   }
+  },
+  "roles": [
+   "child-device"
+  ],
+  "serialNumber": "panda.portenta",
+  "supportedDeploymentTypes": [
+   "custom"
+  ],
+  "supportedRuntimes": [],
+  "vendor": "probe"
+ },
+ "x-flex": {
+  "drivers": {
+   "mcu-firmware": {
+    "baseImage": "1.0.0+0",
+    "board": "mps2/an385",
+    "bootloader": "MCUboot (swap with scratch, ECDSA P-256)",
+    "confirmed": true,
+    "driver": "mcumgr-mcuboot",
+    "profile": "mcu-firmware"
+   },
+   "mcu-module": {
+    "arch": "armv7m",
+    "caps": [
+     "pwm",
+     "localbus"
+    ],
+    "driver": "mcumgr-llext",
+    "floatAbi": "soft",
+    "llextHeapBytes": 65536,
+    "moduleAbi": "1.0",
+    "profile": "mcu-module",
+    "slotBytes": 131072,
+    "sockets": 2,
+    "transport": "SMP over UART (QEMU: TCP)"
+   }
+  },
+  "engine": {
+   "impl": "flexengine2",
+   "onDevice": "flexEngine-MCU base image",
+   "spi": "1.0",
+   "version": "2.0.0a1"
+  },
+  "parent": {
+   "deviceId": "panda",
+   "mode": "see-thru"
+  },
+  "safeStateSignals": []
+ }
+}

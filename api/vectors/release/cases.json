@@ -1,0 +1,87 @@
+{
+ "cases": [
+  {
+   "digest": "sha256:90c94f4c59d1ca5c1bfe7b23a36752336265c40e61418cfacaaa01ed3e5db466",
+   "expect": "accept",
+   "name": "good",
+   "profile": "native",
+   "repository": "flexnodes/vec_native",
+   "safetyClass": "none"
+  },
+  {
+   "digest": "sha256:90c94f4c59d1ca5c1bfe7b23a36752336265c40e61418cfacaaa01ed3e5db466",
+   "expect": "reject",
+   "name": "tampered",
+   "profile": "native",
+   "reasonCode": "FE-ART-DIG-002",
+   "reasonPattern": "^digest mismatch: ",
+   "repository": "flexnodes/vec_native",
+   "safetyClass": "none",
+   "serve": {
+    "sha256:a5b3ae3b9ab1dda5b090467ee1172daa09e6992ff61afd7fee4e5d9d07b8ff8f": "tampered/a5b3ae3b9ab1dda5b090467ee1172daa09e6992ff61afd7fee4e5d9d07b8ff8f"
+   }
+  },
+  {
+   "digest": "sha256:3dcacdf39b9037f55eff8b1a73d078220f7300a693f242fa7219ad32d4855301",
+   "expect": "reject",
+   "name": "unsigned",
+   "profile": "native",
+   "reasonCode": "FE-ART-SIG-001",
+   "reasonPattern": "^release not signed by a trusted key \\(no signature\\)$",
+   "repository": "flexnodes/vec_unsigned",
+   "safetyClass": "none"
+  },
+  {
+   "digest": "sha256:e0fa68c912b16d34b39c1c9f9e1fb5aff24e9ad75cd305505d269826efcfddc8",
+   "expect": "reject",
+   "name": "wrong-key",
+   "profile": "native",
+   "reasonCode": "FE-ART-SIG-002",
+   "reasonPattern": "^release not signed by a trusted key \\(untrusted key ed25519:2bb78d9721e0dfca\\)$",
+   "repository": "flexnodes/vec_rogue",
+   "safetyClass": "none"
+  },
+  {
+   "digest": "sha256:54d6d264fe21266cc037350ddd7f0279962e7d1f4eff0fd57da224fa814735b2",
+   "expect": "reject",
+   "name": "bad-signature",
+   "profile": "native",
+   "reasonCode": "FE-ART-SIG-002",
+   "reasonPattern": "^release not signed by a trusted key \\(bad signature\\)$",
+   "repository": "flexnodes/vec_badsig",
+   "safetyClass": "none"
+  },
+  {
+   "digest": "sha256:64ef6f194369739b68f7c20ce3ab817a836835e8c246e358b5ba95e18a30ea11",
+   "expect": "accept",
+   "name": "safety-two-approvers",
+   "profile": "native",
+   "repository": "flexnodes/vec_safety",
+   "safetyClass": "safety-relevant"
+  },
+  {
+   "digest": "sha256:89c1fc75be2f1e7f4f1d2073ee736df40fdb91e0c7916a4172a9288b097f01ff",
+   "expect": "reject",
+   "name": "safety-single-approver",
+   "profile": "native",
+   "reasonCode": "FE-ART-SAF-001",
+   "reasonPattern": "^safety-relevant release lacks a two-person approval in its signed payload$",
+   "repository": "flexnodes/vec_safety",
+   "safetyClass": "safety-relevant"
+  },
+  {
+   "digest": "sha256:90c94f4c59d1ca5c1bfe7b23a36752336265c40e61418cfacaaa01ed3e5db466",
+   "expect": "reject",
+   "name": "safety-class-mismatch",
+   "profile": "native",
+   "reasonCode": "FE-ART-SAF-002",
+   "reasonPattern": "^safety class mismatch: ",
+   "repository": "flexnodes/vec_native",
+   "safetyClass": "none",
+   "safetyClassOverride": "safety-relevant"
+  }
+ ],
+ "trustedReleaseKeys": [
+  "ImzAmVMOek9Xw/KZJQ9vUjBCBms96JhS9F1HnIR0HpM="
+ ]
+}

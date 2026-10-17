@@ -1,0 +1,11 @@
+{
+ "dep": "servo",
+ "deviceTime": 1792140134.3619707,
+ "digest": "sha256:e9007c1b18906fed4a5fe0402139a5b4b6158031d15be2b0b4e08ee302ad0116",
+ "keptPrevious": true,
+ "manifestVersion": 13,
+ "reason": "artefact rejected: digest mismatch: flexnodes/servo_drive blobs/sha256:65c352d6749065db1f28ebc5eae135d2cdb7fe6cffcc64110113ccd4f472ff57 hashes to sha256:4215be9429f830d8ff5df787da49e23de37026e53d85f28c8b442c10d106f451",
+ "seq": 18,
+ "state": "Failed",
+ "version": "6.0.3-tamper"
+}

@@ -140,7 +140,7 @@ if [[ $BUNDLE == 1 ]]; then
     rm -rf "$stage"
   done
 fi
-(cd "$OUT" && find . -type f \( -name '*.whl' -o -name '*.tar.gz' \) ! -name SHA256SUMS -print0 | sort -z \
-  | xargs -0 sha256sum > SHA256SUMS)
+sums="$(cd "$OUT" && find . -type f \( -name '*.whl' -o -name '*.tar.gz' \) -print0 | sort -z | xargs -0 sha256sum)"
+printf '%s\n' "$sums" > "$OUT/SHA256SUMS"
 say "done: $OUT ($(wc -l < "$OUT/SHA256SUMS") files in SHA256SUMS)"
 echo "   install (LattePanda): sudo packaging/install.sh --wheel $WHEEL --wheelhouse $OUT/wheelhouse --extras $EXTRAS"

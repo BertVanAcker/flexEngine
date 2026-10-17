@@ -1,0 +1,100 @@
+openapi: 3.1.0
+info:
+  title: flexEngineV2 local API
+  version: v1
+  summary: CP-7 local operator API (spec only; implemented by EV-07 in flexengine2/local/api.py)
+  description: |
+    Transport: HTTP/1.1 over the Unix socket /run/flexengine/api.sock (mode 0660, group `flex`); every operation is
+    allowed there. Optional read-only TCP bind (config `local.tcp`) for the desk runbooks: GET operations only, each
+    with `Authorization: Bearer <token from a 0600 file>`; write operations answer 403 on TCP.
+    No operation changes the desired state (that only comes from flexCloud or a signed bundle).
+    The CLI (`flexengine status|deployments|logs|history|bundle import|...`) is a client of this API;
+    `flexengine status --json` prints exactly the GET /v1/status body.
+servers:
+  - url: http://localhost
+    description: unix:/run/flexengine/api.sock
+components:
+  securitySchemes:
+    socket: {type: http, scheme: bearer, description: 'none on the Unix socket (filesystem permissions); bearer token on the read-only TCP bind'}
+  parameters:
+    DeviceId: {name: deviceId, in: path, required: true, schema: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DeviceId'}}
+    DeploymentId: {name: dep, in: path, required: true, schema: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DeploymentId'}}
+  schemas:
+    Problem:
+      type: object
+      properties: {type: {type: string}, title: {type: string}, status: {type: integer}, detail: {type: string}}
+    Health:
+      type: object
+      additionalProperties: false
+      required: [ok, ticks]
+      properties:
+        ok: {type: boolean, description: every device engine ticked within its watchdog interval}
+        ticks: {type: integer, minimum: 0}
+        lastTickAgeSeconds: {type: number, minimum: 0}
+    HistoryEntry:
+      type: object
+      description: one status report as queued in the outbox (CP-2 DeploymentStatus) plus the device it belongs to
+      required: [deviceId, record]
+      properties:
+        deviceId: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DeviceId'}
+        delivered: {type: boolean}
+        record: {$ref: 'status.v1alpha1.schema.json'}
+paths:
+  /v1/health:
+    get:
+      operationId: health
+      summary: engine liveness (also used for the systemd watchdog)
+      responses:
+        '200': {description: alive, content: {application/json: {schema: {$ref: '#/components/schemas/Health'}}}}
+        '503': {description: 'a device engine is stuck', content: {application/json: {schema: {$ref: '#/components/schemas/Health'}}}}
+  /v1/status:
+    get:
+      operationId: status
+      responses:
+        '200': {description: 'engine and per-device status', content: {application/json: {schema: {$ref: 'cli-status.v1.schema.json'}}}}
+  /v1/devices/{deviceId}/deployments/{dep}:
+    get:
+      operationId: deployment
+      parameters: [{$ref: '#/components/parameters/DeviceId'}, {$ref: '#/components/parameters/DeploymentId'}]
+      responses:
+        '200': {description: one deployment, content: {application/json: {schema: {$ref: 'cli-status.v1.schema.json#/$defs/Deployment'}}}}
+        '404': {description: unknown device or deployment, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+  /v1/history:
+    get:
+      operationId: history
+      parameters:
+        - {name: since, in: query, schema: {type: number}, description: 'unix seconds (deviceTime); default: last hour'}
+        - {name: device, in: query, schema: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DeviceId'}}
+      responses:
+        '200': {description: 'status history (local ring buffer, EV-09)', content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/HistoryEntry'}}}}}
+  /v1/logs:
+    get:
+      operationId: logs
+      parameters:
+        - {name: device, in: query, schema: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DeviceId'}}
+        - {name: follow, in: query, schema: {type: integer, enum: [0, 1]}, description: '1 = stream (chunked) until the client closes'}
+      responses:
+        '200': {description: 'structured log lines (JSON Lines, fields per telemetry.v1.md section 4)', content: {application/x-ndjson: {schema: {type: string}}}}
+  /v1/capabilities/{deviceId}:
+    get:
+      operationId: capabilities
+      parameters: [{$ref: '#/components/parameters/DeviceId'}]
+      responses:
+        '200': {description: the CP-2 capabilities document the engine sends, content: {application/json: {schema: {$ref: 'capabilities.v1alpha1.schema.json'}}}}
+        '404': {description: unknown device, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+  /v1/bundle:
+    post:
+      operationId: importBundle
+      summary: import an offline bundle (bundle.v1alpha1); socket only
+      requestBody: {required: true, content: {application/x-tar: {schema: {type: string, format: binary}}}}
+      responses:
+        '202': {description: 'imported; {deviceId, manifestVersion, accepted: bool}'}
+        '403': {description: not allowed on the TCP bind, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+        '422': {description: 'bundle refused (digest mismatch, no desired state, bad signature: FE-ART-DIG-001, FE-BUN-001, FE-DS-001)', content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+  /v1/reconcile:
+    post:
+      operationId: reconcile
+      summary: nudge every device engine to pull and reconcile now; socket only
+      responses:
+        '202': {description: queued}
+        '403': {description: not allowed on the TCP bind, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}

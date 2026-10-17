@@ -1,0 +1,39 @@
+{
+ "annotations": {
+  "dev.flex.interfaceHash": "FLEX01_12fcffaae6dbd8206c039eb890b0772a5043e6ebb9f6200fb89ecbd56f8ba053",
+  "dev.flex.safetyClass": "none",
+  "org.opencontainers.image.title": "uc3_greenhouse",
+  "org.opencontainers.image.version": "1.0.0"
+ },
+ "artifactType": "application/vnd.flex.node.v1+json",
+ "config": {
+  "digest": "sha256:ab1614ec3f74c24e92060f7cc773c9f901dafd58c1de0693beef5a8aabd1ca4a",
+  "mediaType": "application/vnd.flex.node.descriptor.v1+json",
+  "size": 1441
+ },
+ "layers": [
+  {
+   "annotations": {
+    "dev.flex.board": "unoq",
+    "dev.flex.contractHash": "FLEX01_12fcffaae6dbd8206c039eb890b0772a5043e6ebb9f6200fb89ecbd56f8ba053",
+    "dev.flex.platform": "arduino:unoq",
+    "dev.flex.profile": "applab",
+    "dev.flex.releaseName": "uc3-greenhouse-1-0-0-unoq",
+    "org.opencontainers.image.title": "uc3-greenhouse-1-0-0-unoq.ard"
+   },
+   "digest": "sha256:4af4f2ae4caab8746ff32e60db8271efc49d36d4ee6efe26e7abf2177bb9da45",
+   "mediaType": "application/vnd.flex.payload.applab-release.v1.tar+gzip",
+   "size": 51236
+  },
+  {
+   "annotations": {
+    "dev.flex.role": "sbom"
+   },
+   "digest": "sha256:d48f2bea25ceaa55eea9a8e844ff0a63c0ab2997855f3e4ba2d14154436b638f",
+   "mediaType": "application/spdx+json",
+   "size": 796
+  }
+ ],
+ "mediaType": "application/vnd.oci.image.manifest.v1+json",
+ "schemaVersion": 2
+}

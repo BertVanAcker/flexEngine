@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/cli-status.v1.schema.json",
+  "title": "CP-7 engine status v1 (`flexengine status --json`, GET /v1/status)",
+  "description": "Spec only (EV-07 implements it). One host process, one entry per device engine. Field sources: state.json (manifestVersion, etag, outbox, applied, failed, rejected, health, journal, downgradesRefused), the host (roles, drivers) and new bookkeeping EV-07 adds (marked 'EV-07' below).",
+  "$comment": "Additive only within v1. Desk runbooks (fe_status_expect) and doctor.py read it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "engine", "devices"],
+  "properties": {
+    "apiVersion": {"const": "flexengine.local/v1"},
+    "kind": {"const": "EngineStatus"},
+    "engine": {
+      "type": "object", "additionalProperties": false, "required": ["version", "spi", "uptimeSeconds"],
+      "properties": {
+        "version": {"type": "string"},
+        "spi": {"type": "string", "pattern": "^1\\.[0-9]+$"},
+        "uptimeSeconds": {"type": "number", "minimum": 0},
+        "configFile": {"type": "string"},
+        "otel": {"type": "boolean", "description": "FLEX_OTEL=1 and the OTel packages are present."}
+      }
+    },
+    "devices": {"type": "array", "items": {"$ref": "#/$defs/Device"}}
+  },
+  "$defs": {
+    "Device": {
+      "type": "object", "additionalProperties": false,
+      "required": ["deviceId", "role", "onboarded", "manifestVersion", "online", "outboxLength", "drivers", "deployments"],
+      "properties": {
+        "deviceId": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"},
+        "role": {"enum": ["standalone-device", "gateway", "child-device"]},
+        "parent": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"},
+        "onboarded": {"type": "boolean"},
+        "manifestVersion": {"type": "integer", "minimum": 0, "description": "Last accepted manifestVersion (state.json)."},
+        "etag": {"type": ["string", "null"]},
+        "etagAgeSeconds": {"type": ["number", "null"], "minimum": 0, "description": "EV-07: seconds since the last 200/304 desired-state answer."},
+        "online": {"type": "boolean", "description": "EV-07: the last cloud round trip succeeded."},
+        "outboxLength": {"type": "integer", "minimum": 0, "description": "Status reports not yet delivered."},
+        "downgradesRefused": {"type": "integer", "minimum": 0},
+        "rejected": {"type": ["object", "null"], "description": "Rejected manifest version (state.json rejected: {manifestVersion, reason, deployment})."},
+        "drivers": {"type": "array", "items": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DriverProfile"}},
+        "journal": {"type": ["object", "null"], "description": "In-flight install (crash-resume journal)."},
+        "deployments": {"type": "array", "items": {"$ref": "#/$defs/Deployment"}}
+      }
+    },
+    "Deployment": {
+      "type": "object", "additionalProperties": false, "required": ["id", "driver", "state"],
+      "properties": {
+        "id": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DeploymentId"},
+        "driver": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DriverProfile"},
+        "state": {"enum": ["Pending", "Installing", "Installed", "Failed", "Removing", "Removed"], "description": "Last reported CP-2 state."},
+        "version": {"type": "string"},
+        "digest": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/Digest"},
+        "health": {"enum": ["healthy", "unhealthy"]},
+        "reason": {"type": "string", "description": "Registered reason text (reason-codes)."},
+        "reasonCode": {"type": "string", "pattern": "^FE-[A-Z0-9-]+$", "description": "Code of reason (flexengine2.contracts.reason_code)."},
+        "previousVersion": {"type": ["string", "null"], "description": "Rollback target kept by the engine."},
+        "since": {"type": "number", "description": "EV-07: unix time of the last state change."}
+      }
+    }
+  }
+}

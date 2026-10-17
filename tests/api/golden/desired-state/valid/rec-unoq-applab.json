@@ -1,0 +1,38 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "deployments": [
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "unoq",
+    "id": "panel",
+    "name": "panel",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "d-pick-station-panel",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "d-pick-station-panel",
+       "properties": {
+        "digest": "sha256:ea69d3b0fad28962d430b25ebc22268acdd16792a540b4954d03690bd3ba39df",
+        "repository": "oci://127.0.0.1:21700/flexnodes/d-pick-station-panel",
+        "revision": "1.1.0",
+        "size": 1215
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {}
+   },
+   "x-flex-driver": "applab",
+   "x-flex-safetyClass": "none"
+  }
+ ],
+ "deviceId": "unoq",
+ "kind": "DesiredState",
+ "manifestVersion": 2
+}

@@ -1,12 +1,13 @@
 # /etc/flexengine/engine.yaml -- flexEngineV2 host config (written once by packaging/install.sh; never overwritten).
 # Form of demo/edge/edge.example.yaml (the keys flexengine2.host.load_config reads today); ${VARS} are expanded from
 # the environment (put them in a drop-in: Environment= / EnvironmentFile=).
-# TODO(EV-08 -> config schema): re-validate with `flexengine config check --config /etc/flexengine/engine.yaml` once
-# src/flexengine2/config/ ships the canonical schema (plan §3.6: apiVersion, identity, local, observability,
-# safeState blocks), and move this template to that form.
+# Check after editing: /opt/flexengine/bin/flexengine config check /etc/flexengine/engine.yaml --resolve
+# (schema: flexengine2/config/schema.json). As installed it fails on purpose until cloudPublicKey is set.
+# TODO(config schema): move to the plan §3.6 form (apiVersion, identity, local, observability, safeState) once the
+# schema accepts it; tests/packaging/test_pkg_install.py validates this template with `config check`.
 cloud:
   apiUrl: https://lattepanda.lab:8700                 # flexCloud southbound API (P2)
-  cloudPublicKey: ""                                  # b64 Ed25519 trust anchor for desired-state signatures
+  # cloudPublicKey: <b64>                             # REQUIRED: Ed25519 trust anchor for desired-state signatures
   releaseKeyFiles: []                                 # or releasePublicKeys: [<b64>] -- release signing key(s)
   pollInterval: 1.0
   backoff: [0.25, 4.0]

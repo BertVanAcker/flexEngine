@@ -1,0 +1,13 @@
+{
+ "applySeconds": 6.073,
+ "dep": "servo",
+ "deviceTime": 1792140876.8641753,
+ "digest": "sha256:15ce7875e1e7371700e636f6f4acdafe531c2bcde4463bb46b7942721c74acde",
+ "health": "healthy",
+ "healthGateSeconds": 4.336,
+ "interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+ "manifestVersion": 1,
+ "seq": 2,
+ "state": "Installed",
+ "version": "2.0.0"
+}

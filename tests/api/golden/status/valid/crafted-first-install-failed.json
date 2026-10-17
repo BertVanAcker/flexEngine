@@ -1,0 +1,14 @@
+{
+ "dep": "cell",
+ "detectSeconds": 0.0,
+ "deviceTime": 1792195203.0,
+ "digest": "sha256:abababababababababababababababababababababababababababababababab",
+ "failFast": true,
+ "failure": "apply failed: runOptions.devices='/dev/video0' is not in this device's allow-list",
+ "manifestVersion": 2,
+ "reason": "apply failed",
+ "rolledBackTo": null,
+ "seq": 9,
+ "state": "Failed",
+ "version": "1.0.0"
+}

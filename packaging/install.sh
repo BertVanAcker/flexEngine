@@ -132,8 +132,8 @@ summary() {
 if [[ $MODE == uninstall ]]; then
   step "uninstall flexengine (prefix $PREFIX${ROOT:+, root $ROOT})"
   if have_systemd && [[ -f "$R_UNITDIR/$UNIT" ]]; then
-    systemctl is-active -q flexengine 2>/dev/null && sctl stop flexengine || ok "flexengine not running"
-    systemctl is-enabled -q flexengine 2>/dev/null && sctl disable flexengine || ok "flexengine not enabled"
+    if systemctl is-active -q flexengine 2>/dev/null; then sctl stop flexengine; else ok "flexengine not running"; fi
+    if systemctl is-enabled -q flexengine 2>/dev/null; then sctl disable flexengine; else ok "flexengine not enabled"; fi
     for i in $(systemctl list-units --plain --no-legend 'flexengine@*' 2>/dev/null | awk '{print $1}'); do sctl stop "$i"; done
   fi
   remove "$R_UNITDIR/$UNIT" "$R_UNITDIR/$TUNIT" "$R_UNITDIR/$UNIT.d/10-groups.conf" "$R_UNITDIR/$TUNIT.d/10-groups.conf"
@@ -197,7 +197,7 @@ if [[ -n "$WHOUSE" ]]; then
   [[ -d "$WHOUSE/sdist" ]] && PIP_SRC+=(--find-links "$WHOUSE/sdist")
 fi
 [[ -f "$LOCK" ]] || die "lock file missing: $LOCK"
-EXTRAS="${EXTRAS// /}"; REQ="$SPEC"; [[ -n "$EXTRAS" ]] && REQ="$SPEC[$EXTRAS]"
+EXTRAS="${EXTRAS// /}"; REQ="$SPEC"; [[ -n "$EXTRAS" ]] && REQ="${SPEC}[${EXTRAS}]"
 [[ -n "$DEVICE_ID" ]] || DEVICE_ID="$(hostname -s 2>/dev/null || hostname 2>/dev/null || echo flexengine)"
 STAMP="installer=$INSTALLER_VERSION
 python=$PYV
@@ -205,7 +205,8 @@ src=$SRC_ID
 extras=$EXTRAS
 lock=$(sha < "$LOCK")"
 ok "flexengine-v2 $NEWVER from ${WHEEL:-$SRC}"
-ok "python $PY ($PYV, $ARCH), extras [${EXTRAS:-none}], ${WHOUSE:+offline wheelhouse $WHOUSE}${WHOUSE:-package index (online)}"
+if [[ -n "$WHOUSE" ]]; then FROM="offline wheelhouse $WHOUSE"; else FROM="package index (online)"; fi
+ok "python $PY ($PYV, $ARCH), extras [${EXTRAS:-none}], $FROM"
 ok "prefix $PREFIX, config $ETC, data $STATE${ROOT:+, staged under $ROOT}"
 
 # ---- python3-venv (Ubuntu splits it out) -------------------------------------------------------------------------------
@@ -260,15 +261,16 @@ write_file "$R_PREFIX/share/flexengine/engine.yaml.template" 0644 root root < "$
 
 # ---- config (only if absent) -------------------------------------------------------------------------------------------
 step "config"
-sed "s/@DEVICE_ID@/$DEVICE_ID/g" "$TEMPLATE" | write_file "$R_ETC/engine.yaml" 0640 root "$SGROUP" keep
+write_file "$R_ETC/engine.yaml" 0640 root "$SGROUP" keep < <(sed "s/@DEVICE_ID@/$DEVICE_ID/g" "$TEMPLATE")
 
 # ---- systemd -----------------------------------------------------------------------------------------------------------
 UNIT_CHANGED=0
 if [[ $NOSVC == 0 ]]; then
   step "systemd units"
   before=$CHANGES
-  sed "s#@PREFIX@#$PREFIX#g" "$HERE/systemd/$UNIT" | write_file "$R_UNITDIR/$UNIT" 0644 root root
-  sed "s#@PREFIX@#$PREFIX#g" "$HERE/systemd/$TUNIT" | write_file "$R_UNITDIR/$TUNIT" 0644 root root
+  # (no pipes into write_file: it must run in this shell to count changes)
+  write_file "$R_UNITDIR/$UNIT" 0644 root root < <(sed "s#@PREFIX@#$PREFIX#g" "$HERE/systemd/$UNIT")
+  write_file "$R_UNITDIR/$TUNIT" 0644 root root < <(sed "s#@PREFIX@#$PREFIX#g" "$HERE/systemd/$TUNIT")
   GRP=""
   if [[ "$GROUPS_OPT" == auto ]]; then
     if [[ $LIVE == 1 ]]; then for g in dialout docker; do getent group "$g" >/dev/null && GRP="$GRP $g"; done; fi
@@ -276,8 +278,9 @@ if [[ $NOSVC == 0 ]]; then
   GRP="${GRP# }"
   if [[ -n "$GRP" ]]; then
     for u in "$UNIT" "$TUNIT"; do
-      printf '# written by flexengine install.sh (--groups); see the unit header for what needs which group\n[Service]\nSupplementaryGroups=%s\n' "$GRP" \
-        | write_file "$R_UNITDIR/$u.d/10-groups.conf" 0644 root root
+      write_file "$R_UNITDIR/$u.d/10-groups.conf" 0644 root root < <(printf '%s\n' \
+        "# written by flexengine install.sh (--groups); see the unit header for what needs which group" \
+        "[Service]" "SupplementaryGroups=$GRP")
     done
   else ok "no supplementary groups (dialout/docker absent or --groups none)"; fi
   [[ $CHANGES -gt $before ]] && UNIT_CHANGED=1
@@ -298,7 +301,8 @@ state="not installed"; [[ $NOSVC == 1 ]] && state="skipped (--no-service)"
 if have_systemd && [[ -f "$R_UNITDIR/$UNIT" ]]; then
   state="$state ($(systemctl is-enabled flexengine 2>/dev/null || true), $(systemctl is-active flexengine 2>/dev/null || true))"
 fi
-summary "version" "$( [[ $DRY == 1 ]] && echo "$NEWVER (planned)" || venv_version)" \
+if [[ $DRY == 1 ]]; then SHOWVER="$NEWVER (planned)"; else SHOWVER="$(venv_version)"; fi
+summary "version" "$SHOWVER" \
         "venv" "$PREFIX ($( [[ $VENV_CHANGED == 1 ]] && echo "${OLDVER:+upgraded from $OLDVER}${OLDVER:-installed}" || echo unchanged))" \
         "config" "$ETC/engine.yaml" "data" "$STATE" "unit" "$state" "groups" "${GRP:-none}"
 if [[ $DRY == 0 && $NOSVC == 0 && $START == 0 ]]; then

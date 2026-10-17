@@ -1,0 +1,33 @@
+{
+ "cases": [
+  {
+   "body": "desired.json",
+   "expect": "accept",
+   "name": "good",
+   "signature": "ROPneuVJgmZCecQ1mMozzWmztHKiYMhrQeIZRaNuWJAsDcvNvyHhNmxWB9nUdxDLyb5R0XojE5ph+UTcHbs0Dw=="
+  },
+  {
+   "body": "desired-tampered.json",
+   "expect": "reject",
+   "name": "tampered",
+   "reasonCode": "FE-DS-001",
+   "signature": "ROPneuVJgmZCecQ1mMozzWmztHKiYMhrQeIZRaNuWJAsDcvNvyHhNmxWB9nUdxDLyb5R0XojE5ph+UTcHbs0Dw=="
+  },
+  {
+   "body": "desired.json",
+   "expect": "reject",
+   "name": "wrong-key",
+   "reasonCode": "FE-DS-001",
+   "signature": "YAENJ4uhD99w60BBeJAT4k2IjPH5DDyeEveyRFeekSU6T+aGjKBgR7hCcDyx9k7t1NYcKvL1XtEdyosD5+gLAQ=="
+  },
+  {
+   "body": "desired.json",
+   "expect": "reject",
+   "name": "missing",
+   "reasonCode": "FE-DS-001",
+   "signature": ""
+  }
+ ],
+ "cloudPublicKey": "BfHCoiq9wQ0OVJSiADFVNQ3qmosCN/iePy3lj0kn0dM=",
+ "etag": "\"sha256:f377e18d5b22873a2270e5429a78966cda0334f208d86e12060a718dea0704bd\""
+}

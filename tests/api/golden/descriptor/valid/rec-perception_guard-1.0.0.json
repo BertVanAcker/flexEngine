@@ -1,0 +1,118 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "health": {
+  "path": "/healthz",
+  "periodSeconds": 0.25,
+  "port": 8080,
+  "successThreshold": 2,
+  "timeoutSeconds": 8,
+  "type": "http"
+ },
+ "interfaceHash": "FLEX01_5af1c06aad3ed99f69f7795d4ffd44be58fd20d5e5aae57d49cf742df8e75698",
+ "kind": "FlexNodeDescriptor",
+ "language": "python",
+ "lifecycle": {
+  "profile": "managed",
+  "startup_timeout_ms": 20000
+ },
+ "module": "perception_guard",
+ "moduleVersion": "0.2.0",
+ "parameters": [
+  {
+   "default": 0.6,
+   "max": 1.0,
+   "min": 0.0,
+   "name": "score_threshold",
+   "type": "float32"
+  },
+  {
+   "default": "yolo11n-agri-2026.09",
+   "name": "model_id",
+   "type": "string"
+  },
+  {
+   "default": 50,
+   "max": 1000,
+   "min": 10,
+   "name": "heartbeat_period_ms",
+   "type": "uint32",
+   "unit": "ms"
+  },
+  {
+   "default": 1793,
+   "description": "Connection id 0x0701 put into every SafetyHeartbeat frame.",
+   "name": "channel_id",
+   "type": "uint16"
+  },
+  {
+   "default": true,
+   "description": "Send one frame with DETECTOR_OK = 0 before going fail-silent (FE-S3).",
+   "name": "last_gasp",
+   "type": "bool"
+  }
+ ],
+ "ports": [
+  {
+   "direction": "in",
+   "name": "image",
+   "type": "uc1/Image"
+  },
+  {
+   "direction": "out",
+   "name": "detections",
+   "type": "uc1/Detections"
+  },
+  {
+   "direction": "out",
+   "name": "heartbeat",
+   "type": "uc1/SafetyHeartbeat"
+  },
+  {
+   "direction": "out",
+   "name": "fleet_heartbeat",
+   "type": "uc1/Heartbeat"
+  },
+  {
+   "direction": "out",
+   "name": "stop_request",
+   "type": "uc1/StopRequest"
+  },
+  {
+   "direction": "in",
+   "name": "status",
+   "pattern": "rpc",
+   "request": "uc1/GuardStatusRequest",
+   "response": "uc1/GuardStatus"
+  }
+ ],
+ "profiles": [
+  "container"
+ ],
+ "releaseVersion": "1.0.0",
+ "requires": {
+  "runtimes": [
+   "python3",
+   "cuda"
+  ],
+  "target_classes": [
+   "T2"
+  ]
+ },
+ "resources": {
+  "accelerator": {
+   "kind": "gpu",
+   "min_tops": 20
+  },
+  "cpu_cores": 2,
+  "memory_mb": 1500
+ },
+ "restartPolicy": {
+  "maxRetries": 5,
+  "policy": "on-failure"
+ },
+ "safetyClass": "safety-relevant",
+ "safetyClassSource": "model (flex safety)",
+ "source": {
+  "model": "examples/models/uc1"
+ }
+}

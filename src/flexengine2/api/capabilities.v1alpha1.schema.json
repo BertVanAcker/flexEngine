@@ -3,7 +3,7 @@
   "$id": "https://flex.dev/schemas/capabilities.v1alpha1.schema.json",
   "title": "CP-2 DeviceCapabilities v1alpha1",
   "description": "Body of PUT /api/v1/devices/{deviceId}/capabilities, sent once after onboarding (core/reconciler.py Engine.capabilities()). Margo DeviceCapabilities shape (properties.*) plus the flex-owned x-flex block. flexCloud uses x-flex.drivers.<profile>.exclusive/maxDeployments for plan-time placement.",
-  "$comment": "Margo-owned objects accept unknown non-x- keys; the x-flex block and the driver fragments are closed (a new fragment field is an additive schema change). Semantic rule: properties.id equals the deviceId of the request path.",
+  "$comment": "Margo-owned objects accept unknown non-x- keys; the x-flex block and the driver fragments are closed (a new fragment field is an additive schema change). Each driver fragment's profile equals its key (const per fragment). Semantic rule (cloud side): properties.id equals the deviceId of the request path.",
   "type": "object",
   "required": [
     "apiVersion",
