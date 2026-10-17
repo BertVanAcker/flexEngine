@@ -37,9 +37,16 @@ PROCFS = sys.platform.startswith("linux")   # /proc/<pid>/{stat,environ,cwd}; el
 
 
 def proc_start(pid: int) -> str | None:
-    """Start time of a live, non-zombie process as `ps -o lstart=` prints it (C locale), None when there is none.
-    With the pid it identifies a process across engine restarts where /proc is missing: a reused pid has another
-    start time."""
+    """Start time of a live, non-zombie process, None when there is none: field 22 of /proc/<pid>/stat (clock ticks
+    since boot) on Linux, `ps -o lstart=` (C locale) elsewhere. It is the fork time, so exec does not change it; with
+    the pid it identifies one process across engine restarts (a reused pid has another start time)."""
+    if PROCFS:
+        try:
+            with open(f"/proc/{int(pid)}/stat") as f:
+                fields = f.read().rsplit(") ", 1)[-1].split()
+        except (OSError, ValueError):
+            return None
+        return None if not fields or fields[0] == "Z" else fields[19]
     try:
         r = subprocess.run(["ps", "-o", "stat=", "-o", "lstart=", "-p", str(int(pid))], capture_output=True, text=True,
                            timeout=5, env={"PATH": "/bin:/usr/bin", "LC_ALL": "C", "TZ": "UTC"})
@@ -98,7 +105,12 @@ class ProcessDriver(Driver):
             env = Path(f"/proc/{pid}/environ").read_bytes()
         except (FileNotFoundError, ProcessLookupError, PermissionError):
             return False
-        return f"FLEX_UNIT={u['marker']}".encode() in env.split(b"\0")
+        if f"FLEX_UNIT={u['marker']}".encode() in env.split(b"\0"):
+            return True
+        # no marker: another process under a reused pid -- or ours in the middle of an exec (e.g. a shell wrapper
+        # exec'ing the real program), when /proc/<pid>/environ reads empty or stale for a moment. The start time
+        # recorded at spawn tells them apart (exec keeps it); without one (older unit tables) the marker decides.
+        return bool(u.get("startTime")) and proc_start(pid) == u["startTime"]
 
     def _alive_ps(self, u: dict) -> bool:
         """No procfs: a child of this driver instance by its Popen (which also reaps it), an adopted process (engine
@@ -164,9 +176,9 @@ class ProcessDriver(Driver):
         log.close()
         u.pop("spawning", None)
         u.update(pid=p.pid, startedAt=time.time())
+        u["startTime"] = proc_start(p.pid)       # fork time: the same before and after exec
         if not PROCFS:
             self._children[p.pid] = p
-            u["startTime"] = proc_start(p.pid)   # fork time: the same before and after exec
         self._save()
         # until the child has exec'ed, /proc/<pid>/environ still shows the engine's environment (no FLEX_UNIT marker),
         # so _alive() would call a just-started workload dead; wait for the exec (bounded)

@@ -154,6 +154,35 @@ def test_process_driver_readopts_its_unit_after_an_engine_restart(tmp_path):
             pass
 
 
+def test_process_driver_unit_stays_alive_while_it_execs(tmp_path):
+    """A unit whose program execs (a shell wrapper exec'ing the real binary, here 300 times) never reads as dead:
+    for a moment during each exec Linux shows an empty /proc/<pid>/environ (no FLEX_UNIT marker), and liveness
+    falls back to the start time recorded at spawn. Before, health() and supervise() could see a running unit as
+    exited (supervise would then start a second copy)."""
+    from flexengine2.drivers.process import ProcessDriver
+
+    drv = ProcessDriver("pd-dev", tmp_path)
+    d = drv.root / "d1" / "abc"
+    d.mkdir(parents=True)
+    hop = d / "hop.sh"
+    hop.write_text('#!/bin/sh\nn=${1:-300}\n[ "$n" -gt 0 ] && exec "$0" $((n-1))\nexec sleep 30\n')
+    hop.chmod(0o755)
+    drv.units["d1"] = {"marker": drv.marker("d1"), "dir": str(d), "digest": "sha256:" + "0" * 64, "version": "1",
+                       "port": 1, "parameters": {}, "restart": {}, "restarts": 0, "failures": [],
+                       "argv": [str(hop)], "wantRunning": True, "pid": None}
+    drv._spawn("d1")
+    u = drv.units["d1"]
+    try:
+        end = time.monotonic() + 1.0
+        dead = 0
+        while time.monotonic() < end:
+            dead += not drv._alive(u)
+        assert dead == 0
+        assert ProcessDriver("pd-dev", tmp_path).status("d1").running    # adopted after a restart as well
+    finally:
+        drv.remove("d1")
+
+
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="/proc")
 def test_process_driver_adopts_a_spawning_orphan_and_kills_strangers(tmp_path):
     from flexengine2.drivers.process import ProcessDriver
