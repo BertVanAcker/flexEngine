@@ -10,6 +10,7 @@ port; worker from an image with a named volume), appdesc-native (application des
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -114,11 +115,13 @@ def test_import_publish_plan_apply_run(lab):
     st = cloud.wait(lambda: cloud.converged("edge1", expect), 240, f"edge1 -> {expect}")
     assert all(st[i]["health"] == "healthy" for i in expect)
 
-    # containers run by digest, with the baked compose environment; the api's own health endpoint is the probe
+    # containers run by digest (never a tag), with the baked compose environment; the api's own health endpoint is the
+    # probe. The digest is the release's manifest digest (<name>@sha256:..., containerd image store) or the image ID =
+    # config digest (sha256:..., graph-driver stores such as Docker < 29), see CliContainerDriver.ensure_image
     for i in ("flcpy-publisher", "api", "worker", "web"):
         out = subprocess.run(["docker", "inspect", "-f", "{{.State.Running}} {{.Config.Image}}", f"flex_edge1_{i}"],
                              capture_output=True, text=True, check=True).stdout.split()
-        assert out[0] == "true" and "@sha256:" in out[1], (i, out)
+        assert out[0] == "true" and re.fullmatch(r"(\S+@)?sha256:[0-9a-f]{64}", out[1]), (i, out)
     s, body = http_get(container_ip("flex_edge1_api"), 8080, "/greeting")
     assert (s, body) == (200, b"hello from compose")
     # EV-41: the compose port is published on the host, the worker's named volume exists and is mounted
