@@ -8,6 +8,8 @@ Static scan (AST) of the engine sources. A *sink* is a place whose string ends u
   * `return <text>` inside `preflight` / `failed`; `return False, <text>` anywhere
   * assignments to `gate_failure`, `why`, `reason` (incl. tuple assignments) in the reconciler
   * `reasons.append(<text>)` (artefact store: signature check details)
+  * `super().__init__(<text>)` of cloud.client.Rejected (a 4xx from the cloud while fetching artefacts)
+  * `self.log(<text>)` in a block of accept_manifest that ends with `return False`: desired-state refusals, logged only (no status report today)
 
 Each found text is rendered as a template: f-string fields become `{}`; an `a if c else b` yields both branches.
 Only literal texts are templates; a bare variable just forwards a text found elsewhere.
@@ -24,11 +26,12 @@ import sys
 from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[2] / "src" / "flexengine2"
-FILES = ["core/reconciler.py", "artefacts/store.py", "drivers/base.py", "drivers/container.py", "drivers/process.py",
+FILES = ["core/reconciler.py", "artefacts/store.py", "cloud/client.py", "drivers/base.py", "drivers/container.py", "drivers/process.py",
          "drivers/applab/driver.py", "drivers/applab/ard.py", "drivers/mcu/driver.py", "drivers/mcu/flxm.py",
          "drivers/mcu/link.py", "drivers/plc/verify.py"]
-RAISES = {"VerificationError", "DriverError", "ReleaseError", "SmpError", "ValueError"}
+RAISES = {"VerificationError", "DriverError", "ReleaseError", "SmpError", "ValueError", "RuntimeError"}
 ASSIGN_NAMES = {"gate_failure", "why", "reason"}
+LOG_FUNCS = {"accept_manifest"}   # desired-state refusals are logged (and counted), not reported
 
 
 def _texts(node) -> list[str]:
@@ -79,6 +82,12 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
     class V(ast.NodeVisitor):
         def __init__(self):
             self.func: list[str] = []
+            self.cls: list[str] = []
+
+        def visit_ClassDef(self, n):
+            self.cls.append(n.name)
+            self.generic_visit(n)
+            self.cls.pop()
 
         def visit_FunctionDef(self, n):
             self.func.append(n.name)
@@ -89,6 +98,10 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
             for kw in n.keywords:
                 if kw.arg == "reason":
                     add(kw.value, n.lineno)
+            if _name(n.func) == "__init__" and isinstance(n.func, ast.Attribute) and isinstance(n.func.value, ast.Call) \
+                    and _name(n.func.value.func) == "super" and self.cls and self.cls[-1] == "Rejected":
+                for a in n.args[:1]:
+                    add(a, n.lineno)
             if _name(n.func) == "append" and isinstance(n.func, ast.Attribute) and _name(n.func.value) == "reasons":
                 for a in n.args:
                     add(a, n.lineno)
@@ -99,6 +112,18 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
                 if isinstance(k, ast.Constant) and k.value == "reason":
                     add(v, n.lineno)
             self.generic_visit(n)
+
+        def generic_visit(self, n):
+            # `self.log(<text>) ... return False` inside accept_manifest: a refused desired state
+            for name in ("body", "orelse"):
+                block = getattr(n, name, None)
+                if isinstance(block, list) and self.func and self.func[-1] in LOG_FUNCS:
+                    last = block[-1] if block else None
+                    if isinstance(last, ast.Return) and isinstance(last.value, ast.Constant) and last.value.value is False:
+                        for a in block:
+                            if isinstance(a, ast.Expr) and isinstance(a.value, ast.Call) and _name(a.value.func) == "log":
+                                add(a.value.args[0], a.lineno)
+            super().generic_visit(n)
 
         def visit_Raise(self, n):
             if isinstance(n.exc, ast.Call) and _name(n.exc.func) in RAISES and n.exc.args:
