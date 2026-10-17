@@ -122,9 +122,10 @@ def reason_codes() -> dict:
 
 
 def reason_code(text: str, field: str | None = None) -> dict | None:
-    """The registry entry whose pattern matches a reported text (most specific = fewest wildcards first)."""
+    """The registry entry whose pattern matches a reported text; when several match, the most specific one (most
+    literal characters in its template) wins."""
     entries = [e for e in reason_codes()["codes"] if field is None or e["field"] == field]
-    for e in sorted(entries, key=lambda e: (e["template"].count("{"), -len(e["template"]))):
+    for e in sorted(entries, key=lambda e: -len(re.sub(r"\{[^{}]*\}", "", e["template"]))):
         if re.fullmatch(e["pattern"], text, flags=re.S):
             return e
     return None

@@ -15,9 +15,33 @@
     "deployment": {"type": "string", "minLength": 1,
                    "description": "Deployment id in `model` the MCU relay maps (e.g. `d_pick_lab`). Required when a relay is enabled and does not set `relay.deployment`."},
     "devices": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/device"},
-                "description": "The devices this host runs one engine each for (one host process, several device engines)."}
+                "description": "The devices this host runs one engine each for (one host process, several device engines)."},
+    "local": {"$ref": "#/$defs/local"}
   },
   "$defs": {
+    "local": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Local operator API (CP-7, EV-07): HTTP over a Unix socket (every operation) and an optional read-only TCP bind with a bearer token (GET only). The CLI (`flexengine status|deployments|logs|history|bundle import`) uses the socket and falls back to reading the data directories when the engine is not running.",
+      "properties": {
+        "socket": {"type": "string", "minLength": 1, "default": "/run/flexengine/api.sock",
+                   "description": "Path of the API Unix socket (created mode 0660; its directory is created when missing)."},
+        "group": {"type": "string", "minLength": 1,
+                  "description": "Group that owns the socket (e.g. `flex`), so its members can use the API and the CLI. Unset = the engine's primary group."},
+        "tcp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bind", "tokenFile"],
+          "description": "Optional read-only TCP bind for the desk runbooks: GET operations only, each with `Authorization: Bearer <token>`. Unset = no TCP listener.",
+          "properties": {
+            "bind": {"type": "string", "pattern": "^(\\[[0-9A-Fa-f:.]+\\]|[A-Za-z0-9.-]+):[0-9]{1,5}$",
+                     "description": "`host:port` to listen on, e.g. `127.0.0.1:8781` (`[::1]:8781` for IPv6)."},
+            "tokenFile": {"type": "string", "minLength": 1,
+                          "description": "File holding the bearer token (mode 0600, owned by the engine user; read once at start)."}
+          }
+        }
+      }
+    },
     "b64key": {"type": "string", "pattern": "^[A-Za-z0-9+/]{43}=$",
                "description": "Ed25519 public key, standard base64 of the 32 raw bytes."},
     "endpoint": {"type": ["string", "null"], "pattern": "^(tcp|udp|tls|quic|ws|unixsock-stream)/.+$",

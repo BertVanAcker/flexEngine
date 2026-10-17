@@ -96,3 +96,9 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `devices[].relay.model` | string |  |  | flexModel workspace (default: top-level `model`). |
 | `devices[].relay.deployment` | string |  |  | Deployment id (default: top-level `deployment`). |
 | `devices[].relay.modelDevice` | string |  |  | Device name in the model (default: the device's `modelDevice`). |
+| `local` | object |  |  | Local operator API (CP-7, EV-07): HTTP over a Unix socket (every operation) and an optional read-only TCP bind with a bearer token (GET only). The CLI (`flexengine status\|deployments\|logs\|history\|bundle import`) uses the socket and falls back to reading the data directories when the engine is not running. |
+| `local.socket` | string | `"/run/flexengine/api.sock"` |  | Path of the API Unix socket (created mode 0660; its directory is created when missing). |
+| `local.group` | string |  |  | Group that owns the socket (e.g. `flex`), so its members can use the API and the CLI. Unset = the engine's primary group. |
+| `local.tcp` | object |  |  | Optional read-only TCP bind for the desk runbooks: GET operations only, each with `Authorization: Bearer <token>`. Unset = no TCP listener. |
+| `local.tcp.bind` | string |  | yes | `host:port` to listen on, e.g. `127.0.0.1:8781` (`[::1]:8781` for IPv6). |
+| `local.tcp.tokenFile` | string |  | yes | File holding the bearer token (mode 0600, owned by the engine user; read once at start). |

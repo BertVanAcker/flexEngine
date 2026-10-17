@@ -375,7 +375,8 @@
   "base": "golden:capabilities/legacy-prototype.json",
   "set": {},
   "delete": [],
-  "error": "$.x-flex.engine.impl: 'flexengine2' was expected"
+  "error": "$.x-flex.engine.impl: 'flexengine2' was expected",
+  "baseInvalid": true
  },
  {
   "schema": "capabilities",

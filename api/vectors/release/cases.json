@@ -70,15 +70,15 @@
    "safetyClass": "safety-relevant"
   },
   {
-   "digest": "sha256:90c94f4c59d1ca5c1bfe7b23a36752336265c40e61418cfacaaa01ed3e5db466",
+   "digest": "sha256:64ef6f194369739b68f7c20ce3ab817a836835e8c246e358b5ba95e18a30ea11",
    "expect": "reject",
    "name": "safety-class-mismatch",
    "profile": "native",
    "reasonCode": "FE-ART-SAF-002",
    "reasonPattern": "^safety class mismatch: ",
-   "repository": "flexnodes/vec_native",
-   "safetyClass": "none",
-   "safetyClassOverride": "safety-relevant"
+   "repository": "flexnodes/vec_safety",
+   "safetyClass": "safety-relevant",
+   "safetyClassOverride": "none"
   }
  ],
  "trustedReleaseKeys": [

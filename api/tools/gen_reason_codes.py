@@ -169,7 +169,7 @@ def build() -> dict:
                    "log": "not reported; engine log only"},
         "rules": "Codes are stable (never reused or renumbered). The engine reports text only in v1alpha1; a "
                  "future status field `reasonCode` (additive) will carry the code. A text matches the entry whose "
-                 "pattern fullmatches it; when several do, the one with the fewest fields wins "
+                 "pattern fullmatches it; when several do, the most specific one (most literal characters) wins "
                  "(flexengine2.contracts.reason_code).",
         "codes": codes,
     }

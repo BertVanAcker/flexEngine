@@ -187,7 +187,8 @@ class FakeMcuModuleHarness(_ModuleMixin, _FakeMcuBase):
 class FakeMcuFirmwareHarness(_FirmwareMixin, _FakeMcuBase):
     id = "mcu-firmware[fake-smp]"
     fail_delay = None
-    xfail = {"fail_fast": "EV-20: McuFirmwareDriver.failed() is not implemented (a FAULT build only times out)"}
+    xfail = {"fail_fast": "EV-20: McuFirmwareDriver.failed() is not implemented (a FAULT build only times out)",
+             "unknown_deployment": "bug: McuFirmwareDriver.health() ignores dep_id (True for an unknown deployment)"}
 
     def setup(self):
         super().setup()

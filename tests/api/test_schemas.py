@@ -14,7 +14,7 @@ import yaml
 
 from flexengine2 import contracts
 
-from .conftest import GOLDEN, REPO, SRC, load_ref
+from _api_helpers import GOLDEN, REPO, SRC, load_ref
 
 API = contracts.api_dir()
 
@@ -75,7 +75,8 @@ INVALID = json.loads((GOLDEN / "invalid.json").read_text())
 @pytest.mark.parametrize("case", INVALID, ids=[f"{c['schema']}:{c['error'][:40]}" for c in INVALID])
 def test_golden_invalid_rejected_with_expected_error(case):
     doc = copy.deepcopy(load_ref(case["base"]))
-    contracts.validate(case["schema"], doc)  # the base is valid
+    if not case.get("baseInvalid"):
+        contracts.validate(case["schema"], doc)  # the base is valid
     for ptr, value in case["set"].items():
         _pointer_set(doc, ptr, value)
     for ptr in case["delete"]:
@@ -163,16 +164,20 @@ def test_southbound_keeps_every_p2_path_and_fixes_driver_enum():
 
 
 def test_reference_fake_routes_are_in_the_southbound_spec():
-    """Every southbound route the reference fake (testing/fakecloud.py) serves is a path of the spec."""
+    """Every route the reference fake (testing/fakecloud.py) serves is a path of the spec."""
     src = (SRC / "testing" / "fakecloud.py").read_text()
     spec = _openapi("openapi-southbound.yaml")["paths"]
-    regexes = [re.sub(r"\{[^}]+\}", "X", p) for p in spec]
-    found = re.findall(r'_match\(r"(/[^"]+)"', src) + re.findall(r'path == "(/api/v1/[^"]+)"', src)
-    assert len(found) >= 10
-    for r in found:
-        shape = re.sub(r"\([^)]*\)", "X", r).replace("XX", "X")
-        shape = shape.replace("/v2/X/X/X", "/v2/X/manifests/X")
-        assert any(shape == s or re.fullmatch(re.sub(r"X", "[^/]+", s), shape.replace("X", "a")) for s in regexes), r
+    samples = {r"([\w.-]+)": "dev-1.child", r"(.+)": "flexnodes/mod", r"(manifests|blobs)": "manifests",
+               r"(sha256:[0-9a-f]{64})": "sha256:" + "0" * 64}
+    routes = re.findall(r'_match\(r"(/[^"]+)"', src) + re.findall(r'path == "(/[^"]+)"', src)
+    assert len(routes) >= 15
+    templates = [re.sub(r"\\\{repository\\\}", ".+", re.sub(r"\\\{(?!repository)[^}]+\\\}", "[^/]+", re.escape(t)))
+                 for t in spec]
+    for r in routes:
+        path = r
+        for g, v in samples.items():
+            path = path.replace(g, v)
+        assert any(re.fullmatch(t, path) for t in templates), (r, path)
 
 
 def test_status_schema_lists_every_field_the_engine_reports():

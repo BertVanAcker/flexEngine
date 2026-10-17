@@ -131,26 +131,31 @@ class PlcShmHarness(_PlcBase):
         return {"via": "shm", "path": str(self.tmp / "shm" / "no-rt-side")}
 
 
+_ADS = {}
+
+
 class PlcAdsHarness(_PlcBase):
+    """One pyads test server per session (AMS TCP port 48898 is fixed); each test resets its hash."""
     id = "plc-verify[ads]"
     via = "ads"
 
     def setup(self):
         super().setup()
-        s = socket.socket()
-        try:
-            s.bind(("127.0.0.1", 48898))
-        except OSError:
-            pytest.skip("AMS TCP port 48898 is in use (another ADS stand-in runs); the ADS reader needs it")
-        finally:
-            s.close()
-        self.plc = _load("ads_plc").AdsPlc(GOOD).start()
+        if "plc" not in _ADS:
+            s = socket.socket()
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                s.bind(("127.0.0.1", 48898))
+            except OSError:
+                pytest.skip("AMS TCP port 48898 is in use (another ADS stand-in runs); the ADS reader needs it")
+            finally:
+                s.close()
+            _ADS["plc"] = _load("ads_plc").AdsPlc(GOOD).start()
+        self.plc = _ADS["plc"]
+        self.plc.hash, self.plc.online = GOOD, True
         self.conn = {"via": "ads", "amsNetId": "127.0.0.1.1.1", "ip": "127.0.0.1", "amsPort": 851,
                      "localNetId": "127.0.0.1.1.2", "timeout": 1.0}
 
     def down_conn(self):
         return {"via": "ads", "amsNetId": "127.0.0.9.1.1", "ip": "127.0.0.9", "amsPort": 851,
                 "localNetId": "127.0.0.1.1.2", "timeout": 0.5}
-
-    def cleanup(self):
-        self.plc.stop()

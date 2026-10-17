@@ -205,8 +205,9 @@ def main(out: Path = OUT) -> Path:
             case("safety-two-approvers", safe2, "accept"),
             case("safety-single-approver", safe1, "reject", "FE-ART-SAF-001",
                  "^safety-relevant release lacks a two-person approval in its signed payload$"),
-            case("safety-class-mismatch", good, "reject", "FE-ART-SAF-002", "^safety class mismatch: ",
-                 safetyClassOverride="safety-relevant"),
+            # the desired state downgrades a safety-relevant release to none (would skip the FE-S6 interlock)
+            case("safety-class-mismatch", safe2, "reject", "FE-ART-SAF-002", "^safety class mismatch: ",
+                 safetyClassOverride="none"),
         ]}))
 
     # ---- desired state + manifest signature (CP-1 + CP-4) ----
