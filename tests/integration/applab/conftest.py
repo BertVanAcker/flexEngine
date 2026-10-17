@@ -79,8 +79,8 @@ def env(tmp_path, keys, registry, board):
 
     e.engine = engine
     yield e
-    for eng in engines:
-        eng.kill()
+    for eng in engines:   # graceful stop: a clean exit also flushes the engine's coverage data (run_tests.sh coverage)
+        eng.stop()
     cloud.stop()
     for eng in engines:  # the engine under test was flexengine2 only
         if eng.host.snapshots or eng.host.modules_file.exists():

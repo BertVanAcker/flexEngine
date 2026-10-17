@@ -1,0 +1,184 @@
+{
+  "targets": {
+    "core": 90.0,
+    "drivers": 80.0,
+    "overall": 85.0,
+    "branch": 80.0
+  },
+  "core": {
+    "statements": 2335,
+    "covered": 2204,
+    "lines": 94.4,
+    "branches": 826,
+    "coveredBranches": 742,
+    "branch": 89.8
+  },
+  "services": {
+    "statements": 2264,
+    "covered": 1900,
+    "lines": 83.9,
+    "branches": 736,
+    "coveredBranches": 573,
+    "branch": 77.9
+  },
+  "overall": {
+    "statements": 8371,
+    "covered": 7499,
+    "lines": 89.6,
+    "branches": 2652,
+    "coveredBranches": 2202,
+    "branch": 83.0
+  },
+  "drivers": {
+    "spi-base": {
+      "statements": 76,
+      "covered": 72,
+      "lines": 94.7,
+      "branches": 6,
+      "coveredBranches": 5,
+      "branch": 83.3,
+      "files": [
+        "drivers/base.py"
+      ]
+    },
+    "container": {
+      "statements": 418,
+      "covered": 396,
+      "lines": 94.7,
+      "branches": 152,
+      "coveredBranches": 131,
+      "branch": 86.2,
+      "files": [
+        "drivers/container.py"
+      ]
+    },
+    "native-process": {
+      "statements": 485,
+      "covered": 425,
+      "lines": 87.6,
+      "branches": 168,
+      "coveredBranches": 141,
+      "branch": 83.9,
+      "files": [
+        "drivers/native/pyenv.py",
+        "drivers/process.py"
+      ]
+    },
+    "native-systemd": {
+      "statements": 401,
+      "covered": 354,
+      "lines": 88.3,
+      "branches": 118,
+      "coveredBranches": 95,
+      "branch": 80.5,
+      "files": [
+        "drivers/native/systemd.py"
+      ]
+    },
+    "applab": {
+      "statements": 367,
+      "covered": 333,
+      "lines": 90.7,
+      "branches": 128,
+      "coveredBranches": 104,
+      "branch": 81.2,
+      "files": [
+        "drivers/applab/ard.py",
+        "drivers/applab/driver.py",
+        "drivers/applab/rpc.py"
+      ]
+    },
+    "mcu": {
+      "statements": 669,
+      "covered": 608,
+      "lines": 90.9,
+      "branches": 166,
+      "coveredBranches": 125,
+      "branch": 75.3,
+      "files": [
+        "drivers/mcu/driver.py",
+        "drivers/mcu/flxm.py",
+        "drivers/mcu/link.py"
+      ]
+    },
+    "plc-verify": {
+      "statements": 212,
+      "covered": 199,
+      "lines": 93.9,
+      "branches": 42,
+      "coveredBranches": 34,
+      "branch": 81.0,
+      "files": [
+        "drivers/plc/verify.py"
+      ]
+    },
+    "os-rauc": {
+      "statements": 416,
+      "covered": 358,
+      "lines": 86.1,
+      "branches": 108,
+      "coveredBranches": 89,
+      "branch": 82.4,
+      "files": [
+        "drivers/os_rauc.py"
+      ]
+    },
+    "arduino-ota": {
+      "statements": 727,
+      "covered": 649,
+      "lines": 89.3,
+      "branches": 202,
+      "coveredBranches": 163,
+      "branch": 80.7,
+      "files": [
+        "drivers/arduino_ota.py",
+        "drivers/arduino_wire.py"
+      ]
+    }
+  },
+  "branch": {
+    "core/reconciler.py": {
+      "statements": 779,
+      "covered": 746,
+      "lines": 95.8,
+      "branches": 216,
+      "coveredBranches": 199,
+      "branch": 92.1,
+      "files": [
+        "core/reconciler.py"
+      ]
+    },
+    "artefacts/store.py": {
+      "statements": 197,
+      "covered": 179,
+      "lines": 90.9,
+      "branches": 96,
+      "coveredBranches": 79,
+      "branch": 82.3,
+      "files": [
+        "artefacts/store.py"
+      ]
+    }
+  },
+  "misses": [],
+  "met": true,
+  "measured": {
+    "date": "2026-10-17",
+    "base": "52e7172 + the alpha-exit-docs-ci changes (this commit)",
+    "tool": "coverage.py 7.16.2, branch=True, engine subprocesses included (patch = subprocess, flexengine/.coveragerc)",
+    "runs": [
+      "run_tests.sh coverage: unit, contract (push), api, security, property (push), integration (all non-docker-tier cases)",
+      "contract -m 'docker or podman or qemu' (real docker, podman, systemd, rauc, QEMU MCU) and integration/rauc + integration/arduino_ota -m docker",
+      "integration/applab again after its teardown stops engines with SIGTERM instead of SIGKILL (a killed engine writes no coverage data)",
+      "the new tests of this change (tests/unit/test_os_rauc_paths.py, docs and CP-reference tests)"
+    ],
+    "combined": "coverage combine --append over all runs (union of covered lines)",
+    "notStarted": "workloads inside containers (packaging, real-rauc engine paths that run in the container) are not measured"
+  },
+  "before": {
+    "applab": 68.7,
+    "os-rauc": 77.2,
+    "core": 94.3,
+    "overall": 88.1
+  }
+}
