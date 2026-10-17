@@ -66,7 +66,7 @@
           "propertyNames": {
             "anyOf": [
               {
-                "pattern": "^dev\\.flex\\.(profile|platform|imageDigest|imageRef|imageTag|releaseName|contractHash|board|arch|floatAbi|moduleAbi|cpuProfile|ifaceHash|verify|compatible)$"
+                "pattern": "^dev\\.flex\\.(profile|platform|imageDigest|imageRef|imageTag|releaseName|contractHash|board|arch|pyabi|floatAbi|moduleAbi|cpuProfile|ifaceHash|verify|compatible)$"
               },
               {
                 "not": {
@@ -92,8 +92,22 @@
             "dev.flex.arch": {
               "enum": [
                 "armv7m",
-                "armv8m.main"
-              ]
+                "armv8m.main",
+                "x86_64",
+                "aarch64",
+                "armv7l",
+                "armv6l",
+                "i686",
+                "riscv64",
+                "ppc64le",
+                "s390x"
+              ],
+              "description": "mcu-module: the module's CPU profile (armv7m, armv8m.main). native (EV-37): the CPU the payload is built for, normalised `uname -m` (x86_64, aarch64, armv7l ...); absent = any CPU. The engine picks the layer that fits the driver's platform(); preflight refuses a layer for another CPU."
+            },
+            "dev.flex.pyabi": {
+              "type": "string",
+              "pattern": "^(cp|pp)[0-9]{2,3}t?$",
+              "description": "native (EV-36/37): the Python ABI of the payload's wheels/ (cp312, cp313t, pp310 ...) = the device interpreter's; absent = any interpreter (no wheels, or pure-Python wheels only)."
             },
             "dev.flex.floatAbi": {
               "enum": [

@@ -16,6 +16,10 @@ Design (docs/flexengine-v2-plan.md §5 EV-19):
   unpacks again. ``ExecStart`` is ``<engine python> app.py`` or the ``ExecStart`` list of the payload's ``unit.json``
   (``{python}`` = the engine's interpreter; a relative program path is resolved in the payload tree). The
   workload's writable directory is ``<dataDir>/native/<dep>/data`` (``FLEX_DATA_DIR``).
+* **Own Python dependencies (EV-36)**: a payload with ``requirements.lock`` + ``wheels/`` gets a venv per digest in
+  its unpacked tree (``pyenv.ensure_venv``: offline, pinned, hash-checked); ``{python}`` is then the venv's python.
+  ``platform()`` (EV-37) = ``{dev.flex.arch, dev.flex.pyabi}`` of the payload interpreter (``python``, default the
+  engine's); ``preflight`` refuses layers for another CPU/Python and wheels that do not fit.
 * **Restart policy** from the signed descriptor's ``restartPolicy``: ``Restart=`` on-failure | always | no (never),
   ``RestartSec=restartSec`` (default 0.5 s), ``StartLimitIntervalSec=60`` and ``StartLimitBurst=maxRetries + 1``
   (the first start counts: ``maxRetries`` automatic restarts within 60 s, the next failure is ``start-limit-hit``).
@@ -44,6 +48,7 @@ import tarfile
 from pathlib import Path
 
 from flexengine2.drivers.base import Driver, DriverError, Observed, Workload, http_probe, wait_until
+from flexengine2.drivers.native import pyenv
 from flexengine2.util import atomic_write_bytes, atomic_write_json, read_json
 
 __all__ = ["SystemdDriver", "unit_name", "sanitize"]
@@ -122,7 +127,7 @@ class SystemdDriver(Driver):
 
     def __init__(self, device_id: str, data_dir: Path, *, scope: str = "system", unit_dir: str | Path | None = None,
                  user: str | None = None, systemctl: str = "systemctl", python: str | None = None,
-                 timeout: float = 30.0):
+                 timeout: float = 30.0, venv_timeout: float = 600.0):
         if scope not in ("system", "user"):
             raise ValueError(f"scope must be system or user, got {scope!r}")
         self.device = device_id
@@ -131,6 +136,7 @@ class SystemdDriver(Driver):
         self.systemctl = systemctl
         self.python = python or sys.executable
         self.timeout = float(timeout)
+        self.venv_timeout = float(venv_timeout)
         if unit_dir is None:
             if scope == "system":
                 unit_dir = SYSTEM_UNIT_DIRS[0]
@@ -254,7 +260,8 @@ class SystemdDriver(Driver):
         uj = workdir / "unit.json"
         names = {p.name for p in workdir.iterdir()}
         argv = exec_argv(names, uj.read_bytes() if uj.exists() else None)
-        argv = [a.replace("{python}", self.python) for a in argv]
+        py = pyenv.payload_python(workdir, self.python)
+        argv = [a.replace("{python}", py) for a in argv]
         if "/" in argv[0] and not os.path.isabs(argv[0]):
             argv[0] = str(workdir / argv[0])
         return argv
@@ -332,6 +339,7 @@ class SystemdDriver(Driver):
         old = self._meta(desired.dep_id)
         props = self._show(unit)                         # executor reachable? (DriverError otherwise)
         workdir = self._unpack(desired)
+        pyenv.ensure_venv(workdir, self.python, self.venv_timeout)   # EV-36: no-op without requirements.lock
         data = self.dep_dir(desired.dep_id) / "data"
         data.mkdir(parents=True, exist_ok=True)
         user = self._unit_user()
@@ -410,6 +418,8 @@ class SystemdDriver(Driver):
                 return False
         except DriverError:
             return False
+        if (probe or {}).get("type") == "process":       # no endpoint (e.g. a flexCommunicator node): active
+            return True
         return http_probe("127.0.0.1", int(meta["port"]), (probe or {}).get("path", "/healthz"))
 
     def failed(self, dep_id):
@@ -490,11 +500,25 @@ class SystemdDriver(Driver):
         pol = ((getattr(release, "descriptor", None) or {}).get("restartPolicy") or {}).get("policy")
         if pol is not None and pol not in RESTART:
             return f"restartPolicy.policy {pol!r} is not supported by the systemd driver (on-failure, always, never)"
+        info = pyenv.interpreter_info(self.python)      # DriverError: interpreter unusable -> deferred
+        try:
+            pyenv.check_tar(path, getattr(release, "payload_annotations", None), info)
+        except DriverError as e:
+            return str(e)
         return None
+
+    def platform(self):
+        """EV-37: {dev.flex.arch, dev.flex.pyabi} of the payload interpreter (layer selection)."""
+        return pyenv.platform_of(pyenv.interpreter_info(self.python))
 
     def capabilities(self):
         out = {"profile": self.profile, "driver": self.name, "executor": f"systemd ({self.scope} manager)",
-               "python": sys.version.split()[0], "scope": self.scope, "unitDir": str(self.unit_dir)}
+               "python": sys.version.split()[0], "scope": self.scope, "unitDir": str(self.unit_dir),
+               "payloadPython": self.python}
+        try:
+            out["platform"] = self.platform()
+        except DriverError:
+            pass                                          # interpreter not runnable: no platform facts
         try:
             if not (shutil.which(self.systemctl) or os.path.isfile(self.systemctl)):
                 out.update(available=False, detail=f"{self.systemctl} not found")

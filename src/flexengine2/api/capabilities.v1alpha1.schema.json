@@ -416,6 +416,17 @@
         "python": {
           "type": "string"
         },
+        "platform": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "EV-37: Driver.platform() of the payload interpreter, {dev.flex.arch, dev.flex.pyabi} (e.g. x86_64, cp312); the engine picks the native layer whose annotations fit it. Omitted when the interpreter cannot be run."
+        },
+        "payloadPython": {
+          "type": "string",
+          "description": "EV-36: the interpreter payload venvs are created with (drivers.native.python; default the engine's)."
+        },
         "systemd": {
           "type": "string",
           "description": "driver systemd (EV-19): the service manager's version (systemctl show -p Version); omitted when it does not answer."

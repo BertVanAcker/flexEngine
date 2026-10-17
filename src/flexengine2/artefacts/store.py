@@ -142,9 +142,16 @@ class ArtefactStore:
                                     f"{descriptor.get('safetyClass', 'none')!r}, desired state says {safety_class!r}")
         layers = [l for l in man["layers"] if (l.get("annotations") or {}).get("dev.flex.profile") == profile]
         if platform:
-            # multi-platform release (D-PICK: one FLXM layer per MCU profile): pick the layer whose platform
-            # annotations match the executor; a single-platform release without annotations still fits
-            fit = [l for l in layers if all((l.get("annotations") or {}).get(k) == v for k, v in platform.items())]
+            # multi-platform release (D-PICK: one FLXM layer per MCU profile; EV-37: one native layer per CPU /
+            # Python): pick the layer whose platform annotations do not contradict the executor's (an absent key
+            # fits any value: a Rust binary layer names only dev.flex.arch), the most specific one first; a
+            # single-platform release without annotations still fits
+            def _score(l):
+                ann = l.get("annotations") or {}
+                if any(k in ann and ann[k] != v for k, v in platform.items()):
+                    return -1
+                return sum(1 for k in platform if k in ann)
+            fit = sorted((l for l in layers if _score(l) >= 0), key=_score, reverse=True)
             if not fit and len(layers) > 1:
                 have = [{k: (l.get("annotations") or {}).get(k) for k in platform} for l in layers]
                 raise VerificationError(f"release has no {profile!r} payload for platform {platform} (has {have})")

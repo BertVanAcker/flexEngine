@@ -154,6 +154,8 @@ CASES = [
     ("devices[].drivers.native.scope", "std", NAT, {"runtime": "systemd", "scope": "user"}, {"scope": "session"}),
     ("devices[].drivers.native.unitDir", "std", NAT, {"unitDir": "/etc/systemd/system"}, {"unitDir": ""}),
     ("devices[].drivers.native.user", "std", NAT, {"user": "flex"}, {"user": "Not A User"}),
+    # EV-36/37: payload interpreter (venvs, platform())
+    ("devices[].drivers.native.python", "std", NAT, {"runtime": "process", "python": "/usr/bin/python3.12"}, {"python": ""}),
     ("devices[].drivers.plc-verify", "std", f"{D0}/drivers/plc-verify", {}, []),
     ("devices[].drivers.plc-verify.plcs", "std", f"{D0}/drivers/plc-verify/plcs", {}, []),
     ("devices[].drivers.plc-verify.plcs.<name>.via", "std", f"{SIM}/via", "shm", "opcua"),
@@ -290,7 +292,7 @@ def test_unknown_key_message_lists_allowed_keys():
     errs = cl.validate(put(base(), "/cloud/apiURL", "http://x"))
     assert errs[0]["message"].startswith("unknown key 'apiURL' (allowed: allowPlainHttp, allowSystemTrust, apiUrl, ")
     errs = cl.validate(put(base(), NAT, {"runtme": "systemd"}))
-    assert errs == [{"path": f"{NAT}/runtme", "message": "unknown key 'runtme' (allowed: runtime, scope, unitDir, user)"}]
+    assert errs == [{"path": f"{NAT}/runtme", "message": "unknown key 'runtme' (allowed: python, runtime, scope, unitDir, user)"}]
 
 
 def test_native_systemd_user_needs_system_scope():

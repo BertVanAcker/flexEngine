@@ -937,9 +937,10 @@ def build_drivers(cfg: dict, data_dir: Path) -> dict[str, Driver]:
         from flexengine2.drivers.native.systemd import SystemdDriver
 
         out["native"] = SystemdDriver(cfg["deviceId"], data_dir, scope=nat.get("scope", "system"),
-                                      unit_dir=nat.get("unitDir"), user=nat.get("user"))
+                                      unit_dir=nat.get("unitDir"), user=nat.get("user"), python=nat.get("python"))
     elif nat:
-        out["native"] = ProcessDriver(cfg["deviceId"], data_dir)
+        out["native"] = ProcessDriver(cfg["deviceId"], data_dir,
+                                      python=nat.get("python") if isinstance(nat, dict) else None)  # EV-36
     dr = cfg.get("drivers", {}).get("os-rauc")
     if dr:
         from flexengine2.drivers.os_rauc import OsRaucDriver
