@@ -97,6 +97,7 @@ CASES = [
     ("cloud.tlsServerName", "std", "/cloud/tlsServerName", "cloud.lab", 1),
     ("cloud.allowSystemTrust", "std", "/cloud/allowSystemTrust", True, "yes"),
     ("cloud.allowPlainHttp", "std", "/cloud/allowPlainHttp", True, "yes"),
+    ("cloud.capsEveryTicks", "std", "/cloud/capsEveryTicks", 10, 0),
     ("cloud.fixPermissions", "std", "/cloud/fixPermissions", False, 1),
     ("cloud.outboxMax", "std", "/cloud/outboxMax", 50, 0),
     ("logFormat", "std", "/logFormat", "text", "color"),
@@ -603,7 +604,7 @@ def test_cli_config_check(tmp_path, capsys):
     badp = write(tmp_path, json.dumps(bad), "bad.json")
     assert cli.main(["config", "check", str(badp)]) == 1
     out = capsys.readouterr().out.strip().splitlines()
-    assert out == ["/cloud/x: unknown key 'x' (allowed: allowPlainHttp, allowSystemTrust, apiUrl, backoff, caFile, cloudPublicKey, "
+    assert out == ["/cloud/x: unknown key 'x' (allowed: allowPlainHttp, allowSystemTrust, apiUrl, backoff, caFile, capsEveryTicks, cloudPublicKey, "
                    "fixPermissions, healthEveryTicks, httpTimeout, outboxMax, pollInterval, releaseKeyFiles, "
                    "releasePublicKeys, safeStateFile, stackInfo, tlsServerName)",
                    "/devices/0/drivers/container/runtime: must be one of docker, podman, ankaios; got 'quadlet'"]

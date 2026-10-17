@@ -26,6 +26,7 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `cloud.caFile` | string |  |  | PEM file of the (lab) CA that an `https://` apiUrl must chain to; the only trusted CA (EV-06). Required for https unless `allowSystemTrust`. |
 | `cloud.tlsServerName` | string |  |  | Host name checked in the cloud's TLS certificate instead of the apiUrl host (e.g. `cloud.lab` for an IP-addressed lab host). |
 | `cloud.allowSystemTrust` | boolean | `false` |  | `true` lets an https apiUrl without `caFile` use the system trust store. |
+| `cloud.capsEveryTicks` | integer | `30` |  | Re-check the capabilities every N ticks and send them again when they changed (e.g. an executor that was unreachable at start answers now). |
 | `cloud.allowPlainHttp` | boolean | `false` |  | `true` allows a plain `http://` apiUrl (lab and test only; refused otherwise). FLEX_ALLOW_PLAIN_HTTP=1 in the engine's environment has the same effect. |
 | `cloud.fixPermissions` | boolean | `false` |  | Repair (chmod 0600 / 0700) a device key file or directory with group/other permissions instead of refusing to start. |
 | `cloud.outboxMax` | integer | `1000` |  | Maximum status reports kept per device while the cloud is unreachable; beyond it superseded reports are dropped (newest per deployment kept) and a back-pressure warning is logged. |

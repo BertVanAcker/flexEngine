@@ -257,6 +257,12 @@
           "default": false,
           "description": "`true` lets an https apiUrl without `caFile` use the system trust store."
         },
+        "capsEveryTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 30,
+          "description": "Re-check the capabilities every N ticks and send them again when they changed (e.g. an executor that was unreachable at start answers now)."
+        },
         "allowPlainHttp": {
           "type": "boolean",
           "default": false,

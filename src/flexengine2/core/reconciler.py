@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import functools
+import hashlib
 import json
 import os
 import platform
@@ -273,6 +274,23 @@ class Engine:
         if self.children:
             doc["x-flex"]["children"] = self.children
         return doc
+
+    def sync_capabilities(self):
+        """PUT the capabilities when they changed: checked at start and every capsEveryTicks ticks (default 30), so a
+        fragment built while an executor was unreachable (reachable/available false) is replaced once it answers."""
+        n = max(1, int(self.cfg.get("capsEveryTicks", 30)))
+        due = (not self.state.get("capsHash") or not self.state.get("capsSent", True) or self.ticks % n == 0)
+        if not due:
+            return
+        doc = self.capabilities()
+        h = "sha256:" + hashlib.sha256(json.dumps(doc, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        if h == self.state.get("capsHash") and self.state.get("capsSent", True):
+            return
+        self.client.post_json(f"/api/v1/devices/{self.device}/capabilities", doc, method="PUT")
+        self.state["capsHash"] = h
+        self.state["capsSent"] = True
+        self.save()
+        self.log("capabilities sent", event="capabilities.sent", capsHash=h[:19])
 
     def flush_outbox(self):
         while self.state["outbox"]:
@@ -632,8 +650,14 @@ class Engine:
         for dep_id, rec in list(self.state["applied"].items()):
             self._dep = dep_id
             drv = self.drivers[rec["dep"]["x-flex-driver"]]
-            obs = drv.status(dep_id)
+            try:
+                obs = drv.status(dep_id)
+            except DriverError as e:   # executor unreachable: defer this deployment, never repair blindly
+                self.log(f"supervise deferred: {e}", "warning", "supervise.deferred", dep=dep_id)
+                continue
             wl = Workload.from_dict(rec["wl"])
+            if obs.present and not obs.running and str(obs.detail).startswith("executor unreachable"):
+                continue               # SPI: status() of an unreachable executor = present, not running, detail
             if not obs.present:
                 self._hist(dep_id, "REPAIR", version=wl.version)
                 self.action("repair", dep_id, version=wl.version, digest=wl.digest)
@@ -641,7 +665,11 @@ class Engine:
                 self.report(dep_id, "Installed", version=wl.version, reason="drift repaired (workload was missing)")
                 continue
             if check_health:
-                h = drv.health(dep_id, wl.health)
+                try:
+                    h = drv.health(dep_id, wl.health)
+                except DriverError as e:
+                    self.log(f"supervise deferred: {e}", "warning", "supervise.deferred", dep=dep_id)
+                    continue
                 if h != self.state["health"].get(dep_id):
                     self.state["health"][dep_id] = h
                     self.report(dep_id, "Installed", version=wl.version, health="healthy" if h else "unhealthy",
@@ -672,10 +700,7 @@ class Engine:
         self._dep = None
         try:
             self.onboard()
-            if not self.state.get("capsSent"):
-                self.client.post_json(f"/api/v1/devices/{self.device}/capabilities", self.capabilities(), method="PUT")
-                self.state["capsSent"] = True
-                self.save()
+            self.sync_capabilities()
             self.flush_outbox()
             self.pull()
             self.backoff.reset()
