@@ -195,8 +195,11 @@ class Engine:
                                      "manifestVersion": mv, **kw})
         self._bound_outbox()
         self.save()
+        # the local API's status keeps rolledBackTo/failFast/restarts of the last report from the history once the
+        # outbox copy is delivered (desk runbooks read them from GET /v1/status)
         self._hist(dep, state, "reported", seq=self.state["seq"], manifestVersion=mv, version=kw.get("version"),
-                   reason=kw.get("reason"), health=kw.get("health"), correlationId=kw.get("correlationId"))
+                   reason=kw.get("reason"), health=kw.get("health"), correlationId=kw.get("correlationId"),
+                   **{k: kw[k] for k in ("rolledBackTo", "failFast", "restarts") if k in kw})
 
     def _bound_outbox(self):
         ob = self.state["outbox"]

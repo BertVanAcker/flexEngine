@@ -1,0 +1,258 @@
+{
+  "runbook": "EV-HW-05",
+  "title": "Portenta H7 full base image update through MCUboot",
+  "file": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/runbooks/EV-HW-05_mcu_firmware.yaml",
+  "started": "2026-10-17T18:19:27",
+  "finished": "2026-10-17T18:21:48",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest",
+    "flexengine": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine",
+    "repo": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "project_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "results_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/hwtest-results/20261017-181927_EV-HW-05",
+    "local_ip": "192.0.2.2",
+    "python": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-05-61rqnvb3/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli",
+    "fe_host": "local",
+    "fe_api": "http://127.0.0.1:59095",
+    "fe_api_token_file": "/tmp/rb-05-61rqnvb3/secrets/fe-api.token",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "36501",
+    "cloud_url": "http://127.0.0.1:44597",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-05-61rqnvb3/secrets/admin.token",
+    "catalog": "/tmp/rb-05-61rqnvb3/catalog.yaml",
+    "desk": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py --cloud http://127.0.0.1:44597 --ca '' --admin-token-file /tmp/rb-05-61rqnvb3/secrets/admin.token --catalog /tmp/rb-05-61rqnvb3/catalog.yaml",
+    "svc": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-05-61rqnvb3 svc",
+    "gp": "rb-panda",
+    "mcu": "rb-panda.portenta",
+    "smp_host": "127.0.0.1",
+    "smp_port": "38663",
+    "base_version": "1.0.0",
+    "sim": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-05-61rqnvb3",
+    "cloud_layout": "/tmp/rb-05-61rqnvb3/cloud/oci",
+    "lab_ca": "/tmp/rb-05-61rqnvb3/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-05-61rqnvb3/pki/rogue-ca.crt",
+    "fe_api_port": "59095",
+    "smp_tty": "",
+    "zenoh_connect": "tcp/127.0.0.1:46519",
+    "zenoh_mode": "peer",
+    "model_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/examples/models/demo-pick",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-05-61rqnvb3/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli enroll",
+    "fe_config": "/tmp/rb-05-61rqnvb3/lp/engine.yaml",
+    "journal_source": "file:/tmp/rb-05-61rqnvb3/lp/engine.log",
+    "dry_run": "1",
+    "lp_sh": "sh -c",
+    "uplink_down": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-05-61rqnvb3 uplink down",
+    "uplink_up": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-05-61rqnvb3 uplink up",
+    "power_cut": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-05-61rqnvb3 power-cycle --down 3",
+    "sim_dir": "/tmp/rb-05-61rqnvb3",
+    "fw_update_s": "17.600"
+  },
+  "project_commit": "52e7172-dirty",
+  "runner_commit": "52e7172-dirty",
+  "summary": {
+    "PASS": 27,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:36501 reachable"
+    },
+    {
+      "id": "child-up",
+      "title": "See-thru child ${mcu} onboarded",
+      "status": "PASS",
+      "detail": "rb-panda.portenta: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "publish",
+      "title": "Publish the modules and the base images 1.0.0, 1.1.0, 1.2.0",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "modules",
+      "title": "Modules running (servo 2.0.0, gripper 1.0.0)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "modules-installed",
+      "title": "Both modules Installed",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/gripper: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "engine-stop-1",
+      "title": "Stop the engine (direct SMP check)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "base-before",
+      "title": "Base ${base_version} confirmed in MCUboot slot 0",
+      "status": "PASS",
+      "detail": "SMP flexmod_info on 127.0.0.1:38663: {\"abi_major\": 1, \"abi_minor\": 0, \"arch\": \"armv7m\", \"base\": \"1.0.0\", \"board\": \"mps2/an385\", \"caps\": 3, \"confirmed\": tr..."
+    },
+    {
+      "id": "engine-start-1",
+      "title": "Start the engine again",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "mark-11",
+      "title": "History mark",
+      "status": "PASS",
+      "detail": "mark fw11 at deviceTime 1792261192.550 (4 record(s) before it)"
+    },
+    {
+      "id": "deploy-11",
+      "title": "Base image 1.1.0 (modules kept)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "fw-11-installed",
+      "title": "base-image Installed 1.1.0 (upload, test boot, gate, confirm)",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/base-image: Installed 1.1.0, health healthy"
+    },
+    {
+      "id": "fw-11-time",
+      "title": "Update time from the history",
+      "status": "PASS",
+      "detail": "base-image Installing 1.1.0 -> base-image Installed 1.1.0; 17.60 s from the first to the last record"
+    },
+    {
+      "id": "modules-survive",
+      "title": "Modules Installed and healthy after the base update",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/servo: Installed 2.0.0, health healthy"
+    },
+    {
+      "id": "deploy-12",
+      "title": "Base image 1.2.0 (never confirms)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "fw-12-failed",
+      "title": "1.2.0 Failed, MCUboot reverted to 1.1.0",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/base-image: Failed 1.2.0, reasonCode FE-REC-004, rolledBackTo 1.1.0, failFast false"
+    },
+    {
+      "id": "engine-stop-2",
+      "title": "Stop the engine (direct SMP check)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "base-reverted",
+      "title": "1.1.0 confirmed again; MCUboot slot 0 holds 1.1.0",
+      "status": "PASS",
+      "detail": "SMP flexmod_info on 127.0.0.1:38663: {\"abi_major\": 1, \"abi_minor\": 0, \"arch\": \"armv7m\", \"base\": \"1.1.0\", \"board\": \"mps2/an385\", \"caps\": 3, \"confirmed\": tr..."
+    },
+    {
+      "id": "modules-after-revert",
+      "title": "Modules still running after the revert",
+      "status": "PASS",
+      "detail": "SMP flexmod_status on 127.0.0.1:38663: {\"boots\": 1, \"sockets\": [{\"activations\": 0, \"active\": 0, \"auto_reverts\": 0, \"confirmed\": 0, \"dep\": \"servo\", \"errors\":..."
+    },
+    {
+      "id": "engine-start-2",
+      "title": "Start the engine again",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "deploy-10",
+      "title": "Base image 1.0.0 (its test boot is cut by a power cycle)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "power-cut",
+      "title": "Power cut of the Portenta during its test boot",
+      "status": "PASS",
+      "detail": "power cycled (simulated)"
+    },
+    {
+      "id": "power-cut-result",
+      "title": "1.0.0 not confirmed -> Failed, back on 1.1.0",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/base-image: Failed 1.0.0, reasonCode FE-REC-004, rolledBackTo 1.1.0, failFast false"
+    },
+    {
+      "id": "engine-stop-3",
+      "title": "Stop the engine (direct SMP check)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "base-after-cut",
+      "title": "MCUboot booted the last confirmed image (1.1.0)",
+      "status": "PASS",
+      "detail": "SMP flexmod_info on 127.0.0.1:38663: {\"abi_major\": 1, \"abi_minor\": 0, \"arch\": \"armv7m\", \"base\": \"1.1.0\", \"board\": \"mps2/an385\", \"caps\": 3, \"confirmed\": tr..."
+    },
+    {
+      "id": "engine-start-3",
+      "title": "Start the engine again",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "back-to-11",
+      "title": "Desired base image back to 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "converged",
+      "title": "base-image Installed 1.1.0, modules healthy (desired = actual)",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

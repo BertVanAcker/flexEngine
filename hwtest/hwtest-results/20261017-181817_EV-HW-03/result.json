@@ -1,0 +1,257 @@
+{
+  "runbook": "EV-HW-03",
+  "title": "Offline convergence and offline bundle on the LattePanda",
+  "file": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/runbooks/EV-HW-03_offline_bundle.yaml",
+  "started": "2026-10-17T18:18:17",
+  "finished": "2026-10-17T18:18:42",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest",
+    "flexengine": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine",
+    "repo": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "project_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "results_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/hwtest-results/20261017-181817_EV-HW-03",
+    "local_ip": "192.0.2.2",
+    "python": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-03-ifxpzyoy/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli",
+    "fe_host": "local",
+    "fe_api": "http://127.0.0.1:34633",
+    "fe_api_token_file": "/tmp/rb-03-ifxpzyoy/secrets/fe-api.token",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "33249",
+    "cloud_url": "http://127.0.0.1:45551",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-03-ifxpzyoy/secrets/admin.token",
+    "catalog": "/tmp/rb-03-ifxpzyoy/catalog.yaml",
+    "desk": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py --cloud http://127.0.0.1:45551 --ca '' --admin-token-file /tmp/rb-03-ifxpzyoy/secrets/admin.token --catalog /tmp/rb-03-ifxpzyoy/catalog.yaml",
+    "gp": "rb-panda",
+    "dep": "dl",
+    "uplink_down": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-03-ifxpzyoy uplink down",
+    "uplink_up": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-03-ifxpzyoy uplink up",
+    "usb_dir": "/tmp/rb-03-ifxpzyoy/usb",
+    "lp_usb": "/tmp/rb-03-ifxpzyoy/usb",
+    "cloud_layout": "/tmp/rb-03-ifxpzyoy/cloud/oci",
+    "lab_ca": "/tmp/rb-03-ifxpzyoy/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-03-ifxpzyoy/pki/rogue-openssl-ca.crt",
+    "fe_api_port": "34633",
+    "tamper": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py tamper --layout /tmp/rb-03-ifxpzyoy/cloud/oci",
+    "cloud_sh": "local",
+    "lab_ca_lp": "/tmp/rb-03-ifxpzyoy/pki/ca.crt",
+    "lp_up_host": "127.0.0.1",
+    "lp_up_port": "34633",
+    "gp_podman": "rb-panda-podman",
+    "safe_state_file": "/tmp/rb-03-ifxpzyoy/lp/safe-state.json",
+    "igpu_device": "/dev/zero",
+    "rt": "docker",
+    "rt_podman": "podman",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-03-ifxpzyoy/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli enroll",
+    "fe_config": "/tmp/rb-03-ifxpzyoy/lp/engine.yaml",
+    "journal_source": "file:/tmp/rb-03-ifxpzyoy/lp/engine.log",
+    "svc": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-03-ifxpzyoy svc",
+    "jaeger_url": "http://127.0.0.1:38879",
+    "sim": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-03-ifxpzyoy",
+    "dry_run": "1",
+    "lp_sh": "sh -c",
+    "power_cut": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-03-ifxpzyoy power-cycle --down 3",
+    "sim_dir": "/tmp/rb-03-ifxpzyoy"
+  },
+  "project_commit": "52e7172-dirty",
+  "runner_commit": "52e7172-dirty",
+  "summary": {
+    "PASS": 26,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:33249 reachable"
+    },
+    {
+      "id": "engine-up",
+      "title": "${gp} onboarded and online",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "publish",
+      "title": "Publish three native releases (1.0.0, 1.1.0, 2.0.0)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "deploy-v1",
+      "title": "Deploy 1.0.0 (link up)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "v1-installed",
+      "title": "1.0.0 Installed and healthy",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "uplink-down",
+      "title": "Cut the uplink (engine <-> flexCloud)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "deploy-v2-offline",
+      "title": "Publish the 1.1.0 desired state while the device is offline",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "offline-reported",
+      "title": "Engine reports itself offline",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 1, onboarded true"
+    },
+    {
+      "id": "keeps-v1",
+      "title": "1.0.0 keeps running while offline",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "offline-hold",
+      "title": "Stay offline for a while",
+      "status": "PASS",
+      "detail": "waited 10s"
+    },
+    {
+      "id": "uplink-up",
+      "title": "Restore the uplink",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "v2-converged",
+      "title": "1.1.0 Installed after the link returns",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.1.0, health healthy"
+    },
+    {
+      "id": "v2-one-apply",
+      "title": "Exactly one apply of 1.1.0 in the action log",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "cloud-converged",
+      "title": "flexCloud sees desired = actual",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "uplink-down-2",
+      "title": "Cut the uplink again",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "deploy-v3",
+      "title": "Publish 2.0.0 (it reaches the device only through the bundle)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "bundle-export",
+      "title": "Export the signed offline bundle onto this PC",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "usb",
+      "title": "Carry the bundle to the LattePanda",
+      "status": "PASS",
+      "detail": "dry run: simulated (exit 0), answered yes"
+    },
+    {
+      "id": "bundle-import",
+      "title": "flexengine bundle import from the USB stick",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "v3-installed-offline",
+      "title": "2.0.0 Installed from the bundle while still offline",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 2.0.0, health healthy"
+    },
+    {
+      "id": "uplink-up-2",
+      "title": "Restore the uplink",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "cloud-converged-2",
+      "title": "flexCloud sees 2.0.0 installed (desired = actual)",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "v3-one-apply",
+      "title": "Exactly one apply of 2.0.0 (bundle and cloud did not both apply)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "outbox-empty",
+      "title": "Every status report delivered (outbox empty)",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 3, onboarded true"
+    },
+    {
+      "id": "cleanup",
+      "title": "Remove the deployment",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "removed",
+      "title": "${dep} removed",
+      "status": "PASS",
+      "detail": "rb-panda/dl: absent "
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

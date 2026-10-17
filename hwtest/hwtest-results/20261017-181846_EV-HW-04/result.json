@@ -1,0 +1,258 @@
+{
+  "runbook": "EV-HW-04",
+  "title": "Portenta H7 module hot-load and rollback through the LattePanda gateway",
+  "file": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/runbooks/EV-HW-04_portenta_modules.yaml",
+  "started": "2026-10-17T18:18:46",
+  "finished": "2026-10-17T18:19:24",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest",
+    "flexengine": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine",
+    "repo": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "project_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "results_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/hwtest-results/20261017-181846_EV-HW-04",
+    "local_ip": "192.0.2.2",
+    "python": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-04-v7x_m7i9/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli",
+    "fe_host": "local",
+    "fe_api": "http://127.0.0.1:59265",
+    "fe_api_token_file": "/tmp/rb-04-v7x_m7i9/secrets/fe-api.token",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "43739",
+    "cloud_url": "http://127.0.0.1:43123",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-04-v7x_m7i9/secrets/admin.token",
+    "catalog": "/tmp/rb-04-v7x_m7i9/catalog.yaml",
+    "desk": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py --cloud http://127.0.0.1:43123 --ca '' --admin-token-file /tmp/rb-04-v7x_m7i9/secrets/admin.token --catalog /tmp/rb-04-v7x_m7i9/catalog.yaml",
+    "svc": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-04-v7x_m7i9 svc",
+    "gp": "rb-panda",
+    "mcu": "rb-panda.portenta",
+    "smp_host": "127.0.0.1",
+    "smp_port": "48761",
+    "base_version": "1.0.0",
+    "zenoh_connect": "tcp/127.0.0.1:42783",
+    "zenoh_mode": "peer",
+    "model_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/examples/models/demo-pick",
+    "cloud_layout": "/tmp/rb-04-v7x_m7i9/cloud/oci",
+    "lab_ca": "/tmp/rb-04-v7x_m7i9/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-04-v7x_m7i9/pki/rogue-ca.crt",
+    "fe_api_port": "59265",
+    "smp_tty": "",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-04-v7x_m7i9/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli enroll",
+    "fe_config": "/tmp/rb-04-v7x_m7i9/lp/engine.yaml",
+    "journal_source": "file:/tmp/rb-04-v7x_m7i9/lp/engine.log",
+    "sim": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-04-v7x_m7i9",
+    "dry_run": "1",
+    "lp_sh": "sh -c",
+    "uplink_down": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-04-v7x_m7i9 uplink down",
+    "uplink_up": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-04-v7x_m7i9 uplink up",
+    "power_cut": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-04-v7x_m7i9 power-cycle --down 3",
+    "sim_dir": "/tmp/rb-04-v7x_m7i9",
+    "stall_s": "4.287"
+  },
+  "project_commit": "52e7172-dirty",
+  "runner_commit": "52e7172-dirty",
+  "summary": {
+    "PASS": 27,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:43739 reachable"
+    },
+    {
+      "id": "gateway-up",
+      "title": "Gateway ${gp} onboarded and online",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "child-up",
+      "title": "See-thru child ${mcu} onboarded",
+      "status": "PASS",
+      "detail": "rb-panda.portenta: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "engine-stop-1",
+      "title": "Stop the engine (free the SMP UART for the direct checks)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "base-confirmed",
+      "title": "SMP image list: MCUboot slot 0 = base ${base_version}, confirmed",
+      "status": "PASS",
+      "detail": "SMP image_list on 127.0.0.1:48761: {\"images\": [{\"active\": true, \"bootable\": true, \"confirmed\": true, \"hash\": \"def2d69eec9f1ee22646354ea55576f5da8503be8f..."
+    },
+    {
+      "id": "base-info",
+      "title": "flexmod info: module ABI 1.0, two sockets",
+      "status": "PASS",
+      "detail": "SMP flexmod_info on 127.0.0.1:48761: {\"abi_major\": 1, \"abi_minor\": 0, \"arch\": \"armv7m\", \"base\": \"1.0.0\", \"board\": \"mps2/an385\", \"caps\": 3, \"confirmed\": tr..."
+    },
+    {
+      "id": "engine-start-1",
+      "title": "Start the engine again",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "publish",
+      "title": "Publish the module releases (servo 2.0.0, gripper 1.0.0, stalling servo 3.0.0, ABI-2 servo)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "deploy",
+      "title": "Deploy servo 2.0.0 + gripper 1.0.0 to the Portenta",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "servo-installed",
+      "title": "servo Installed 2.0.0",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/servo: Installed 2.0.0, health healthy"
+    },
+    {
+      "id": "gripper-installed",
+      "title": "gripper Installed 1.0.0",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/gripper: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "relay",
+      "title": "Gripper state on Zenoh through the relay (rmw_zenoh key, CDR)",
+      "status": "PASS",
+      "detail": "0/gripper_station/state/uc2::msg::dds_::GripperState_/RIHS01_5c58c07f5c930fdda5bf98ef617a5852553b701ccea33900c10fa55cf34a42db: {\"faults\": [], \"force_n\": 0.0, \"object_detected\": false, \"phase\": 0, \"seq\": 116, \"stamp_ns\": 26483000000, \"width_mm\":... (2 sample(s))"
+    },
+    {
+      "id": "mark-stall",
+      "title": "History mark",
+      "status": "PASS",
+      "detail": "mark stall at deviceTime 1792261151.775 (4 record(s) before it)"
+    },
+    {
+      "id": "deploy-stall",
+      "title": "Deploy the stalling servo 3.0.0 (gripper unchanged)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "stall-failed",
+      "title": "3.0.0 Failed fail-fast, rolled back to 2.0.0",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/servo: Failed 3.0.0, reasonCode FE-REC-004, rolledBackTo 2.0.0, failFast true"
+    },
+    {
+      "id": "stall-time",
+      "title": "Detection + rollback time from the history",
+      "status": "PASS",
+      "detail": "servo Installing 3.0.0 -> servo Failed 3.0.0; 4.29 s from the first to the last record"
+    },
+    {
+      "id": "no-reupload",
+      "title": "Rollback without re-upload (one apply of 3.0.0, one rollback, 2.0.0 applied only once)",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "rollback-logged",
+      "title": "The rollback is in the action log",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "deploy-abi2",
+      "title": "Deploy the ABI-2 servo build (base image speaks ABI 1)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "abi2-refused",
+      "title": "Refused in preflight, before upload",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/servo: Failed 4.0.0-abi2, reasonCode FE-REC-002"
+    },
+    {
+      "id": "abi2-no-apply",
+      "title": "No apply for the ABI-2 release",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "engine-stop-2",
+      "title": "Stop the engine (direct SMP check)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "sockets",
+      "title": "MCU: servo 2.0.0 confirmed and healthy, gripper 1.0.0 running, one upload of the servo per version",
+      "status": "PASS",
+      "detail": "SMP flexmod_status on 127.0.0.1:48761: {\"boots\": 1, \"sockets\": [{\"activations\": 2, \"active\": 0, \"auto_reverts\": 1, \"confirmed\": 0, \"dep\": \"servo\", \"errors\":..."
+    },
+    {
+      "id": "engine-start-2",
+      "title": "Start the engine again",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "back-to-2",
+      "title": "Desired state back to servo 2.0.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "servo-2-again",
+      "title": "servo Installed 2.0.0 without touching the MCU",
+      "status": "PASS",
+      "detail": "rb-panda.portenta/servo: Installed 2.0.0, health healthy"
+    },
+    {
+      "id": "still-one-apply",
+      "title": "Still one apply of servo 2.0.0",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

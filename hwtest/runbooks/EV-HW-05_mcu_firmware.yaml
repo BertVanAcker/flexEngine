@@ -1,0 +1,119 @@
+id: EV-HW-05
+title: Portenta H7 full base image update through MCUboot
+description: >
+  flexEngineV2 updates the Portenta's flexEngine-MCU base image through MCUboot (mcu-firmware driver: upload to slot
+  1, test boot, health gate, confirm), keeps the hot-loaded modules running across the update, lets a base image that
+  never confirms revert to the previous one, and survives a power cut of the MCU during its test boot (MCUboot boots
+  the last confirmed image). Complements L7-P3P4 s4 (acc-10 analogue on the Portenta).
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
+  fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
+  fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API (DA-7: one per desk)"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  svc: {default: "sudo systemctl", prompt: "service control on the LattePanda"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda (gateway)"}
+  mcu: {default: panda.portenta, prompt: "engine device id of the Portenta (see-thru child)"}
+  smp_host: {default: "127.0.0.1", prompt: "SMP TCP bridge (socat 127.0.0.1:5555 <-> /dev/ttyUSB0) as seen from this runner"}
+  smp_port: {default: "5555", prompt: "SMP TCP bridge port"}
+  base_version: {default: "1.0.0", prompt: "base image version on the Portenta before the run"}
+  sim: {default: "true", prompt: "simulation hook (dry run only)"}
+setup:
+  - "EV-HW-04 passed (modules servo 2.0.0 and gripper 1.0.0 can be deployed); same wiring: SMP on /dev/ttyUSB0 via flex-smp-bridge"
+  - "Base images 1.0.0, 1.1.0 and the never-confirming 1.2.0 signed for MCUboot (portenta-build-flash.sh sign) and listed in the catalog"
+  - "Portenta console (USB-C CDC /dev/ttyACM0) open on the LattePanda: `screen /dev/ttyACM0 115200` (for the power-cut step)"
+  - "SWD probe connected for recovery"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: child-up
+    title: "See-thru child ${mcu} onboarded"
+    fe_status_expect: {device: "${mcu}", device_fields: {onboarded: true, role: child-device}, timeout: 60}
+  - id: publish
+    title: Publish the modules and the base images 1.0.0, 1.1.0, 1.2.0
+    cmd_json_expect: {cmd: "${desk} publish servo_2 grip_1 fw_1_0_0 fw_1_1_0 fw_1_2_0", match: {"/published": {len: 5}}, cmd_timeout: 1800}
+  - id: modules
+    title: Modules running (servo 2.0.0, gripper 1.0.0)
+    run: {cmd: "${desk} deploy ${mcu} servo=servo_2 gripper=grip_1"}
+  - id: modules-installed
+    title: Both modules Installed
+    fe_status_expect: {device: "${mcu}", deployment: gripper, state: Installed, version: 1.0.0, health: healthy, timeout: 240}
+  - id: engine-stop-1
+    title: Stop the engine (direct SMP check)
+    ssh_run: {host: "${lp}", cmd: "${svc} stop flexengine"}
+  - id: base-before
+    title: "Base ${base_version} confirmed in MCUboot slot 0"
+    smp_probe: {host: "${smp_host}", port: "${smp_port}", cmd: flexmod_info, match: {/base: "${base_version}", /confirmed: true}, timeout: 30}
+  - id: engine-start-1
+    title: Start the engine again
+    ssh_run: {host: "${lp}", cmd: "${svc} start flexengine"}
+  - id: mark-11
+    title: History mark
+    fe_history_mark: {name: fw11, device: "${mcu}"}
+  - id: deploy-11
+    title: Base image 1.1.0 (modules kept)
+    run: {cmd: "${desk} deploy ${mcu} --keep base-image=fw_1_1_0"}
+  - id: fw-11-installed
+    title: base-image Installed 1.1.0 (upload, test boot, gate, confirm)
+    fe_status_expect: {device: "${mcu}", deployment: base-image, state: Installed, version: 1.1.0, health: healthy, timeout: 420}
+  - id: fw-11-time
+    title: Update time from the history
+    fe_history_expect: {since: fw11, device: "${mcu}", match: [{dep: base-image, state: Installing, version: 1.1.0}, {dep: base-image, state: Installed, version: 1.1.0}], max_duration: 400, save_duration: fw_update_s}
+  - id: modules-survive
+    title: Modules Installed and healthy after the base update
+    fe_status_expect: {device: "${mcu}", deployment: servo, state: Installed, version: 2.0.0, health: healthy, timeout: 120}
+  - id: deploy-12
+    title: Base image 1.2.0 (never confirms)
+    run: {cmd: "${desk} deploy ${mcu} --keep base-image=fw_1_2_0"}
+  - id: fw-12-failed
+    title: 1.2.0 Failed, MCUboot reverted to 1.1.0
+    fe_status_expect: {device: "${mcu}", deployment: base-image, state: Failed, version: 1.2.0, fields: {rolledBackTo: 1.1.0}, timeout: 420}
+  - id: engine-stop-2
+    title: Stop the engine (direct SMP check)
+    ssh_run: {host: "${lp}", cmd: "${svc} stop flexengine"}
+  - id: base-reverted
+    title: "1.1.0 confirmed again; MCUboot slot 0 holds 1.1.0"
+    smp_probe: {host: "${smp_host}", port: "${smp_port}", cmd: flexmod_info, match: {/base: 1.1.0, /confirmed: true}, timeout: 30}
+  - id: modules-after-revert
+    title: Modules still running after the revert
+    smp_probe: {host: "${smp_host}", port: "${smp_port}", cmd: flexmod_status, match: {"/sockets[dep=servo]/healthy": true, "/sockets[dep=gripper]/healthy": true}, timeout: 30}
+  - id: engine-start-2
+    title: Start the engine again
+    ssh_run: {host: "${lp}", cmd: "${svc} start flexengine"}
+  - id: deploy-10
+    title: Base image 1.0.0 (its test boot is cut by a power cycle)
+    run: {cmd: "${desk} deploy ${mcu} --keep base-image=fw_1_0_0"}
+  - id: power-cut
+    title: Power cut of the Portenta during its test boot
+    power_cycle:
+      instruction: "Watch the Portenta console: after MCUboot printed `Swap type: test` and the base image FLEXMCU_READY (1.0.0 soaks 20 s in TESTING before it is confirmed), unplug the Portenta's USB-C/power for 3 s and plug it back in."
+      simulate: "${sim} mcu-power-cycle --when-testing"
+      timeout: 900
+  - id: power-cut-result
+    title: 1.0.0 not confirmed -> Failed, back on 1.1.0
+    fe_status_expect: {device: "${mcu}", deployment: base-image, state: Failed, version: 1.0.0, fields: {rolledBackTo: 1.1.0}, timeout: 420}
+  - id: engine-stop-3
+    title: Stop the engine (direct SMP check)
+    ssh_run: {host: "${lp}", cmd: "${svc} stop flexengine"}
+  - id: base-after-cut
+    title: MCUboot booted the last confirmed image (1.1.0)
+    smp_probe: {host: "${smp_host}", port: "${smp_port}", cmd: flexmod_info, match: {/base: 1.1.0, /confirmed: true}, timeout: 30}
+  - id: engine-start-3
+    title: Start the engine again
+    ssh_run: {host: "${lp}", cmd: "${svc} start flexengine"}
+  - id: back-to-11
+    title: Desired base image back to 1.1.0
+    run: {cmd: "${desk} deploy ${mcu} --keep base-image=fw_1_1_0"}
+  - id: converged
+    title: base-image Installed 1.1.0, modules healthy (desired = actual)
+    cmd_json_expect: {cmd: "${desk} converged ${mcu}", match: {"/converged": true, "/actual/base-image/version": 1.1.0}, timeout: 240, every: 3}

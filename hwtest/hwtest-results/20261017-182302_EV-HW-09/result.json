@@ -1,0 +1,265 @@
+{
+  "runbook": "EV-HW-09",
+  "title": "Crash and power-cycle recovery on the LattePanda",
+  "file": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/runbooks/EV-HW-09_crash_power.yaml",
+  "started": "2026-10-17T18:23:02",
+  "finished": "2026-10-17T18:23:20",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest",
+    "flexengine": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine",
+    "repo": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "project_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "results_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/hwtest-results/20261017-182302_EV-HW-09",
+    "local_ip": "192.0.2.2",
+    "python": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-09-9zboypob/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli",
+    "fe_host": "local",
+    "fe_api": "http://127.0.0.1:44193",
+    "fe_api_token_file": "/tmp/rb-09-9zboypob/secrets/fe-api.token",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "44197",
+    "cloud_url": "http://127.0.0.1:34229",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-09-9zboypob/secrets/admin.token",
+    "catalog": "/tmp/rb-09-9zboypob/catalog.yaml",
+    "desk": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py --cloud http://127.0.0.1:34229 --ca '' --admin-token-file /tmp/rb-09-9zboypob/secrets/admin.token --catalog /tmp/rb-09-9zboypob/catalog.yaml",
+    "journal_source": "file:/tmp/rb-09-9zboypob/lp/engine.log",
+    "svc": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-09-9zboypob svc",
+    "gp": "rb-panda",
+    "dep": "pg",
+    "rt": "docker",
+    "lp_up_host": "127.0.0.1",
+    "lp_up_port": "44193",
+    "power_cut": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-09-9zboypob power-cycle --down 3",
+    "cloud_layout": "/tmp/rb-09-9zboypob/cloud/oci",
+    "lab_ca": "/tmp/rb-09-9zboypob/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-09-9zboypob/pki/rogue-openssl-ca.crt",
+    "fe_api_port": "44193",
+    "tamper": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py tamper --layout /tmp/rb-09-9zboypob/cloud/oci",
+    "cloud_sh": "local",
+    "lab_ca_lp": "/tmp/rb-09-9zboypob/pki/ca.crt",
+    "gp_podman": "rb-panda-podman",
+    "safe_state_file": "/tmp/rb-09-9zboypob/lp/safe-state.json",
+    "igpu_device": "/dev/zero",
+    "usb_dir": "/tmp/rb-09-9zboypob/usb",
+    "lp_usb": "/tmp/rb-09-9zboypob/usb",
+    "rt_podman": "podman",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-09-9zboypob/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli enroll",
+    "fe_config": "/tmp/rb-09-9zboypob/lp/engine.yaml",
+    "jaeger_url": "http://127.0.0.1:44735",
+    "sim": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-09-9zboypob",
+    "dry_run": "1",
+    "lp_sh": "sh -c",
+    "uplink_down": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-09-9zboypob uplink down",
+    "uplink_up": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-09-9zboypob uplink up",
+    "sim_dir": "/tmp/rb-09-9zboypob",
+    "started": "2026-10-17T18:23:05.511171323Z",
+    "mv_before": "2"
+  },
+  "project_commit": "52e7172-dirty",
+  "runner_commit": "52e7172-dirty",
+  "summary": {
+    "PASS": 27,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:44197 reachable"
+    },
+    {
+      "id": "engine-up",
+      "title": "${gp} onboarded and online",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "publish",
+      "title": "Publish 1.0.0 and 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "deploy-v1",
+      "title": "Deploy 1.0.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "v1-installed",
+      "title": "1.0.0 Installed and healthy",
+      "status": "PASS",
+      "detail": "rb-panda/pg: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "container-started",
+      "title": "Remember when the container started",
+      "status": "PASS",
+      "detail": "exit 0, matched 'started=2026-10-17T18:23:05.511171323Z'"
+    },
+    {
+      "id": "kill-steady",
+      "title": "SIGKILL the engine at steady state (systemd restarts it)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "back-steady",
+      "title": "Engine back, deployment adopted (Installed, healthy)",
+      "status": "PASS",
+      "detail": "rb-panda/pg: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "same-container",
+      "title": "The same container still runs (adopted, not restarted)",
+      "status": "PASS",
+      "detail": "exit 0, matched 'started=2026-10-17T18:23:05.511171323Z running=true'"
+    },
+    {
+      "id": "no-duplicate",
+      "title": "No duplicate apply after the restart",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "mark-gate",
+      "title": "History mark before the update",
+      "status": "PASS",
+      "detail": "mark gate at deviceTime 1792261386.265 (2 record(s) before it)"
+    },
+    {
+      "id": "deploy-v2",
+      "title": "Update to 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "in-gate",
+      "title": "Wait until 1.1.0 is installing (in its health gate)",
+      "status": "PASS",
+      "detail": "pg Installing 1.1.0; 0.00 s from the first to the last record"
+    },
+    {
+      "id": "kill-gate",
+      "title": "SIGKILL the engine during the gate",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "gate-resumed",
+      "title": "Install finished after the restart",
+      "status": "PASS",
+      "detail": "rb-panda/pg: Installed 1.1.0, health healthy"
+    },
+    {
+      "id": "gate-once",
+      "title": "1.1.0 applied once, twice only when the kill interrupted the apply itself (EV-13 crash-resume rule)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "one-container",
+      "title": "Exactly one container for the deployment (no half state)",
+      "status": "PASS",
+      "detail": "exit 0, matched '1'"
+    },
+    {
+      "id": "state-before",
+      "title": "Remember the accepted manifestVersion",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 2, onboarded true; saved mv_before=2"
+    },
+    {
+      "id": "mark-power",
+      "title": "History mark before the power cut",
+      "status": "PASS",
+      "detail": "mark power at deviceTime 1792261393.379 (5 record(s) before it)"
+    },
+    {
+      "id": "deploy-v1-again",
+      "title": "Roll forward to 1.0.0 again (an update that the power cut interrupts)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "in-update",
+      "title": "Wait until the update is installing",
+      "status": "PASS",
+      "detail": "pg Installing 1.0.0; 0.00 s from the first to the last record"
+    },
+    {
+      "id": "power-cut",
+      "title": "Power cut during the update",
+      "status": "PASS",
+      "detail": "power cycled (simulated); 127.0.0.1:44193 back after 4.9 s"
+    },
+    {
+      "id": "after-boot",
+      "title": "After the boot the workload runs again (Installed 1.0.0, healthy)",
+      "status": "PASS",
+      "detail": "rb-panda/pg: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "container-after-boot",
+      "title": "Container 1.0.0 running",
+      "status": "PASS",
+      "detail": "exit 0, matched '1.0.0 true'"
+    },
+    {
+      "id": "state-survives",
+      "title": "State survives (manifestVersion not older than before, outbox delivered)",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 3, onboarded true"
+    },
+    {
+      "id": "cleanup",
+      "title": "Remove the deployment",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "removed",
+      "title": "${dep} removed",
+      "status": "PASS",
+      "detail": "rb-panda/pg: absent "
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

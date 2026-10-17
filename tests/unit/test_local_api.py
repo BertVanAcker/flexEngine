@@ -109,6 +109,13 @@ def test_pending_failed_and_removing_states(tmp_path):
     f = deps["safety-app"]
     assert f["state"] == "Failed" and f["rolledBackTo"] == "1.0.0" and f["failFast"] is True
     assert f["reason"] == "health check failed" and f["reasonCode"] == "FE-REC-004" and f["previousVersion"] is None
+    # delivered (outbox empty): rolledBackTo / failFast still come from the history ring buffer (EV-15 dry run)
+    eng.state["outbox"] = []
+    eng.save()
+    f = {x["id"]: x for x in get(api, "/v1/status")[1]["devices"][0]["deployments"]}["safety-app"]
+    assert f["state"] == "Failed" and f["rolledBackTo"] == "1.0.0" and f["failFast"] is True
+    f = {x["id"]: x for x in get(offline(cfg), "/v1/status")[1]["devices"][0]["deployments"]}["safety-app"]
+    assert f["rolledBackTo"] == "1.0.0" and f["failFast"] is True
 
 
 def test_deployment_endpoint_and_404(setup):
