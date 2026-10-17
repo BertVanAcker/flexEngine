@@ -159,7 +159,15 @@ def bundle(layout: Layout, desired: bytes, sig: str, tamper: str | None = None) 
 
 
 def main(out: Path = OUT) -> Path:
+    iso = reltool.iso
     reltool.iso = lambda t=None: SIGNED_AT   # fixed signedAt in release signatures
+    try:
+        return _generate(out)
+    finally:
+        reltool.iso = iso
+
+
+def _generate(out: Path) -> Path:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)

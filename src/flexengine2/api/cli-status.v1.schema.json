@@ -17,7 +17,8 @@
         "spi": {"type": "string", "pattern": "^1\\.[0-9]+$"},
         "uptimeSeconds": {"type": "number", "minimum": 0},
         "configFile": {"type": "string"},
-        "otel": {"type": "boolean", "description": "FLEX_OTEL=1 and the OTel packages are present."}
+        "otel": {"type": "boolean", "description": "FLEX_OTEL=1 and the OTel packages are present."},
+        "mode": {"enum": ["running", "offline"], "description": "EV-07: `running` = served by the engine process; `offline` = the CLI read the data directories (engine not running; online is false, uptimeSeconds 0)."}
       }
     },
     "devices": {"type": "array", "items": {"$ref": "#/$defs/Device"}}
@@ -55,7 +56,10 @@
         "reason": {"type": "string", "description": "Registered reason text (reason-codes)."},
         "reasonCode": {"type": "string", "pattern": "^FE-[A-Z0-9-]+$", "description": "Code of reason (flexengine2.contracts.reason_code)."},
         "previousVersion": {"type": ["string", "null"], "description": "Rollback target kept by the engine."},
-        "since": {"type": "number", "description": "EV-07: unix time of the last state change."}
+        "since": {"type": "number", "description": "EV-07: unix time of the last state change."},
+        "rolledBackTo": {"type": ["string", "null"], "description": "EV-07: from the last report of this state (Failed: version rolled back to, null = none)."},
+        "failFast": {"type": "boolean", "description": "EV-07: from the last report (Failed: the driver reported the failure before the health-gate timeout)."},
+        "restarts": {"type": ["integer", "null"], "minimum": 0, "description": "EV-07: supervisor restarts in the last report."}
       }
     }
   }
