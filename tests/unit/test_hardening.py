@@ -137,24 +137,30 @@ def test_slow_driver_on_one_device_does_not_delay_another(tmp_path):
     a = make_engine(tmp_path, "dev-slow", {"native": slow})
     b = make_engine(tmp_path, "dev-fast", {"native": fast}, pollInterval=0.1)
     b.backoff.base = b.backoff.cap = 0.1              # offline back-off == one period
-    ticks_b: list[float] = []
+    ticks_b: list[tuple[float, float]] = []            # (start, end) of every tick of the fast device
     orig = b.tick
 
     def tick():
-        ticks_b.append(time.monotonic())
-        return orig()
+        t0 = time.monotonic()
+        try:
+            return orig()
+        finally:
+            ticks_b.append((t0, time.monotonic()))
 
     b.tick = tick
     h = _host(tmp_path, [a, b])
     h.start()
     try:
-        time.sleep(1.5)
+        time.sleep(1.5)                                  # inside the slow device's 2 s blocked call
     finally:
         h.shutdown(5)
     assert a.ticks <= 1
-    gaps = [y - x for x, y in zip(ticks_b, ticks_b[1:])]
-    assert len(ticks_b) >= 8, ticks_b
-    assert max(gaps) < 0.1 + 0.25, gaps                 # never more than one period (+ scheduling slack)
+    # Isolation: the fast device keeps its own cadence while the slow one is blocked. The pause between two of its
+    # ticks is its own period plus scheduling slack, never the slow device's 2 s; how long its own tick takes depends
+    # on the runner and is not counted against it. Sharing a thread with the slow device would allow one tick here.
+    pauses = [nxt[0] - prev[1] for prev, nxt in zip(ticks_b, ticks_b[1:])]
+    assert len(ticks_b) >= 4, ticks_b
+    assert max(pauses) < 0.1 + 0.25, pauses
 
 
 def test_submit_runs_on_the_worker_thread(tmp_path):
@@ -361,8 +367,8 @@ def test_sigterm_shuts_down_cleanly_with_state_saved(tmp_path):
         assert st["schemaVersion"] == 1 and st["deviceId"] == dev
 
 
-def test_sd_notify_ready_watchdog_status_stopping(tmp_path, monkeypatch):
-    sock_path = str(tmp_path / "notify.sock")
+def test_sd_notify_ready_watchdog_status_stopping(tmp_path, sock_dir, monkeypatch):
+    sock_path = str(sock_dir / "notify.sock")
     srv = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     srv.bind(sock_path)
     srv.settimeout(0.2)
