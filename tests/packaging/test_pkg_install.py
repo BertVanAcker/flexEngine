@@ -66,7 +66,7 @@ def test_units_render_and_options():
     for line in ("Type=notify", "NotifyAccess=main", "WatchdogSec=30", "Restart=on-failure", "RestartSec=2",
                  "User=flex", "ExecStart=@PREFIX@/bin/flexengine run --config /etc/flexengine/engine.yaml",
                  "StateDirectory=flexengine", "RuntimeDirectory=flexengine", "ConfigurationDirectory=flexengine",
-                 "NoNewPrivileges=yes", "ProtectSystem=strict", "ReadWritePaths=/var/lib/flexengine",
+                 "NoNewPrivileges=yes", "ProtectSystem=strict", "ReadWritePaths=/var/lib/flexengine /etc/flexengine/tokens",
                  "PrivateTmp=yes", "ProtectHome=yes"):
         assert f"\n{line}\n" in unit, line
     for need in ("dialout", "docker", "podman", "RAUC", "SupplementaryGroups="):

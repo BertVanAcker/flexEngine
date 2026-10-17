@@ -22,8 +22,15 @@ def dist() -> Path:
         if newest > whl.stat().st_mtime:
             import sys
 
-            r = sh([sys.executable, "-m", "pip", "wheel", "--no-deps", "--no-build-isolation", "-w", str(DIST),
+            r = sh([sys.executable, "-m", "pip", "wheel", "--no-deps", "-w", str(DIST),
                     str(DIST.parent)], timeout=600)
+            if r.returncode == 0 and (DIST / "SHA256SUMS").exists():   # keep the checksum list true
+                import hashlib
+
+                h = hashlib.sha256(whl.read_bytes()).hexdigest()
+                lines = [(f"{h}  ./{whl.name}" if ln.endswith(f"./{whl.name}") else ln)
+                         for ln in (DIST / "SHA256SUMS").read_text().splitlines()]
+                (DIST / "SHA256SUMS").write_text("\n".join(lines) + "\n")
             if r.returncode != 0:
                 pytest.fail(f"rebuilding the engine wheel failed:\n{r.stdout[-2000:]}\n{r.stderr[-2000:]}")
     if not have or os.environ.get("FLEXENGINE_PKG_REBUILD") == "1":

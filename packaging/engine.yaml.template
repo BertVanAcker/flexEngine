@@ -16,7 +16,7 @@ dataDir: /var/lib/flexengine                          # per device: <dataDir>/<d
 devices:
   - deviceId: @DEVICE_ID@                             # this host (install.sh: --device-id, default the hostname)
     role: standalone-device                           # gateway when MCU children are listed with parent: <this id>
-    onboardingTokenFile: /etc/flexengine/tokens/@DEVICE_ID@   # one-time token from flexCloud (root:flex 0640)
+    onboardingTokenFile: /etc/flexengine/tokens/@DEVICE_ID@   # one-time token (flex:flex 0600; deleted after onboarding)
     safeStateFile: /var/lib/flexengine/safe-state.json        # {"machine_parked": true, "operator_confirmed": true}
     drivers:
       container: {runtime: docker}                    # podman | docker; the flex user needs the docker group

@@ -15,7 +15,8 @@ Layout on the target:
 | Path | Owner / mode | Upgrade |
 |---|---|---|
 | `/opt/flexengine` (venv, `bin/flexengine`) | root 0755 | replaced/updated |
-| `/etc/flexengine/engine.yaml`, `tokens/` | root:flex 0750 / 0640 | **never overwritten** |
+| `/etc/flexengine/engine.yaml` | root:flex 0640 | **never overwritten** |
+| `/etc/flexengine/tokens/` | flex:flex 0700, token files 0600 owned by flex (the engine deletes a token after onboarding) | **never overwritten** |
 | `/var/lib/flexengine` (`dataDir`) | flex 0700 (systemd `StateDirectory=`) | **never touched** |
 | `/run/flexengine` (`api.sock`) | flex, group flex 0750 (`RuntimeDirectory=`) | – |
 | `/etc/systemd/system/flexengine{,@}.service`, `*.service.d/10-groups.conf` | root 0644 | rewritten |
@@ -37,7 +38,7 @@ tar xzf flexengine-v2-2.0.0a1-linux_x86_64.tar.gz && cd flexengine-v2-2.0.0a1
 sudo packaging/install.sh --extras mcu,plc,applab,otel --dry-run     # the plan
 sudo packaging/install.sh --extras mcu,plc,applab,otel --device-id panda
 /opt/flexengine/bin/flexengine version                                 # 2.0.0a1
-sudo install -m 0640 -g flex /path/to/token /etc/flexengine/tokens/panda
+sudo install -m 0600 -o flex -g flex /path/to/token /etc/flexengine/tokens/panda
 sudoedit /etc/flexengine/engine.yaml                                   # apiUrl, keys, drivers
 sudo systemctl enable --now flexengine && journalctl -u flexengine -f
 ```

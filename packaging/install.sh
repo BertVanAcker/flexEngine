@@ -17,7 +17,7 @@
 #   --groups LIST      SupplementaryGroups for the unit (drop-in 10-groups.conf); default: those of dialout,docker
 #                      that exist on this host. "none" = no drop-in.
 #   --enable / --start enable the unit (boot) / enable + start (or restart after an upgrade). Default: installed, not
-#                      enabled -- put the onboarding token into /etc/flexengine/tokens/ and edit engine.yaml first.
+#                      enabled -- put the onboarding token into /etc/flexengine/tokens/ (flex:flex 0600) and edit engine.yaml first.
 #   --no-service       no service user, no systemd unit (Mac / dev hosts); venv + dirs only
 #   --root DIR         stage everything under DIR (tests, image builds): no useradd/chown/systemctl/apt
 #   --uninstall        stop + disable the unit, remove it and the venv; keeps /etc/flexengine and /var/lib/flexengine
@@ -229,7 +229,7 @@ fi
 # ---- directories -------------------------------------------------------------------------------------------------------
 step "directories"
 ensure_dir "$R_ETC" 0750 root "$SGROUP"
-ensure_dir "$R_ETC/tokens" 0750 root "$SGROUP"
+ensure_dir "$R_ETC/tokens" 0700 "$SUSER" "$SGROUP"   # engine reads 0600 tokens it owns and deletes them after onboarding (EV-06)
 ensure_dir "$R_STATE" 0700 "$SUSER" "$SGROUP"
 
 # ---- venv --------------------------------------------------------------------------------------------------------------

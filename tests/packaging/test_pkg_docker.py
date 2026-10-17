@@ -59,7 +59,7 @@ def test_fresh_install(box):
     assert pw[5] == "/var/lib/flexengine" and pw[6] == "/usr/sbin/nologin"
     assert box.ok("stat -c '%a %U:%G' /etc/flexengine /etc/flexengine/tokens /var/lib/flexengine "
                   "/etc/flexengine/engine.yaml").split("\n")[:4] == \
-        ["750 root:flex", "750 root:flex", "700 flex:flex", "640 root:flex"]
+        ["750 root:flex", "700 flex:flex", "700 flex:flex", "640 root:flex"]
     unit = box.ok("cat /etc/systemd/system/flexengine.service")
     assert "ExecStart=/opt/flexengine/bin/flexengine run --config /etc/flexengine/engine.yaml" in unit
     assert "SupplementaryGroups=dialout" in box.ok("cat /etc/systemd/system/flexengine.service.d/10-groups.conf")
@@ -124,8 +124,7 @@ def test_service_runs_real_engine(box):
     box.ok(f"sed -i 's|  # cloudPublicKey: <b64>.*|  cloudPublicKey: {key}|; "
            "s|apiUrl: https://lattepanda.lab:8700|apiUrl: http://127.0.0.1:9\\n  allowPlainHttp: true|; /container: {runtime: docker}/d; "
            "/^    drivers:$/d' /etc/flexengine/engine.yaml")
-    box.ok("echo one-time-token > /etc/flexengine/tokens/panda && chgrp flex /etc/flexengine/tokens/panda && "
-           "chmod 0640 /etc/flexengine/tokens/panda")
+    box.ok("echo one-time-token > /tmp/token && install -m 0600 -o flex -g flex /tmp/token /etc/flexengine/tokens/panda")
     chk = box.sh("/opt/flexengine/bin/flexengine config check /etc/flexengine/engine.yaml --resolve")
     if "invalid choice" not in chk.stderr:
         assert chk.returncode == 0, chk.stdout + chk.stderr
@@ -135,7 +134,8 @@ def test_service_runs_real_engine(box):
     props = box.ok("systemctl show flexengine -p ActiveState -p NRestarts -p MainPID")
     assert "ActiveState=active" in props and "NRestarts=0" in props, props + box.ok("journalctl -u flexengine -n 30")
     assert box.ok("stat -c %U /var/lib/flexengine/panda/device.key").strip() == "flex"
-    assert "offline" in box.ok("journalctl -u flexengine --no-pager -n 20")
+    j = box.ok("journalctl -u flexengine --no-pager -n 200")
+    assert "offline" in j, j
     box.pid = props.split("MainPID=")[1].split()[0]
 
 

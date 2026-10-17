@@ -49,7 +49,7 @@ RuntimeDirectoryMode=0750
 # ---- hardening (systemd-analyze security flexengine) ----
 NoNewPrivileges=yes
 ProtectSystem=strict
-ReadWritePaths=/var/lib/flexengine
+ReadWritePaths=/var/lib/flexengine /etc/flexengine/tokens
 ProtectHome=yes
 PrivateTmp=yes
 ProtectKernelTunables=yes
