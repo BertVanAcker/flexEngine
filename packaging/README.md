@@ -6,6 +6,7 @@
 | `systemd/flexengine.service` | `Type=notify`, `WatchdogSec=30`, `Restart=on-failure`, `User=flex`, hardening; group needs in its header |
 | `systemd/flexengine@.service` | second instance with `/etc/flexengine/<name>.yaml` and `/var/lib/flexengine-<name>` (dev/test) |
 | `engine.yaml.template` | first `/etc/flexengine/engine.yaml` (written only if absent) |
+| `polkit/50-flexengine-systemd.rules` | polkit rule for the native systemd driver run by user `flex` (not installed by install.sh; see below) |
 | `requirements-lock.txt` | pinned base + `[mcu,applab,plc,otel]` closure, used as pip constraints |
 | `gen-lock.py` | regenerates the lock from a working venv |
 | `build-wheels.sh` | engine wheel + offline wheelhouses (x86_64, aarch64) + per-arch bundles in `flexengine/dist/` |
@@ -49,8 +50,43 @@ or `--from-source flexengine` (online, or with a wheelhouse that holds setuptool
 
 Groups: install.sh adds a drop-in `SupplementaryGroups=` with whichever of `dialout` (MCU serial) and `docker`
 (container driver, `runtime: docker`) exist; Docker CE must be installed first for `docker` to be picked up
-(`--groups dialout,docker` to force, `--groups none` for none). RAUC (D-Bus policy) and the native systemd driver
-(polkit rule) need host policy files that are not part of alpha — see the unit header.
+(`--groups dialout,docker` to force, `--groups none` for none). RAUC (D-Bus policy) needs a host policy file that
+is not part of alpha — see the unit header. The native systemd driver: next section.
+
+### Native workloads on systemd (`drivers.native: {runtime: systemd}`, EV-19)
+
+The driver writes one unit file per deployment (`flex-<deviceId>-<depId>.service`), enables it and lets systemd run
+and restart it; the workloads keep running (and start at boot) without the engine. The engine needs the system
+manager's permission for that. The packaged engine runs as `flex` with `ProtectSystem=strict`, so it can neither
+write `/etc/systemd/system` nor call `systemctl` for other units. Pick one:
+
+1. **User `flex` + polkit (recommended on the LattePanda).** Install the rule and point the driver at a unit
+   directory inside its data dir; `systemctl enable <path>` links it into `/etc/systemd/system` (systemd writes the
+   links, not the engine):
+
+   ```bash
+   sudo install -m 0644 packaging/polkit/50-flexengine-systemd.rules /etc/polkit-1/rules.d/   # polkitd reloads it
+   # /etc/flexengine/engine.yaml, the device:
+   #   drivers: {native: {runtime: systemd, unitDir: /var/lib/flexengine/units}}
+   ```
+
+   The rule lets group `flex` start/stop/restart/reset-failed only `flex-*.service` units, and link/enable unit
+   files and `daemon-reload` (systemd cannot narrow those two to unit names). **That makes group `flex`
+   root-equivalent on the host** (a unit file may say `User=root`), the same trade-off as the `docker` group. The
+   workload units run as `flex` (`User=` default = the engine's user; `user:` to choose another one, which must be
+   able to read `/var/lib/flexengine/native/<dep>/`). `/var/lib/flexengine` must be on the root file system (linked
+   unit files are read at boot). Without the rule every call fails with `Interactive authentication required`
+   (FE-SYD-004).
+2. **Engine as root** (a drop-in with `User=root`, `Group=root`, `ReadWritePaths=/etc/systemd/system`): default
+   `unitDir: /etc/systemd/system`, no polkit; units without `user:` run as root.
+3. **User manager** (`scope: user`, dev boards and tests): `sudo loginctl enable-linger flex` so the flex user's
+   manager runs from boot, and a drop-in with `Environment=XDG_RUNTIME_DIR=/run/user/<uid of flex>` so `systemctl
+   --user` finds it. Units go to `~flex/.config/systemd/user` (flex's home is `/var/lib/flexengine`, writable for
+   the engine). No polkit; `user:` is refused; only `NoNewPrivileges` hardening (no mount namespacing in user units).
+
+Check on the device: the capabilities document shows `x-flex.drivers.native` with `driver: systemd`, the manager's
+`systemd` version, or `reachable: false` with the reason; `systemctl list-units 'flex-*'`,
+`journalctl -u 'flex-*'`.
 
 Upgrade: run the new bundle's `install.sh` with the same options. The venv is updated, the units are rewritten,
 a running service is restarted; `engine.yaml`, `tokens/` and `/var/lib/flexengine` are kept. Re-running with the

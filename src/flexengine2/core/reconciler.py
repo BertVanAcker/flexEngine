@@ -885,6 +885,12 @@ def build_drivers(cfg: dict, data_dir: Path) -> dict[str, Driver]:
             out["container"] = AnkaiosDriver(cfg["deviceId"], dc["ankBin"], dc["serverUrl"], dc["agent"])
         else:
             out["container"] = CliContainerDriver(cfg["deviceId"], dc["runtime"], dc.get("allowedRunOptions"))
-    if cfg.get("drivers", {}).get("native", True):
+    nat = cfg.get("drivers", {}).get("native", True)
+    if isinstance(nat, dict) and nat.get("runtime", "systemd") == "systemd":   # EV-19: real systemd units
+        from flexengine2.drivers.native.systemd import SystemdDriver
+
+        out["native"] = SystemdDriver(cfg["deviceId"], data_dir, scope=nat.get("scope", "system"),
+                                      unit_dir=nat.get("unitDir"), user=nat.get("user"))
+    elif nat:
         out["native"] = ProcessDriver(cfg["deviceId"], data_dir)
     return out

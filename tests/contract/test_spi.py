@@ -18,11 +18,12 @@ from flexengine2.drivers.base import SPI_VERSION, Driver, DriverError, Observed,
 from flexengine2.drivers.container import AnkaiosDriver, CliContainerDriver
 from flexengine2.drivers.mcu.driver import McuFirmwareDriver, McuModuleDriver
 from flexengine2.drivers.plc.verify import PlcVerifyDriver
+from flexengine2.drivers.native.systemd import SystemdDriver
 from flexengine2.drivers.process import ProcessDriver
 
 from spi_harness.base import deployment
 
-ALL_DRIVERS = [CliContainerDriver, AnkaiosDriver, ProcessDriver, ApplabDriver, McuModuleDriver, McuFirmwareDriver,
+ALL_DRIVERS = [CliContainerDriver, AnkaiosDriver, ProcessDriver, SystemdDriver, ApplabDriver, McuModuleDriver, McuFirmwareDriver,
                PlcVerifyDriver]
 SPI_METHODS = ["plan", "apply", "remove", "status", "list", "health", "capabilities", "supervise", "failed",
                "preflight", "commit", "platform"]

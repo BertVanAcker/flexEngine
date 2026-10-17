@@ -379,9 +379,33 @@
           "$ref": "#/$defs/container"
         },
         "native": {
-          "type": "boolean",
+          "type": ["boolean", "object"],
           "default": false,
-          "description": "`true` adds the native process driver (tests only; the systemd native driver is not in alpha)."
+          "additionalProperties": false,
+          "description": "Native (container-free) driver. `true` = the process driver (plays systemd itself; tests and dev), an object selects the runtime: `{runtime: systemd}` writes real systemd units (EV-19).",
+          "properties": {
+            "runtime": {
+              "enum": ["process", "systemd"],
+              "default": "systemd",
+              "description": "`systemd`: workloads are unit files `flex-<deviceId>-<depId>.service` owned by systemd (they survive an engine restart and a reboot); `process`: the process driver (same as `native: true`)."
+            },
+            "scope": {
+              "enum": ["system", "user"],
+              "default": "system",
+              "description": "systemd: the system manager (engine runs as root, or as the flex user with the polkit rule packaging/polkit/50-flexengine-systemd.rules) or the user manager of the engine's user (`systemctl --user`, dev; enable lingering for boot)."
+            },
+            "unitDir": {
+              "type": "string",
+              "minLength": 1,
+              "description": "systemd: directory of the unit files (default /etc/systemd/system, user scope ~/.config/systemd/user); another directory is linked with `systemctl enable <path>`."
+            },
+            "user": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[a-z_][a-z0-9_.-]*[$]?$",
+              "description": "systemd, system scope: User= of the workload units (default: the engine's user; no User= line when the engine runs as root)."
+            }
+          }
         },
         "plc-verify": {
           "$ref": "#/$defs/plcVerify"

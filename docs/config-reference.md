@@ -58,7 +58,11 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `devices[].drivers.container.allowedRunOptions.gpus` | array of string |  |  | Permitted `--gpus` values, e.g. `all`. |
 | `devices[].drivers.container.allowedRunOptions.runtime` | array of string |  |  | Permitted `--runtime` values, e.g. `nvidia`. |
 | `devices[].drivers.container.allowedRunOptions.groupAdd` | array of string |  |  | Permitted `--group-add` values. |
-| `devices[].drivers.native` | boolean | `false` |  | `true` adds the native process driver (tests only; the systemd native driver is not in alpha). |
+| `devices[].drivers.native` | boolean \| object | `false` |  | Native (container-free) driver. `true` = the process driver (plays systemd itself; tests and dev), an object selects the runtime: `{runtime: systemd}` writes real systemd units (EV-19). |
+| `devices[].drivers.native.runtime` | `process` \| `systemd` | `"systemd"` |  | `systemd`: workloads are unit files `flex-<deviceId>-<depId>.service` owned by systemd (they survive an engine restart and a reboot); `process`: the process driver (same as `native: true`). |
+| `devices[].drivers.native.scope` | `system` \| `user` | `"system"` |  | systemd: the system manager (engine runs as root, or as the flex user with the polkit rule packaging/polkit/50-flexengine-systemd.rules) or the user manager of the engine's user (`systemctl --user`, dev; enable lingering for boot). |
+| `devices[].drivers.native.unitDir` | string |  |  | systemd: directory of the unit files (default /etc/systemd/system, user scope ~/.config/systemd/user); another directory is linked with `systemctl enable <path>`. |
+| `devices[].drivers.native.user` | string |  |  | systemd, system scope: User= of the workload units (default: the engine's user; no User= line when the engine runs as root). |
 | `devices[].drivers.plc-verify` | object |  |  | PLC interface verification (no download to the PLC): reads the running interface hash and holds/gates deployments on it. |
 | `devices[].drivers.plc-verify.plcs` | map | `{}` |  | PLC target (as in `flex-plc.json` `target` or the `plc` parameter, e.g. `panda/cx`, `opta`) -> connection. |
 | `devices[].drivers.plc-verify.plcs.<name>.via` | `ads` \| `modbus` \| `shm` |  | yes | Transport: Beckhoff ADS, Modbus/TCP, or the shared-memory RT host of the SIL. |

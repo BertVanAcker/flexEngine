@@ -413,6 +413,18 @@
         "python": {
           "type": "string"
         },
+        "systemd": {
+          "type": "string",
+          "description": "driver systemd (EV-19): the service manager's version (systemctl show -p Version); omitted when it does not answer."
+        },
+        "scope": {
+          "enum": ["system", "user"],
+          "description": "driver systemd: which service manager owns the units."
+        },
+        "unitDir": {
+          "type": "string",
+          "description": "driver systemd: where the engine writes its unit files."
+        },
         "exclusive": {
           "const": true
         },

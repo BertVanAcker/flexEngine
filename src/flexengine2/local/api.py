@@ -101,7 +101,7 @@ def config_profiles(dev: dict) -> list[str]:
         return ["mcu-module", "mcu-firmware"]
     drv = dev.get("drivers") or {}
     out = [p for p in ("container", "plc-verify", "applab") if p in drv]
-    if drv.get("native"):
+    if drv.get("native") or isinstance(drv.get("native"), dict):  # true, or {runtime: ...} (EV-19; {} = systemd)
         out.append("native")
     return out
 

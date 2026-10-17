@@ -78,6 +78,7 @@ def paths_of(errors):
 D0, D1, D2 = "/devices/0", "/devices/1", "/devices/2"
 CX, OPTA, SIM = f"{D0}/drivers/plc-verify/plcs/panda~1cx", f"{D0}/drivers/plc-verify/plcs/opta", f"{D0}/drivers/plc-verify/plcs/sim"
 CONT, APP, MCU, RELAY = f"{D0}/drivers/container", f"{D2}/drivers/applab", f"{D1}/mcu", f"{D1}/relay"
+NAT = f"{D0}/drivers/native"
 
 # (documented key, base, pointer, valid value, invalid value) -- one row per key of the generated reference
 CASES = [
@@ -146,6 +147,11 @@ CASES = [
     ("devices[].drivers.container.allowedRunOptions.runtime", "std", f"{CONT}/allowedRunOptions", {"runtime": ["nvidia"]}, {"runtime": "nvidia"}),
     ("devices[].drivers.container.allowedRunOptions.groupAdd", "std", f"{CONT}/allowedRunOptions", {"groupAdd": ["video"]}, {"groupAdd": True}),
     ("devices[].drivers.native", "std", f"{D0}/drivers/native", True, "yes"),
+    # EV-19: native driver on systemd
+    ("devices[].drivers.native.runtime", "std", NAT, {"runtime": "systemd"}, {"runtime": "rkt"}),
+    ("devices[].drivers.native.scope", "std", NAT, {"runtime": "systemd", "scope": "user"}, {"scope": "session"}),
+    ("devices[].drivers.native.unitDir", "std", NAT, {"unitDir": "/etc/systemd/system"}, {"unitDir": ""}),
+    ("devices[].drivers.native.user", "std", NAT, {"user": "flex"}, {"user": "Not A User"}),
     ("devices[].drivers.plc-verify", "std", f"{D0}/drivers/plc-verify", {}, []),
     ("devices[].drivers.plc-verify.plcs", "std", f"{D0}/drivers/plc-verify/plcs", {}, []),
     ("devices[].drivers.plc-verify.plcs.<name>.via", "std", f"{SIM}/via", "shm", "opcua"),
@@ -250,7 +256,7 @@ def test_ankaios_requires_its_keys_and_refuses_run_options():
 LEVELS = [("std", ""), ("std", "/cloud"), ("std", D0), ("std", f"{D0}/drivers"), ("std", CONT),
           ("ankaios", CONT), ("std", f"{CONT}/allowedRunOptions"), ("std", f"{D0}/drivers/plc-verify"),
           ("std", CX), ("std", OPTA), ("std", SIM), ("std", APP), ("std", MCU), ("std", f"{MCU}/smp"),
-          ("serial", f"{MCU}/smp"), ("std", RELAY)]
+          ("serial", f"{MCU}/smp"), ("std", RELAY), ("std", NAT)]
 
 
 @pytest.mark.parametrize("b,ptr", LEVELS, ids=[f"{b}:{p or '/'}" for b, p in LEVELS])
@@ -258,6 +264,8 @@ def test_unknown_key_rejected(b, ptr):
     cfg = BASES[b]()
     if ptr == f"{CONT}/allowedRunOptions":
         cfg["devices"][0]["drivers"]["container"]["allowedRunOptions"] = {}
+    if ptr == NAT:
+        cfg["devices"][0]["drivers"]["native"] = {}
     put(cfg, f"{ptr}/bogusKey", 1)
     errs = cl.validate(cfg)
     assert [e["path"] for e in errs] == [f"{ptr}/bogusKey"], errs
@@ -267,6 +275,14 @@ def test_unknown_key_rejected(b, ptr):
 def test_unknown_key_message_lists_allowed_keys():
     errs = cl.validate(put(base(), "/cloud/apiURL", "http://x"))
     assert errs[0]["message"].startswith("unknown key 'apiURL' (allowed: allowPlainHttp, allowSystemTrust, apiUrl, ")
+    errs = cl.validate(put(base(), NAT, {"runtme": "systemd"}))
+    assert errs == [{"path": f"{NAT}/runtme", "message": "unknown key 'runtme' (allowed: runtime, scope, unitDir, user)"}]
+
+
+def test_native_systemd_user_needs_system_scope():
+    assert msgs(put(base(), NAT, {"runtime": "systemd", "scope": "user", "user": "flex"})) == [
+        f"{NAT}/user: User= is only available with scope: system (the user manager runs units as its own user)"]
+    assert msgs(put(base(), NAT, {"runtime": "systemd", "scope": "system", "user": "flex"})) == []
 
 
 # ---- cross-key rules -------------------------------------------------------------------------------------------------
@@ -441,10 +457,10 @@ def test_plan_example_converts():
     cfg, notes = cl.from_plan_v2(doc)
     assert cfg["cloud"]["releasePublicKeys"] == [K2]
     assert cfg["cloud"]["safeStateFile"] == "/var/lib/flexengine/safe-state.json"
-    assert "native" not in cfg["devices"][0]["drivers"] and "os-rauc" not in cfg["devices"][0]["drivers"]
+    assert cfg["devices"][0]["drivers"]["native"] == {"runtime": "systemd"}  # EV-19
+    assert "os-rauc" not in cfg["devices"][0]["drivers"]
     assert cfg["devices"][1]["mcu"]["smp"] == {"tty": "/dev/ttyACM0", "baud": 115200}
-    assert {n.split(" ")[0] for n in notes} == {"/local", "/safeState/staleAfter",
-                                                "/devices/0/drivers/native", "/devices/0/drivers/os-rauc"}
+    assert {n.split(" ")[0] for n in notes} == {"/local", "/safeState/staleAfter", "/devices/0/drivers/os-rauc"}
     # EV-06 / EV-09: caFile is canonical now; observability maps to logFormat / historyMax (empty otlpEndpoint = off)
     assert cfg["cloud"]["caFile"] == "/etc/flex/ca.crt"
     assert cfg["logFormat"] == "json" and cfg["historyMax"] == 1000 and "otel" not in cfg
@@ -460,7 +476,7 @@ def test_plan_form_is_converted_by_load(tmp_path):
     doc["devices"][1]["relay"]["deployment"] = "d_pick_lab"
     p = write(tmp_path, yaml.safe_dump(doc))
     r = cl.check(p)
-    assert r["valid"] and len(r["warnings"]) == 4
+    assert r["valid"] and len(r["warnings"]) == 3
     assert "apiVersion" not in cl.parse(p)
 
 
@@ -620,7 +636,7 @@ def test_cli_config_check_prints_conversion_warnings(tmp_path, capsys):
     doc = plan_example()
     doc["devices"][1]["relay"]["deployment"] = "d"
     assert cli.main(["config", "check", str(write(tmp_path, yaml.safe_dump(doc)))]) == 0
-    assert capsys.readouterr().err.count("warning: ") == 4
+    assert capsys.readouterr().err.count("warning: ") == 3
 
 
 # ---- schema + generated reference ------------------------------------------------------------------------------------

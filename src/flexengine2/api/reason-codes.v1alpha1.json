@@ -126,7 +126,7 @@
    "profile": "engine",
    "template": "apply failed: {error}",
    "pattern": "^apply\\ failed:\\ (.+?)$",
-   "meaning": "the DriverError text of the failed apply (an FE-CTR/-NAT/-APL/-MCU/-PLC code)"
+   "meaning": "the DriverError text of the failed apply (an FE-CTR/-NAT/-SYD/-APL/-MCU/-PLC code)"
   },
   {
    "code": "FE-REC-006",
@@ -502,6 +502,177 @@
    "template": "process exited, start limit hit after {restarts} restarts",
    "pattern": "^process\\ exited,\\ start\\ limit\\ hit\\ after\\ (.+?)\\ restarts$",
    "meaning": "fail-fast"
+  },
+  {
+   "code": "FE-SYD-001",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "systemctl: executable not found ({error})",
+   "pattern": "^systemctl:\\ executable\\ not\\ found\\ \\((.+?)\\)$",
+   "meaning": "systemctl not installed; capabilities() reports available: false"
+  },
+  {
+   "code": "FE-SYD-002",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "systemctl {cmd}: no answer within {timeout} s",
+   "pattern": "^systemctl\\ (.+?):\\ no\\ answer\\ within\\ (.+?)\\ s$",
+   "meaning": "systemctl call hung (manager or D-Bus unresponsive): executor unreachable"
+  },
+  {
+   "code": "FE-SYD-003",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "systemctl: cannot run ({error})",
+   "pattern": "^systemctl:\\ cannot\\ run\\ \\((.+?)\\)$",
+   "meaning": "systemctl not executable (OSError other than not found)"
+  },
+  {
+   "code": "FE-SYD-004",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "systemctl {cmd}: {stderr} (exit {rc})",
+   "pattern": "^systemctl\\ (.+?):\\ (.+?)\\ \\(exit\\ (.+?)\\)$",
+   "meaning": "systemctl call failed (e.g. 'Failed to connect to bus', 'Interactive authentication required' = no polkit rule / not root)"
+  },
+  {
+   "code": "FE-SYD-005",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "systemctl show {unit}: unreadable output",
+   "pattern": "^systemctl\\ show\\ (.+?):\\ unreadable\\ output$",
+   "meaning": "systemctl show answered without ActiveState"
+  },
+  {
+   "code": "FE-SYD-006",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "native payload unusable: {error}",
+   "pattern": "^native\\ payload\\ unusable:\\ (.+?)$",
+   "meaning": "the verified payload could not be unpacked (tar error, disk full, unsafe member refused by the data filter)"
+  },
+  {
+   "code": "FE-SYD-007",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "cannot hand the data directory to user {user}: {error}",
+   "pattern": "^cannot\\ hand\\ the\\ data\\ directory\\ to\\ user\\ (.+?):\\ (.+?)$",
+   "meaning": "configured drivers.native.user does not exist on the device"
+  },
+  {
+   "code": "FE-SYD-008",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "native",
+   "template": "unit {unit} did not start ({state}/{substate}, result {result})",
+   "pattern": "^unit\\ (.+?)\\ did\\ not\\ start\\ \\((.+?)/(.+?),\\ result\\ (.+?)\\)$",
+   "meaning": "unit not active within 10 s after systemctl restart (exec failed, crashed at once)"
+  },
+  {
+   "code": "FE-SYD-009",
+   "field": "detail",
+   "stage": "remove",
+   "profile": "native",
+   "template": "systemctl stop {unit}: {stderr} (exit {rc})",
+   "pattern": "^systemctl\\ stop\\ (.+?):\\ (.+?)\\ \\(exit\\ (.+?)\\)$",
+   "meaning": "stopping the unit failed during remove"
+  },
+  {
+   "code": "FE-SYD-PRE-001",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "native payload is not a tar.gz archive: {error}",
+   "pattern": "^native\\ payload\\ is\\ not\\ a\\ tar\\.gz\\ archive:\\ (.+?)$",
+   "meaning": ""
+  },
+  {
+   "code": "FE-SYD-PRE-002",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "native payload member {name} escapes the payload directory",
+   "pattern": "^native\\ payload\\ member\\ (.+?)\\ escapes\\ the\\ payload\\ directory$",
+   "meaning": "absolute path or '..' in the archive"
+  },
+  {
+   "code": "FE-SYD-PRE-003",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "native payload has neither app.py nor unit.json",
+   "pattern": "^native\\ payload\\ has\\ neither\\ app\\.py\\ nor\\ unit\\.json$",
+   "meaning": "no entry point (also raised by apply)"
+  },
+  {
+   "code": "FE-SYD-PRE-004",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "unit.json is not valid JSON: {error}",
+   "pattern": "^unit\\.json\\ is\\ not\\ valid\\ JSON:\\ (.+?)$",
+   "meaning": ""
+  },
+  {
+   "code": "FE-SYD-PRE-005",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "unit.json: ExecStart must be a non-empty list of strings",
+   "pattern": "^unit\\.json:\\ ExecStart\\ must\\ be\\ a\\ non\\-empty\\ list\\ of\\ strings$",
+   "meaning": ""
+  },
+  {
+   "code": "FE-SYD-PRE-006",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "native",
+   "template": "restartPolicy.policy {policy} is not supported by the systemd driver (on-failure, always, never)",
+   "pattern": "^restartPolicy\\.policy\\ (.+?)\\ is\\ not\\ supported\\ by\\ the\\ systemd\\ driver\\ \\(on\\-failure,\\ always,\\ never\\)$",
+   "meaning": ""
+  },
+  {
+   "code": "FE-SYD-010",
+   "field": "failure",
+   "stage": "health-gate",
+   "profile": "native",
+   "template": "unit {unit} failed: start limit hit after {restarts} restarts",
+   "pattern": "^unit\\ (.+?)\\ failed:\\ start\\ limit\\ hit\\ after\\ (.+?)\\ restarts$",
+   "meaning": "fail-fast: ActiveState=failed, Result=start-limit-hit (StartLimitBurst = maxRetries + 1 within 60 s)"
+  },
+  {
+   "code": "FE-SYD-011",
+   "field": "failure",
+   "stage": "health-gate",
+   "profile": "native",
+   "template": "unit {unit} failed ({result}, exit status {code}) and will not be restarted",
+   "pattern": "^unit\\ (.+?)\\ failed\\ \\((.+?),\\ exit\\ status\\ (.+?)\\)\\ and\\ will\\ not\\ be\\ restarted$",
+   "meaning": "fail-fast: ActiveState=failed (Restart=no, or a result Restart= does not cover)"
+  },
+  {
+   "code": "FE-SYD-012",
+   "field": "failure",
+   "stage": "health-gate",
+   "profile": "native",
+   "template": "unit {unit} exited (status {code}) and will not be restarted",
+   "pattern": "^unit\\ (.+?)\\ exited\\ \\(status\\ (.+?)\\)\\ and\\ will\\ not\\ be\\ restarted$",
+   "meaning": "fail-fast: clean exit with Restart=on-failure / no"
+  },
+  {
+   "code": "FE-SYD-020",
+   "field": "log",
+   "stage": "config",
+   "profile": "native",
+   "template": "scope must be system or user, got {scope}",
+   "pattern": "^scope\\ must\\ be\\ system\\ or\\ user,\\ got\\ (.+?)$",
+   "meaning": "drivers.native.scope invalid (the config schema refuses it first)"
   },
   {
    "code": "FE-APL-001",

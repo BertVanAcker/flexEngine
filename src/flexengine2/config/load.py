@@ -194,10 +194,8 @@ def from_plan_v2(doc: dict) -> tuple[dict, list[str]]:
             mode = nat.get("mode", "systemd")
             if mode == "process":
                 drv["native"] = True
-            else:
-                del drv["native"]
-                notes.append(f"/devices/{i}/drivers/native (mode {mode}) dropped: the systemd native driver is not "
-                             "in alpha")
+            else:  # EV-19: {mode: systemd} -> {runtime: systemd}
+                drv["native"] = {"runtime": mode, **{k: v for k, v in nat.items() if k != "mode"}}
         if "os-rauc" in drv:
             del drv["os-rauc"]
             notes.append(f"/devices/{i}/drivers/os-rauc dropped: the RAUC OS driver is not in alpha")
@@ -317,6 +315,10 @@ def _semantic(cfg: dict) -> list[tuple[str, str, str | None]]:
         if isinstance(smp, dict) and ({"host", "port"} & set(smp)) and ({"tty", "baud"} & set(smp)):
             out.append((f"{base}/mcu/smp", "use either {host, port} (TCP) or {tty, baud} (serial), not both",
                         f"{base}/mcu/smp"))
+        nat = (d.get("drivers") or {}).get("native") if isinstance(d.get("drivers"), dict) else None
+        if isinstance(nat, dict) and nat.get("scope") == "user" and "user" in nat:
+            out.append((f"{base}/drivers/native/user", "User= is only available with scope: system (the user manager "
+                                                       "runs units as its own user)", None))
         r = d.get("relay")
         if isinstance(r, dict) and r.get("enabled") is True:
             if not (r.get("model") or cfg.get("model")):
