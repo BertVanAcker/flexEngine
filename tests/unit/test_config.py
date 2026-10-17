@@ -20,7 +20,7 @@ from flexengine2.local import cli
 
 FLEXENGINE = Path(__file__).resolve().parents[2]
 REPO = FLEXENGINE.parent
-K = crypto.public_b64(crypto.generate()) if hasattr(crypto, "generate") else "A" * 43 + "="
+K = crypto.b64(bytes(range(32)))
 K2 = "B" * 43 + "="
 HEX = "ab" * 64
 
@@ -203,7 +203,6 @@ REQUIRED = [("/cloud", ""), ("/dataDir", ""), ("/devices", ""), (f"{D0}/deviceId
 def test_required_key_missing(ptr, parent):
     cfg = base()
     parts = ptr.split("/")
-    put(cfg, "/".join(parts[:-1]) or "/x", None) if False else None
     cur = cfg
     for p in [q.replace("~1", "/") for q in parts[1:-1]]:
         cur = cur[int(p)] if isinstance(cur, list) else cur[p]

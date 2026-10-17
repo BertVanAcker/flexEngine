@@ -118,7 +118,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "runtime": {"enum": ["docker", "podman"]},
+        "runtime": {"description": "`docker` or `podman` (checked by `container.runtime`)."},
         "allowedRunOptions": {
           "type": "object",
           "additionalProperties": false,
