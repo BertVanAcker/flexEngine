@@ -20,6 +20,12 @@ IMAGE = "flexengine-pkgtest:ubuntu24.04"
 CA = Path("/root/.ccr/ca-bundle.crt")   # agent proxy CA, when this runs behind one
 
 
+def ca_mount() -> list[str]:
+    """`-v CA:/ca.crt:ro` when the agent proxy's CA is there and readable, else nothing. On a CI runner /root is not
+    readable by the runner user: Path.exists() raises PermissionError there (Python >= 3.12), os.access answers."""
+    return ["-v", f"{CA}:/ca.crt:ro"] if os.access(CA, os.R_OK) else []
+
+
 def make_bumped(d: Path) -> Path:
     """Copy flexengine/ (pyproject, README, src) to d with the version bumped to <ver>.post1: an "upgrade"."""
     d.mkdir(parents=True, exist_ok=True)
@@ -66,7 +72,7 @@ def image() -> str:
     if r.returncode != 0:
         raise RuntimeError(f"cannot pull ubuntu:24.04: {r.stderr.strip()[-300:]}")
     name = f"fe-pkg-prep-{os.getpid()}"
-    vol = ["-v", f"{CA}:/ca.crt:ro"] if CA.exists() else []
+    vol = ca_mount()
     script = (_apt_proxy_script() + "apt-get update -q >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get install "
               "-y -q --no-install-recommends python3 python3-venv systemd systemd-sysv dbus >/dev/null && "
               "rm -f /etc/apt/apt.conf.d/99proxy")

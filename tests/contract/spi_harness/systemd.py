@@ -210,7 +210,7 @@ def polkit_image() -> str:
     if fe.sh(["docker", "image", "inspect", tag]).returncode == 0:
         return tag
     name = f"fe-polkit-prep-{os.getpid()}"
-    vol = ["-v", f"{fe.CA}:/ca.crt:ro"] if fe.CA.exists() else []
+    vol = fe.ca_mount()
     script = (fe._apt_proxy_script() + "apt-get update -q >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get "
               "install -y -q --no-install-recommends polkitd >/dev/null && rm -f /etc/apt/apt.conf.d/99proxy")
     r = fe.sh(["docker", "run", "--name", name, "--network", "host", *vol, fe.image(), "bash", "-c", script],
@@ -341,6 +341,8 @@ class RealSystemdHarness(_SystemdBase):
         return True
 
     def cleanup(self):
+        if not hasattr(self, "device"):
+            return                       # setup() skipped before it made a device: nothing to clean up
         pre = f"flex-{systemd_mod.sanitize(self.device)}-"
         self.box.sh(f"cd /etc/systemd/system && for u in {pre}*.service; do [ -e \"$u\" ] || continue; "
                     f"systemctl stop \"$u\"; systemctl disable \"$u\"; rm -f \"$u\"; done; systemctl daemon-reload; "
