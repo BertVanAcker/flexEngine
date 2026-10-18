@@ -179,6 +179,9 @@ exit 0
         (self.root / "preinstall.sh").chmod(0o755)
         (self.root / "svc.sh").write_text(f"""#!/bin/sh
 # (re)start rauc service as if the machine had booted slot $1 (bootname)
+# with a device's umask (0022, as on the CI runner): `docker exec` processes run with 0000 under the development
+# container's Docker 29, which hid root-created files that the unprivileged host user cannot open
+umask 022
 [ -f {self.root}/svc.pid ] && kill $(cat {self.root}/svc.pid) 2>/dev/null || true
 for i in $(seq 50); do [ -f {self.root}/svc.pid ] && kill -0 $(cat {self.root}/svc.pid) 2>/dev/null || break; sleep 0.1; done
 setsid rauc service --conf={self.conf} --override-boot-slot=$1 >>{self.root}/svc.log 2>&1 &
@@ -247,7 +250,9 @@ echo "rauc service did not come up" >&2; exit 1
         text = p.read_text()
         text = re.sub(rf"(\[slot\.{re.escape(name)}\][^\[]*?bundle\.hash=)[0-9a-f]+", lambda m: m.group(1) + "f" * 64,
                       text, flags=re.S)
-        p.write_text(text)
+        tmp = p.with_name(p.name + ".tmp")      # rauc (root in the container) owns the file; the host user may only
+        tmp.write_text(text)                    # replace it (its directory), not write into it
+        os.replace(tmp, p)
         self._exec("sh", str(self.root / "svc.sh"), st["booted"])
 
 

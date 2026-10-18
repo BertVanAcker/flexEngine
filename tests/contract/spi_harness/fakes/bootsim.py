@@ -40,11 +40,23 @@ def _lock_path(state: Path) -> Path:
     return state.with_name(state.name + ".lock")
 
 
+def _open_lock(state: Path):
+    """The lock file, opened read-write and world-writable (0666, like the state file): in the nightly tier root in
+    the rauc container and the unprivileged test user on the host both lock it, and whoever creates it first must
+    not lock the other one out (root's umask 022 would leave it 0644 and the host's open EACCES)."""
+    fd = os.open(_lock_path(state), os.O_RDWR | os.O_CREAT, 0o666)
+    try:
+        os.fchmod(fd, 0o666)
+    except PermissionError:
+        pass                                    # someone else's lock file: already made 0666 by its creator
+    return os.fdopen(fd, "r+")
+
+
 @contextlib.contextmanager
 def locked(state: str | Path):
     """Read-modify-write of the state under an exclusive flock; yields the dict, writes it back atomically."""
     state = Path(state)
-    with open(_lock_path(state), "a+") as lf:
+    with _open_lock(state) as lf:
         fcntl.flock(lf, fcntl.LOCK_EX)
         try:
             st = json.loads(state.read_text())
@@ -58,7 +70,7 @@ def locked(state: str | Path):
 
 
 def load(state: str | Path) -> dict:
-    with open(_lock_path(Path(state)), "a+") as lf:
+    with _open_lock(Path(state)) as lf:
         fcntl.flock(lf, fcntl.LOCK_SH)
         try:
             return json.loads(Path(state).read_text())
@@ -87,6 +99,7 @@ def init(state: str | Path, slots: dict[str, str], booted: str = "A", max_tries:
           "log": [f"init booted={booted}"]}
     state.write_text(json.dumps(st, indent=1, sort_keys=True))
     os.chmod(state, 0o666)
+    _open_lock(state).close()                   # made by the initialiser (the host's test user), not by root
     _write_boot_id(state, st)
     return st
 
