@@ -125,7 +125,7 @@ def test_import_publish_plan_apply_run(lab):
     s, body = http_get(container_ip("flex_edge1_api"), 8080, "/greeting")
     assert (s, body) == (200, b"hello from compose")
     # EV-41: the compose port is published on the host, the worker's named volume exists and is mounted
-    assert http_get("127.0.0.1", 38082, "/greeting") == (200, b"hello from compose")
+    assert http_get("127.0.0.1", 28082, "/greeting") == (200, b"hello from compose")
     vols = subprocess.run(["docker", "volume", "ls", "-q", "--filter", "label=dev.flex.device=edge1"],
                           capture_output=True, text=True).stdout.split()
     assert vols == ["flex_edge1_worker_worker-state"], vols

@@ -20,6 +20,11 @@ PACKAGES = HERE / "packages"
 FLEXENGINE = HERE.parents[2]
 REPO = FLEXENGINE.parent
 WORK = FLEXENGINE / "tests" / "work" / "flexia"
+# Host ports the e2e packages publish (flcpy-docker `-p`, compose-two `ports:`). Below every ephemeral port range
+# (Linux 32768-60999, macOS/Windows 49152-65535): there any outgoing connection of any process on the host may hold
+# the port as its local port, `docker run -p` then fails, the engine fails the release for good and its dependents
+# stay held (the nightly of 2026-10-18 on 38081/38082). test_flexia_ports checks the packages against this.
+HOST_PORTS = (28081, 28082)
 
 
 def flex_env() -> dict:
@@ -44,6 +49,7 @@ class Cloud:
         self.url, self.st = self.srv.url, self.srv.state
         self.token_file = tmp / "admin-token"
         self.token_file.write_text("admin-secret")
+        self.engines: list[Engine] = []   # registered by Engine: their state goes into a timeout message
 
     def admin(self, method: str, path: str, body=None, user: str = "carol"):
         c = http.client.HTTPConnection("127.0.0.1", self.srv.port, timeout=30)
@@ -80,7 +86,32 @@ class Cloud:
             if v:
                 return v
             time.sleep(0.25)
-        raise AssertionError(f"timeout waiting for {what}")
+        raise AssertionError(f"timeout waiting for {what}\n{self.diagnostics()}")
+
+    def diagnostics(self, lines: int = 40) -> str:
+        """What every engine of this lab reported and recorded: per deployment the cloud's status (state, version,
+        health, reason, waitingFor), the tail of the engine's local history and of its log. A timeout explains
+        itself (the fixture deletes the engine directories afterwards)."""
+        out = []
+        for e in self.engines:
+            rc = e.proc.poll()
+            out.append(f"=== {e.dev}: engine {'running' if rc is None else f'exited rc={rc}'}")
+            try:
+                st = self.status(e.dev)
+            except Exception as ex:  # noqa: BLE001  (a diagnostic never hides the timeout)
+                st = {"<status unavailable>": {"reason": repr(ex)}}
+            for dep, r in sorted(st.items()):
+                keep = {k: r.get(k) for k in ("state", "version", "health", "reason", "failure", "waitingFor",
+                                              "rolledBackTo") if isinstance(r, dict) and r.get(k) is not None}
+                out.append(f"  status {dep}: {json.dumps(keep, default=str)[:1000]}")
+            for name, path in (("history", e.dir / "data" / "history.jsonl"), ("log", e.log)):
+                try:
+                    tail = path.read_text(errors="replace").splitlines()[-lines:]
+                except OSError:
+                    tail = ["<missing>"]
+                out.append(f"  --- {name} (last {len(tail)} lines)")
+                out += [f"  {ln[:400]}" for ln in tail]
+        return "\n".join(out)
 
     def converged(self, dev: str, expect: dict[str, str]):
         st = self.status(dev)
@@ -106,13 +137,14 @@ class Engine:
                     "safeStateFile": str(safe), "httpTimeout": 5,
                     "drivers": {"container": {"runtime": "docker", "allowedRunOptions": {
                         # EV-41: what the e2e packages publish / mount (compose ports, -p, a named volume)
-                        "ports": ["127.0.0.1:38081", "127.0.0.1:38082"], "volumes": ["worker-state"]}},
+                        "ports": [f"127.0.0.1:{p}" for p in HOST_PORTS], "volumes": ["worker-state"]}},
                         "native": True}}
         (self.dir / "engine.json").write_text(json.dumps(self.cfg, indent=1))
         self.log = self.dir / "engine.log"
         self.proc = subprocess.Popen([sys.executable, "-m", "flexengine2.testing.single", "--config",
                                       str(self.dir / "engine.json")], cwd=self.dir, stdout=open(self.log, "ab"),
                                      stderr=subprocess.STDOUT, env={**flex_env(), "PYTHONUNBUFFERED": "1"})
+        cloud.engines.append(self)
 
     def units(self) -> dict:
         p = self.dir / "data" / "native" / "units.json"

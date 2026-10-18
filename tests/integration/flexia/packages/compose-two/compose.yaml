@@ -5,7 +5,7 @@ services:
       GREETING: ${GREETING:-hello from compose}
       PORT: "8080"
     ports:
-      - "127.0.0.1:38082:8080"
+      - "127.0.0.1:28082:8080"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz')"]
       interval: 2s
