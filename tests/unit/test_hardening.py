@@ -374,7 +374,7 @@ def test_sd_notify_ready_watchdog_status_stopping(tmp_path, sock_dir, monkeypatc
     srv.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1 << 20)   # macOS: small default datagram buffer
     srv.settimeout(0.2)
     monkeypatch.setenv("NOTIFY_SOCKET", sock_path)
-    monkeypatch.setenv("WATCHDOG_USEC", "200000")            # ping every <= 0.1 s
+    monkeypatch.setenv("WATCHDOG_USEC", "1000000")           # WatchdogSec = 1 s: ping every <= 0.5 s
     monkeypatch.delenv("WATCHDOG_PID", raising=False)
     from flexengine2.local import sdnotify
 
@@ -408,7 +408,7 @@ def test_sd_notify_ready_watchdog_status_stopping(tmp_path, sock_dir, monkeypatc
     # the window starts at the first ping: how long the host takes to start (slow fsyncs on a busy runner) is not
     # what this test measures
     collect(time.time() + 10, first_ping=True)
-    collect(time.time() + 1.2)
+    collect(time.time() + 3.2)
     stop.set()
     th.join(10)
     collect(time.time() + 0.3)
@@ -419,11 +419,12 @@ def test_sd_notify_ready_watchdog_status_stopping(tmp_path, sock_dir, monkeypatc
     assert all(v >= 1 for v in seen_ready["ticks"].values()) and seen_ready["n"] == 2   # after the first round
     assert seen_ready["stop"] is stop and set(seen_ready["dirs"]) == {"dev-a", "dev-b"}
     timeline = [(round(t - got[0][0], 3), m.split("\n")[0]) for t, m in got]
-    assert len(pings) >= 8 and len([m for m in msgs if m == "WATCHDOG=1"]) >= 8, (pings, timeline)  # sent, received
-    # The engine pings every WatchdogSec/2 = 0.1 s; systemd kills it only after WatchdogSec = 0.2 s without one.
+    assert len(pings) >= 6 and len([m for m in msgs if m == "WATCHDOG=1"]) >= 6, (pings, timeline)  # sent, received
+    # The engine pings every WatchdogSec/2 = 0.5 s; systemd kills it only after WatchdogSec = 1 s without one.
+    # (A 0.2 s watchdog measured the runner's scheduler on a busy macOS runner, not the engine.)
     # Measured where the engine sends (the receive times of this thread add its own scheduling delays on a busy
     # runner): no gap may reach WatchdogSec.
-    assert max(b - a for a, b in zip(pings, pings[1:])) < 0.2, (pings, timeline)
+    assert max(b - a for a, b in zip(pings, pings[1:])) < 1.0, (pings, timeline)
     assert msgs[-1].startswith("STOPPING=1")
 
 

@@ -417,13 +417,15 @@ def run(cfg: dict, ticks: int = 0, stop=None, on_ready=None, grace: float | None
         while not stop_requested():
             if ticks and not host.workers_alive():
                 break
+            t0 = time.monotonic()
             if wd:
                 sdnotify.watchdog()
             st = host.status_text()
             if st != status:
                 status = st
                 sdnotify.status(st)
-            host.stop_event.wait(period)
+            # sleep only what is left of the period: time spent on the status must not delay the next ping
+            host.stop_event.wait(max(0.0, period - (time.monotonic() - t0)))
     finally:
         sdnotify.stopping(f"stopping: {host.status_text()}")
         host.shutdown(grace)
