@@ -120,7 +120,7 @@ remove() {  # remove <path>...: rm -rf what exists
 }
 have_systemd() { [[ $LIVE == 1 && $NOSVC == 0 ]] && command -v systemctl >/dev/null && [[ -d /run/systemd/system ]]; }
 sctl() { if have_systemd; then run systemctl "$@"; else ok "systemctl $* skipped (no running systemd${ROOT:+, --root})"; fi; }
-venv_version() { [[ -x "$R_PREFIX/bin/flexengine" ]] && "$R_PREFIX/bin/flexengine" version 2>/dev/null || true; }
+venv_version() { if [[ -x "$R_PREFIX/bin/flexengine" ]]; then "$R_PREFIX/bin/flexengine" version 2>/dev/null || true; fi; }
 summary() {
   if [[ $DRY == 1 ]]; then step "summary ($MODE, dry-run)"; else step "summary ($MODE)"; fi
   printf '   %-14s %s\n' "$@"
