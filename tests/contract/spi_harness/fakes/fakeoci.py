@@ -13,7 +13,7 @@ It implements exactly the CLI surface `CliContainerDriver` / `AnkaiosDriver` use
     stop [-t N] <name>  /  rm -f <name>
     volume create [--label k=v ...] N / volume inspect N / volume ls -q [--filter label=k=v ...] / volume rm [-f] N
     version --format ...                      {{.Server.Arch}}: $FAKE_OCI_ARCH (default amd64)
-    info [--format {{.Host.Arch}}]
+    info [--format {{.Host.Arch}} | {{.Host.Security.Rootless}} (false)]
 
 Fake image archive (the "payload"): {"fakeoci": 1, "images": {"<ref>": {"port": 8080, "ready": true,
 "exit_after": null, "exit_code": 1}}}. A container runs a small Python HTTP server on 127.0.0.1:<port> answering
@@ -388,7 +388,12 @@ def main(argv: list[str]) -> int:
         elif a[:1] == ["version"]:
             print(os.environ.get("FAKE_OCI_ARCH", "amd64") if "{{.Server.Arch}}" in a else "99.0.0-fake")
         elif a[:1] == ["info"]:
-            print(os.environ.get("FAKE_OCI_ARCH", "amd64") if "{{.Host.Arch}}" in a else "fake runtime")
+            if "{{.Host.Arch}}" in a:
+                print(os.environ.get("FAKE_OCI_ARCH", "amd64"))
+            elif "{{.Host.Security.Rootless}}" in a:
+                print("false")                  # fake containers answer on 127.0.0.1, reachable from the host
+            else:
+                print("fake runtime")
         else:
             raise Fail(f"fakeoci: unsupported command {a}", 125)
     except Fail as e:

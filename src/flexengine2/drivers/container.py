@@ -4,7 +4,10 @@ The verified payload is a docker-archive tar (from the signed release). The driv
 runtime's image store, then runs it with labels that let it rebuild its view after an engine crash:
 dev.flex.device / dev.flex.deployment / dev.flex.digest / dev.flex.version.
 Restart policy is delegated to the runtime (docker/podman `--restart on-failure:N`, Ankaios
-`restartPolicy: ON_FAILURE`). Health probes are executed by the engine: `http` (default; GET on the container IP),
+`restartPolicy: ON_FAILURE`). Health probes are executed by the engine: `http` (default; GET on the container IP;
+where the host cannot reach a container IP -- rootless podman (slirp4netns / pasta: no IP; netavark: an IP inside
+the rootless network namespace) or a container without one -- GET on 127.0.0.1 inside the container's network
+namespace: `[podman unshare] nsenter --net=/proc/<pid>/ns/net <python>`),
 `exec` (EV-39: a command run in the container with `docker|podman exec`, exit 0 = healthy, bounded by
 `execTimeoutSeconds`), `process` (EV-39: the container runs, is not restarting and did not restart since the
 previous probe). Ankaios runs podman underneath,
@@ -30,6 +33,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import time
 from dataclasses import dataclass, field
 from fnmatch import fnmatchcase
@@ -105,6 +109,19 @@ def _ip(info: dict) -> str | None:
         if n.get("IPAddress"):
             return n["IPAddress"]
     return None
+
+
+# the `http` probe inside a container's network namespace (argv: port path timeout); stdlib only, run with -I
+_NETNS_HTTP = """import http.client, sys
+try:
+    c = http.client.HTTPConnection("127.0.0.1", int(sys.argv[1]), timeout=float(sys.argv[3]))
+    c.request("GET", sys.argv[2], headers={"Connection": "close"})
+    r = c.getresponse()
+    r.read()
+    sys.exit(0 if 200 <= r.status < 300 else 1)
+except Exception:
+    sys.exit(1)
+"""
 
 
 # Extra `docker/podman run` options a release may request in its signed descriptor (`runOptions`), e.g.
@@ -251,6 +268,7 @@ class CliContainerDriver(Driver):
         self._ver = None
         self._arch = None
         self._restarts: dict[str, int] = {}      # container id -> RestartCount at the last `process` probe
+        self._rootless_v: bool | None = None
         self.allowed_run_options = allowed_run_options or {}
         self.secrets_dir = secrets_dir
 
@@ -462,10 +480,46 @@ class CliContainerDriver(Driver):
             except DriverError:
                 return False
             return p.returncode == 0
+        port, path = int(probe.get("port", 8080)), probe.get("path", "/healthz")
         ip = _ip(info)
-        if not ip:
+        if ip and not self._rootless():
+            return http_probe(ip, port, path)
+        return self._netns_http_probe(info, port, path)
+
+    def _rootless(self) -> bool:
+        """Rootless podman: its container IPs (if any) live in a network namespace the host cannot route to.
+        Asked once (`podman info`); no clear answer is "not rootless" (the container IP is probed) and asked again."""
+        if self.rt != "podman":
             return False
-        return http_probe(ip, int(probe.get("port", 8080)), probe.get("path", "/healthz"))
+        if self._rootless_v is None:
+            try:
+                p = _run([self.rt, "info", "--format", "{{.Host.Security.Rootless}}"], check=False, timeout=30)
+            except DriverError:
+                return False
+            v = p.stdout.strip().lower()
+            if p.returncode != 0 or v not in ("true", "false"):
+                return False
+            self._rootless_v = v == "true"
+        return self._rootless_v
+
+    def _netns_http_probe(self, info: dict, port: int, path: str) -> bool:
+        """GET 127.0.0.1:<port><path> inside the container's network namespace. Rootless podman joins it through
+        `podman unshare` (the user namespace that owns it); a root engine with nsenter directly. Never raises."""
+        pid = int(((info.get("State") or {}).get("Pid")) or 0)
+        if pid <= 0:
+            return False
+        if self._rootless():
+            prefix = [self.rt, "unshare"]
+        elif os.geteuid() == 0:
+            prefix = []
+        else:
+            return False             # an unprivileged engine cannot enter a rootful runtime's namespaces
+        argv = [*prefix, "nsenter", f"--net=/proc/{pid}/ns/net", "--", sys.executable, "-I", "-c", _NETNS_HTTP,
+                str(port), path, "1.0"]
+        try:
+            return _run(argv, check=False, timeout=10).returncode == 0
+        except DriverError:
+            return False
 
     def health(self, dep_id, probe):
         try:
