@@ -23,6 +23,8 @@ HEALTH = {"type": "http", "path": "/healthz", "periodSeconds": 0.15, "successThr
 
 # minimal flexNode stand-in for the real runtimes (alpine is present locally; no registry pull)
 DOCKERFILE = """FROM alpine:3.20
+ARG VERSION
+LABEL dev.flex.test.version=$VERSION
 ARG READY=1
 ARG EXIT_AFTER=
 ENV READY=$READY EXIT_AFTER=$EXIT_AFTER
@@ -228,8 +230,11 @@ class RealCliHarness(_ContainerBase):
         (ctx / "run.sh").write_text(RUN_SH)
         repo = f"docker.io/flexnode/ct_app_{self.runtime}"
         tag = f"{repo}:{version}"
-        self._rt("build", "-q", "-t", tag, "--build-arg", f"READY={1 if ready else 0}",
-                 "--build-arg", f"EXIT_AFTER={exit_after}", str(ctx), check=True)
+        # VERSION makes every version its own image: same content would give the same digest (a build-cache hit
+        # under Docker 28's graph-driver store), i.e. two "releases" that are one image
+        self._rt("build", "-q", "-t", tag, "--build-arg", f"VERSION={version}",
+                 "--build-arg", f"READY={1 if ready else 0}", "--build-arg", f"EXIT_AFTER={exit_after}", str(ctx),
+                 check=True)
         tar = ctx / "image.tar"
         fmt = ["--format", "oci-archive"] if self.runtime == "podman" else []
         self._rt("save", *fmt, "-o", str(tar), tag, check=True)
