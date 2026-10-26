@@ -361,7 +361,7 @@ def _history_reader(provider):
     return read
 
 
-REPORTED = ("Pending", "Installing", "Installed", "Failed", "Removing", "Removed")
+REPORTED = ("Pending", "Installing", "Installed", "Failed", "Removing", "Removed", "Staged", "Stopped")
 _HIST_FIELDS = ("version", "digest", "reason", "health", "correlationId", "traceparent", "rolledBackTo", "failFast",
                 "restarts")
 
@@ -667,7 +667,8 @@ class LocalApi:
             elif d is None:
                 state, ver, dig = "Removing", wl.get("version"), wl.get("digest")
             elif a and wl.get("digest") == want and (st.get("failed") or {}).get(dep_id) != want:
-                state, ver, dig = "Installed", wl.get("version"), wl.get("digest")
+                state = {"staged": "Staged", "stopped": "Stopped"}.get(a.get("run"), "Installed")   # FE-4 run state
+                ver, dig = wl.get("version"), wl.get("digest")
             elif (st.get("failed") or {}).get(dep_id) == want:
                 state, ver, dig = "Failed", rv.get("revision"), want
             elif rejected.get("deployment") == dep_id and rejected.get("manifestVersion") == desired_doc.get("manifestVersion"):

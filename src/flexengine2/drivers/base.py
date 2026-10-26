@@ -93,6 +93,39 @@ Optional methods (defaults are no-ops)
 ``failure_detail(dep_id, healthy_at) -> dict``
     Extra fields for the ``Failed`` report after a rollback (e.g. when the fault became visible on the device).
 
+Run state and build (FE-4, additive in 1.0: optional, a driver without them keeps working as before)
+-----------------------------------------------------------------------------------------------------
+A driver that implements all three of ``stage``, ``start`` and ``stop`` supports the run states of the desired state
+(``x-flex-runState``: staged | running | stopped); the engine refuses a staged or stopped deployment for any other
+driver (FE-DS-009). ``supports(drv, "runState")`` tells.
+
+``stage(current, desired) -> None``
+    Install ``desired`` (transfer, unpack, load, create) without starting it: afterwards ``status`` reports it
+    present, not running, with ``desired.digest``. Whatever ``current`` ran for the deployment is stopped and
+    replaced. Idempotent like ``apply``; a later ``start`` needs no second transfer. ``DriverError`` only.
+``start(dep_id) -> None``
+    Start the installed (staged or stopped) workload; the engine runs the health gate afterwards. Idempotent (a
+    running workload stays running). ``DriverError`` when it cannot start (the engine handles it like a failed
+    apply: fail fast).
+``stop(dep_id) -> None``
+    Stop the workload and keep it installed (payload, unpacked tree, image, created container, unit file, build
+    result) for a fast ``start``; no restart policy brings it back, also not after a reboot. Idempotent; unknown
+    deployment: no-op. A stopped workload is ``present=True, running=False``.
+``build(desired, request) -> BuildResult``
+    On-device build (``x-flex-build``) from the release's source payload (``request.source_path``) with the signed
+    build spec (``request.spec``, the descriptor's ``build``); ``supports(drv, "build")`` tells. Reports progress
+    and output lines through ``request.emit("progress", value)`` / ``request.emit("line", text)``, returns the
+    payload the engine installs instead of the release's binary payload (``BuildResult``: ``digest`` = what was
+    built, ``payload_path`` / ``payload_annotations`` for the workload). Raises ``DriverError`` when the build fails
+    (FE-BLD-001), ``BuildTimeout`` after ``request.timeout`` seconds (FE-BLD-002). Must not touch what runs.
+``runtime``
+    Class/instance attribute: the ``x-flex-runtime`` value this driver instance serves (``docker``,
+    ``docker-compose``, ``podman``, ``ankaios``, ``systemd``, ``process``, ``applab``, ``mcu-module``), or ``None``
+    for a profile without runtimes. The device's ``x-flex.runtimes`` are the runtimes of its driver instances.
+``Workload.build``
+    ``{"id", "resultDigest"}`` for a workload built on the device, else empty: a driver that keys its files by
+    ``digest`` keys them by ``tree_key(workload)`` so a rebuild of the same release is not mistaken for the old one.
+
 Errors
 ------
 ``DriverError`` is the only exception a driver raises across the SPI. It means "executor problem" (defer or roll
@@ -106,7 +139,8 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
-__all__ = ["SPI_VERSION", "Driver", "DriverError", "Observed", "Workload", "http_probe", "wait_until"]
+__all__ = ["SPI_VERSION", "BuildRequest", "BuildResult", "BuildTimeout", "Driver", "DriverError", "Observed",
+           "Workload", "http_probe", "supports", "tree_key", "wait_until"]
 
 
 @dataclass
@@ -121,6 +155,7 @@ class Workload:
     health: dict = field(default_factory=dict)
     restart: dict = field(default_factory=dict)
     run_options: dict = field(default_factory=dict)  # from the signed descriptor (`runOptions`), S4
+    build: dict = field(default_factory=dict)        # FE-4: {"id", "resultDigest"} of an on-device build, else {}
 
     def to_dict(self) -> dict:
         return dict(self.__dict__)
@@ -145,6 +180,51 @@ SPI_VERSION = "1.0"
 
 class DriverError(RuntimeError):
     pass
+
+
+class BuildTimeout(DriverError):
+    """FE-4: an on-device build ran longer than its timeout."""
+
+
+@dataclass
+class BuildRequest:
+    """FE-4: one on-device build (Driver.build)."""
+    id: str                        # x-flex-build.id
+    source_path: str               # verified source payload (tar.gz) in the engine's store
+    spec: dict                     # the signed descriptor's `build` (command, output, dockerfile, timeoutSeconds)
+    work_dir: str                  # a directory of this build the driver may use (kept until the next build)
+    emit: object = None            # callable(kind: "progress" | "line", value)
+    timeout: float = 1800.0
+
+    def progress(self, value: float) -> None:
+        if callable(self.emit):
+            self.emit("progress", max(0.0, min(1.0, float(value))))
+
+    def line(self, text: str) -> None:
+        if callable(self.emit):
+            self.emit("line", str(text))
+
+
+@dataclass
+class BuildResult:
+    digest: str                    # resultDigest: what the build produced (image id, sha256 of the payload)
+    payload_path: str = ""
+    payload_annotations: dict = field(default_factory=dict)
+
+
+def tree_key(wl: Workload) -> str:
+    """Name of a workload's files (unpacked tree, unit, ...): the release digest's first 16 hex digits, plus the
+    build's result for a workload built on the device (FE-4), so a rebuild never reuses the old tree."""
+    key = wl.digest.split(":")[-1][:16]
+    rd = (wl.build or {}).get("resultDigest") or ""
+    return f"{key}-{rd.split(':')[-1][:12]}" if rd else key
+
+
+def supports(drv, feature: str) -> bool:
+    """FE-4: does a driver implement an optional part of the SPI? runState: stage + start + stop; build: build."""
+    meths = {"runState": ("stage", "start", "stop"), "build": ("build",)}[feature]
+    cls = drv if isinstance(drv, type) else type(drv)
+    return all(getattr(cls, m, None) is not None and getattr(cls, m) is not getattr(Driver, m) for m in meths)
 
 
 class Driver(ABC):
@@ -175,6 +255,7 @@ class Driver(ABC):
     exclusive: bool = False
     max_deployments: int | None = None
     reboots_on_apply: bool = False
+    runtime: str | None = None     # FE-4: the x-flex-runtime value this instance serves (None: no runtimes)
 
     def supervise(self) -> list[dict]:
         return []
@@ -190,6 +271,19 @@ class Driver(ABC):
 
     def platform(self) -> dict | None:
         return None
+
+    # FE-4 (optional; see the module docstring): run state and on-device build
+    def stage(self, current: Workload | None, desired: Workload) -> None:
+        raise NotImplementedError("stage/start/stop: optional, see supports()")
+
+    def start(self, dep_id: str) -> None:
+        raise NotImplementedError("stage/start/stop: optional, see supports()")
+
+    def stop(self, dep_id: str) -> None:
+        raise NotImplementedError("stage/start/stop: optional, see supports()")
+
+    def build(self, desired: Workload, request: BuildRequest) -> BuildResult:
+        raise NotImplementedError("build: optional, see supports()")
 
     def capabilities(self) -> dict:
         return {"profile": self.profile, "driver": self.name, **self.placement()}

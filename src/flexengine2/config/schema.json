@@ -384,6 +384,13 @@
           "additionalProperties": false,
           "description": "Native (container-free) driver. `true` = the process driver (plays systemd itself; tests and dev), an object selects the runtime: `{runtime: systemd}` writes real systemd units (EV-19).",
           "properties": {
+            "runtimes": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"enum": ["process", "systemd"]},
+              "default": [],
+              "description": "FE-4: a further native runtime this device allows next to `runtime` (a deployment picks it with x-flex-runtime); it keeps its state under <dataDir>/runtimes/<runtime>."
+            },
             "runtime": {
               "enum": ["process", "systemd"],
               "default": "systemd",
@@ -428,7 +435,7 @@
     },
     "container": {
       "type": "object",
-      "description": "OCI container driver. `runtime: docker|podman` uses the CLI driver, `runtime: ankaios` the Ankaios driver.",
+      "description": "OCI container driver. `runtime: docker|podman` uses the CLI driver, `runtime: compose` the compose driver (FE-4: a compose project per deployment, x-flex-runtime docker-compose), `runtime: ankaios` the Ankaios driver.",
       "required": [
         "runtime"
       ],
@@ -437,9 +444,10 @@
           "enum": [
             "docker",
             "podman",
+            "compose",
             "ankaios"
           ],
-          "description": "Container executor (`quadlet` is planned, not in alpha)."
+          "description": "Default container executor: deployments without x-flex-runtime run here (`quadlet` is planned, not in alpha)."
         }
       },
       "if": {
@@ -460,12 +468,43 @@
       }
     },
     "containerCli": {
-      "title": "runtime: docker | podman",
+      "title": "runtime: docker | podman | compose",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "runtime": {
-          "description": "`docker` or `podman` (checked by `container.runtime`)."
+          "description": "`docker`, `podman` or `compose` (checked by `container.runtime`)."
+        },
+        "runtimes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "docker",
+              "podman",
+              "compose"
+            ]
+          },
+          "default": [],
+          "description": "FE-4: further container runtimes this device allows next to `runtime` (a deployment picks one with x-flex-runtime: docker, podman, docker-compose for compose); reported as capabilities x-flex.runtimes. Each one is its own driver instance with the same allowedRunOptions and secretsDir."
+        },
+        "composeCommand": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": [
+            "docker",
+            "compose"
+          ],
+          "description": "FE-4, runtime compose: the compose CLI, e.g. `[docker, compose]` (Compose v2 plugin) or `[podman, compose]`; its first word is also the CLI that loads images and inspects containers."
+        },
+        "composeAllowHostAccess": {
+          "type": "boolean",
+          "default": false,
+          "description": "FE-4, runtime compose: allow compose files that ask for host access (privileged, cap_add, devices, security_opt, pid/ipc/network_mode/userns_mode/uts host, bind mounts of host paths); refused at preflight otherwise (deny by default, as allowedRunOptions for the CLI driver)."
         },
         "allowedRunOptions": {
           "type": "object",

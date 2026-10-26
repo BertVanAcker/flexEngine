@@ -149,6 +149,10 @@ CASES = [
     ("devices[].drivers", "std", f"{D2}/drivers", {}, "applab"),
     ("devices[].drivers.container", "std", CONT, {"runtime": "podman"}, {}),
     ("devices[].drivers.container.runtime", "std", f"{CONT}/runtime", "podman", "quadlet"),
+    # FE-4: further runtimes, the compose runtime
+    ("devices[].drivers.container.runtimes", "std", f"{CONT}/runtimes", ["podman", "compose"], ["quadlet"]),
+    ("devices[].drivers.container.composeCommand", "std", f"{CONT}/composeCommand", ["podman", "compose"], []),
+    ("devices[].drivers.container.composeAllowHostAccess", "std", f"{CONT}/composeAllowHostAccess", True, "yes"),
     ("devices[].drivers.container.ankBin", "ankaios", f"{CONT}/ankBin", "/opt/ank", ""),
     ("devices[].drivers.container.serverUrl", "ankaios", f"{CONT}/serverUrl", "http://h:1", 1),
     ("devices[].drivers.container.agent", "ankaios", f"{CONT}/agent", "agent_B", ""),
@@ -165,6 +169,8 @@ CASES = [
     ("devices[].drivers.native", "std", f"{D0}/drivers/native", True, "yes"),
     # EV-19: native driver on systemd
     ("devices[].drivers.native.runtime", "std", NAT, {"runtime": "systemd"}, {"runtime": "rkt"}),
+    ("devices[].drivers.native.runtimes", "std", NAT, {"runtime": "systemd", "runtimes": ["process"]},
+     {"runtimes": ["rkt"]}),
     ("devices[].drivers.native.scope", "std", NAT, {"runtime": "systemd", "scope": "user"}, {"scope": "session"}),
     ("devices[].drivers.native.unitDir", "std", NAT, {"unitDir": "/etc/systemd/system"}, {"unitDir": ""}),
     ("devices[].drivers.native.user", "std", NAT, {"user": "flex"}, {"user": "Not A User"}),
@@ -352,7 +358,7 @@ def test_unknown_key_message_lists_allowed_keys():
     errs = cl.validate(put(base(), "/cloud/apiURL", "http://x"))
     assert errs[0]["message"].startswith("unknown key 'apiURL' (allowed: allowPlainHttp, allowSystemTrust, apiUrl, ")
     errs = cl.validate(put(base(), NAT, {"runtme": "systemd"}))
-    assert errs == [{"path": f"{NAT}/runtme", "message": "unknown key 'runtme' (allowed: python, runtime, scope, unitDir, user)"}]
+    assert errs == [{"path": f"{NAT}/runtme", "message": "unknown key 'runtme' (allowed: python, runtime, runtimes, scope, unitDir, user)"}]
 
 
 def test_native_systemd_user_needs_system_scope():
@@ -744,7 +750,7 @@ def test_cli_config_check(tmp_path, capsys):
     assert out == ["/cloud/x: unknown key 'x' (allowed: allowPlainHttp, allowSystemTrust, apiUrl, backoff, caFile, capsEveryTicks, cloudPublicKey, "
                    "fixPermissions, healthEveryTicks, httpTimeout, outboxMax, pollInterval, releaseKeyFiles, "
                    "releasePublicKeys, safeStateFile, stackInfo, tlsServerName)",
-                   "/devices/0/drivers/container/runtime: must be one of docker, podman, ankaios; got 'quadlet'"]
+                   "/devices/0/drivers/container/runtime: must be one of docker, podman, compose, ankaios; got 'quadlet'"]
     assert cli.main(["config", "check", str(badp), "--json"]) == 1
     doc = json.loads(capsys.readouterr().out)
     assert doc["valid"] is False and set(doc) == {"valid", "errors"}

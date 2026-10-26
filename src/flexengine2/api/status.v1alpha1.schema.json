@@ -10,7 +10,7 @@
   "properties": {
     "dep": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DeploymentId", "description": "Deployment id; equals the {dep} path segment."},
     "seq": {"type": "integer", "minimum": 1, "description": "Per-device monotonic sequence number (persisted)."},
-    "state": {"enum": ["Pending", "Installing", "Installed", "Failed", "Removing", "Removed"]},
+    "state": {"enum": ["Pending", "Installing", "Installed", "Failed", "Removing", "Removed", "Staged", "Stopped"], "description": "Staged and Stopped (FE-4, x-flex-runState): the release is installed but does not run; Staged = installed and not started since, Stopped = stopped on request and kept for a fast restart. A running deployment is Installed."},
     "deviceTime": {"type": "number", "description": "Unix seconds on the device when the record was made."},
     "manifestVersion": {"type": ["integer", "null"], "minimum": 0, "description": "manifestVersion of the accepted desired state (null before any was accepted)."},
     "version": {"type": "string", "description": "Release version (revision) the record is about."},

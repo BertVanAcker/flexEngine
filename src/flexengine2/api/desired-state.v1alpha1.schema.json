@@ -3,7 +3,7 @@
   "$id": "https://flex.dev/schemas/desired-state.v1alpha1.schema.json",
   "title": "CP-1 DesiredState v1alpha1",
   "description": "Body of GET /api/v1/devices/{deviceId}/deployments (and desired.json in an offline bundle). Margo ApplicationDeployment shape with registered x-flex-* extensions. Derived from what flexengine2.core.reconciler reads and flexengine2.testing.fakecloud writes.",
-  "$comment": "Compatibility (v1alpha1): changes are additive only (new optional fields, new enum values such as a new driver profile, new registered x-flex-* keys). Removing or retyping a field, or making an optional field required, needs v1alpha2. Objects owned by flex (DesiredState, x-flex-activation, its window) are closed. Margo-owned objects (ApplicationDeployment, metadata, spec, deploymentProfile, component) accept unknown Margo keys (the engine ignores them) but reject every unknown key starting with 'x-'. Semantic rules not expressible here (checked by flexengine2.contracts): deployment ids unique; metadata.deviceId, when present, equals deviceId; x-flex-dependsOn names other deployments of this document, without duplicates or cycles.",
+  "$comment": "Compatibility (v1alpha1): changes are additive only (new optional fields, new enum values such as a new driver profile, new registered x-flex-* keys). Removing or retyping a field, or making an optional field required, needs v1alpha2. Objects owned by flex (DesiredState, x-flex-activation, its window) are closed. Margo-owned objects (ApplicationDeployment, metadata, spec, deploymentProfile, component) accept unknown Margo keys (the engine ignores them) but reject every unknown key starting with 'x-'. Semantic rules not expressible here (checked by flexengine2.contracts): deployment ids unique; metadata.deviceId, when present, equals deviceId; x-flex-dependsOn names other deployments of this document, without duplicates or cycles; x-flex-runtime runs on the deployment's x-flex-driver profile (RuntimeProfiles).",
   "type": "object",
   "required": [
     "apiVersion",
@@ -164,6 +164,57 @@
         }
       }
     },
+    "RunState": {
+      "enum": [
+        "staged",
+        "running",
+        "stopped"
+      ],
+      "default": "running",
+      "description": "FE-4: the run state of an installed deployment. running (default, as before FE-4): installed, started, health-gated. staged: installed (artefacts fetched, verified, prepared on the executor) but not started; no health gate (status Staged). stopped: installed and stopped, kept with its build for a fast restart (status Stopped). The health gate runs on every transition to running. x-flex-dependsOn orders starts (dependencies first) and stops (dependents first); a dependency whose own run state is staged or stopped does not hold its dependents (the desired state asks for it not to run, e.g. one component started on its own). The engine refuses a document that uses a run state other than running for a deployment whose driver cannot stage, start and stop (FE-DS-009), and every run state key when it does not report the feature runState (FE-DS-007)."
+    },
+    "Runtime": {
+      "enum": [
+        "docker",
+        "docker-compose",
+        "podman",
+        "ankaios",
+        "systemd",
+        "process",
+        "applab",
+        "mcu-module"
+      ],
+      "description": "FE-4: the runtime that runs this deployment (the device reports the runtimes it allows as capabilities x-flex.runtimes; engine.yaml lists them per profile). Absent = the profile's default runtime (engine.yaml drivers.<profile>.runtime). Each runtime belongs to one driver profile (RuntimeProfiles): docker, docker-compose, podman, ankaios -> container; systemd, process -> native; applab -> applab; mcu-module -> mcu-module. A runtime the device does not allow refuses the whole document (FE-DS-008); a runtime of another profile is a CP-1 violation (FE-DS-005). Changing the runtime of an installed deployment installs it afresh on the new runtime (the old one is removed first)."
+    },
+    "RuntimeProfiles": {
+      "const": {
+        "docker": "container",
+        "docker-compose": "container",
+        "podman": "container",
+        "ankaios": "container",
+        "systemd": "native",
+        "process": "native",
+        "applab": "applab",
+        "mcu-module": "mcu-module"
+      },
+      "description": "FE-4: the driver profile of each x-flex-runtime value (a reference table, read by flexengine2.contracts; not applied to documents)."
+    },
+    "Build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "maxLength": 128,
+          "description": "Build id chosen by the control plane; the engine builds once per id and names it in every build event (buildId)."
+        }
+      },
+      "description": "FE-4: build this deployment on the device from the source payload of its signed release (layer application/vnd.flex.payload.source.v1.tar+gzip of the deployment's profile; the build spec is the release descriptor's `build`) before it is staged or started, once per id. Progress, log lines and the result go to the control plane as DeviceEvents BuildStarted, BuildProgress, BuildLog, BuildSucceeded (resultDigest), BuildFailed (reason, reasonCode FE-BLD-001..004). A failed build keeps the deployment on its previous state. Needs the feature build (FE-DS-007)."
+    },
     "ComponentProperties": {
       "type": "object",
       "required": [
@@ -238,7 +289,10 @@
               "x-flex-driver",
               "x-flex-safetyClass",
               "x-flex-activation",
-              "x-flex-dependsOn"
+              "x-flex-dependsOn",
+              "x-flex-runState",
+              "x-flex-runtime",
+              "x-flex-build"
             ]
           }
         ]
@@ -337,6 +391,15 @@
         },
         "x-flex-dependsOn": {
           "$ref": "#/$defs/DependsOn"
+        },
+        "x-flex-runState": {
+          "$ref": "#/$defs/RunState"
+        },
+        "x-flex-runtime": {
+          "$ref": "#/$defs/Runtime"
+        },
+        "x-flex-build": {
+          "$ref": "#/$defs/Build"
         }
       }
     }

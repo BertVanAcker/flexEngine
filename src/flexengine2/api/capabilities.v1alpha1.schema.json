@@ -155,9 +155,30 @@
         "engine"
       ],
       "properties": {
+        "features": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "runState",
+              "runtime",
+              "build",
+              "retry"
+            ]
+          },
+          "description": "FE-4: the optional desired-state features this engine honours. runState: x-flex-runState (staged | running | stopped); runtime: x-flex-runtime, checked against x-flex.runtimes; build: x-flex-build (on-device build from the release's source payload, build events); retry: a newer manifestVersion whose deployments equal those of the manifest a release failed its health gate under installs that release again (a retry). An engine without the list (before FE-4) refuses the keys as unknown x- keys; this engine refuses a key whose feature it does not report (FE-DS-007), so a control plane must serve a key only to a device that reports its feature."
+        },
+        "runtimes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "desired-state.v1alpha1.schema.json#/$defs/Runtime"
+          },
+          "description": "FE-4: the runtimes this device allows for x-flex-runtime (engine.yaml: each profile's runtime plus its runtimes list); a deployment naming another is refused (FE-DS-008)."
+        },
         "drivers": {
           "type": "object",
-          "description": "One fragment per installed driver profile (Driver.capabilities()).",
+          "description": "One fragment per installed driver profile (Driver.capabilities()); with several runtimes for a profile (FE-4), the fragment of its default runtime.",
           "propertyNames": {
             "$ref": "desired-state.v1alpha1.schema.json#/$defs/DriverProfile"
           },
@@ -316,8 +337,10 @@
         "driver": {
           "enum": [
             "docker",
-            "podman"
-          ]
+            "podman",
+            "compose"
+          ],
+          "description": "compose (FE-4): the compose driver (x-flex-runtime docker-compose), `docker compose` or `podman compose`."
         },
         "runtimeVersion": {
           "type": "string"

@@ -15,7 +15,8 @@ import pytest
 from flexengine2.core.reconciler import Engine
 from flexengine2.drivers.applab.driver import ApplabDriver
 from flexengine2.drivers.arduino_ota import ArduinoOtaDriver
-from flexengine2.drivers.base import SPI_VERSION, Driver, DriverError, Observed, wait_until
+from flexengine2.drivers.base import SPI_VERSION, Driver, DriverError, Observed, supports, wait_until
+from flexengine2.drivers.compose import ComposeDriver
 from flexengine2.drivers.container import AnkaiosDriver, CliContainerDriver
 from flexengine2.drivers.mcu.driver import McuFirmwareDriver, McuModuleDriver
 from flexengine2.drivers.os_rauc import OsRaucDriver
@@ -26,10 +27,12 @@ from flexengine2.drivers.process import ProcessDriver
 from spi_harness.base import deployment
 from spi_harness.example_spool import SpoolDriver
 
-ALL_DRIVERS = [CliContainerDriver, AnkaiosDriver, ProcessDriver, SystemdDriver, ApplabDriver, McuModuleDriver, McuFirmwareDriver,
+ALL_DRIVERS = [CliContainerDriver, ComposeDriver, AnkaiosDriver, ProcessDriver, SystemdDriver, ApplabDriver, McuModuleDriver, McuFirmwareDriver,
                PlcVerifyDriver, OsRaucDriver, ArduinoOtaDriver, SpoolDriver]
 SPI_METHODS = ["plan", "apply", "remove", "status", "list", "health", "capabilities", "supervise", "failed",
-               "preflight", "commit", "platform"]
+               "preflight", "commit", "platform", "stage", "start", "stop", "build"]
+# FE-4: the drivers that implement the run states (stage + start + stop) and the build step
+RUN_STATE_DRIVERS = {CliContainerDriver, ComposeDriver, ProcessDriver, SystemdDriver}
 
 
 # ---- helpers ---------------------------------------------------------------------------------------------------
@@ -357,3 +360,79 @@ def test_unreachable_no_false_drift(harness):
         assert isinstance(dd.list(), dict)
         assert isinstance(dd.supervise(), list)
         assert o.present is not False, f"unreachable executor reported {wl.dep_id} as missing -> false drift repair: {o}"
+
+
+# ---- FE-4: run state (stage / start / stop), optional part of the SPI -------------------------------------------
+@pytest.mark.parametrize("cls", ALL_DRIVERS, ids=lambda c: c.__name__)
+def test_run_state_support_is_declared_by_the_class(cls):
+    """supports(drv, "runState") is a class property: all of stage, start and stop, or none of them."""
+    assert supports(cls, "runState") == (cls in RUN_STATE_DRIVERS)
+    assert supports(cls, "build") == (cls in RUN_STATE_DRIVERS)
+    if cls in RUN_STATE_DRIVERS:
+        assert cls.runtime is not None or cls in (CliContainerDriver,)
+
+
+def _not_running(d, wl):
+    o = d.status(wl.dep_id)
+    return o.present and not o.running and o.digest == wl.digest
+
+
+def test_run_state_stage_start_stop(harness):
+    """stage installs without starting, start + the health gate runs it, stop keeps it installed, a second start
+    needs no second transfer; every step idempotent."""
+    d = harness.new()
+    if not supports(d, "runState"):
+        pytest.skip(f"{type(d).__name__} has no run states (FE-4: the engine refuses staged/stopped for it)")
+    wl = harness.workload("1.0.0")
+    d.stage(None, wl)
+    assert wait_until(lambda: _not_running(d, wl), 10, 0.1), d.status(wl.dep_id)
+    assert d.health(wl.dep_id, harness.probe(wl)) is False
+    assert d.failed(wl.dep_id) is None, "a staged workload is not a failed one"
+    n0 = harness.transfers()
+    d.stage(None, wl)                                   # idempotent
+    assert _not_running(d, wl)
+    d.start(wl.dep_id)
+    ok, dt, why = gate(d, wl.dep_id, harness.probe(wl))
+    assert ok, f"health gate after start failed after {dt:.1f}s: {why}"
+    assert_observed(d.status(wl.dep_id), wl)
+    d.start(wl.dep_id)                                  # idempotent: still one running instance
+    assert harness.instances(wl.dep_id) in (None, 1)
+    d.stop(wl.dep_id)
+    assert wait_until(lambda: _not_running(d, wl), 15, 0.1), d.status(wl.dep_id)
+    d.stop(wl.dep_id)                                   # idempotent
+    for _ in range(5):                                  # no restart policy brings a stopped workload back
+        d.supervise()
+        time.sleep(0.2)
+    assert _not_running(d, wl), d.status(wl.dep_id)
+    d.start(wl.dep_id)
+    ok, dt, why = gate(d, wl.dep_id, harness.probe(wl))
+    assert ok, why
+    assert harness.transfers() == n0, "start after stop transferred the payload again"
+    d.remove(wl.dep_id)
+    assert wait_until(lambda: d.status(wl.dep_id).present is False, 15, 0.1)
+    d.stop(wl.dep_id)                                   # unknown deployment: no-op
+
+
+def test_run_state_stage_replaces_what_runs(harness):
+    """Staging a new release over a running one leaves nothing running, at the new release; a new driver instance
+    sees it (status rebuilt from the executor and the driver's files)."""
+    d = harness.new()
+    if not supports(d, "runState"):
+        pytest.skip(f"{type(d).__name__} has no run states")
+    v1, v2 = harness.workload("1.0.0"), harness.workload("2.0.0")
+    install(harness, d, v1)
+    d.stage(v1, v2)
+    assert wait_until(lambda: _not_running(d, v2), 15, 0.1), d.status(v2.dep_id)
+    assert _not_running(harness.new(), v2)
+    d.start(v2.dep_id)
+    ok, _, why = gate(d, v2.dep_id, harness.probe(v2))
+    assert ok, why
+    assert_observed(d.status(v2.dep_id), v2)
+
+
+def test_run_state_start_of_unknown_deployment(harness):
+    d = harness.new()
+    if not supports(d, "runState"):
+        pytest.skip(f"{type(d).__name__} has no run states")
+    with pytest.raises(DriverError):
+        d.start("never-deployed")

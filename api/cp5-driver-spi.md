@@ -24,6 +24,10 @@
 | `commit(dep_id)` | optional | after a passed gate; `DriverError` fails the gate (FE-HG-002) |
 | `platform() -> dict\|None` | optional | layer annotations to match (CP-3 §2) |
 | `failure_detail(dep_id, healthy_at) -> dict` | optional | extra status fields after a rollback (mcu-module: `faultVisibleAt`, `faultToHealthySeconds`) |
+| `stage(current, desired)` | optional (FE-4, with `start` + `stop` = run states) | install without starting: `status` present, not running; replaces what ran; idempotent; only `DriverError` |
+| `start(dep_id)` / `stop(dep_id)` | optional (FE-4) | start a staged/stopped workload (the engine gates it) / stop it and keep it installed (no restart policy brings it back); idempotent |
+| `build(desired, request) -> BuildResult` | optional (FE-4) | on-device build from `request.source_path` with the signed `request.spec`; `request.progress()` / `request.line()`; `DriverError` = FE-BLD-001, `BuildTimeout` = FE-BLD-002 |
+| `runtime` | class/instance attr (FE-4) | the `x-flex-runtime` value served (`docker`, `docker-compose`, `podman`, `ankaios`, `systemd`, `process`, `applab`, `mcu-module`), `None` otherwise |
 | `verified(dep_id, want)` | profile extension (plc-verify only) | used by the activation gate for `plc:<dep>[@hash]` requirements |
 
 Data: `Workload{dep_id, module, version, digest, payload_path, payload_annotations, parameters, health, restart,
@@ -104,6 +108,7 @@ image's sha256 and size, checked by the patched library) bind what the board ins
 | Profile | Driver (`name`) | Module | Executor | Config (`devices[].drivers`) |
 |---|---|---|---|---|
 | `container` | `docker`, `podman` | `drivers/container.py` `CliContainerDriver` | docker / podman CLI (labels, digest-pinned) | `container: {runtime: docker\|podman, allowedRunOptions, secretsDir}` |
+| `container` | `compose` (FE-4) | `drivers/compose.py` `ComposeDriver` | `docker compose` / `podman compose`, a project per deployment | `container: {runtime: compose \| runtimes: [compose], composeCommand, composeAllowHostAccess}` |
 | `container` | `ankaios` | `drivers/container.py` `AnkaiosDriver` | `ank` CLI → Ankaios server | `container: {runtime: ankaios, …}` |
 | `native` | `process` | `drivers/process.py` `ProcessDriver` | local processes; plays systemd itself (tests, dev, Mac) | `native: true` or `{runtime: process, python}` |
 | `native` | `systemd` | `drivers/native/systemd.py` `SystemdDriver` | real systemd unit files (EV-19) | `native: {runtime: systemd, scope, unitDir, user, python}` |

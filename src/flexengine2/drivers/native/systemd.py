@@ -47,7 +47,8 @@ import sys
 import tarfile
 from pathlib import Path
 
-from flexengine2.drivers.base import Driver, DriverError, Observed, Workload, http_probe, wait_until
+from flexengine2.drivers.base import (BuildRequest, BuildResult, Driver, DriverError, Observed, Workload, http_probe,
+                                      tree_key, wait_until)
 from flexengine2.drivers.native import pyenv
 from flexengine2.util import atomic_write_bytes, atomic_write_json, fsync_dir, fsync_tree, read_json
 
@@ -124,6 +125,7 @@ def exec_argv(names: set[str], unit_json: bytes | None) -> list[str]:
 class SystemdDriver(Driver):
     profile = "native"
     name = "systemd"
+    runtime = "systemd"
 
     def __init__(self, device_id: str, data_dir: Path, *, scope: str = "system", unit_dir: str | Path | None = None,
                  user: str | None = None, systemctl: str = "systemctl", python: str | None = None,
@@ -240,7 +242,7 @@ class SystemdDriver(Driver):
 
     # ---- payload, rendering ---------------------------------------------------------------------------------
     def _unpack(self, wl: Workload) -> Path:
-        d = self.dep_dir(wl.dep_id) / wl.digest.split(":")[-1][:16]
+        d = self.dep_dir(wl.dep_id) / tree_key(wl)
         if (d / ".complete").exists():
             return d
         part = d.with_name(d.name + ".partial")
@@ -317,8 +319,9 @@ class SystemdDriver(Driver):
         return "\n".join(lines)
 
     def _prune(self, dep_id: str, keep: set[str]) -> None:
+        """Remove unpacked trees other than `keep` (tree names, drivers.base.tree_key)."""
         d = self.dep_dir(dep_id)
-        keep = {k.split(":")[-1][:16] for k in keep if k}
+        keep = {k for k in keep if k}
         for p in d.iterdir() if d.exists() else []:
             if p.is_dir() and p.name not in keep and p.name != "data":
                 shutil.rmtree(p, ignore_errors=True)
@@ -336,7 +339,18 @@ class SystemdDriver(Driver):
             steps.append(f"start {self.unit(desired.dep_id)} (Restart={RESTART.get(pol, 'on-failure')})")
         return steps
 
+    @staticmethod
+    def _tree_of(meta: dict | None) -> str:
+        """Name of the tree a unit file runs (its WorkingDirectory), "" when unknown."""
+        for ln in (meta or {}).get("text", "").splitlines():
+            if ln.startswith("WorkingDirectory="):
+                return Path(ln.split("=", 1)[1].replace("%%", "%")).name
+        return ""
+
     def apply(self, current, desired):
+        self._install(current, desired, run=True)
+
+    def _install(self, current, desired, run: bool):
         unit, path = self.unit(desired.dep_id), self.unit_path(desired.dep_id)
         old = self._meta(desired.dep_id)
         props = self._show(unit)                         # executor reachable? (DriverError otherwise)
@@ -352,16 +366,27 @@ class SystemdDriver(Driver):
                 raise DriverError(f"cannot hand the data directory to user {user}: {e}") from None
         port = int(old["port"]) if old and str(old.get("port", "")).isdigit() else _free_port()
         text = self.render(desired, workdir, port)
-        keep = {desired.digest, current.digest if current else "", old.get("digest", "") if old else ""}
-        if old and old["text"] == text and props.get("ActiveState") == "active" and props.get("LoadState") == "loaded":
-            self._prune(desired.dep_id, keep)            # idempotent: the same unit already runs
+        keep = {tree_key(desired), tree_key(current) if current else "", self._tree_of(old)}
+        active = props.get("ActiveState") == "active"
+        if old and old["text"] == text and props.get("LoadState") == "loaded" and active == run:
+            self._prune(desired.dep_id, keep)            # idempotent: the same unit already runs (or is staged)
             return
         self.unit_dir.mkdir(parents=True, exist_ok=True)
         atomic_write_bytes(path, text.encode("utf-8"), 0o644)
         self._ctl("daemon-reload")
+        if not run:   # FE-4 stage: loadable but neither enabled (no start at boot) nor running
+            self._stopped(unit, path)
+            atomic_write_json(self._state_path(desired.dep_id), {"restarts": int(props.get("NRestarts") or 0)})
+            self._prune(desired.dep_id, keep)
+            return
         self._ctl("enable", unit if self._standard_dir() else str(path))
         self._ctl("reset-failed", unit, check=False)   # also resets the start rate limit
         self._ctl("restart", unit)
+        st = self._await_active(unit)
+        atomic_write_json(self._state_path(desired.dep_id), {"restarts": int(st.get("NRestarts") or 0)})
+        self._prune(desired.dep_id, keep)
+
+    def _await_active(self, unit: str) -> dict:
         st = {}
 
         def settled():
@@ -371,8 +396,44 @@ class SystemdDriver(Driver):
         if not wait_until(settled, 10, 0.1) or st.get("ActiveState") != "active":
             raise DriverError(f"unit {unit} did not start ({st.get('ActiveState')}/{st.get('SubState')}, "
                               f"result {st.get('Result')})")
-        atomic_write_json(self._state_path(desired.dep_id), {"restarts": int(st.get("NRestarts") or 0)})
-        self._prune(desired.dep_id, keep)
+        return st
+
+    def _stopped(self, unit: str, path: Path) -> None:
+        """Stop and disable a unit but keep it loadable (a unit outside the standard directories stays linked)."""
+        p = self._ctl("stop", unit, check=False)
+        if p.returncode not in (0, 5):                   # 5: unit not loaded
+            raise DriverError(f"systemctl stop {unit}: {_line(p.stderr)} (exit {p.returncode})")
+        self._ctl("disable", unit, check=False)
+        if not self._standard_dir():
+            self._ctl("link", str(path))
+        self._ctl("daemon-reload")
+        self._ctl("reset-failed", unit, check=False)
+
+    # FE-4 run state: the unit file stays; stop = stopped + disabled (also after a reboot), start = enabled + started
+    def stage(self, current, desired):
+        self._install(current, desired, run=False)
+
+    def start(self, dep_id):
+        unit, path = self.unit(dep_id), self.unit_path(dep_id)
+        if not self._meta(dep_id):
+            raise DriverError(f"unit {unit} is not installed")
+        self._ctl("enable", unit if self._standard_dir() else str(path))
+        self._ctl("reset-failed", unit, check=False)
+        self._ctl("start", unit)
+        st = self._await_active(unit)
+        sp = self._state_path(dep_id)
+        atomic_write_json(sp, {**(read_json(sp, {}) or {}), "restarts": int(st.get("NRestarts") or 0)})
+
+    def stop(self, dep_id):
+        unit, path = self.unit(dep_id), self.unit_path(dep_id)
+        if not (path.exists() or path.is_symlink()):
+            return
+        self._stopped(unit, path)
+
+    def build(self, desired, request: BuildRequest) -> BuildResult:
+        from flexengine2.drivers.buildstep import native_build
+
+        return native_build(request, self.profile)
 
     def remove(self, dep_id):
         unit, path = self.unit(dep_id), self.unit_path(dep_id)

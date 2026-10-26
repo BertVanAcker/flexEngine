@@ -117,6 +117,9 @@ components:
               safetyClass: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/SafetyClass'}
               activation: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/Activation'}
               dependsOn: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/DependsOn', description: 'served as x-flex-dependsOn (EV-42)'}
+              runState: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/RunState', description: 'FE-4: served as x-flex-runState (running = absent); only to a device whose capabilities report x-flex.features runState'}
+              runtime: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/Runtime', description: 'FE-4: served as x-flex-runtime; one of the device''s x-flex.runtimes'}
+              build: {$ref: 'desired-state.v1alpha1.schema.json#/$defs/Build', description: 'FE-4: served as x-flex-build; only to a device that reports x-flex.features build'}
     Plan:
       type: object
       properties:
@@ -190,7 +193,7 @@ paths:
   /api/v1/devices/{deviceId}/events:
     post:
       operationId: postDeviceEvent
-      summary: 'Device-level event (added 2026-10-17): a refused desired state, once per distinct (document, reason)'
+      summary: 'Device-level event (added 2026-10-17): a refused desired state, once per distinct (document, reason); FE-4: the events of an on-device build (BuildStarted, BuildProgress, BuildLog, BuildSucceeded, BuildFailed)'
       security: [{deviceSignature: []}]
       parameters: [{$ref: '#/components/parameters/DeviceId'}, {$ref: '#/components/parameters/XFlexDevice'}, {$ref: '#/components/parameters/XFlexDate'}, {$ref: '#/components/parameters/XFlexNonce'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DeviceEvent'}}}}

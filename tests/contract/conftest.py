@@ -31,6 +31,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 from spi_harness.applab import ApplabHarness  # noqa: E402
+from spi_harness.compose import FakeComposeHarness  # noqa: E402  (FE-4 container runtime compose)
 from spi_harness.arduino_ota import SimArduinoContainersHarness, SimArduinoHarness  # noqa: E402
 from spi_harness.example_spool import SpoolHarness  # noqa: E402  (docs/spi-guide.md example)
 from spi_harness.container import (FakeAnkaiosHarness, FakeDockerHarness, FakePodmanHarness,  # noqa: E402
@@ -42,7 +43,8 @@ from spi_harness.plc import PlcAdsHarness, PlcModbusHarness, PlcShmHarness  # no
 from spi_harness.process import ProcessHarness  # noqa: E402
 from spi_harness.systemd import FakeSystemdHarness, RealSystemdHarness  # noqa: E402
 
-PUSH = [ProcessHarness, FakeSystemdHarness, FakeDockerHarness, FakePodmanHarness, FakeAnkaiosHarness, ApplabHarness,
+PUSH = [ProcessHarness, FakeSystemdHarness, FakeDockerHarness, FakePodmanHarness, FakeComposeHarness, FakeAnkaiosHarness,
+        ApplabHarness,
         FakeMcuModuleHarness, FakeMcuFirmwareHarness, PlcModbusHarness, PlcShmHarness, PlcAdsHarness, FakeRaucHarness,
         SimArduinoHarness, SpoolHarness]
 NIGHTLY = [(RealDockerHarness, "docker"), (RealSystemdHarness, "docker"), (RealPodmanHarness, "podman"), (RealPodmanAnkaiosHarness, "podman"),

@@ -59,7 +59,7 @@
       "properties": {
         "id": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DeploymentId"},
         "driver": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DriverProfile"},
-        "state": {"enum": ["Pending", "Installing", "Installed", "Failed", "Removing", "Removed"], "description": "Last reported CP-2 state."},
+        "state": {"enum": ["Pending", "Installing", "Installed", "Failed", "Removing", "Removed", "Staged", "Stopped"], "description": "Last reported CP-2 state (Staged, Stopped: FE-4 x-flex-runState)."},
         "version": {"type": "string"},
         "digest": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/Digest"},
         "health": {"enum": ["healthy", "unhealthy"]},

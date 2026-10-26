@@ -17,8 +17,11 @@
         "application/vnd.flex.payload.plc-artefact.v1.tar+gzip",
         "application/vnd.flex.payload.os-rauc.v1+raucb",
         "application/vnd.flex.payload.arduino-ota.v1+ota",
-        "application/vnd.flex.payload.system.v1+json"
-      ]
+        "application/vnd.flex.payload.system.v1+json",
+        "application/vnd.flex.payload.compose.v1.tar+gzip",
+        "application/vnd.flex.payload.source.v1.tar+gzip"
+      ],
+      "description": "FE-4 additions: compose.v1.tar+gzip (profile container, runtime docker-compose: a compose file plus images/*.tar docker archives; the engine runs it with `up --pull never`, so only the signed images run) and source.v1.tar+gzip (the source of an on-device build, x-flex-build; never run as is: the engine picks it only to build, and a release may carry it next to, or instead of, the binary payload)."
     },
     "Descriptor": {
       "type": "object",

@@ -13,6 +13,8 @@ the process. The probe container has no systemd, so the driver plays systemd its
     (offline, hash-checked); its python runs app.py. unit.json's ExecStart is honoured ({python} = the payload
     interpreter; a relative program path is resolved in the payload tree, e.g. a Rust binary). platform() =
     {dev.flex.arch, dev.flex.pyabi}; health probe type "process" = the main process is alive
+  * FE-4: stage (unpack + unit entry, not started), start, stop (the unit stays, wantRunning false: supervise leaves it
+    alone) and build (drivers/buildstep.py native_build: build.command in the source tree -> payload)
 """
 
 from __future__ import annotations
@@ -29,7 +31,8 @@ import time
 from pathlib import Path
 
 from flexengine2.util import atomic_write_bytes, atomic_write_json, fsync_dir, fsync_tree, read_json
-from flexengine2.drivers.base import Driver, DriverError, Observed, Workload, http_probe, wait_until
+from flexengine2.drivers.base import (BuildRequest, BuildResult, Driver, DriverError, Observed, Workload, http_probe,
+                                      tree_key, wait_until)
 from flexengine2.drivers.native import pyenv
 
 
@@ -69,6 +72,7 @@ def _free_port() -> int:
 class ProcessDriver(Driver):
     profile = "native"
     name = "process"
+    runtime = "process"
 
     def __init__(self, device_id: str, data_dir: Path, python: str | None = None, venv_timeout: float = 600.0):
         self.device = device_id
@@ -129,7 +133,7 @@ class ProcessDriver(Driver):
         directory is fsynced, then `.complete` is written atomically (write + fsync + rename + dir fsync), so after
         a power cut the marker never stands next to files whose data did not reach the disk. A directory without
         the marker (interrupted unpack) is unpacked again from scratch."""
-        d = self.root / wl.dep_id / wl.digest.split(":")[1][:16]
+        d = self.root / wl.dep_id / tree_key(wl)
         if not (d / ".complete").exists():
             if d.exists():
                 shutil.rmtree(d)
@@ -270,7 +274,7 @@ class ProcessDriver(Driver):
             steps.append(f"start unit {self.marker(desired.dep_id)} (Restart={desired.restart.get('policy')})")
         return steps
 
-    def apply(self, current, desired):
+    def _install(self, desired: Workload, run: bool):
         d, argv = self._prepare(desired)
         old = self.units.get(desired.dep_id)
         self._stop(old)
@@ -278,11 +282,48 @@ class ProcessDriver(Driver):
             "marker": self.marker(desired.dep_id), "dir": str(d), "digest": desired.digest,
             "version": desired.version, "port": (old or {}).get("port") or _free_port(),
             "parameters": desired.parameters, "restart": desired.restart, "restarts": 0, "argv": argv,
-            "failures": [], "wantRunning": True, "pid": None}
+            "failures": [], "wantRunning": run, "pid": None}
         self._save()
-        self._spawn(desired.dep_id)
-        if not wait_until(lambda: self._alive(self.units[desired.dep_id]), 5, 0.05):
+        if run:
+            self._spawn(desired.dep_id)
+            if not wait_until(lambda: self._alive(self.units[desired.dep_id]), 5, 0.05):
+                raise DriverError("process did not start")
+
+    def apply(self, current, desired):
+        self._install(desired, run=True)
+
+    # FE-4 run state: a staged or stopped unit keeps its entry (tree, port, argv) with wantRunning false
+    def stage(self, current, desired):
+        u = self.units.get(desired.dep_id)
+        if (u and u.get("digest") == desired.digest and not u.get("wantRunning") and not self._alive(u)
+                and u.get("dir") == str(self.root / desired.dep_id / tree_key(desired))):
+            return                                       # idempotent: already staged
+        self._install(desired, run=False)
+
+    def start(self, dep_id):
+        u = self.units.get(dep_id)
+        if not u:
+            raise DriverError(f"process unit {dep_id} is not installed")
+        if u.get("wantRunning") and self._alive(u):
+            return
+        u.update(wantRunning=True, restarts=0, failures=[], nextStart=None, startLimitHit=False)
+        self._save()
+        self._spawn(dep_id)
+        if not wait_until(lambda: self._alive(self.units[dep_id]), 5, 0.05):
             raise DriverError("process did not start")
+
+    def stop(self, dep_id):
+        u = self.units.get(dep_id)
+        if not u:
+            return
+        u.update(wantRunning=False, nextStart=None)
+        self._save()
+        self._stop(u)
+
+    def build(self, desired, request: BuildRequest) -> BuildResult:
+        from flexengine2.drivers.buildstep import native_build
+
+        return native_build(request, self.profile)
 
     def remove(self, dep_id):
         u = self.units.get(dep_id)
@@ -298,7 +339,8 @@ class ProcessDriver(Driver):
             return Observed(present=False)
         alive = self._alive(u)
         return Observed(present=True, running=alive, digest=u["digest"], version=u["version"],
-                        restarts=u.get("restarts", 0), detail="running" if alive else "dead")
+                        restarts=u.get("restarts", 0),
+                        detail="running" if alive else ("dead" if u.get("wantRunning", True) else "stopped"))
 
     def list(self):
         return {k: self.status(k) for k in self.units}
@@ -315,7 +357,7 @@ class ProcessDriver(Driver):
         """Terminal failure: the unit is dead and systemd semantics will not restart it (Restart=no, or the
         start limit was hit)."""
         u = self.units.get(dep_id)
-        if not u or self._alive(u):
+        if not u or self._alive(u) or not u.get("wantRunning", True):
             return None
         if u.get("restart", {}).get("policy", "on-failure") == "never":
             return "process exited (Restart=never)"

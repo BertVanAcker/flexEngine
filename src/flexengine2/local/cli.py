@@ -71,7 +71,7 @@ def _table(rows: list[list[str]]) -> list[str]:
 def _summary(deps: list[dict]) -> str:
     if not deps:
         return "none"
-    order = ["Installed", "Installing", "Pending", "Failed", "Removing", "Removed"]
+    order = ["Installed", "Staged", "Stopped", "Installing", "Pending", "Failed", "Removing", "Removed"]
     n = {s: sum(d["state"] == s for d in deps) for s in order}
     out = [f"{n[s]} {s.lower()}" for s in order if n[s]]
     sick = sum(d.get("health") == "unhealthy" for d in deps)

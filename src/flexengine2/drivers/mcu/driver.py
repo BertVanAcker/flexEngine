@@ -109,6 +109,7 @@ def elf_imports(elf: bytes) -> set[str]:
 class McuModuleDriver(Driver):
     profile = "mcu-module"
     name = "mcumgr-llext"
+    runtime = "mcu-module"
 
     def __init__(self, links: LinkPool, data_dir: Path, module_pubkey_raw: bytes, child_id: str):
         self.links = links

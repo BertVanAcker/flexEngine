@@ -5,7 +5,8 @@ Static scan (AST) of the engine sources. A *sink* is a place whose string ends u
 
   * keyword `reason=` of any call; a dict literal key "reason"
   * `raise VerificationError|DriverError|ReleaseError|SmpError|ValueError(<text>)`
-  * `return <text>` inside `preflight` / `failed`; `return False, <text>` anywhere
+  * `return <text>` inside `preflight` / `failed` / `compose_policy` (FE-4: the compose driver's preflight policy);
+    `return False, <text>` anywhere
   * assignments to `gate_failure`, `why`, `reason` (incl. tuple assignments) in the reconciler
   * `reasons.append(<text>)` (artefact store: signature check details)
   * `super().__init__(<text>)` of cloud.client.Rejected (a 4xx from the cloud while fetching artefacts)
@@ -27,12 +28,13 @@ from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[2] / "src" / "flexengine2"
 FILES = ["core/reconciler.py", "artefacts/store.py", "cloud/client.py", "drivers/base.py", "drivers/container.py", "drivers/process.py",
+         "drivers/compose.py", "drivers/buildstep.py",
          "drivers/native/systemd.py", "drivers/native/pyenv.py",
          "drivers/applab/driver.py", "drivers/applab/ard.py", "drivers/mcu/driver.py", "drivers/mcu/flxm.py",
          "drivers/mcu/link.py", "drivers/plc/verify.py", "drivers/os_rauc.py", "drivers/arduino_ota.py",
          "local/api.py"]
 RAISES = {"VerificationError", "DriverError", "ReleaseError", "SmpError", "ValueError", "RuntimeError",
-          "RaucUnavailable"}
+          "RaucUnavailable", "BuildTimeout"}
 ASSIGN_NAMES = {"gate_failure", "why", "reason"}
 LOG_FUNCS = {"accept_manifest"}   # desired-state refusals are logged (and counted), not reported
 
@@ -136,7 +138,7 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
         def visit_Return(self, n):
             v = n.value
             if v is not None:
-                if self.func and self.func[-1] in ("preflight", "failed"):
+                if self.func and self.func[-1] in ("preflight", "failed", "compose_policy"):
                     add(v, n.lineno)
                 if isinstance(v, ast.Tuple) and len(v.elts) == 2 and isinstance(v.elts[0], ast.Constant) \
                         and v.elts[0].value is False:

@@ -235,7 +235,7 @@ def cmd_load(args):
     print("Loaded image(s): " + ", ".join(doc["images"]))
 
 
-def cmd_run(args):
+def cmd_run(args, start: bool = True):
     name, restart, labels, env, ports, mounts, i = None, "no", {}, [], [], [], 0
     while i < len(args):
         a = args[i]
@@ -277,6 +277,26 @@ def cmd_run(args):
             "Mounts": mounts}
     _write(d / "container.json", meta)
     _write(d / "run.json", {"status": "created", "restarts": 0})
+    if not start:            # `create` (FE-4 stage): no process until `start`
+        print(cid)
+        return
+    _spawn(cid)
+    print(cid)
+
+
+def cmd_start(ref: str):
+    meta = _find(ref)
+    if meta is None:
+        raise Fail(f"Error: No such container: {ref}")
+    if not _inspect(meta)["State"]["Running"]:
+        run = _read(STATE / "containers" / meta["Id"] / "run.json", {})
+        _write(STATE / "containers" / meta["Id"] / "run.json", {**run, "status": "created"})
+        _spawn(meta["Id"])
+    print(ref)
+
+
+def _spawn(cid: str):
+    d = STATE / "containers" / cid
     sup = subprocess.Popen([sys.executable, os.path.abspath(__file__), "__supervise", cid],
                            env={**os.environ, "FAKE_OCI_STATE": str(STATE)}, stdin=subprocess.DEVNULL,
                            stdout=subprocess.DEVNULL, stderr=open(d / "supervisor.log", "ab"), start_new_session=True)
@@ -284,7 +304,6 @@ def cmd_run(args):
     while time.time() < end and _read(d / "run.json", {}).get("status") == "created":
         time.sleep(0.02)
     _write(d / "sup.json", {"pid": sup.pid})
-    print(cid)
 
 
 def supervise(cid: str):
@@ -349,6 +368,10 @@ def main(argv: list[str]) -> int:
             cmd_load(a[1:])
         elif a[:1] == ["run"]:
             cmd_run(a[1:])
+        elif a[:1] == ["create"]:
+            cmd_run(a[1:], start=False)
+        elif a[:1] == ["start"]:
+            cmd_start(a[-1])
         elif a[:2] == ["container", "inspect"] or a[:1] == ["inspect"]:
             ref = a[2] if a[0] == "container" else a[1]
             meta = _find(ref)

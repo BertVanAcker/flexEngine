@@ -2,17 +2,14 @@
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "$id": "https://flex.dev/schemas/device-event.v1alpha1.schema.json",
  "title": "CP-2 DeviceEvent v1alpha1",
- "description": "Body of POST /api/v1/devices/{deviceId}/events: a device-level record of the engine's status outbox (core/reconciler.py refuse()). It shares the per-device seq with the deployment status records (the cloud drops seq <= last seen per device). Today one event: DesiredStateRefused, sent once per distinct (document, reason) (lead decision 2026-10-17).",
+ "description": "Body of POST /api/v1/devices/{deviceId}/events: a device-level record of the engine's status outbox (core/reconciler.py refuse()). It shares the per-device seq with the deployment status records (the cloud drops seq <= last seen per device). Events: DesiredStateRefused, sent once per distinct (document, reason) (lead decision 2026-10-17); FE-4 build events BuildStarted, BuildProgress, BuildLog, BuildSucceeded, BuildFailed of an on-device build (x-flex-build), each with deployment and buildId.",
  "type": "object",
  "additionalProperties": false,
  "required": [
   "kind",
   "event",
   "seq",
-  "deviceTime",
-  "reason",
-  "documentDigest",
-  "acceptedManifestVersion"
+  "deviceTime"
  ],
  "properties": {
   "kind": {
@@ -20,7 +17,12 @@
   },
   "event": {
    "enum": [
-    "DesiredStateRefused"
+    "DesiredStateRefused",
+    "BuildStarted",
+    "BuildProgress",
+    "BuildLog",
+    "BuildSucceeded",
+    "BuildFailed"
    ]
   },
   "seq": {
@@ -33,7 +35,7 @@
   "reason": {
    "type": "string",
    "minLength": 1,
-   "description": "Registered text (FE-DS-*)."
+   "description": "Registered text (FE-DS-* for DesiredStateRefused, FE-BLD-* for BuildFailed)."
   },
   "reasonCode": {
    "type": "string",
@@ -56,6 +58,36 @@
    "minimum": 0,
    "description": "manifestVersion the device keeps running."
   },
+  "deployment": {
+   "$ref": "desired-state.v1alpha1.schema.json#/$defs/DeploymentId",
+   "description": "Build events: the deployment being built."
+  },
+  "buildId": {
+   "type": "string",
+   "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+   "maxLength": 128,
+   "description": "Build events: x-flex-build.id of the deployment."
+  },
+  "progress": {
+   "type": "number",
+   "minimum": 0,
+   "maximum": 1,
+   "description": "BuildProgress: fraction done (0..1)."
+  },
+  "line": {
+   "type": "string",
+   "maxLength": 2000,
+   "description": "BuildLog: one output line of the build (stdout and stderr, cut at 2000 characters)."
+  },
+  "resultDigest": {
+   "type": "string",
+   "pattern": "^sha256:[0-9a-f]{64}$",
+   "description": "BuildSucceeded: digest of what the build produced (the built image id, or the sha256 of the built payload)."
+  },
+  "profile": {
+   "$ref": "desired-state.v1alpha1.schema.json#/$defs/DriverProfile",
+   "description": "Build events: the driver profile that builds."
+  },
   "traceparent": {
    "type": "string",
    "pattern": "^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$"
@@ -64,5 +96,100 @@
    "type": "string",
    "pattern": "^[0-9a-f]{32}$"
   }
- }
+ },
+ "allOf": [
+  {
+   "if": {
+    "properties": {
+     "event": {
+      "const": "DesiredStateRefused"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "reason",
+     "documentDigest",
+     "acceptedManifestVersion"
+    ]
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "event": {
+      "enum": [
+       "BuildStarted",
+       "BuildProgress",
+       "BuildLog",
+       "BuildSucceeded",
+       "BuildFailed"
+      ]
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "deployment",
+     "buildId"
+    ]
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "event": {
+      "const": "BuildProgress"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "progress"
+    ]
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "event": {
+      "const": "BuildLog"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "line"
+    ]
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "event": {
+      "const": "BuildSucceeded"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "resultDigest"
+    ]
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "event": {
+      "const": "BuildFailed"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "reason"
+    ]
+   }
+  }
+ ]
 }

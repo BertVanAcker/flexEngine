@@ -40,7 +40,8 @@ from fnmatch import fnmatchcase
 from pathlib import Path
 from typing import NoReturn
 
-from flexengine2.drivers.base import Driver, DriverError, Observed, Workload, http_probe, wait_until
+from flexengine2.drivers.base import (BuildRequest, BuildResult, Driver, DriverError, Observed, Workload, http_probe,
+                                      wait_until)
 from flexengine2.identity.secrets import SecretPermissionError, looks_secret, read_secret_file
 
 
@@ -252,6 +253,13 @@ def exec_probe_ok(probe: dict | None) -> bool:
     return isinstance(cmd, list) and bool(cmd) and all(isinstance(c, str) and c for c in cmd)
 
 
+def build_tag(device: str, dep_id: str, build_id: str) -> str:
+    """Image name of an on-device build (FE-4): lower case, [a-z0-9._-] only."""
+    def clean(s: str) -> str:
+        return re.sub(r"[^a-z0-9._-]+", "-", s.lower()).strip(".-_") or "x"
+    return f"localhost/flexbuild/{clean(device)}-{clean(dep_id)}:{clean(build_id)[:120]}"
+
+
 def norm_arch(a: str) -> str:
     return GO_ARCH.get(a.strip().lower(), a.strip().lower())
 
@@ -265,6 +273,7 @@ class CliContainerDriver(Driver):
         self.device = device_id
         self.rt = runtime
         self.name = runtime
+        self.runtime = runtime
         self._ver = None
         self._arch = None
         self._restarts: dict[str, int] = {}      # container id -> RestartCount at the last `process` probe
@@ -339,13 +348,65 @@ class CliContainerDriver(Driver):
         return steps
 
     def apply(self, current, desired):
+        self._create(desired, run=True)
+
+    def _create(self, desired: Workload, run: bool):
+        """`run -d` (apply) or `create` (FE-4 stage) of a fresh container for the deployment."""
         spec = self.run_spec(desired)  # validate (and read envFrom secrets) before touching anything
         image_id = self.ensure_image(desired)
         self._remove_container(desired.dep_id)
         for vol in spec.volumes:
             self._ensure_volume(desired.dep_id, vol)
-        _run([self.rt, "run", "-d", "--name", self.cname(desired.dep_id), "--restart", self._restart(desired),
-              *self._labels(desired), *self._env(desired), *spec.args, image_id], timeout=120, env=spec.cli_env)
+        _run([self.rt, *(["run", "-d"] if run else ["create"]), "--name", self.cname(desired.dep_id),
+              "--restart", self._restart(desired), *self._labels(desired), *self._env(desired), *spec.args, image_id],
+             timeout=120, env=spec.cli_env)
+
+    # FE-4 run state: a created (staged) or stopped container keeps its image, volumes and configuration; a container
+    # stopped on request is not brought back by its restart policy (docker/podman semantics of `stop`)
+    def stage(self, current, desired):
+        try:
+            info = self._inspect(self.cname(desired.dep_id))
+        except DriverError:
+            info = None
+        o = self._observed(info)
+        if o.present and o.digest == desired.digest and not o.running:
+            return                                        # idempotent: already staged / stopped at this release
+        self._create(desired, run=False)
+
+    def start(self, dep_id):
+        n = self.cname(dep_id)
+        if self._inspect(n) is None:
+            raise DriverError(f"container {n} is not installed")
+        _run([self.rt, "start", n], timeout=120)
+
+    def stop(self, dep_id):
+        n = self.cname(dep_id)
+        if self._inspect(n) is None:
+            return
+        _run([self.rt, "stop", "-t", "10", n], timeout=60)
+
+    def build(self, desired, request: BuildRequest) -> BuildResult:
+        """`docker|podman build` of the source tree (descriptor build.dockerfile, default Dockerfile); the image id
+        is the result and the image the workload runs (no archive to load)."""
+        from flexengine2.drivers.buildstep import run_build, unpack_source
+
+        spec = request.spec or {}
+        src = unpack_source(request, Path(request.work_dir) / "src")
+        dockerfile = src / (spec.get("dockerfile") or "Dockerfile")
+        if not dockerfile.is_file() or src.resolve() not in dockerfile.resolve().parents:
+            raise DriverError(f"the source payload has no {spec.get('dockerfile') or 'Dockerfile'}")
+        tag = build_tag(self.device, desired.dep_id, request.id)
+        request.progress(0.05)
+        run_build([self.rt, "build", "-t", tag, "-f", str(dockerfile), str(src)], src, dict(os.environ), request,
+                  what=f"{self.rt} build")
+        p = _run([self.rt, "image", "inspect", "--format", "{{.Id}}", tag], timeout=60)
+        image_id = p.stdout.strip()
+        image_id = image_id if image_id.startswith("sha256:") else f"sha256:{image_id}"
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", image_id):
+            raise DriverError(f"{self.rt} build gave no image id for {tag}")
+        return BuildResult(digest=image_id, payload_annotations={"dev.flex.profile": "container",
+                                                                 "dev.flex.imageRef": image_id,
+                                                                 "dev.flex.imageTag": tag})
 
     def _remove_container(self, dep_id):
         n = self.cname(dep_id)
@@ -528,11 +589,12 @@ class CliContainerDriver(Driver):
             return False
         return bool(info) and self._probe(info, probe)
 
-    def failed(self, dep_id):
+    def failed(self, dep_id, _info: dict | None = None):
         """Terminal failure: the container exited and the runtime's restart policy will not bring it back
-        (on-failure:N exhausted, or policy `no`), or it is dead. A crash loop thus fails the gate at once."""
+        (on-failure:N exhausted, or policy `no`), or it is dead. A crash loop thus fails the gate at once.
+        `_info`: an inspected container instead of the deployment's (the compose driver, per service)."""
         try:
-            info = self._inspect(self.cname(dep_id))
+            info = _info if _info is not None else self._inspect(self.cname(dep_id))
         except DriverError:
             return None   # unreachable is "not (yet) failed"
         if not info:
@@ -578,10 +640,14 @@ class AnkaiosDriver(CliContainerDriver):
     """
 
     name = "ankaios"
+    runtime = "ankaios"
+    # FE-4 run state and build are not mapped onto Ankaios workloads yet (the engine refuses staged/stopped for it)
+    stage, start, stop, build = Driver.stage, Driver.start, Driver.stop, Driver.build
 
     def __init__(self, device_id: str, ank_bin: str, server_url: str, agent: str):
         super().__init__(device_id, runtime="podman")
         self.name = "ankaios"
+        self.runtime = "ankaios"
         self.ank = [ank_bin, "-k", "--server-url", server_url]
         self.agent = agent
 

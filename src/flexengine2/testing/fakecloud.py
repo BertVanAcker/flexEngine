@@ -12,7 +12,10 @@ Southbound (device) API, every request Ed25519-signed by the device key register
 Northbound (operator / console / P6 MCP gateway), bearer admin token:
   POST /api/v1/admin/onboarding-tokens                      issue a one-time onboarding token
   GET  /api/v1/admin/devices[/{id}]                         fleet.read
-  POST /api/v1/admin/plans                                  deploy.plan -> {planHash, diff, requiresApproval}
+  POST /api/v1/admin/plans                                  deploy.plan -> {planHash, diff, requiresApproval}; FE-4
+                                                            items may carry runState / runtime / build, served as
+                                                            x-flex-runState / x-flex-runtime / x-flex-build and
+                                                            checked against the device's x-flex.features / runtimes
   POST /api/v1/admin/plans/{hash}/approve                   second person (approver != requester)
   POST /api/v1/admin/plans/{hash}/apply                     deploy.apply bound to the plan hash; body may carry
                                                             {approvals: [signed console approvals]} or
@@ -205,7 +208,34 @@ class CloudState:
             dep["x-flex-activation"] = item["activation"]
         if item.get("dependsOn"):   # EV-42: [{deployment, condition}]; CP-1 (semantic rules too) checks them at plan time
             dep["x-flex-dependsOn"] = item["dependsOn"]
+        # FE-4: the run state (running is the default and served as the absence of the key), runtime, build step
+        if item.get("runState") and item["runState"] != "running":
+            dep["x-flex-runState"] = item["runState"]
+        if item.get("runtime"):
+            dep["x-flex-runtime"] = item["runtime"]
+        if item.get("build"):
+            b = item["build"]
+            dep["x-flex-build"] = {"id": b} if isinstance(b, str) else b
         return dep
+
+    def check_features(self, device_id: str, deployments: list[dict]):
+        """FE-4 at plan time: serve x-flex-runState / -runtime / -build only to a device that reports the feature
+        (x-flex.features), and a runtime only when the device allows it (x-flex.runtimes). An engine without the
+        list (before FE-4) would refuse the document as a whole; the reference cloud refuses the plan instead."""
+        caps = ((self.s["devices"].get(device_id) or {}).get("capabilities") or {})
+        xf = caps.get("x-flex") or {}
+        have = set(xf.get("features") or [])
+        for d in deployments:
+            for key, feat in contracts.FEATURE_KEYS.items():
+                if key in d and feat not in have:
+                    raise Problem(422, "Not supported by the device",
+                                  f"{d['metadata']['id']}: {key} needs x-flex.features {feat!r}; device {device_id} "
+                                  f"reports {sorted(have)}")
+            rt = d.get("x-flex-runtime")
+            if rt and rt not in (xf.get("runtimes") or []):
+                raise Problem(422, "Runtime not available on the device",
+                              f"{d['metadata']['id']}: runtime {rt!r}; device {device_id} allows "
+                              f"{sorted(xf.get('runtimes') or [])}")
 
 
 def composite_members(descriptor: dict) -> dict[str, str]:
@@ -561,6 +591,8 @@ def make_handler(st: CloudState, base_url_holder: dict):
                 if len(ids) != len(set(ids)):
                     raise Problem(422, "Duplicate deployment id")
                 st.check_placement(dev, new)
+                if dev in st.s["devices"]:
+                    st.check_features(dev, new)
                 # lead decision 2026-10-17: the reference backend checks what it would serve against CP-1, so a
                 # backend-side mistake (activation, parameters, driver) fails at plan time, not on the device
                 cand = {**cur, "manifestVersion": cur["manifestVersion"] + 1, "deployments": new}
