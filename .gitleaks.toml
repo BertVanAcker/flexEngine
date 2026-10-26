@@ -1,0 +1,8 @@
+# gitleaks configuration: the default rules plus the known false positives of this repository.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "type names and the golden test fixtures' obvious test tokens"
+regexes = ['''^Ed25519PrivateKey$''']
+paths = ['''^tests/api/golden/.*\.json$''']
