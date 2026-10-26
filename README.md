@@ -1,12 +1,33 @@
-# flexEngineV2 (alpha) — operator guide
+# flexEngine 2
 
-flexEngineV2 is the on-device deployment engine of the flex* stack. It pulls a signed desired state from flexCloud,
-verifies every release, installs it through a driver (container, native, MCU, App Lab, PLC check, OS update, Arduino
-board), runs a health gate and rolls back on failure. It reports every step back to flexCloud. It never builds
-software on the device.
+flexEngine is the on-device deployment engine of the flex* stack. It pulls a signed desired state from flexCloud (or
+flexDeploy), verifies every release, installs it through a driver (container, native/systemd, MCU, App Lab, PLC
+check, OS update, Arduino board), runs a health gate and rolls back on failure. It reports every step back to the
+cloud. It never builds software on the device.
 
-Package `flexengine-v2`, import name `flexengine2`, CLI `flexengine`. Python ≥ 3.11. Plan and status:
-[docs/flexengine-v2-plan.md](../docs/flexengine-v2-plan.md).
+**2.0 is a new engine, not an update of 0.6.** flexEngine 0.x (the Redis command processor the flexCloud console
+drives with Push/Build/Run/Stop) is replaced by a declarative reconciler with signed releases, versioned connection
+points (`v1alpha1`) and a driver SPI. What changed and what v1 users must do: [CHANGES.md](CHANGES.md) and
+[MIGRATION.md](MIGRATION.md). 0.6.x stays maintained on branch [`v1.x`](https://github.com/BertVanAcker/flexEngine/tree/v1.x).
+
+PyPI project `flexEngine` (2.x), import name `flexengine2`, CLI `flexengine`. Python ≥ 3.11. Apache-2.0.
+Status: 2.0.0a1 (alpha; connection points frozen at `v1alpha1`). The engine plan and the decisions behind it are
+in the framework repository (`modular-interoperable-framework`, `docs/flexengine-v2-plan.md`).
+
+## Install
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install --pre 'flexEngine[mcu,plc,applab,otel]>=2.0.0a1'   # pick the extras the device needs
+.venv/bin/flexengine version
+```
+
+Until 2.0.0 is final, a plain `pip install flexEngine` still installs 0.6.x: ask for 2.x explicitly. On a lab device (LattePanda, UNO Q) install
+the offline bundle with `packaging/install.sh` instead: it adds the `flex` user, `/etc/flexengine`, the venv and the
+systemd unit ([§1](#1-install)). The `relay` extra also needs `flexmodel`, which is not on PyPI (install it from the
+framework repository).
+
+# Operator guide
 
 | You want to | Read |
 |---|---|
@@ -17,7 +38,7 @@ Package `flexengine-v2`, import name `flexengine2`, CLI `flexengine`. Python ≥
 | write a driver | [docs/spi-guide.md](docs/spi-guide.md) |
 | integrate with the engine (cloud, release tools, children) | [api/README.md](api/README.md), [api/cp-reference.md](api/cp-reference.md) |
 | set up TLS and keys | [docs/security-alpha.md](docs/security-alpha.md) |
-| move v1 flexIA packages over | [docs/flexia-import.md](docs/flexia-import.md) |
+| move v1 flexIA packages over | [docs/flexia-import.md](docs/flexia-import.md) and [MIGRATION.md](MIGRATION.md) |
 | run the tests | [§9](#9-tests) |
 
 ## 1. Install
@@ -27,11 +48,11 @@ Package `flexengine-v2`, import name `flexengine2`, CLI `flexengine`. Python ≥
 Build the bundle once on any Linux host with Docker, then install it offline on the LattePanda:
 
 ```bash
-flexengine/packaging/build-wheels.sh                 # -> flexengine/dist/flexengine-v2-<ver>-linux_x86_64.tar.gz
-scp flexengine/dist/flexengine-v2-*-linux_x86_64.tar.gz lattepanda.lab:
+packaging/build-wheels.sh                 # -> dist/flexengine-<ver>-linux_x86_64.tar.gz
+scp dist/flexengine-*-linux_x86_64.tar.gz lattepanda.lab:
 
 # on the LattePanda
-tar xzf flexengine-v2-*-linux_x86_64.tar.gz && cd flexengine-v2-*/
+tar xzf flexengine-*-linux_x86_64.tar.gz && cd flexengine-*/
 sudo packaging/install.sh --extras mcu,plc,applab,otel --device-id panda --dry-run   # shows the plan
 sudo packaging/install.sh --extras mcu,plc,applab,otel --device-id panda
 /opt/flexengine/bin/flexengine version
@@ -46,13 +67,13 @@ rules and the UNO Q (arm64): [packaging/README.md](packaging/README.md).
 ### Development host (Linux or macOS), no service
 
 ```bash
-python3 -m venv flexengine/.venv
-flexengine/.venv/bin/pip install -e 'flexengine[dev]'      # add ,mcu,plc,applab,otel as needed
-flexengine/.venv/bin/flexengine run --config my-engine.yaml
+python3 -m venv .venv
+.venv/bin/pip install -e '.[dev]'      # add ,mcu,plc,applab,otel as needed
+.venv/bin/flexengine run --config my-engine.yaml
 ```
 
 Extras: `mcu` (SMP to MCUs), `plc` (ADS, Modbus), `applab` (App Lab RPC), `otel` (OpenTelemetry), `relay` (MCU ⇄
-Zenoh relay; needs the repo's `flexmodel`), `dev` (tests).
+Zenoh relay; also needs the framework's `flexmodel`, not on PyPI), `dev` (tests).
 
 ## 2. Configure `engine.yaml`
 
@@ -217,7 +238,7 @@ the health probe, restart policy and run options; the cloud cannot widen them. D
   `process` (main process alive / unit active). Parameters arrive as `FLEX_PARAM_<NAME>`.
 - **Own Python dependencies**: a payload with `requirements.lock` (every line pinned with `--hash`) and `wheels/`
   gets its own venv at unpack: offline, hash-checked, never the engine's venv. Build such payloads and multi-CPU
-  releases with `flexengine/tools/native_release.py` (`py-payload`, `flcrs`, `release`).
+  releases with `tools/native_release.py` (`py-payload`, `flcrs`, `release`).
 
 ### os-rauc
 
@@ -330,15 +351,30 @@ shows the TLS or network error.
 One command runs the suite (plan §7):
 
 ```bash
-flexengine/run_tests.sh              # push tier: unit contract api security property integration-fast
-flexengine/run_tests.sh nightly      # real executors, nightly property budget, full integration, packaging
-flexengine/run_tests.sh coverage     # layers 1-6 under coverage.py, gate of plan §7.3
-flexengine/run_tests.sh --help       # every layer
+./run_tests.sh             # push tier: unit contract api security property integration-fast
+./run_tests.sh nightly    # real executors, nightly property budget, full integration, packaging
+./run_tests.sh coverage   # layers 1-6 under coverage.py, gate of plan §7.3
+./run_tests.sh --help     # every layer
 ```
 
-JUnit XML and `run-summary.json` go to `flexengine/results/latest/` (`FLEX_RESULTS_DIR` to change).
-`python flexengine/tools/alpha_exit_check.py` checks the alpha exit items on the current commit and writes
-`results/alpha-exit-report.md`. CI: `.github/workflows/flexengine*.yml`.
+JUnit XML and `run-summary.json` go to `results/latest/` (`FLEX_RESULTS_DIR` to change). CI runs the same layers:
+`.github/workflows/ci.yml` (push tier + coverage gate + build, aggregated in the required check `ci-ok`),
+`nightly.yml` and `release.yml`.
+
+The suite needs no framework checkout. The few framework files it reads are vendored in `tests/vectors/framework/`
+and `src/flexengine2/testing/apps/` (origin and commit in `tests/vectors/framework/SOURCES.json`;
+`python tools/vendor_framework.py --framework <checkout>` checks them). The
+cases that need the framework's code (probe P3/P4 stand-ins, demo stacks, `flex import-flexia`) are marked
+`framework` / `flexmodel` and skip with a reason; to run them, point the suite at a framework checkout:
+
+```bash
+FLEX_REPO=../modular-interoperable-framework FLEXMODEL_SRC=../modular-interoperable-framework/flexmodel/src \
+  ./run_tests.sh contract integration
+```
+
+The alpha exit evidence (2026-10-18, framework commit fc081c7) is kept in `results/`: `alpha-exit-report.md`, the
+coverage result and the run summaries of the three CI runs. `tools/alpha_exit_check.py` re-checks it (needs a
+framework checkout).
 
 ## Layout
 
@@ -352,4 +388,6 @@ JUnit XML and `run-summary.json` go to `flexengine/results/latest/` (`FLEX_RESUL
 | `src/flexengine2/testing/` | reference fakes (fake cloud, release builders, simulators) for tests and runbooks |
 | `api/` | prose contracts, test vectors, generators |
 | `packaging/` | installer, systemd units, wheel builds |
-| `tests/` | the suite; `results/` holds committed JUnit XML and reports |
+| `tests/` | the suite; `tests/vectors/framework/` holds the vendored framework files |
+| `results/` | the alpha exit evidence; `results/latest/` (gitignored) is the per-run output |
+| `hwtest/` | desk runbooks EV-HW-01…11 for the lab devices |
