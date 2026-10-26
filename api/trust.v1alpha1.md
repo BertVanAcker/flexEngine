@@ -47,7 +47,8 @@ bundle carries the same pair as `desired.json` / `desired.sig`. Device rules, in
 3. `manifestVersion` ≥ accepted, and equal only with an identical document — else refused and counted in
    `state.downgradesRefused` (FE-DS-003).
 
-Refusals are logged only (no status report) and the previous state keeps running. Vectors:
+Refusals are logged and reported once per distinct (document, reason) as a `DeviceEvent` (`POST …/events`, see the
+decisions of 2026-10-17 in [README.md](README.md)); the previous state keeps running. Vectors:
 `vectors/manifest/cases.json` (good, tampered body, wrong key, missing).
 
 ## 3. Device request signature
