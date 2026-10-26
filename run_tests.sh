@@ -25,6 +25,8 @@
 #   PYTHON            interpreter with flexengine2's test deps (default: .venv/bin/python, python3)
 #   FLEX_RESULTS_DIR  where JUnit XML, run-summary.json and generated reports go (default: results/latest, gitignored)
 #   FLEXMODEL_SRC     optional: flexmodel's src/ (not on PyPI); put on PYTHONPATH for the relay cases, which skip without it
+#   FLEX_COVERAGE_DEFER  drivers whose coverage miss is reported, not gated (CI: applab, whose integration suite
+#                     needs the framework's P4 board simulator); see tools/coverage_report.py
 #   FLEX_BASETEMP     parent dir for pytest --basetemp (one subdir per layer; default: pytest's own)
 #   PYTEST_ARGS       extra pytest arguments (e.g. "-x -k scenario")
 #

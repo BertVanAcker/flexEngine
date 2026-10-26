@@ -40,6 +40,9 @@ jobs:
       - name: alpine:3.20 (base of the container test images)
         run: docker pull -q alpine:3.20
       - run: ./run_tests.sh ${{ matrix.tier }}
+        env:
+          # applab's integration suite needs the framework's P4 board simulator: its 80 % gate runs in the framework CI
+          FLEX_COVERAGE_DEFER: applab
       - uses: actions/upload-artifact@v4
         if: always()
         with:

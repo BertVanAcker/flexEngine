@@ -100,6 +100,8 @@ jobs:
         run: ./run_tests.sh coverage
         env:
           FLEX_COVERAGE_LAYERS: unit contract api security property integration-fast
+          # applab's integration suite needs the framework's P4 board simulator: its 80 % gate runs in the framework CI
+          FLEX_COVERAGE_DEFER: applab
       - uses: actions/upload-artifact@v4
         if: always()
         with:

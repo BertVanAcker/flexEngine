@@ -12,12 +12,19 @@ Groups (paths below src/flexengine2/):
 Targets: core >= 90 % lines, branch >= 80 % for core/reconciler.py and artefacts/store.py (release verification;
 the plan's core/health.py and artefacts/verify.py live inside these two modules), every driver >= 80 % lines,
 overall >= 85 % lines. Exit 1 when a target is missed (unless --no-gate).
+
+Without flexmodel (not on PyPI; the relay extra needs it, decision FE-D3) gateway/relay.py cannot run: it is left out
+of every group and listed under notMeasured. FLEX_COVERAGE_DEFER=<driver>[,<driver>...] reports a driver's miss under
+deferred instead of failing the gate: for a driver whose integration suite needs the framework (applab: probe P4's
+board simulator) when the run has no framework checkout; the framework's CI gates it with the full suite.
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -36,6 +43,7 @@ DRIVERS = {
 }
 BRANCH = ("core/reconciler.py", "artefacts/store.py")
 TARGETS = {"core": 90.0, "drivers": 80.0, "overall": 85.0, "branch": 80.0}
+NEEDS_FLEXMODEL = ("gateway/relay.py",)
 
 
 def rel(path: str) -> str | None:
@@ -59,11 +67,16 @@ def agg(files: dict, prefixes) -> dict:
             "files": sorted(names)}
 
 
-def summarise(cov: dict) -> dict:
+def summarise(cov: dict, defer: tuple[str, ...] = ()) -> dict:
     files = {}
+    not_measured = {}
+    skip = () if importlib.util.find_spec("flexmodel") else NEEDS_FLEXMODEL
     for path, d in cov["files"].items():
         r = rel(path)
         if r is None or r.startswith("testing/") or r.endswith("__init__.py") and d["summary"]["num_statements"] == 0:
+            continue
+        if r in skip:
+            not_measured[r] = "needs flexmodel, not importable in this run"
             continue
         files[r] = d["summary"]
     core = agg(files, CORE)
@@ -80,18 +93,20 @@ def summarise(cov: dict) -> dict:
     }
     for g in ("core", "services", "overall"):
         out[g].pop("files")
-    misses = []
+    misses, deferred = [], []
     if (core["lines"] or 0) < TARGETS["core"]:
         misses.append(f"core {core['lines']} % < {TARGETS['core']} %")
     for k, v in out["drivers"].items():
         if k != "spi-base" and v["statements"] and (v["lines"] or 0) < TARGETS["drivers"]:
-            misses.append(f"driver {k} {v['lines']} % < {TARGETS['drivers']} %")
+            (deferred if k in defer else misses).append(f"driver {k} {v['lines']} % < {TARGETS['drivers']} %")
     if (out["overall"]["lines"] or 0) < TARGETS["overall"]:
         misses.append(f"overall {out['overall']['lines']} % < {TARGETS['overall']} %")
     for b, v in out["branch"].items():
         if v["branches"] and (v["branch"] or 0) < TARGETS["branch"]:
             misses.append(f"branch {b} {v['branch']} % < {TARGETS['branch']} %")
     out["misses"] = misses
+    out["deferred"] = deferred
+    out["notMeasured"] = not_measured
     out["met"] = not misses
     return out
 
@@ -105,6 +120,10 @@ def render(s: dict) -> str:
                      f"{v['branch'] if v['branch'] is not None else '-':>9} {v['statements']:>7}")
     for b, v in s["branch"].items():
         lines.append(f"branch {b:<17} {v['lines']:>8} {v['branch']:>9} {v['statements']:>7}")
+    for f, why in s.get("notMeasured", {}).items():
+        lines.append(f"not measured: {f} ({why})")
+    if s.get("deferred"):
+        lines.append("deferred (FLEX_COVERAGE_DEFER): " + "; ".join(s["deferred"]))
     lines.append("targets met" if s["met"] else "below target: " + "; ".join(s["misses"]))
     return "\n".join(lines)
 
@@ -115,7 +134,8 @@ def main(argv=None) -> int:
     ap.add_argument("--out")
     ap.add_argument("--no-gate", action="store_true")
     a = ap.parse_args(argv)
-    s = summarise(json.loads(Path(a.coverage_json).read_text()))
+    defer = tuple(d.strip() for d in os.environ.get("FLEX_COVERAGE_DEFER", "").split(",") if d.strip())
+    s = summarise(json.loads(Path(a.coverage_json).read_text()), defer)
     if a.out:
         Path(a.out).write_text(json.dumps(s, indent=2) + "\n")
     print(render(s))
