@@ -66,6 +66,33 @@
    "meaning": "x-flex-dependsOn (EV-42) names a deployment absent from the document, itself or one twice, or the dependencies form a cycle; refused as a whole, the previous state keeps running (first three violations, '; '-joined)"
   },
   {
+   "code": "FE-DS-007",
+   "field": "event",
+   "stage": "accept",
+   "profile": "engine",
+   "template": "deployment {deployment} uses {key}, which this device does not support (x-flex.features {feature})",
+   "pattern": "^deployment\\ (.+?)\\ uses\\ (.+?),\\ which\\ this\\ device\\ does\\ not\\ support\\ \\(x\\-flex\\.features\\ (.+?)\\)$",
+   "meaning": "FE-4: x-flex-runState, x-flex-runtime or x-flex-build on a device that does not report the feature in its capabilities (x-flex.features); refused as a whole, the previous state keeps running"
+  },
+  {
+   "code": "FE-DS-008",
+   "field": "event",
+   "stage": "accept",
+   "profile": "engine",
+   "template": "deployment {deployment} asks for runtime {runtime}, which this device does not allow (allowed: {runtimes})",
+   "pattern": "^deployment\\ (.+?)\\ asks\\ for\\ runtime\\ (.+?),\\ which\\ this\\ device\\ does\\ not\\ allow\\ \\(allowed:\\ (.+?)\\)$",
+   "meaning": "FE-4: x-flex-runtime names a runtime this device does not allow (engine.yaml drivers.<profile>.runtime / runtimes; capabilities x-flex.runtimes); refused as a whole"
+  },
+  {
+   "code": "FE-DS-009",
+   "field": "event",
+   "stage": "accept",
+   "profile": "engine",
+   "template": "deployment {deployment}: run state {state} is not supported by the {driver} driver",
+   "pattern": "^deployment\\ (.+?):\\ run\\ state\\ (.+?)\\ is\\ not\\ supported\\ by\\ the\\ (.+?)\\ driver$",
+   "meaning": "FE-4: x-flex-runState staged or stopped for a deployment whose driver cannot stage, start and stop (applab, MCU, PLC, RAUC, Arduino OTA, Ankaios); refused as a whole"
+  },
+  {
    "code": "FE-ONB-001",
    "field": "log",
    "stage": "onboarding",
@@ -209,6 +236,150 @@
    "template": "interrupted install of {version} held: waiting for {deployments}",
    "pattern": "^interrupted\\ install\\ of\\ (.+?)\\ held:\\ waiting\\ for\\ (.+?)$",
    "meaning": "restart after a crash during an install the desired state still asks for, but a dependency (x-flex-dependsOn) is not ready: the uncommitted release was taken off the executor (committed version restored, state Installed, or deployment removed, state Removed) and is installed again once the dependency is ready (EV-42)"
+  },
+  {
+   "code": "FE-REC-011",
+   "field": "reason",
+   "stage": "start",
+   "profile": "engine",
+   "template": "start failed",
+   "pattern": "^start\\ failed$",
+   "meaning": "FE-4: driver start of a staged / stopped release raised DriverError; rolled back to the previous release, or stopped again when there is none (detail in failure, FE-REC-012)"
+  },
+  {
+   "code": "FE-REC-012",
+   "field": "failure",
+   "stage": "start",
+   "profile": "engine",
+   "template": "start failed: {error}",
+   "pattern": "^start\\ failed:\\ (.+?)$",
+   "meaning": "FE-4: the DriverError text of the failed start (an FE-CTR/-NAT/-SYD/-CMP code)"
+  },
+  {
+   "code": "FE-BLD-001",
+   "field": "event",
+   "stage": "build",
+   "profile": "engine",
+   "template": "build failed: {detail}",
+   "pattern": "^build\\ failed:\\ (.+?)$",
+   "meaning": "the driver's build step failed (detail = an FE-BLD-01x, FE-CTR or FE-CMP text); the deployment keeps its previous state"
+  },
+  {
+   "code": "FE-BLD-002",
+   "field": "event",
+   "stage": "build",
+   "profile": "engine",
+   "template": "build timed out after {seconds} s",
+   "pattern": "^build\\ timed\\ out\\ after\\ (.+?)\\ s$",
+   "meaning": "the build ran longer than the descriptor's build.timeoutSeconds (default 1800 s) and was killed"
+  },
+  {
+   "code": "FE-BLD-003",
+   "field": "event",
+   "stage": "build",
+   "profile": "engine",
+   "template": "release has no source payload for a build",
+   "pattern": "^release\\ has\\ no\\ source\\ payload\\ for\\ a\\ build$",
+   "meaning": "x-flex-build for a release without a source layer (application/vnd.flex.payload.source.v1.tar+gzip) of the deployment's profile"
+  },
+  {
+   "code": "FE-BLD-004",
+   "field": "event",
+   "stage": "build",
+   "profile": "engine",
+   "template": "build step not supported for profile {profile}",
+   "pattern": "^build\\ step\\ not\\ supported\\ for\\ profile\\ (.+?)$",
+   "meaning": "x-flex-build for a deployment whose driver has no build step (only container docker/podman/compose and native process/systemd build)"
+  },
+  {
+   "code": "FE-BLD-010",
+   "field": "detail",
+   "stage": "build",
+   "profile": "engine",
+   "template": "{what} command not found: {program} ({error})",
+   "pattern": "^(.+?)\\ command\\ not\\ found:\\ (.+?)\\ \\((.+?)\\)$",
+   "meaning": "the build command (or the runtime CLI that builds) is not installed"
+  },
+  {
+   "code": "FE-BLD-011",
+   "field": "detail",
+   "stage": "build",
+   "profile": "engine",
+   "template": "{what} command cannot run: {program} ({error})",
+   "pattern": "^(.+?)\\ command\\ cannot\\ run:\\ (.+?)\\ \\((.+?)\\)$",
+   "meaning": "the build command is not executable"
+  },
+  {
+   "code": "FE-BLD-012",
+   "field": "detail",
+   "stage": "build",
+   "profile": "engine",
+   "template": "{what} command exited with status {status}",
+   "pattern": "^(.+?)\\ command\\ exited\\ with\\ status\\ (.+?)$",
+   "meaning": "the build command failed (its output went out as BuildLog events)"
+  },
+  {
+   "code": "FE-BLD-013",
+   "field": "detail",
+   "stage": "build",
+   "profile": "engine",
+   "template": "source payload unusable: {error}",
+   "pattern": "^source\\ payload\\ unusable:\\ (.+?)$",
+   "meaning": "the source payload is not a readable tar archive"
+  },
+  {
+   "code": "FE-BLD-014",
+   "field": "detail",
+   "stage": "build",
+   "profile": "native",
+   "template": "the release descriptor names no build command (build.command)",
+   "pattern": "^the\\ release\\ descriptor\\ names\\ no\\ build\\ command\\ \\(build\\.command\\)$",
+   "meaning": "native build without descriptor build.command"
+  },
+  {
+   "code": "FE-BLD-015",
+   "field": "detail",
+   "stage": "build",
+   "profile": "native",
+   "template": "build output {dir} is not a directory of the source tree",
+   "pattern": "^build\\ output\\ (.+?)\\ is\\ not\\ a\\ directory\\ of\\ the\\ source\\ tree$",
+   "meaning": "descriptor build.output does not name a directory inside the source tree"
+  },
+  {
+   "code": "FE-BLD-016",
+   "field": "detail",
+   "stage": "build",
+   "profile": "container",
+   "template": "the source payload has no {dockerfile}",
+   "pattern": "^the\\ source\\ payload\\ has\\ no\\ (.+?)$",
+   "meaning": "container build: the Dockerfile (descriptor build.dockerfile, default Dockerfile) is missing"
+  },
+  {
+   "code": "FE-BLD-017",
+   "field": "detail",
+   "stage": "build",
+   "profile": "container",
+   "template": "{cli} build gave no image id for {tag}",
+   "pattern": "^(.+?)\\ build\\ gave\\ no\\ image\\ id\\ for\\ (.+?)$",
+   "meaning": "container build: the runtime reported no image id for the built tag"
+  },
+  {
+   "code": "FE-BLD-018",
+   "field": "detail",
+   "stage": "build",
+   "profile": "container",
+   "template": "compose build: the project names no image",
+   "pattern": "^compose\\ build:\\ the\\ project\\ names\\ no\\ image$",
+   "meaning": "compose build: `config --images` names no image"
+  },
+  {
+   "code": "FE-BLD-019",
+   "field": "detail",
+   "stage": "build",
+   "profile": "container",
+   "template": "compose build: image {image} is missing after the build",
+   "pattern": "^compose\\ build:\\ image\\ (.+?)\\ is\\ missing\\ after\\ the\\ build$",
+   "meaning": "compose build: an image the project names is not in the runtime's store"
   },
   {
    "code": "FE-GATE-001",
@@ -558,6 +729,105 @@
    "meaning": "EV-40: the runtime did not report its architecture (platform() raises DriverError: deferred, never a refusal)"
   },
   {
+   "code": "FE-CTR-015",
+   "field": "detail",
+   "stage": "start",
+   "profile": "container",
+   "template": "container {name} is not installed",
+   "pattern": "^container\\ (.+?)\\ is\\ not\\ installed$",
+   "meaning": "FE-4: start of a deployment that has no container (removed behind the engine's back)"
+  },
+  {
+   "code": "FE-CMP-001",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "container",
+   "template": "compose payload has no compose file ({files})",
+   "pattern": "^compose\\ payload\\ has\\ no\\ compose\\ file\\ \\((.+?)\\)$",
+   "meaning": "the compose payload (or source) has no compose.yaml / compose.yml / docker-compose.yaml / docker-compose.yml at its root"
+  },
+  {
+   "code": "FE-CMP-002",
+   "field": "detail",
+   "stage": "apply",
+   "profile": "container",
+   "template": "compose payload unusable: {error}",
+   "pattern": "^compose\\ payload\\ unusable:\\ (.+?)$",
+   "meaning": "the compose payload is not a readable tar archive, or its compose file is not YAML"
+  },
+  {
+   "code": "FE-CMP-003",
+   "field": "detail",
+   "stage": "start",
+   "profile": "container",
+   "template": "compose project {project} is not installed",
+   "pattern": "^compose\\ project\\ (.+?)\\ is\\ not\\ installed$",
+   "meaning": "FE-4: start of a deployment whose compose project is not installed"
+  },
+  {
+   "code": "FE-CMP-010",
+   "field": "failure",
+   "stage": "health-gate",
+   "profile": "container",
+   "template": "service {service}: {failure}",
+   "pattern": "^service\\ (.+?):\\ (.+?)$",
+   "meaning": "fail-fast: a service's container is dead or exited for good (FE-CTR-010/011 per service)"
+  },
+  {
+   "code": "FE-CMP-PRE-001",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "runOptions are not supported by the compose driver (the compose file says how its services run)",
+   "pattern": "^runOptions\\ are\\ not\\ supported\\ by\\ the\\ compose\\ driver\\ \\(the\\ compose\\ file\\ says\\ how\\ its\\ services\\ run\\)$",
+   "meaning": "a compose release whose descriptor has runOptions"
+  },
+  {
+   "code": "FE-CMP-PRE-002",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "compose file has no services",
+   "pattern": "^compose\\ file\\ has\\ no\\ services$",
+   "meaning": "the compose file names no services"
+  },
+  {
+   "code": "FE-CMP-PRE-003",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "compose service {service} is not a mapping",
+   "pattern": "^compose\\ service\\ (.+?)\\ is\\ not\\ a\\ mapping$",
+   "meaning": "malformed service"
+  },
+  {
+   "code": "FE-CMP-PRE-004",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "compose service {service} asks for {key}, which this device does not allow",
+   "pattern": "^compose\\ service\\ (.+?)\\ asks\\ for\\ (.+?),\\ which\\ this\\ device\\ does\\ not\\ allow$",
+   "meaning": "privileged, cap_add, devices or security_opt without drivers.container.composeAllowHostAccess"
+  },
+  {
+   "code": "FE-CMP-PRE-005",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "compose service {service} asks for {key}: host, which this device does not allow",
+   "pattern": "^compose\\ service\\ (.+?)\\ asks\\ for\\ (.+?):\\ host,\\ which\\ this\\ device\\ does\\ not\\ allow$",
+   "meaning": "pid / ipc / network_mode / userns_mode / uts host without drivers.container.composeAllowHostAccess"
+  },
+  {
+   "code": "FE-CMP-PRE-006",
+   "field": "detail",
+   "stage": "preflight",
+   "profile": "container",
+   "template": "compose service {service} mounts a host path, which this device does not allow",
+   "pattern": "^compose\\ service\\ (.+?)\\ mounts\\ a\\ host\\ path,\\ which\\ this\\ device\\ does\\ not\\ allow$",
+   "meaning": "a bind mount of a host path without drivers.container.composeAllowHostAccess (named volumes are fine)"
+  },
+  {
    "code": "FE-CTR-PRE-001",
    "field": "detail",
    "stage": "preflight",
@@ -709,6 +979,15 @@
    "template": "process did not start",
    "pattern": "^process\\ did\\ not\\ start$",
    "meaning": "unit process not alive within 5 s"
+  },
+  {
+   "code": "FE-NAT-002",
+   "field": "detail",
+   "stage": "start",
+   "profile": "native",
+   "template": "process unit {dep} is not installed",
+   "pattern": "^process\\ unit\\ (.+?)\\ is\\ not\\ installed$",
+   "meaning": "FE-4: start of a deployment the process driver has no unit for"
   },
   {
    "code": "FE-NAT-010",
@@ -1006,6 +1285,15 @@
    "template": "unit {unit} exited (status {code}) and will not be restarted",
    "pattern": "^unit\\ (.+?)\\ exited\\ \\(status\\ (.+?)\\)\\ and\\ will\\ not\\ be\\ restarted$",
    "meaning": "fail-fast: clean exit with Restart=on-failure / no"
+  },
+  {
+   "code": "FE-SYD-013",
+   "field": "detail",
+   "stage": "start",
+   "profile": "native",
+   "template": "unit {unit} is not installed",
+   "pattern": "^unit\\ (.+?)\\ is\\ not\\ installed$",
+   "meaning": "FE-4: start of a deployment whose unit file is gone"
   },
   {
    "code": "FE-SYD-020",

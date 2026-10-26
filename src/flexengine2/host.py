@@ -54,7 +54,7 @@ import threading
 import time
 from pathlib import Path
 
-from flexengine2.core.reconciler import Engine, build_drivers
+from flexengine2.core.reconciler import Engine, build_drivers, build_runtime_drivers
 from flexengine2.core.state import StateError
 from flexengine2.drivers.base import DriverError
 from flexengine2.local import sdnotify
@@ -194,6 +194,7 @@ def _build_device(cfg: dict, dev: dict, children: dict) -> tuple[Engine, list]:
         p2cfg = {"drivers": {k: v for k, v in drv_cfg.items() if k in ("container", "os-rauc", "arduino-ota")}}
         p2cfg["drivers"]["native"] = drv_cfg.get("native", False)  # bool (process driver) or {runtime: ...} (EV-19)
         drivers = build_drivers({**dcfg, **p2cfg}, data)
+        runtimes = build_runtime_drivers({**dcfg, **p2cfg}, data)   # FE-4: further runtimes per profile
         if "plc-verify" in drv_cfg:
             from flexengine2.drivers.plc.verify import PlcVerifyDriver
 
@@ -205,7 +206,7 @@ def _build_device(cfg: dict, dev: dict, children: dict) -> tuple[Engine, list]:
         kids = [{"deviceId": c["deviceId"], "mode": "see-thru", "link": c.get("link", "smp/uart"), "kind": "mcu"}
                 for c in children.get(dev["deviceId"], [])]
         eng = Engine(dcfg, drivers, role=dev.get("role") or ("gateway" if kids else "standalone-device"),
-                     children=kids)
+                     children=kids, runtimes=runtimes)
     return eng, relays
 
 

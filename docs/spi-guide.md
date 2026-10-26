@@ -67,6 +67,10 @@ Required methods are abstract in `Driver`. Optional ones have safe defaults in t
 | `commit(dep_id)` | no | confirm a two-phase install after a passed gate | `DriverError` fails the gate |
 | `platform()` | no | annotations a layer must carry to fit this executor, or `None` | `DriverError` = executor unreachable |
 | `failure_detail(dep_id, healthy_at)` | no (looked up by name) | extra fields for the `Failed` report after a rollback | **never** |
+| `stage(current, desired)` | no (FE-4, with `start` + `stop`) | install `desired` without starting it (`status`: present, not running); replaces what `current` ran | `DriverError` only |
+| `start(dep_id)` | no (FE-4) | start the staged / stopped workload; the engine runs the health gate after it; idempotent | `DriverError` (fail fast) |
+| `stop(dep_id)` | no (FE-4) | stop it and keep it installed for a fast `start`; no restart policy brings it back; unknown id: no-op | `DriverError` (deferred) |
+| `build(desired, request)` | no (FE-4) | build from `request.source_path` with the signed `request.spec`; report through `request.progress()` / `request.line()`; return a `BuildResult` | `DriverError` (FE-BLD-001), `BuildTimeout` (FE-BLD-002) |
 
 ### Never raise
 
@@ -127,6 +131,18 @@ Return the annotations a payload layer must carry, e.g. `{"dev.flex.arch": "aarc
 layer per platform of the same profile; the store picks the layer that matches. `None` means any layer of the profile
 fits. Raise `DriverError` when you need the executor to answer and it does not (the prepare step is deferred).
 
+### Run state and build (FE-4)
+
+A driver that implements `stage`, `start` and `stop` (all three: `drivers.base.supports(drv, "runState")`) can run
+deployments with `x-flex-runState` staged or stopped; for any other driver the engine refuses such a desired state
+(FE-DS-009). `stage` is `apply` without the start: transfer, unpack, create, so that a later `start` needs no second
+transfer; `stop` keeps all of it. `status` of a staged or stopped workload is `present=True, running=False`, and
+`failed` returns `None` for it (nothing is supposed to run). A driver with `build` (`supports(drv, "build")`) can build
+a deployment on the device (`x-flex-build`); key the files of a built workload by `tree_key(workload)` (the release
+digest plus the build's result), so a rebuild of the same release is never mistaken for the old one. Set the class (or
+instance) attribute `runtime` to the `x-flex-runtime` value the driver serves. The conformance cases
+`test_run_state_*` run for every harness whose driver supports the run states.
+
 ### Class attributes
 
 | Attribute | Default | Meaning |
@@ -135,6 +151,7 @@ fits. Raise `DriverError` when you need the executor to answer and it does not (
 | `name` | `"?"` (must be set) | implementation name (`docker`, `process`, ...); an instance may refine it |
 | `exclusive`, `max_deployments` | `False`, `None` | at most N deployments on this executor; `apply` refuses one more with `DriverError` |
 | `reboots_on_apply` | `False` | `apply`/`remove` may reboot the device and end the engine (os-rauc). The reconciler journals a rollback before it and finishes it at the next start. On the forward path, after the reboot `status()` must report the new digest running, so the engine adopts it without a second `apply` |
+| `runtime` | `None` | FE-4: the `x-flex-runtime` value this driver serves (`docker`, `docker-compose`, `podman`, `systemd`, `process`, `applab`, `mcu-module`, ...); the device reports the runtimes of its drivers as `x-flex.runtimes` |
 | `repairs_digest_drift` | `True` | `supervise` re-applies a committed workload that runs another digest. Set `False` when the executor may legitimately run another digest for a while (os-rauc after a bootloader fall-back) |
 
 ## 4. Worked example: a spool-directory driver

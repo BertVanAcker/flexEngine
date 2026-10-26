@@ -6,6 +6,9 @@ verify_release() is the supply-chain gate (WS3 §1.5, WS9 FC-S1/FC-S2, synthesis
      signed by a trusted release key  -> otherwise "unsigned" / "bad signature"
   3. safety-relevant deployments: the signed payload must carry an approval by >= 2 distinct people
   4. config (descriptor) and the payload layer for the requested profile hash to their digests
+FE-4: a driver that names its `media_types` (the compose driver) gets only layers of those types; every other driver
+never gets a compose or a source layer. With `source=True` (x-flex-build) the source layer of the profile is fetched
+too (`Release.source_path`, None when the release has none) and the binary payload becomes optional.
 Blobs already in the CAS (verified earlier, or imported from an offline bundle) are not re-downloaded.
 """
 
@@ -20,7 +23,7 @@ from pathlib import Path
 
 from flexengine2.identity import crypto
 from flexengine2.util import atomic_write_bytes, sha256_digest
-from flexengine2.artefacts.oci import AT_SIGNATURE, MT_DESCRIPTOR, MT_SBOM
+from flexengine2.artefacts.oci import AT_SIGNATURE, MT_DESCRIPTOR, MT_PAYLOAD_COMPOSE, MT_PAYLOAD_SOURCE, MT_SBOM
 from flexengine2.cloud.client import CloudClient, Offline, Rejected
 
 
@@ -39,6 +42,7 @@ class Release:
     payload_path: str
     payload_annotations: dict
     signature: dict
+    source_path: str | None = None        # FE-4: verified source payload (x-flex-build), when asked for
 
 
 class ArtefactStore:
@@ -96,7 +100,8 @@ class ArtefactStore:
             return
 
     def verify_release(self, repo: str, digest: str, profile: str, safety_class: str = "none",
-                       platform: dict | None = None) -> Release:
+                       platform: dict | None = None, media_types: tuple | None = None,
+                       source: bool = False) -> Release:
         man = json.loads(self.get(repo, digest, "manifests"))
         # --- signature (referrers) ---
         sig_ok, sig_payload, reasons = False, None, []
@@ -144,7 +149,12 @@ class ArtefactStore:
         if descriptor.get("safetyClass", "none") != safety_class:
             raise VerificationError(f"safety class mismatch: release descriptor says "
                                     f"{descriptor.get('safetyClass', 'none')!r}, desired state says {safety_class!r}")
-        layers = [l for l in man["layers"] if (l.get("annotations") or {}).get("dev.flex.profile") == profile]
+        mine = [l for l in man["layers"] if (l.get("annotations") or {}).get("dev.flex.profile") == profile]
+        src = next((l for l in mine if l.get("mediaType") == MT_PAYLOAD_SOURCE), None)
+        if media_types:
+            layers = [l for l in mine if l.get("mediaType") in media_types]
+        else:
+            layers = [l for l in mine if l.get("mediaType") not in (MT_PAYLOAD_SOURCE, MT_PAYLOAD_COMPOSE)]
         strict = STRICT_PLATFORM.get(profile)
         if strict and layers:
             # DA-15: the permissive match below stays for native / container layers, but an MCU module layer is
@@ -173,14 +183,20 @@ class ArtefactStore:
                 raise VerificationError(f"release has no {profile!r} payload for platform {platform} (has {have})")
             layers = fit or layers
         layer = layers[0] if layers else None
-        if layer is None:
+        if layer is None and not (source and src is not None):
             raise VerificationError(f"release has no payload for profile {profile!r}")
-        self.get(repo, layer["digest"])
+        if layer is not None:
+            self.get(repo, layer["digest"])
+        if source and src is not None:
+            self.get(repo, src["digest"])
         for l in man["layers"]:
             if l["mediaType"] == MT_SBOM:
                 self.get(repo, l["digest"])  # SBOM must be present and intact (CRA evidence)
-        return Release(digest=digest, descriptor=descriptor, payload_path=str(self.path(layer["digest"])),
-                       payload_annotations=layer.get("annotations") or {}, signature=sig_payload)
+        return Release(digest=digest, descriptor=descriptor,
+                       payload_path=str(self.path(layer["digest"])) if layer is not None else "",
+                       payload_annotations=(layer.get("annotations") or {}) if layer is not None else {},
+                       signature=sig_payload,
+                       source_path=str(self.path(src["digest"])) if source and src is not None else None)
 
     def import_bundle(self, data: bytes, accept=None) -> tuple[bytes, str]:
         """Load an offline bundle. Returns (desired, signature).

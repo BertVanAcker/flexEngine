@@ -108,7 +108,35 @@ def _desired_state_rules(doc: dict) -> list[str]:
         dev = d["metadata"].get("deviceId")
         if dev is not None and dev != doc["deviceId"]:
             out.append(f"$.deployments[{i}].metadata.deviceId: {dev!r} differs from deviceId {doc['deviceId']!r}")
+        rt = d.get("x-flex-runtime")
+        if rt is not None and runtime_profiles().get(rt) != d["x-flex-driver"]:
+            out.append(f"$.deployments[{i}].x-flex-runtime: runtime {rt!r} runs on driver profile "
+                       f"{runtime_profiles().get(rt)!r}, not {d['x-flex-driver']!r}")
     return out + dependency_errors(doc)
+
+
+# ---- FE-4: run state, runtime, build (optional keys of an ApplicationDeployment) ---------------------------------
+RUN_STATES = ("staged", "running", "stopped")
+DEFAULT_RUN_STATE = "running"
+FEATURES = ("runState", "runtime", "build", "retry")    # capabilities x-flex.features
+FEATURE_KEYS = {"x-flex-runState": "runState", "x-flex-runtime": "runtime", "x-flex-build": "build"}
+
+
+@functools.cache
+def runtime_profiles() -> dict[str, str]:
+    """{x-flex-runtime value: driver profile} (desired-state $defs/RuntimeProfiles)."""
+    return dict(load("desired-state")["$defs"]["RuntimeProfiles"]["const"])
+
+
+def run_state(dep: dict) -> str:
+    """The desired run state of an ApplicationDeployment (absent = running, the behaviour before FE-4)."""
+    return dep.get("x-flex-runState") or DEFAULT_RUN_STATE
+
+
+def build_id(dep: dict) -> str | None:
+    """x-flex-build.id, None without a build step."""
+    b = dep.get("x-flex-build")
+    return b.get("id") if isinstance(b, dict) else None
 
 
 def depends_on(dep: dict) -> list[tuple[str, str]]:

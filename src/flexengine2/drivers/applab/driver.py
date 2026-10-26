@@ -36,6 +36,7 @@ from .rpc import RawClient, RpcError
 class ApplabDriver(Driver):
     profile = "applab"
     name = "arduino-app-cli"
+    runtime = "applab"
     exclusive = True           # one app per board (arduino-app-cli StartApp); flexCloud refuses a 2nd at plan time
     max_deployments = 1
 

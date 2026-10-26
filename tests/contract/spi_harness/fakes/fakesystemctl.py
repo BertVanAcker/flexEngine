@@ -355,6 +355,11 @@ def main(argv: list[str]) -> int:
             en.add(name)
         _write(STATE / "links.json", links)
         _write(STATE / "enabled.json", sorted(en))
+    elif cmd == "link":
+        links = _read(STATE / "links.json", {})
+        for a in args:
+            links[Path(a).name] = a
+        _write(STATE / "links.json", links)
     elif cmd == "disable":
         en = set(_read(STATE / "enabled.json", []))
         links = _read(STATE / "links.json", {})

@@ -65,6 +65,7 @@ def test_appdesc_dependencies_order_native_install_and_removal(lab):  # noqa: F8
     assert [a[1] for a in _applies(eng.dir)[n0:] if a[0] == "remove"] == ["reporter", "counter"]
 
 
+@pytest.mark.docker   # builds and runs a real image: skipped without a usable Docker daemon
 def test_compose_example_depends_on_orders_the_install(lab):  # noqa: F811
     cloud, tmp = lab["cloud"], lab["tmp"]
     pkg = tmp / "compose-two"

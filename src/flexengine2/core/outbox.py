@@ -8,12 +8,19 @@ Policy (`compact(outbox, max_len)`), applied only when the outbox is longer than
   3. never drop the last report of a deployment: with more deployments than `max_len` the outbox stays over the
      bound (the caller logs it).
 Order and sequence numbers of the kept reports are unchanged (flexCloud deduplicates by seq; gaps are fine).
+FE-4: Staged and Stopped are terminal states; the progress and log events of a build (BuildProgress, BuildLog) are
+transitional (the build's BuildSucceeded / BuildFailed says how it ended).
 """
 
 from __future__ import annotations
 
 TRANSITIONAL = frozenset({"Pending", "Installing", "Removing"})
-TERMINAL = frozenset({"Installed", "Failed", "Removed"})
+TERMINAL = frozenset({"Installed", "Failed", "Removed", "Staged", "Stopped"})
+TRANSITIONAL_EVENTS = frozenset({"BuildProgress", "BuildLog"})
+
+
+def _transitional(r: dict) -> bool:
+    return r.get("state") in TRANSITIONAL or r.get("event") in TRANSITIONAL_EVENTS
 
 
 def compact(outbox: list[dict], max_len: int) -> tuple[list[dict], int]:
@@ -21,7 +28,7 @@ def compact(outbox: list[dict], max_len: int) -> tuple[list[dict], int]:
     if len(outbox) <= max_len:
         return outbox, 0
     last = {r["dep"]: i for i, r in enumerate(outbox)}
-    keep = [i == last[r["dep"]] or r.get("state") not in TRANSITIONAL for i, r in enumerate(outbox)]
+    keep = [i == last[r["dep"]] or not _transitional(r) for i, r in enumerate(outbox)]
     if sum(keep) > max_len:
         newest_terminal: dict[str, int] = {}
         for i, r in enumerate(outbox):

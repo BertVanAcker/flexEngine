@@ -204,8 +204,8 @@ the health probe, restart policy and run options; the cloud cannot widen them. D
 
 | Profile | Driver | Executor | Config (`devices[].drivers`) |
 |---|---|---|---|
-| `container` | `docker`, `podman`, `ankaios` | container runtime CLI | `container: {runtime, allowedRunOptions, secretsDir}` |
-| `native` | `systemd`, `process` | systemd unit files, or plain processes (dev) | `native: {runtime: systemd \| process, scope, unitDir, user, python}` |
+| `container` | `docker`, `podman`, `compose`, `ankaios` | container runtime CLI, a compose project per deployment | `container: {runtime, runtimes, allowedRunOptions, secretsDir, composeCommand, composeAllowHostAccess}` |
+| `native` | `systemd`, `process` | systemd unit files, or plain processes (dev) | `native: {runtime: systemd \| process, runtimes, scope, unitDir, user, python}` |
 | `os-rauc` | `rauc` | RAUC A/B OS update | `os-rauc: {sharedDataPath, healthChecks, ...}` |
 | `arduino-ota` | `portenta-ota` | flexNode-arduino boards over MQTT + Redis | `arduino-ota: {boards, mqtt, redis, serve}` |
 | `mcu-module`, `mcu-firmware` | `mcumgr-llext`, `mcumgr-mcuboot` | MCU base image over SMP | an MCU child device with `mcu:` |
@@ -227,6 +227,33 @@ the health probe, restart policy and run options; the cloud cannot widen them. D
   across updates and rollbacks, deleted with the deployment. Bind mounts are never allowed.
 - **Multi-CPU releases**: one release can carry an image per CPU; the engine picks the one that matches the runtime.
 - `runtime: ankaios` drives an Ankaios server through `ank` (no run options).
+- `runtime: compose` (or `runtimes: [compose]` next to another default) runs a deployment as a compose project
+  `flex_<device>_<dep>` with `docker compose` (`composeCommand: [podman, compose]` for Podman). The payload is a
+  tar.gz with a compose file and the images it runs as `images/*.tar`; the project starts with `--pull never`, so only
+  the signed images run. Health gate: every service runs and every service healthcheck reports healthy; a service
+  that exits for good fails the gate at once; a rollback brings the previous project back as one unit. Host access in
+  the compose file (privileged, devices, host network, bind mounts, ...) is refused unless
+  `composeAllowHostAccess: true`.
+
+### Several runtimes per profile, run state, build on the device (FE-4)
+
+- **Runtimes**: `runtime` is the profile's default; `runtimes: [podman, compose]` (container) or `runtimes: [process]`
+  (native) allows more. A deployment picks one with `x-flex-runtime` (`docker`, `docker-compose`, `podman`,
+  `systemd`, `process`, `applab`, `mcu-module`); the device reports them as `x-flex.runtimes` in its capabilities. A
+  runtime the device does not allow refuses the desired state (FE-DS-008). Changing the runtime of a deployment
+  installs it afresh on the new runtime.
+- **Run state** (`x-flex-runState`): `staged` installs a release without starting it (Push), `stopped` stops it and
+  keeps it installed (Stop), `running` (default) starts it. The health gate runs on every start; starts follow
+  `x-flex-dependsOn`, stops go in reverse. Status `Staged` / `Stopped`. A start that fails rolls back to the previous
+  release, or stops the release again (`start failed`, FE-REC-011, or `health check failed`).
+- **Build on the device** (`x-flex-build: {id}`): the release carries a source payload and its descriptor a `build`
+  spec; the engine builds once per id before staging or starting (native: the build command, container: `docker|podman
+  build`, compose: `compose build`) and sends `BuildStarted`, `BuildProgress`, `BuildLog`, `BuildSucceeded` /
+  `BuildFailed` (FE-BLD-001…004) as device events. A failed build keeps the previous state.
+- **Retry**: a release that failed is tried again when the control plane publishes the same deployments in a newer
+  `manifestVersion`.
+- The engine reports what it honours as `x-flex.features` (`runState`, `runtime`, `build`, `retry`) and refuses a key
+  whose feature it does not report (FE-DS-007), so a control plane serves the keys only where they work.
 
 ### native (systemd and Python wheels)
 
@@ -284,7 +311,8 @@ its previous version.
 
 - **Order on one device** (`x-flex-dependsOn: [{deployment: db, condition: healthy}]`, CP-1): the engine installs
   dependencies first and holds a dependent (`held: waiting for db`, FE-GATE-004) until the dependency runs its desired
-  release (`started`) or is healthy (`healthy`, the default). Removal runs in reverse order (FE-GATE-005). A failed
+  release (`started`) or is healthy (`healthy`, the default); a dependency the desired state keeps staged or stopped
+  holds nothing. Removal (and stop) runs in reverse order (FE-GATE-005). A failed
   dependency holds its dependents; its rollback does not cascade. A document with an unknown id, a duplicate or a
   cycle is refused as a whole (FE-DS-006).
 - **Safe state** (`x-flex-activation.requires`, implicit `machine_parked` + `operator_confirmed` for

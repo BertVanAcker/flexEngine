@@ -97,6 +97,32 @@ Closed object: other keys are refused.
 
 Deployment ordering on this device (EV-42): this deployment is installed or updated only once every listed deployment of the same desired state runs its desired release (condition started) and is healthy (condition healthy, the default); until then it stays Pending ('held: waiting for <ids>', FE-GATE-004) on its previous version.
 
+<a id="desired-state-runstate"></a>
+#### `$defs/RunState` (enum `staged`, `running`, `stopped`)
+
+FE-4: the run state of an installed deployment. running (default, as before FE-4): installed, started, health-gated. staged: installed (artefacts fetched, verified, prepared on the executor) but not started; no health gate (status Staged). stopped: installed and stopped, kept with its build for a fast restart (status Stopped).
+
+<a id="desired-state-runtime"></a>
+#### `$defs/Runtime` (enum `docker`, `docker-compose`, `podman`, `ankaios`, `systemd`, `process`, `applab`, `mcu-module`)
+
+FE-4: the runtime that runs this deployment (the device reports the runtimes it allows as capabilities x-flex.runtimes; engine.yaml lists them per profile).
+
+<a id="desired-state-runtimeprofiles"></a>
+#### `$defs/RuntimeProfiles` (`{"docker": "container", "docker-compose": "container", "podman": "container", "ankaios": "container", "systemd": "native", "process": "native", "applab": "applab", "mcu-module": "mcu-module"}`)
+
+FE-4: the driver profile of each x-flex-runtime value (a reference table, read by flexengine2.contracts; not applied to documents).
+
+<a id="desired-state-build"></a>
+#### `$defs/Build` (object)
+
+FE-4: build this deployment on the device from the source payload of its signed release (layer application/vnd.flex.payload.source.v1.tar+gzip of the deployment's profile; the build spec is the release descriptor's `build`) before it is staged or started, once per id.
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `id` | string | ✔ | Build id chosen by the control plane; the engine builds once per id and names it in every build event (buildId). |
+
+Closed object: other keys are refused.
+
 <a id="desired-state-componentproperties"></a>
 #### `$defs/ComponentProperties` (object)
 
@@ -128,6 +154,9 @@ Deployment ordering on this device (EV-42): this deployment is installed or upda
 | `x-flex-safetyClass` | [SafetyClass](#desired-state-safetyclass) |  | Default none. |
 | `x-flex-activation` | [Activation](#desired-state-activation) |  |  |
 | `x-flex-dependsOn` | [DependsOn](#desired-state-dependson) |  |  |
+| `x-flex-runState` | [RunState](#desired-state-runstate) |  |  |
+| `x-flex-runtime` | [Runtime](#desired-state-runtime) |  |  |
+| `x-flex-build` | [Build](#desired-state-build) |  |  |
 
 ### `descriptor.v1alpha1.schema.json`
 
@@ -152,6 +181,7 @@ Config blob (mediaType application/vnd.flex.node.descriptor.v1+json) of a flexNo
 | `health` | [HealthProbe](#descriptor-healthprobe) |  |  |
 | `restartPolicy` | [RestartPolicy](#descriptor-restartpolicy) |  |  |
 | `runOptions` | [RunOptions](#descriptor-runoptions) |  |  |
+| `build` | object |  | FE-4: how the engine builds this release on the device (x-flex-build) from its source payload (layer application/vnd.flex.payload.source.v1.tar+gzip). native: `command` runs in the unpacked source tree (environment: … |
 | `plc` | object |  |  |
 | `x-flex-mcu` | [McuFacts](#descriptor-mcufacts) |  |  |
 | `parameters` | array of any |  | Module parameter declarations from the model (not yet checked against deployment parameters: EV-25). |
@@ -251,7 +281,7 @@ Body of POST /api/v1/devices/{deviceId}/deployments/{dep}/status: one record of 
 |---|---|---|---|
 | `dep` | `desired-state.v1alpha1.schema.json#/$defs/DeploymentId` | ✔ | Deployment id; equals the {dep} path segment. |
 | `seq` | integer | ✔ | Per-device monotonic sequence number (persisted). |
-| `state` | enum `Pending`, `Installing`, `Installed`, `Failed`, `Removing`, `Removed` | ✔ |  |
+| `state` | enum `Pending`, `Installing`, `Installed`, `Failed`, `Removing`, `Removed`, `Staged`, `Stopped` | ✔ | Staged and Stopped (FE-4, x-flex-runState): the release is installed but does not run; Staged = installed and not started since, Stopped = stopped on request and kept for a fast restart. |
 | `deviceTime` | number | ✔ | Unix seconds on the device when the record was made. |
 | `manifestVersion` | integer or null | ✔ | manifestVersion of the accepted desired state (null before any was accepted). |
 | `version` | string |  | Release version (revision) the record is about. |
@@ -293,14 +323,20 @@ Body of POST /api/v1/devices/{deviceId}/events: a device-level record of the eng
 | Field | Type | Req. | Description |
 |---|---|---|---|
 | `kind` | `"DeviceEvent"` | ✔ |  |
-| `event` | enum `DesiredStateRefused` | ✔ |  |
+| `event` | enum `DesiredStateRefused`, `BuildStarted`, `BuildProgress`, `BuildLog`, `BuildSucceeded`, `BuildFailed` | ✔ |  |
 | `seq` | integer | ✔ |  |
 | `deviceTime` | number | ✔ |  |
-| `reason` | string | ✔ | Registered text (FE-DS-*). |
+| `reason` | string |  | Registered text (FE-DS-* for DesiredStateRefused, FE-BLD-* for BuildFailed). |
 | `reasonCode` | string |  |  |
-| `documentDigest` | string | ✔ | sha256 of the refused response body. |
+| `documentDigest` | string |  | sha256 of the refused response body. |
 | `offeredManifestVersion` | integer or null |  | manifestVersion of the refused document when it could be read. |
-| `acceptedManifestVersion` | integer | ✔ | manifestVersion the device keeps running. |
+| `acceptedManifestVersion` | integer |  | manifestVersion the device keeps running. |
+| `deployment` | `desired-state.v1alpha1.schema.json#/$defs/DeploymentId` |  | Build events: the deployment being built. |
+| `buildId` | string |  | Build events: x-flex-build.id of the deployment. |
+| `progress` | number |  | BuildProgress: fraction done (0..1). |
+| `line` | string |  | BuildLog: one output line of the build (stdout and stderr, cut at 2000 characters). |
+| `resultDigest` | string |  | BuildSucceeded: digest of what the build produced (the built image id, or the sha256 of the built payload). |
+| `profile` | `desired-state.v1alpha1.schema.json#/$defs/DriverProfile` |  | Build events: the driver profile that builds. |
 | `traceparent` | string |  |  |
 | `correlationId` | string |  |  |
 
@@ -327,7 +363,7 @@ Body of PUT /api/v1/devices/{deviceId}/capabilities, sent once after onboarding 
 | Field | Type | Req. | Description |
 |---|---|---|---|
 | `profile` | `"container"` | ✔ |  |
-| `driver` | enum `docker`, `podman` | ✔ |  |
+| `driver` | enum `docker`, `podman`, `compose` | ✔ | compose (FE-4): the compose driver (x-flex-runtime docker-compose), `docker compose` or `podman compose`. |
 | `runtimeVersion` | string |  |  |
 | `platform` | map of string |  | EV-40: Driver.platform() of the container runtime, {dev.flex.arch} (normalised uname -m, e.g. x86_64, aarch64); the engine picks the image layer of a multi-CPU release that fits it. |
 | `healthTypes` | array of enum `http`, `exec`, `process` |  | EV-39: the health probe types this driver runs (descriptor health.type). |
@@ -538,7 +574,7 @@ Closed object: other keys are refused.
 
 ### `reason-codes.v1alpha1.json` (reason-code registry)
 
-- Version: `v1alpha1`, 221 codes (0 retired)
+- Version: `v1alpha1`, 253 codes (0 retired)
 - Fields: `reason` = status `reason`, `failure` = status `failure`, `event` = device event, `detail` = text inside another entry's `{detail}`, `log` = logged only.
 
 | Code | Field | Stage | Profile | Text |
@@ -549,6 +585,9 @@ Closed object: other keys are refused.
 | `FE-DS-004` | event | accept | engine | desired state is not valid JSON: {error} |
 | `FE-DS-005` | event | accept | engine | desired state does not match the CP-1 schema: {errors} |
 | `FE-DS-006` | event | accept | engine | desired state has invalid deployment dependencies: {errors} |
+| `FE-DS-007` | event | accept | engine | deployment {deployment} uses {key}, which this device does not support (x-flex.features {feature}) |
+| `FE-DS-008` | event | accept | engine | deployment {deployment} asks for runtime {runtime}, which this device does not allow (allowed: {runtimes}) |
+| `FE-DS-009` | event | accept | engine | deployment {deployment}: run state {state} is not supported by the {driver} driver |
 | `FE-ONB-001` | log | onboarding | engine | cloud key at onboarding does not match the provisioned trust anchor |
 | `FE-BUN-001` | log | bundle | engine | bundle without desired state |
 | `FE-BUN-002` | log | bundle | engine | bundle desired state is not signed by the cloud key |
@@ -565,6 +604,22 @@ Closed object: other keys are refused.
 | `FE-REC-008` | reason | drift | engine | drift repaired (executor ran another release) |
 | `FE-REC-009` | reason | resume | engine | interrupted install of {version} abandoned (no longer desired) |
 | `FE-REC-010` | reason | resume | engine | interrupted install of {version} held: waiting for {deployments} |
+| `FE-REC-011` | reason | start | engine | start failed |
+| `FE-REC-012` | failure | start | engine | start failed: {error} |
+| `FE-BLD-001` | event | build | engine | build failed: {detail} |
+| `FE-BLD-002` | event | build | engine | build timed out after {seconds} s |
+| `FE-BLD-003` | event | build | engine | release has no source payload for a build |
+| `FE-BLD-004` | event | build | engine | build step not supported for profile {profile} |
+| `FE-BLD-010` | detail | build | engine | {what} command not found: {program} ({error}) |
+| `FE-BLD-011` | detail | build | engine | {what} command cannot run: {program} ({error}) |
+| `FE-BLD-012` | detail | build | engine | {what} command exited with status {status} |
+| `FE-BLD-013` | detail | build | engine | source payload unusable: {error} |
+| `FE-BLD-014` | detail | build | native | the release descriptor names no build command (build.command) |
+| `FE-BLD-015` | detail | build | native | build output {dir} is not a directory of the source tree |
+| `FE-BLD-016` | detail | build | container | the source payload has no {dockerfile} |
+| `FE-BLD-017` | detail | build | container | {cli} build gave no image id for {tag} |
+| `FE-BLD-018` | detail | build | container | compose build: the project names no image |
+| `FE-BLD-019` | detail | build | container | compose build: image {image} is missing after the build |
 | `FE-GATE-001` | reason | gate | engine | awaiting safe state: {signals} |
 | `FE-GATE-002` | reason | gate | engine | outside activation window {start}-{end} UTC |
 | `FE-GATE-003` | reason | gate | engine | held: PLC not verified: {requires} |
@@ -603,6 +658,17 @@ Closed object: other keys are refused.
 | `FE-CTR-012` | detail | apply | container | {cmd}: cannot run ({error}) |
 | `FE-CTR-013` | detail | apply | container | {cmd}...: unreadable output ({error}) |
 | `FE-CTR-014` | detail | preflight | container | {cmd}...: no architecture ({error}) |
+| `FE-CTR-015` | detail | start | container | container {name} is not installed |
+| `FE-CMP-001` | detail | apply | container | compose payload has no compose file ({files}) |
+| `FE-CMP-002` | detail | apply | container | compose payload unusable: {error} |
+| `FE-CMP-003` | detail | start | container | compose project {project} is not installed |
+| `FE-CMP-010` | failure | health-gate | container | service {service}: {failure} |
+| `FE-CMP-PRE-001` | detail | preflight | container | runOptions are not supported by the compose driver (the compose file says how its services run) |
+| `FE-CMP-PRE-002` | detail | preflight | container | compose file has no services |
+| `FE-CMP-PRE-003` | detail | preflight | container | compose service {service} is not a mapping |
+| `FE-CMP-PRE-004` | detail | preflight | container | compose service {service} asks for {key}, which this device does not allow |
+| `FE-CMP-PRE-005` | detail | preflight | container | compose service {service} asks for {key}: host, which this device does not allow |
+| `FE-CMP-PRE-006` | detail | preflight | container | compose service {service} mounts a host path, which this device does not allow |
 | `FE-CTR-PRE-001` | detail | preflight | container | container image is built for {arch} (dev.flex.arch), this device is {device} |
 | `FE-CTR-PRE-002` | detail | preflight | container | health type exec needs a non-empty command list |
 | `FE-CTR-PRE-003` | detail | preflight | container | runOptions.{key} must be a map of variable names |
@@ -620,6 +686,7 @@ Closed object: other keys are refused.
 | `FE-CTR-010` | failure | health-gate | container | container dead |
 | `FE-CTR-011` | failure | health-gate | container | container exited (code {code}, {restarts} restarts, restart policy {policy}:{max}) |
 | `FE-NAT-001` | detail | apply | native | process did not start |
+| `FE-NAT-002` | detail | start | native | process unit {dep} is not installed |
 | `FE-NAT-010` | failure | health-gate | native | process exited (Restart=never) |
 | `FE-NAT-011` | failure | health-gate | native | process exited, start limit hit after {restarts} restarts |
 | `FE-NAT-020` | detail | apply | native | cannot create the payload venv with {python}: {error} |
@@ -653,6 +720,7 @@ Closed object: other keys are refused.
 | `FE-SYD-010` | failure | health-gate | native | unit {unit} failed: start limit hit after {restarts} restarts |
 | `FE-SYD-011` | failure | health-gate | native | unit {unit} failed ({result}, exit status {code}) and will not be restarted |
 | `FE-SYD-012` | failure | health-gate | native | unit {unit} exited (status {code}) and will not be restarted |
+| `FE-SYD-013` | detail | start | native | unit {unit} is not installed |
 | `FE-SYD-020` | log | config | native | scope must be system or user, got {scope} |
 | `FE-APL-001` | detail | apply | applab | arduino-app-cli {cmd}: {error} (exit {rc}) |
 | `FE-APL-002` | detail | apply | applab | {cmd}: {output} (exit {rc}) |
@@ -780,7 +848,9 @@ The OCI image-manifest / referrers subset the engine reads (artefacts/store.py),
 #### `$defs/Digest` (`desired-state.v1alpha1.schema.json#/$defs/Digest`)
 
 <a id="oci-profile-payloadmediatype"></a>
-#### `$defs/PayloadMediaType` (enum `application/vnd.flex.payload.image.docker-archive.v1.tar`, `application/vnd.flex.payload.native.v1.tar+gzip`, `application/vnd.flex.payload.applab-release.v1.tar+gzip`, `application/vnd.flex.payload.mcu-module.v1+flxm`, `application/vnd.flex.payload.mcu-firmware.v1+mcuboot`, `application/vnd.flex.payload.plc-artefact.v1.tar+gzip`, `application/vnd.flex.payload.os-rauc.v1+raucb`, `application/vnd.flex.payload.arduino-ota.v1+ota`, `application/vnd.flex.payload.system.v1+json`)
+#### `$defs/PayloadMediaType` (enum `application/vnd.flex.payload.image.docker-archive.v1.tar`, `application/vnd.flex.payload.native.v1.tar+gzip`, `application/vnd.flex.payload.applab-release.v1.tar+gzip`, `application/vnd.flex.payload.mcu-module.v1+flxm`, `application/vnd.flex.payload.mcu-firmware.v1+mcuboot`, `application/vnd.flex.payload.plc-artefact.v1.tar+gzip`, `application/vnd.flex.payload.os-rauc.v1+raucb`, `application/vnd.flex.payload.arduino-ota.v1+ota`, `application/vnd.flex.payload.system.v1+json`, `application/vnd.flex.payload.compose.v1.tar+gzip` …)
+
+FE-4 additions: compose.v1.tar+gzip (profile container, runtime docker-compose: a compose file plus images/*.tar docker archives; the engine runs it with `up --pull never`, so only the signed images run) and source.v1.tar+gzip (the source of an on-device build, x-flex-build; never run as is: the engine picks it only to build, and a release may carry it next to, or instead of, the binary payload).
 
 <a id="oci-profile-descriptor"></a>
 #### `$defs/Descriptor` (object)
@@ -969,6 +1039,7 @@ Normative text: the module docstring of `src/flexengine2/drivers/base.py`. Guide
 | `reboots_on_apply` | class attribute | `False` |
 | `repairs_digest_drift` | class attribute | `True` |
 | `apply` | required | `apply(self, current: 'Workload \| None', desired: 'Workload') -> 'None'` |
+| `build` | optional (default in base) | `build(self, desired: 'Workload', request: 'BuildRequest') -> 'BuildResult'` |
 | `capabilities` | optional (default in base) | `capabilities(self) -> 'dict'` |
 | `commit` | optional (default in base) | `commit(self, dep_id: 'str') -> 'None'` |
 | `failed` | optional (default in base) | `failed(self, dep_id: 'str') -> 'str \| None'` |
@@ -979,7 +1050,10 @@ Normative text: the module docstring of `src/flexengine2/drivers/base.py`. Guide
 | `platform` | optional (default in base) | `platform(self) -> 'dict \| None'` |
 | `preflight` | optional (default in base) | `preflight(self, release, dep: 'dict') -> 'str \| None'` |
 | `remove` | required | `remove(self, dep_id: 'str') -> 'None'` |
+| `stage` | optional (default in base) | `stage(self, current: 'Workload \| None', desired: 'Workload') -> 'None'` |
+| `start` | optional (default in base) | `start(self, dep_id: 'str') -> 'None'` |
 | `status` | required | `status(self, dep_id: 'str') -> 'Observed'` |
+| `stop` | optional (default in base) | `stop(self, dep_id: 'str') -> 'None'` |
 | `supervise` | optional (default in base) | `supervise(self) -> 'list[dict]'` |
 | `failure_detail` | optional, looked up by name (no base default) | `failure_detail(self, dep_id, healthy_at) -> dict` |
 | `verified` | profile extension (plc-verify only) | `verified(self, dep_id, want) -> bool` |
@@ -1073,7 +1147,7 @@ Closed object: other keys are refused.
 |---|---|---|---|
 | `id` | `desired-state.v1alpha1.schema.json#/$defs/DeploymentId` | ✔ |  |
 | `driver` | `desired-state.v1alpha1.schema.json#/$defs/DriverProfile` | ✔ |  |
-| `state` | enum `Pending`, `Installing`, `Installed`, `Failed`, `Removing`, `Removed` | ✔ | Last reported CP-2 state. |
+| `state` | enum `Pending`, `Installing`, `Installed`, `Failed`, `Removing`, `Removed`, `Staged`, `Stopped` | ✔ | Last reported CP-2 state (Staged, Stopped: FE-4 x-flex-runState). |
 | `version` | string |  |  |
 | `digest` | `desired-state.v1alpha1.schema.json#/$defs/Digest` |  |  |
 | `health` | enum `healthy`, `unhealthy` |  |  |
@@ -1113,7 +1187,7 @@ Closed object: other keys are refused.
 | PUT | `/api/v1/devices/{deviceId}/capabilities` |  | application/json | 200, 401, 403, 503 |
 | GET | `/api/v1/devices/{deviceId}/deployments` |  |  | 200 (DesiredState), 304, 401, 403, 503 |
 | POST | `/api/v1/devices/{deviceId}/deployments/{deploymentId}/status` |  | application/json | 200, 401, 403, 503 |
-| POST | `/api/v1/devices/{deviceId}/events` | Device-level event (added 2026-10-17): a refused desired state, once per distinct (document, reason) | application/json | 200, 401, 403, 503 |
+| POST | `/api/v1/devices/{deviceId}/events` | Device-level event (added 2026-10-17): a refused desired state, once per distinct (document, reason); FE-4: the events of an on-device build (BuildStarted, … | application/json | 200, 401, 403, 503 |
 | GET | `/api/v1/devices/{deviceId}/bundle` | Offline bundle (tar, bundle.v1alpha1.md): desired.json, desired.sig and every referenced blob |  | 200, 401, 403, 503 |
 | GET | `/v2/{repository}/manifests/{digest}` |  |  | 200, 401, 404 (Problem), 503 |
 | GET | `/v2/{repository}/blobs/{digest}` |  |  | 200, 401, 404 (Problem), 503 |

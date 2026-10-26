@@ -44,7 +44,8 @@ class StateTooNew(StateError):
 def fresh(device: str) -> dict:
     return {"schemaVersion": SCHEMA_VERSION, "deviceId": device, "onboarded": False, "etag": None,
             "manifestVersion": 0, "desired": None, "applied": {}, "failed": {}, "rejected": None, "outbox": [],
-            "seq": 0, "notices": {}, "journal": None, "health": {}, "traceparents": {}}
+            "seq": 0, "notices": {}, "journal": None, "health": {}, "traceparents": {},
+            "failedAt": {}, "builds": {}}
 
 
 def migrate(doc: dict, device: str) -> dict:

@@ -31,8 +31,9 @@ from pathlib import Path
 CORE = ("core/", "artefacts/", "identity/", "cloud/", "config/", "contracts.py", "util.py", "host.py")
 SERVICES = ("local/", "obs/", "gateway/")
 DRIVERS = {
-    "spi-base": ("drivers/base.py",),
+    "spi-base": ("drivers/base.py", "drivers/buildstep.py"),
     "container": ("drivers/container.py",),
+    "compose": ("drivers/compose.py",),
     "native-process": ("drivers/process.py", "drivers/native/pyenv.py"),
     "native-systemd": ("drivers/native/systemd.py",),
     "applab": ("drivers/applab/",),
