@@ -11,10 +11,13 @@ from __future__ import annotations
 import json
 import shutil
 
+import pytest
 import yaml
 
 from .flexialab import PACKAGES, import_flexia
 from .test_flexia_e2e import lab  # noqa: F401  (fixture)
+
+pytestmark = pytest.mark.flexmodel   # `flex import-flexia` is flexmodel's (not on PyPI)
 
 
 def _applies(eng_dir) -> list[tuple]:

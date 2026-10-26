@@ -2,11 +2,11 @@
 """Browser GUI for the flexEngineV2 desk runbooks: the pinned flexNode-arduino runbook GUI (tools/hwtest/gui.py +
 hwgui/, unmodified) on the pinned runner with the flex step types registered (plan 8.2 option (c)).
 
-    python flexengine/hwtest/gui.py                         # http://127.0.0.1:8765, runbooks of flexengine/hwtest
-    python flexengine/hwtest/gui.py --scan ../flexNode-arduino-conveyerbelt-example   # more runbook roots
-    python flexengine/hwtest/gui.py --host 0.0.0.0          # reachable from the bench network (no login!)
+    python hwtest/gui.py                         # http://127.0.0.1:8765, runbooks of hwtest
+    python hwtest/gui.py --scan ../flexNode-arduino-conveyerbelt-example   # more runbook roots
+    python hwtest/gui.py --host 0.0.0.0          # reachable from the bench network (no login!)
 
-What the wrapper adds: `--scan flexengine/hwtest` (always), the bench values file flexengine/hwtest/.hwtest/
+What the wrapper adds: `--scan hwtest` (always), the bench values file hwtest/.hwtest/
 secrets.yaml (git-ignored) unless --secrets is given, and the board images of boards/*.svg (LattePanda 3 Delta,
 UNO Q, Beckhoff CX, a plain Linux host) as GUI boards, selected with `target: {board: ...}` in a <runbook>.gui.yaml.
 Every other option is the GUI's own.

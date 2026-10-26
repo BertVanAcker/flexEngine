@@ -7,7 +7,7 @@ demo/obs tests and SIL M8, not by `tests/api`); [I] = planned (EV-09).
 ## 1. Enabling
 
 `FLEX_OTEL=1` instruments every device engine of the host process (`host._otel_hook`); without it, or without the
-OTel packages (`pip install flexengine-v2[otel]`), nothing changes. Exporters: OTLP/HTTP when
+OTel packages (`pip install flexEngine[otel]`), nothing changes. Exporters: OTLP/HTTP when
 `OTEL_EXPORTER_OTLP_ENDPOINT` (or `…_TRACES_ENDPOINT`) is set; a JSON Lines file when `FLEX_OTEL_FILE` is set [V].
 Resource: `service.name = flex-engine-<deviceId>` (one tracer per device), `flex.demo = d1` [V].
 

@@ -9,7 +9,7 @@ anywhere. To apply after approval, in a flexNode-arduino checkout: `git apply re
 
 flexNode-arduino 0.1.0 can update itself over Arduino_Portenta_OTA (`otaManager`, `trigger_ota()`, QC-03), but only
 from a URL compiled into the sketch, started by the sketch itself. The flexEngineV2 driver `arduino-ota`
-(`flexengine/src/flexengine2/drivers/arduino_ota.py`) deploys board firmware like any other release: the engine
+(`src/flexengine2/drivers/arduino_ota.py`) deploys board firmware like any other release: the engine
 verifies the signed release, serves the `.ota` image on the LAN and must be able to tell the node "install this
 image now", then see which firmware came up. The patch adds exactly that and nothing else.
 
@@ -123,7 +123,7 @@ no size/sha256 expectation.
 * `hostcheck/`: `src/commands/otaCommand.cpp` compiled for the PC (`g++ -std=c++14 -Wall -Wextra`, ArduinoJson
   6.21.5, system mbedtls 2.28, a 30-line `String` shim) verifies commands signed by the Python driver and refuses
   tampered, extra-param, expired and wrong-key commands; `sha256_file_hex()` equals Python's hashlib. Run:
-  `PYTHONPATH=flexengine/src sh hostcheck/run.sh <flexNode-arduino checkout>` (the checkout is only read; needs g++,
+  `PYTHONPATH=src sh hostcheck/run.sh <flexNode-arduino checkout>` (the checkout is only read; needs g++,
   libmbedcrypto 2.28, network for ArduinoJson).
 * `patch -p1 --dry-run` on `b83b5fa`: clean.
 * Board build (2026-10-17, arduino-cli 1.3.1, mbed cores 4.6.0, ArduinoJson 6.21.5, PubSubClient, Arduino_Portenta_OTA

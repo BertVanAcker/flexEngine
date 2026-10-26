@@ -8,6 +8,7 @@ patch = subprocess
 sigterm = True
 omit =
     */flexengine2/__main__.py
+    */flexengine2/testing/apps/*
 
 [report]
 show_missing = True

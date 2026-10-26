@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import copy
 import json
-import re
 import subprocess
 import sys
 import textwrap
@@ -18,8 +17,11 @@ from flexengine2.config import refdoc
 from flexengine2.identity import crypto
 from flexengine2.local import cli
 
+from flexengine2.testing.release import FRAMEWORK
+
 FLEXENGINE = Path(__file__).resolve().parents[2]
-REPO = FLEXENGINE.parent
+VECTORS = FLEXENGINE / "tests" / "vectors" / "framework"   # vendored framework files (SOURCES.json)
+REPO = FRAMEWORK or FLEXENGINE / "framework-not-set"      # demo/lab, demo/sil code: the `framework` cases only
 K = crypto.b64(bytes(range(32)))
 K2 = "B" * 43 + "="
 HEX = "ab" * 64
@@ -516,8 +518,7 @@ def test_unreadable_and_malformed_files(tmp_path):
 
 # ---- converter: plan §3.6 form -> canonical --------------------------------------------------------------------------
 def plan_example() -> dict:
-    text = (REPO / "docs" / "flexengine-v2-plan.md").read_text()
-    block = re.search(r"### 3\.6.*?```yaml\n(.*?)```", text, re.S).group(1)
+    block = (VECTORS / "config" / "plan-3.6-engine.yaml").read_text()   # the engine plan's §3.6 example
     fills = {"<b64 Ed25519>": K, "<b64>": K2, "<cx>": "192.168.50.30.1.1", "<cx-ip>": "192.168.50.30",
              "<lp>": "192.168.50.20.1.1", "<opta-ip>": "192.168.50.40", "<hex>": HEX}
     for k, v in fills.items():
@@ -587,7 +588,7 @@ EDGE_ENV = {"FLEX_DEMO_DATA": "/var/lib/flex/stack", "FLEX_EDGE_TOKENS": "/var/l
 def test_edge_example_validates(monkeypatch):
     for k, v in EDGE_ENV.items():
         monkeypatch.setenv(k, v)
-    p = REPO / "demo" / "edge" / "edge.example.yaml"
+    p = VECTORS / "config" / "edge.example.yaml"
     r = cl.check(p)
     assert r == {"valid": True, "errors": [], "warnings": []}
     assert cl.parse(p)["devices"][1]["mcu"]["smp"]["port"] == 5555
@@ -596,7 +597,7 @@ def test_edge_example_validates(monkeypatch):
 def test_edge_example_without_env_names_the_variables(monkeypatch):
     for k in EDGE_ENV:
         monkeypatch.delenv(k, raising=False)
-    msgs_ = [e["message"] for e in cl.check(REPO / "demo" / "edge" / "edge.example.yaml")["errors"]]
+    msgs_ = [e["message"] for e in cl.check(VECTORS / "config" / "edge.example.yaml")["errors"]]
     assert any("FLEX_MCU_SMP_PORT is not set" in m for m in msgs_)
 
 
@@ -612,6 +613,7 @@ def _labinv():
 LAB_ENV = {"FLEX_MODULE_PUBKEY_HEX": HEX, "FLEX_CLOUD_PUBKEY": K, "FLEX_RELEASE_PUBKEY": K2}
 
 
+@pytest.mark.framework
 @pytest.mark.parametrize("unoq_engine", ["remote", "board"])
 def test_labinv_rendered_configs_validate(tmp_path, monkeypatch, unoq_engine):
     for k, v in LAB_ENV.items():
@@ -629,6 +631,7 @@ def test_labinv_rendered_configs_validate(tmp_path, monkeypatch, unoq_engine):
     assert devs == (["panda", "panda.portenta", "unoq"] if unoq_engine == "remote" else ["panda", "panda.portenta"])
 
 
+@pytest.mark.framework
 def test_labinv_cli_render_validates(tmp_path, monkeypatch):
     out = tmp_path / "etc"
     subprocess.run([sys.executable, str(REPO / "demo" / "lab" / "labinv.py"), "render", "--inventory",
@@ -640,6 +643,7 @@ def test_labinv_cli_render_validates(tmp_path, monkeypatch):
         assert cl.check(out / name)["valid"], name
 
 
+@pytest.mark.framework
 def test_labinv_engine_yaml_trusts_the_release_public_key(tmp_path, monkeypatch):
     """engine.yaml (flexEngineV2 on the LattePanda): release trust is FLEX_RELEASE_PUBKEY from flex.env, which
     lattepanda-install.sh fills in; rendered but not filled in, the config is invalid on exactly those keys."""
@@ -655,6 +659,7 @@ def test_labinv_engine_yaml_trusts_the_release_public_key(tmp_path, monkeypatch)
         "/cloud/releasePublicKeys/0", "/devices/2/mcu/modulePublicKey"]
 
 
+@pytest.mark.framework
 def test_labinv_flex_env_placeholder_names_the_install_step(tmp_path, monkeypatch):
     """flex.env renders FLEX_MODULE_PUBKEY_HEX=<placeholder> (lattepanda-install.sh --only keys fills it in): until
     then edge.yaml is invalid, and the error shows the placeholder, which names the step."""
@@ -689,6 +694,7 @@ print((work / "edge" / "edge.yaml").read_text())
 """
 
 
+@pytest.mark.framework
 def test_sil_harness_edge_config_validates(tmp_path):
     """demo/sil/harness.py Run.start_edge() with its I/O stubbed (admin tokens, spawn, zenoh import), in a
     subprocess because importing the harness puts the demo/probe packages on sys.path."""
@@ -705,6 +711,7 @@ def test_sil_harness_edge_config_validates(tmp_path):
     assert cfg["devices"][1]["relay"]["listen"] == "tcp/127.0.0.1:0"
 
 
+@pytest.mark.framework
 def test_sil_harness_v2_engine_config_validates(tmp_path):
     """--engine v2 (EV-10): the harness renders engine.yaml from the same SIL devices; it validates, allows the plain
     HTTP link shim (DA-4), puts the local API socket into the run dir and writes the spans next to the stack's."""

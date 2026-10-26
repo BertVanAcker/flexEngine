@@ -1,7 +1,7 @@
 """Driver SPI v1 (``SPI_VERSION = "1.0"``): the only thing the reconciler knows about an executor.
 
 This docstring is the normative specification of the SPI (connection point CP-5). Every in-tree and third-party
-driver must pass the shared conformance suite ``flexengine/tests/contract/test_spi.py``; a change to anything
+driver must pass the shared conformance suite ``tests/contract/test_spi.py``; a change to anything
 below that is not backwards compatible needs a new SPI major version. The engine reports the version it speaks
 as ``x-flex.engine.spi`` in the device capabilities document.
 

@@ -1,0 +1,22 @@
+apiVersion: flex.dev/v1alpha1
+kind: Module
+metadata:
+  name: detection_logger
+  version: 0.1.0
+  description: Records detections and polls the guard status for the fleet dashboard.
+spec:
+  language: python
+  ports:
+    - name: detections
+      direction: in
+      type: uc1/Detections
+      qos: {reliability: reliable, depth: 10}
+    - name: guard_status
+      pattern: rpc
+      direction: out
+      request: uc1/GuardStatusRequest
+      response: uc1/GuardStatus
+  resources: {cpu_cores: 0.25, memory_mb: 128}
+  requires:
+    target_classes: [T1, T2, T3]
+    runtimes: [python3]

@@ -12,7 +12,7 @@ vars:
   target: {default: desk, prompt: "desk (real hardware) or sim"}
   lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
   lp_sh: {default: "ssh -o BatchMode=yes ${lp}", prompt: "shell on the LattePanda that reads stdin (sh -c = this host)"}
-  install: {default: "cd ~/flexengine-v2-2.0.0a1-linux_x86_64 && sudo ./packaging/install.sh --device-id panda --extras mcu,plc,applab,otel", prompt: "install command on the LattePanda (offline bundle of build-wheels.sh)"}
+  install: {default: "cd ~/flexengine-2.0.0a1-linux_x86_64 && sudo ./packaging/install.sh --device-id panda --extras mcu,plc,applab,otel", prompt: "install command on the LattePanda (offline bundle of build-wheels.sh)"}
   fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
   fe_enroll: {default: "sudo /opt/flexengine/bin/flexengine enroll --owner flex", prompt: "flexengine enroll as root (writes the token file flex:flex 0600)"}
   fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
@@ -35,7 +35,7 @@ vars:
   suite: {default: "cd /opt/flex/modular-interoperable-framework/flexengine && ../.venv/bin/python -m pytest -q -p no:cacheprovider tests/unit", prompt: "V2 test suite on the LattePanda (unit layer)"}
   sim: {default: "true", prompt: "simulation hook (dry run only)"}
 setup:
-  - "LattePanda: Ubuntu 24.04, the offline bundle flexengine-v2-<ver>-linux_x86_64.tar.gz (build-wheels.sh) unpacked in ~ of ${lp}, sudo for ${lp}"
+  - "LattePanda: Ubuntu 24.04, the offline bundle flexengine-<ver>-linux_x86_64.tar.gz (build-wheels.sh) unpacked in ~ of ${lp}, sudo for ${lp}"
   - "flexCloud stub (flex-stack) running; its cloud public key, the release public key and the lab CA at hand (stack.json, keys/, tls/ca.crt)"
   - "No older flex-edge.service running (D2-BRINGUP s2: lattepanda-install.sh installs V2 instead)"
   - "This PC: the admin token in ${admin_token_file}, the lab CA in ${cloud_ca}"

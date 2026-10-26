@@ -30,7 +30,7 @@ vars:
 setup:
   - "LattePanda: flexEngineV2 installed and enrolled (EV-HW-01), devices ${gp} (Docker) and ${gp_podman} (Podman) in /etc/flexengine/engine.yaml, local.tcp bind = ${fe_api}"
   - "engine.yaml of ${gp} and ${gp_podman}: drivers.container.allowedRunOptions.devices contains ${igpu_device}; safeStateFile = ${safe_state_file}"
-  - "This PC: venv with flexengine/hwtest/requirements.txt, the lab CA in ${cloud_ca}, the admin token in ${admin_token_file}, ssh key login to ${lp}"
+  - "This PC: venv with hwtest/requirements.txt, the lab CA in ${cloud_ca}, the admin token in ${admin_token_file}, ssh key login to ${lp}"
   - "No other deployment on ${gp} / ${gp_podman} (they are replaced)"
 steps:
   - id: stack

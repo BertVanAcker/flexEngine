@@ -1,6 +1,6 @@
 """EV-15: every runbook runs unchanged against its simulated desk (dryrun.py): the PC-side steps alone (`--only`)
 and the full run with the manual steps answered by --set dry_run=1 / --yes. Results go to a temporary directory
-(the committed ones in flexengine/hwtest/hwtest-results/ come from `dryrun.py --all`)."""
+(the committed ones in hwtest/hwtest-results/ come from `dryrun.py --all`)."""
 
 from __future__ import annotations
 

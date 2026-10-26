@@ -32,31 +32,58 @@ from flexengine2.util import canonical_json, iso, sha256_digest
 from flexengine2.artefacts.oci import (AT_NODE, AT_SIGNATURE, EMPTY_JSON, MT_DESCRIPTOR, MT_EMPTY, MT_MANIFEST,
                   MT_PAYLOAD_IMAGE, MT_PAYLOAD_NATIVE, MT_SBOM, Layout)
 
-# Repo checkout: $FLEX_REPO, default computed from this file (src/flexengine2/testing/release.py -> repo root).
-REPO = Path(os.environ.get("FLEX_REPO") or Path(__file__).resolve().parents[4]).resolve()
-# Probe trees (read-only stand-ins, build outputs, caches): $FLEX_PROBES_DIR, default <repo>/probes. A git worktree
-# has the probe sources but not their gitignored build outputs; point this at the main checkout's probes/ there.
+# This checkout (src/flexengine2/testing/release.py -> repository root) and the framework files vendored into its
+# tests (tests/vectors/framework, origin and commit in SOURCES.json). Installed from a wheel, neither exists.
+CHECKOUT = Path(__file__).resolve().parents[3]
+VECTORS = CHECKOUT / "tests" / "vectors" / "framework"
+# A modular-interoperable-framework checkout (probes, demo/, examples/models, flexmodel): $FLEX_REPO, optional. The
+# cases that need the framework's code (probe stand-ins, demo stacks, `flex release`) skip without it.
+FRAMEWORK = Path(os.environ["FLEX_REPO"]).resolve() if os.environ.get("FLEX_REPO") else None
+REPO = FRAMEWORK or CHECKOUT
+# Probe trees (read-only stand-ins, build outputs, caches): $FLEX_PROBES_DIR, default <framework>/probes. A git
+# worktree has the probe sources but not their gitignored build outputs; point this at the main checkout's probes/.
 PROBES = Path(os.environ.get("FLEX_PROBES_DIR") or REPO / "probes").resolve()
-# Stand-in flexNode apps (container: alpine + busybox nc health endpoint; native: Python). Default: probe P2's apps,
-# used read-only; $FLEX_TEST_APPS overrides.
-APPS = Path(os.environ.get("FLEX_TEST_APPS") or PROBES / "p2-reconciling-engine" / "apps")
+# Stand-in flexNode apps (container: alpine + busybox nc health endpoint; native: Python): $FLEX_TEST_APPS, else probe
+# P2's apps, vendored as package data (testing/apps; SOURCES in tests/vectors/framework), so a wheel install has them.
+APPS = Path(os.environ.get("FLEX_TEST_APPS") or Path(__file__).resolve().parent / "apps")
 
 
 def flex_cli() -> Path:
-    """The flexmodel `flex` CLI: $FLEX_CLI, the repo venv, flexengine's venv, this interpreter's venv, PATH."""
-    cands = [os.environ.get("FLEX_CLI"), REPO / ".venv" / "bin" / "flex", REPO / "flexengine" / ".venv" / "bin" / "flex",
+    """The flexmodel `flex` CLI: $FLEX_CLI, the framework's venv, this interpreter's venv, PATH."""
+    cands = [os.environ.get("FLEX_CLI"), FRAMEWORK / ".venv" / "bin" / "flex" if FRAMEWORK else None,
              Path(sys.prefix) / "bin" / "flex", shutil.which("flex")]
     for c in cands:
-        if c and Path(c).exists():
+        if c and Path(c).exists() and _is_python_script(Path(c)):
             return Path(c)
-    raise RuntimeError("flex CLI not found: install flexmodel (pip install -e flexmodel) or set FLEX_CLI")
+    raise RuntimeError("flex CLI not found: install flexmodel (pip install -e <framework>/flexmodel) or set FLEX_CLI")
+
+
+def _is_python_script(p: Path) -> bool:
+    """flexmodel's `flex` is a Python console script; GNU flex (the lexer generator, often on PATH) is not."""
+    try:
+        with open(p, "rb") as f:
+            head = f.readline(256)
+    except OSError:
+        return False
+    return head.startswith(b"#!") and b"python" in head
+
+
+def _recorded(model_dir: Path, kind: str) -> dict | None:
+    """`flex <kind>` output recorded next to a vendored model (flex-<kind>.recorded.json), used without flexmodel."""
+    p = Path(model_dir) / f"flex-{kind}.recorded.json"
+    return json.loads(p.read_text()) if p.is_file() else None
 
 
 # ---- flexModel -> descriptor ---------------------------------------------------------------------
 
 def module_hashes(model_dir: Path) -> dict:
     """FLEX01 interface hashes from the P0/P1 `flex hash` tool (read-only use of flexmodel/)."""
-    flex = flex_cli()
+    try:
+        flex = flex_cli()
+    except RuntimeError:
+        if (rec := _recorded(model_dir, "hash")) is not None:
+            return rec["modules"]
+        raise
     out = subprocess.run([str(flex), "hash", str(model_dir)], check=True, capture_output=True, text=True)
     return json.loads(out.stdout)["modules"]
 
@@ -65,7 +92,12 @@ def model_safety(*model_dirs: Path) -> dict:
     """Model-derived safety classification from `flex safety --json` (flexmodel/safety.py, S4): the one rule
     shared by `flex check`, this release tool, the flexCloud stub and the P6 gateway.
     Returns {"modules": {name: {"class", "why", ...}}, "interferencePaths": [...]}."""
-    flex = flex_cli()
+    try:
+        flex = flex_cli()
+    except RuntimeError:
+        if len(model_dirs) == 1 and (rec := _recorded(model_dirs[0], "safety")) is not None:
+            return rec
+        raise
     out = subprocess.run([str(flex), "safety", *map(str, model_dirs), "--json"], check=True, capture_output=True,
                          text=True)
     return json.loads(out.stdout)

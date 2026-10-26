@@ -23,7 +23,7 @@ from conftest import Ctx
 
 PASS, FAIL, SKIP = f.PASS, f.FAIL, f.SKIP
 FLEXENGINE = Path(__file__).resolve().parents[2]
-REPO = FLEXENGINE.parent
+PLC_SIM = FLEXENGINE / "tests" / "vectors" / "framework" / "plc-sim"   # demo/edge/sim of the framework, vendored
 A = f.ACTIONS
 
 
@@ -307,12 +307,12 @@ def test_smp_probe_unreachable(runner, ctx):
     assert st == FAIL and "SMP echo" in d
 
 
-# ---- PLC stand-ins (demo/edge/sim, read-only) -------------------------------------------------------------------------------
+# ---- PLC stand-ins (demo/edge/sim, vendored) -------------------------------------------------------------------------------
 @pytest.fixture
 def plc_sim():
-    sys.path.insert(0, str(REPO / "demo" / "edge"))
-    import sim.ads_plc as ads_plc
-    import sim.modbus_plc as modbus_plc
+    sys.path.insert(0, str(PLC_SIM))
+    import ads_plc
+    import modbus_plc
     return ads_plc, modbus_plc
 
 

@@ -440,7 +440,7 @@ def test_reason_texts_are_registered():
 
 
 def test_native_release_cli(tmp_path):
-    """flexengine/tools/native_release.py: py-payload (offline, from local wheels) + release (multi-layer, signed)."""
+    """tools/native_release.py: py-payload (offline, from local wheels) + release (multi-layer, signed)."""
     import importlib.util
 
     from flexengine2.artefacts.oci import Layout

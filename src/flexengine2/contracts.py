@@ -1,7 +1,7 @@
 """Connection-point contracts (CP-1...CP-8, docs/flexengine-v2-plan.md §5.0): load and validate.
 
 The canonical machine-readable specs are package data in ``flexengine2/api/`` (``*.schema.json``, the reason-code
-registry, the OpenAPI files), so they ship in the wheel; ``flexengine/api/`` in the repo holds the prose specs, test
+registry, the OpenAPI files), so they ship in the wheel; ``api/`` in the repo holds the prose specs, test
 vectors and generator scripts (see its README).
 
     from flexengine2 import contracts

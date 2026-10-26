@@ -1,4 +1,4 @@
-# GUI metadata of EV-HW-04 (read by the runbook GUI: gui.py --scan flexengine/hwtest); the runbook is EV-HW-04_portenta_modules.yaml
+# GUI metadata of EV-HW-04 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-04_portenta_modules.yaml
 goal: flexEngineV2 on the LattePanda hot-loads a generated module into the Portenta H7 M7 through the see-thru gateway,
   rolls a stalling version back from the A/B slot without re-upload, and refuses an ABI-skewed module before upload.
 duration: ~20 min

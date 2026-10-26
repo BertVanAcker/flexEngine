@@ -1,4 +1,4 @@
-# GUI metadata of EV-HW-08 (read by the runbook GUI: gui.py --scan flexengine/hwtest); the runbook is EV-HW-08_security.yaml
+# GUI metadata of EV-HW-08 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-08_security.yaml
 goal: Tampered, unsigned, unknown-key, downgraded and wrong-CA deliveries are refused on the device with their exact reason
   and no driver call, while the previous release keeps running.
 duration: ~20 min

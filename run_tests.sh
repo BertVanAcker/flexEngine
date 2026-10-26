@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# flexEngineV2 test suite, one command (docs/flexengine-v2-plan.md §7.1). Used by CI and on the lab LattePanda.
+# flexEngine 2 test suite, one command (engine plan §7.1). Used by CI and on the lab LattePanda.
 #
-#   flexengine/run_tests.sh [layer ...]        default: push
+#   ./run_tests.sh [layer ...]        default: push
 #
 # Layers (plan §7.2):
 #   unit              tests/unit                                   layer 1
@@ -22,28 +22,29 @@
 #   all      = push + nightly
 #
 # Environment:
-#   PYTHON            interpreter with flexengine2's test deps (default: flexengine/.venv, <repo>/.venv, python3)
-#   FLEX_RESULTS_DIR  where JUnit XML and run-summary.json go (default: flexengine/results/latest, gitignored)
+#   PYTHON            interpreter with flexengine2's test deps (default: .venv/bin/python, python3)
+#   FLEX_RESULTS_DIR  where JUnit XML, run-summary.json and generated reports go (default: results/latest, gitignored)
+#   FLEXMODEL_SRC     optional: flexmodel's src/ (not on PyPI); put on PYTHONPATH for the relay cases, which skip without it
 #   FLEX_BASETEMP     parent dir for pytest --basetemp (one subdir per layer; default: pytest's own)
 #   PYTEST_ARGS       extra pytest arguments (e.g. "-x -k scenario")
 #
-# The checkout's sources always win over an installed copy: PYTHONPATH starts with flexengine/src and flexmodel/src.
+# The checkout's sources always win over an installed copy: PYTHONPATH starts with src/.
 # Exit status: 0 when every selected layer passed, else 1.
 set -o pipefail   # no -u: macOS bash 3.2 treats empty arrays as unset
 
 FE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO="$(cd "$FE/.." && pwd)"
 
 if [[ -z "${PYTHON:-}" ]]; then
-  for p in "$FE/.venv/bin/python" "$REPO/.venv/bin/python"; do
+  for p in "$FE/.venv/bin/python"; do
     if [[ -x "$p" ]]; then PYTHON="$p"; break; fi
   done
   PYTHON="${PYTHON:-python3}"
 fi
-export PYTHONPATH="$FE/src:$REPO/flexmodel/src${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="$FE/src${FLEXMODEL_SRC:+:$FLEXMODEL_SRC}${PYTHONPATH:+:$PYTHONPATH}"
 export FLEX_ALLOW_PLAIN_HTTP=1          # the reference fake cloud speaks plain HTTP (lab flag, decision DA-4)
 RES="${FLEX_RESULTS_DIR:-$FE/results/latest}"
 mkdir -p "$RES"
+export FLEX_RESULTS_DIR="$RES"     # tests that write reports or metrics put them here
 read -r -a EXTRA <<< "${PYTEST_ARGS:-}" || true
 
 usage() { awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "${BASH_SOURCE[0]}"; }
@@ -57,7 +58,7 @@ expand() {
   esac
 }
 
-# test path and marker expression of one layer (paths relative to flexengine/)
+# test path and marker expression of one layer (paths relative to the repository root)
 layer_path() {
   case "$1" in
     unit|contract|api|security|property|packaging) echo "tests/$1" ;;
@@ -76,7 +77,7 @@ layer_mark() {
   esac
 }
 
-COMMIT="$(git -C "$REPO" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+COMMIT="$(git -C "$FE" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
 run_layer() {
   local layer="$1" path mark t0 code

@@ -1,0 +1,32 @@
+{
+ "interferencePaths": [
+  {
+   "from": "logger.guard_status",
+   "note": "rpc into a safety-relevant node (not classified; FFI review)",
+   "system": "uc1_field_safety_supervisor",
+   "to": "guard.status"
+  }
+ ],
+ "modules": {
+  "detection_logger": {
+   "class": "none",
+   "declared": null,
+   "why": "does not feed a safety-relevant module"
+  },
+  "gige_camera": {
+   "class": "safety-relevant",
+   "declared": null,
+   "why": "feeds safety chain: cam.image -> guard.image (system uc1_field_safety_supervisor)"
+  },
+  "perception_guard": {
+   "class": "safety-relevant",
+   "declared": null,
+   "why": "feeds safety chain: guard.heartbeat -> safety.heartbeat (system uc1_field_safety_supervisor)"
+  },
+  "safety_gateway": {
+   "class": "safety-relevant",
+   "declared": "safety-relevant",
+   "why": "declared `safety_class: safety-relevant` in the model"
+  }
+ }
+}

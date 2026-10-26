@@ -17,7 +17,7 @@ REG = contracts.reason_codes()
 
 
 def test_registry_file_is_generated_and_current():
-    assert REG == gen.build(), "run flexengine/api/tools/gen_reason_codes.py"
+    assert REG == gen.build(), "run api/tools/gen_reason_codes.py"
 
 
 def test_every_source_reason_is_registered_and_no_entry_is_stale():

@@ -1,6 +1,6 @@
-# flexengine-v2 dependency lock (constraints file) -- GENERATED, do not edit by hand.
+# flexEngine dependency lock (constraints file) -- GENERATED, do not edit by hand.
 # base deps + extras [mcu,applab,plc,otel], from Python 3.13.16 on linux.
-# Regenerate: flexengine/.venv/bin/python flexengine/packaging/gen-lock.py   (see packaging/README.md)
+# Regenerate: .venv/bin/python packaging/gen-lock.py   (see packaging/README.md)
 annotated-types==0.8.0
 attrs==26.1.0
 cbor2==6.1.5

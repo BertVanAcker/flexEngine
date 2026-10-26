@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "flexengine-v2"
+name = "flexEngine"
 dynamic = ["version"]
-description = "flexEngineV2: on-device deployment engine of the flex* stack (reconciler, driver SPI, drivers, gateway)"
+description = "flexEngine 2: the on-device deployment engine of the flex* stack (reconciler, driver SPI, drivers, gateway)"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"
@@ -15,11 +15,16 @@ dependencies = [
   "jsonschema>=4.20",
 ]
 
+[project.urls]
+Homepage = "https://github.com/BertVanAcker/flexEngine"
+Changelog = "https://github.com/BertVanAcker/flexEngine/blob/master/CHANGES.md"
+Migration = "https://github.com/BertVanAcker/flexEngine/blob/master/MIGRATION.md"
+
 [project.optional-dependencies]
 mcu = ["smpclient==7.3.0", "cbor2==6.1.5", "pyelftools==0.33"]
 applab = ["msgpack>=1.0"]
 plc = ["pyads==3.5.0", "pymodbus==3.11.3"]
-# the relay needs the repo's flexmodel (not on PyPI): pip install -e ../flexmodel
+# the relay also needs flexmodel, which is not on PyPI: pip install -e <framework>/flexmodel (decision FE-D3)
 relay = ["eclipse-zenoh==1.10.1"]
 otel = ["opentelemetry-api==1.45.1", "opentelemetry-sdk==1.45.1", "opentelemetry-exporter-otlp-proto-http==1.45.1"]
 dev = ["pytest>=8", "pytest-cov>=5", "hypothesis>=6.100", "coverage>=7"]
@@ -35,7 +40,7 @@ version = { attr = "flexengine2.__version__" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-flexengine2 = ["api/*.json", "api/*.yaml", "config/*.json"]
+flexengine2 = ["api/*.json", "api/*.yaml", "config/*.json", "testing/apps/*/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -44,4 +49,6 @@ markers = [
   "podman: needs Podman",
   "qemu: needs qemu-system-arm and the P3 base image",
   "slow: nightly only",
+  "framework: needs a modular-interoperable-framework checkout ($FLEX_REPO); skipped without one",
+  "flexmodel: needs flexmodel importable (not on PyPI); skipped without it",
 ]

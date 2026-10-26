@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# flexengine-v2 wheels + offline wheelhouses per target (EV-08).
+# flexEngine wheels + offline wheelhouses per target (EV-08).
 #
-#   flexengine/packaging/build-wheels.sh [--out flexengine/dist] [--python PY] [--targets LIST] [--extras LIST]
+#   packaging/build-wheels.sh [--out dist] [--python PY] [--targets LIST] [--extras LIST]
 #                                        [--arm64-extras LIST] [--no-docker] [--no-bundle] [--clean]
 #
 #   --targets       space/comma list of <arch>-<pyver> (default "x86_64-3.12 x86_64-3.13 aarch64-3.11 aarch64-3.13")
@@ -11,12 +11,12 @@
 #   --arm64-extras  extras for the aarch64 wheelhouses (default applab,otel: the UNO Q runs the applab driver; mcu/plc
 #                   need crcmod/pyads, which PyPI ships as sdists only -- see below)
 #
-# Output (flexengine/dist/ is gitignored):
-#   dist/flexengine_v2-<ver>-py3-none-any.whl          the engine itself (pure Python)
+# Output (dist/ is gitignored):
+#   dist/flexengine-<ver>-py3-none-any.whl             the engine itself (pure Python)
 #   dist/wheelhouse/linux_<arch>-cp<XY>/*.whl           every dependency, pinned by packaging/requirements-lock.txt
 #                                                       (used as constraints), + setuptools/wheel for --from-source
 #   dist/wheelhouse/linux_<arch>-cp<XY>/sdist/          sdist-only deps that could not be prebuilt for that target
-#   dist/flexengine-v2-<ver>-linux_<arch>.tar.gz        offline bundle: packaging/ + wheel + that arch's wheelhouses
+#   dist/flexengine-<ver>-linux_<arch>.tar.gz           offline bundle: packaging/ + wheel + that arch's wheelhouses
 #   dist/SHA256SUMS
 #
 # Binary wheels come from `pip download --only-binary=:all: --platform manylinux_*_<arch> --python-version X.Y`.
@@ -26,7 +26,7 @@
 # (pyads compiles adslib.so). The flexengine wheel build needs network access once (setuptools build isolation).
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
-PKG="$(cd "$HERE/.." && pwd)"                  # flexengine/
+PKG="$(cd "$HERE/.." && pwd)"                  # repository root
 OUT="$PKG/dist"
 PY="${PYTHON:-}"
 [[ -n "$PY" ]] || { [[ -x "$PKG/.venv/bin/python" ]] && PY="$PKG/.venv/bin/python" || PY=python3; }
@@ -54,18 +54,18 @@ say() { printf '== %s\n' "$*"; }
 PIP=("$PY" -m pip --disable-pip-version-check)
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
-[[ $CLEAN == 1 ]] && rm -rf "$OUT/wheelhouse" "$OUT"/flexengine_v2-*.whl "$OUT"/*.tar.gz "$OUT/SHA256SUMS"
+[[ $CLEAN == 1 ]] && rm -rf "$OUT/wheelhouse" "$OUT"/flexengine-*.whl "$OUT"/*.tar.gz "$OUT/SHA256SUMS"
 VER="$("$PY" -c 'import re,sys; print(re.search(r"__version__ = \"([^\"]+)\"", open(sys.argv[1]).read()).group(1))' \
   "$PKG/src/flexengine2/__init__.py")"
 
 # ---- 1. the engine wheel ----------------------------------------------------------------------------------------------
-say "flexengine-v2 $VER wheel"
-rm -f "$OUT"/flexengine_v2-*.whl
+say "flexEngine $VER wheel"
+rm -f "$OUT"/flexengine-*.whl
 tmpb="$(mktemp -d)"; trap 'rm -rf "$tmpb"' EXIT
 cp -r "$PKG/pyproject.toml" "$PKG/README.md" "$PKG/src" "$tmpb/"   # clean tree: no build/ or egg-info in the checkout
 find "$tmpb/src" -name '__pycache__' -prune -exec rm -rf {} + ; find "$tmpb/src" -name '*.egg-info' -prune -exec rm -rf {} +
 "${PIP[@]}" wheel -q --no-deps -w "$OUT" "$tmpb"
-WHEEL="$(ls "$OUT"/flexengine_v2-"$VER"-py3-none-any.whl)"
+WHEEL="$(ls "$OUT"/flexengine-"$VER"-py3-none-any.whl)"
 echo "   $WHEEL"
 
 # ---- 2. wheelhouses ---------------------------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ for tgt in $TARGETS; do
     mapfile -t pins < <(grep -vE '^(#|$)' "$LOCK" | grep -viE "^($(IFS='|'; echo "${SDIST_ONLY[*]}"))==")
     "${PIP[@]}" "${XDL[@]}" --no-deps "${pins[@]}"
   fi
-  rm -f "$WH"/flexengine_v2-*.whl
+  rm -f "$WH"/flexengine-*.whl
   n=$(find "$WH" -maxdepth 1 -name '*.whl' | wc -l); s=$(find "$WH" -name '*.tar.gz' | wc -l)
   echo "   $n wheels, $s sdists, $(du -sh "$WH" | cut -f1)"
 done
@@ -129,14 +129,14 @@ done
 # ---- 3. offline bundles + checksums ------------------------------------------------------------------------------------
 if [[ $BUNDLE == 1 ]]; then
   for arch in $(for t in $TARGETS; do echo "${t%-*}"; done | sort -u); do
-    b="$OUT/flexengine-v2-$VER-linux_$arch.tar.gz"
+    b="$OUT/flexengine-$VER-linux_$arch.tar.gz"
     say "bundle $b"
-    stage="$(mktemp -d)"; d="$stage/flexengine-v2-$VER"
+    stage="$(mktemp -d)"; d="$stage/flexengine-$VER"
     mkdir -p "$d/wheelhouse"
     cp -r "$HERE" "$d/packaging"; rm -rf "$d/packaging/__pycache__"
     cp "$WHEEL" "$d/"
     for w in "$OUT/wheelhouse/linux_${arch}-"*; do [[ -d "$w" ]] && cp -r "$w" "$d/wheelhouse/"; done
-    tar -C "$stage" -czf "$b" "flexengine-v2-$VER"
+    tar -C "$stage" -czf "$b" "flexengine-$VER"
     rm -rf "$stage"
   done
 fi

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Regenerate packaging/requirements-lock.txt from a working venv (pip-compile-free).
 
-    flexengine/.venv/bin/python flexengine/packaging/gen-lock.py [--extras mcu,applab,plc,otel] [--check]
+    .venv/bin/python packaging/gen-lock.py [--extras mcu,applab,plc,otel] [--check]
 
-Walks the installed metadata of `flexengine-v2` (+ the extras) recursively, keeps exactly the distributions that the
+Walks the installed metadata of `flexEngine` (+ the extras) recursively, keeps exactly the distributions that the
 base package and those extras need in *this* environment, and writes them as `name==version` pins (`pip freeze`
 filtered to the closure). The lock is used by install.sh and build-wheels.sh as a pip **constraints** file (`-c`),
 so a dependency that only another Python/platform needs (an environment marker false here) is still resolved there,
@@ -21,7 +21,7 @@ from pathlib import Path
 
 from packaging.requirements import Requirement
 
-ROOT_DIST = "flexengine-v2"
+ROOT_DIST = "flexEngine"
 DEFAULT_EXTRAS = "mcu,applab,plc,otel"   # relay needs the repo's flexmodel (not on PyPI); dev is not shipped
 LOCK = Path(__file__).with_name("requirements-lock.txt")
 
@@ -43,7 +43,7 @@ def closure(extras: list[str]) -> dict[str, str]:
             dist = metadata.distribution(name)
         except metadata.PackageNotFoundError:
             sys.exit(f"gen-lock: {name} is required but not installed in {sys.prefix} -- "
-                     f"pip install -e 'flexengine[{','.join(extras)}]' first")
+                     f"pip install -e '.[{','.join(extras)}]' first")
         if norm(name) != norm(ROOT_DIST):
             seen[norm(dist.metadata["Name"])] = dist.version
         for spec in dist.requires or []:
@@ -57,9 +57,9 @@ def closure(extras: list[str]) -> dict[str, str]:
 
 def render(pins: dict[str, str], extras: list[str]) -> str:
     head = [
-        "# flexengine-v2 dependency lock (constraints file) -- GENERATED, do not edit by hand.",
+        "# flexEngine dependency lock (constraints file) -- GENERATED, do not edit by hand.",
         f"# base deps + extras [{','.join(extras)}], from Python {sys.version.split()[0]} on {sys.platform}.",
-        "# Regenerate: flexengine/.venv/bin/python flexengine/packaging/gen-lock.py   (see packaging/README.md)",
+        "# Regenerate: .venv/bin/python packaging/gen-lock.py   (see packaging/README.md)",
     ]
     return "\n".join(head + [f"{n}=={v}" for n, v in pins.items()]) + "\n"
 

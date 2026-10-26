@@ -1,7 +1,7 @@
 # flexEngineV2 connection-point contracts (EV-00)
 
 Specs for the engine's edges (docs/flexengine-v2-plan.md §5.0). Each connection point (CP) has a versioned spec, golden
-examples, a contract test the engine passes (`flexengine/tests/api/`) and a reference fake of the other side.
+examples, a contract test the engine passes (`tests/api/`) and a reference fake of the other side.
 Evidence marks: **[V]** checked by a test in `tests/api/`; **[I]** inferred or proposed, not checked.
 
 ## Where the files are

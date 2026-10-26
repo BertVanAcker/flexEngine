@@ -9,7 +9,7 @@
 | `polkit/50-flexengine-systemd.rules` | polkit rule for the native systemd driver run by user `flex` (not installed by install.sh; see below) |
 | `requirements-lock.txt` | pinned base + `[mcu,applab,plc,otel]` closure, used as pip constraints |
 | `gen-lock.py` | regenerates the lock from a working venv |
-| `build-wheels.sh` | engine wheel + offline wheelhouses (x86_64, aarch64) + per-arch bundles in `flexengine/dist/` |
+| `build-wheels.sh` | engine wheel + offline wheelhouses (x86_64, aarch64) + per-arch bundles in `dist/` |
 | `polkit/50-flexengine-rauc.rules` | os-rauc: lets user `flex` reboot (`systemctl reboot` → logind) into the new slot |
 | `dbus/flexengine-rauc.conf` | os-rauc, optional hardening: RAUC D-Bus calls only for root and group `flex` (stock policy: every user) |
 
@@ -29,15 +29,15 @@ Layout on the target:
 On a build host (any Linux with Docker, network access once):
 
 ```bash
-flexengine/packaging/build-wheels.sh                # -> flexengine/dist/flexengine-v2-2.0.0a1-linux_x86_64.tar.gz
-scp flexengine/dist/flexengine-v2-2.0.0a1-linux_x86_64.tar.gz lattepanda.lab:
+packaging/build-wheels.sh                # -> dist/flexengine-2.0.0a1-linux_x86_64.tar.gz
+scp dist/flexengine-2.0.0a1-linux_x86_64.tar.gz lattepanda.lab:
 ```
 
 On the LattePanda (offline is fine; needs `python3` 3.12 and `python3.12-venv`, which install.sh apt-installs if
 missing):
 
 ```bash
-tar xzf flexengine-v2-2.0.0a1-linux_x86_64.tar.gz && cd flexengine-v2-2.0.0a1
+tar xzf flexengine-2.0.0a1-linux_x86_64.tar.gz && cd flexengine-2.0.0a1
 sudo packaging/install.sh --extras mcu,plc,applab,otel --dry-run     # the plan
 sudo packaging/install.sh --extras mcu,plc,applab,otel --device-id panda
 /opt/flexengine/bin/flexengine version                                 # 2.0.0a1
@@ -47,7 +47,7 @@ sudo systemctl enable --now flexengine && journalctl -u flexengine -f
 ```
 
 The bundle's `install.sh` finds the wheel and `wheelhouse/linux_x86_64-cp312` next to it. From a repo checkout:
-`sudo flexengine/packaging/install.sh --wheel flexengine/dist/flexengine_v2-*.whl --wheelhouse flexengine/dist/wheelhouse`,
+`sudo packaging/install.sh --wheel dist/flexengine-*.whl --wheelhouse dist/wheelhouse`,
 or `--from-source flexengine` (online, or with a wheelhouse that holds setuptools).
 
 Groups: install.sh adds a drop-in `SupplementaryGroups=` with whichever of `dialout` (MCU serial) and `docker`
@@ -132,10 +132,10 @@ for a quick try use a drop-in with `Type=simple` and `WatchdogSec=0`.
 ## Mac (Apple Silicon) / dev hosts — no service
 
 ```bash
-python3 -m venv flexengine/.venv
-flexengine/.venv/bin/pip install -e 'flexengine[dev]'            # + ,mcu,plc,applab,otel as needed
-flexengine/.venv/bin/flexengine version
-flexengine/.venv/bin/flexengine run --config my-engine.yaml       # dataDir: a local directory, foreground
+python3 -m venv .venv
+.venv/bin/pip install -e '.[dev]'            # + ,mcu,plc,applab,otel as needed
+.venv/bin/flexengine version
+.venv/bin/flexengine run --config my-engine.yaml       # dataDir: a local directory, foreground
 ```
 
 No `flex` user, no systemd; `sdnotify` is a no-op without `$NOTIFY_SOCKET`. For a staged copy of the Linux layout
@@ -157,19 +157,19 @@ No `flex` user, no systemd; `sdnotify` is a no-op without `$NOTIFY_SOCKET`. For 
 ## Regenerating the lock
 
 ```bash
-flexengine/.venv/bin/pip install -e 'flexengine[dev,mcu,applab,plc,otel]'   # the environment to pin
-flexengine/.venv/bin/python flexengine/packaging/gen-lock.py                 # rewrites requirements-lock.txt
-flexengine/.venv/bin/python flexengine/packaging/gen-lock.py --check         # CI: exit 1 if stale
-flexengine/packaging/build-wheels.sh --clean && pytest flexengine/tests/packaging
+.venv/bin/pip install -e '.[dev,mcu,applab,plc,otel]'   # the environment to pin
+.venv/bin/python packaging/gen-lock.py                 # rewrites requirements-lock.txt
+.venv/bin/python packaging/gen-lock.py --check         # CI: exit 1 if stale
+packaging/build-wheels.sh --clean && pytest tests/packaging
 ```
 
-The lock is the pip-freeze of the dependency closure of `flexengine-v2[mcu,applab,plc,otel]` in that venv (no
+The lock is the pip-freeze of the dependency closure of `flexEngine[mcu,applab,plc,otel]` in that venv (no
 pip-tools). It is passed as `-c` (constraints): it pins what is installed but does not force dists a target does
 not need; a dependency that only another Python needs is resolved there unpinned.
 
 ## Tests
 
-`flexengine/.venv/bin/python -m pytest flexengine/tests/packaging -m 'slow or docker or not slow'` — sdnotify unit
+`.venv/bin/python -m pytest tests/packaging -m 'slow or docker or not slow'` — sdnotify unit
 tests, dry-run and `--root` staging on the host, and (marker `docker`) clean `ubuntu:24.04` containers with systemd:
 install from the wheel, `systemd-analyze verify`, idempotent reinstall, upgrade, uninstall, purge, plus the arm64
 wheelhouse checks (an arm64 install only where `docker run --platform linux/arm64` works).

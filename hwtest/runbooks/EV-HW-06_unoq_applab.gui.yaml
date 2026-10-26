@@ -1,4 +1,4 @@
-# GUI metadata of EV-HW-06 (read by the runbook GUI: gui.py --scan flexengine/hwtest); the runbook is EV-HW-06_unoq_applab.yaml
+# GUI metadata of EV-HW-06 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-06_unoq_applab.yaml
 goal: App Lab deploy, update, fail-fast rollback (< 6 s), skewed-source refusal and the one-App-per-board plan refusal on
   the UNO Q, first driven from the LattePanda over ssh, then by the engine on the board (DA-11).
 duration: ~25 min

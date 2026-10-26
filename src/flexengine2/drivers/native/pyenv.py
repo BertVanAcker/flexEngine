@@ -1,6 +1,6 @@
 """Native payloads with their own Python dependencies (EV-36) and per-platform native layers (EV-37).
 
-Shared by the process driver and the systemd driver (profile ``native``). CP-3: flexengine/api/bundle.v1alpha1.md §2.
+Shared by the process driver and the systemd driver (profile ``native``). CP-3: api/bundle.v1alpha1.md §2.
 
 Payload (tar.gz, unchanged entry points: ``app.py`` or ``unit.json``) plus, optionally:
 

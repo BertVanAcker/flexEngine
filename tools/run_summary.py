@@ -1,6 +1,6 @@
 """Record one layer of a run_tests.sh run in <results>/run-summary.json (read by tools/alpha_exit_check.py).
 
-    python flexengine/tools/run_summary.py <results dir> <layer> <exit code> <seconds> <commit> <python>
+    python tools/run_summary.py <results dir> <layer> <exit code> <seconds> <commit> <python>
 """
 
 from __future__ import annotations

@@ -8,6 +8,7 @@ subprocess (`flexengine run`), exactly as on the LattePanda. The engine never se
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sys
 import time
@@ -15,18 +16,23 @@ from pathlib import Path
 
 import yaml
 
-from flexengine2.testing.release import PROBES
+from flexengine2.testing.release import PROBES, REPO
 
 FLEXENGINE = Path(__file__).resolve().parents[3]
-REPO = FLEXENGINE.parent
 EDGE = REPO / "demo" / "edge"
 DP = REPO / "examples" / "models" / "demo-pick"
 P3 = PROBES / "p3-mcu-hotload"
 P3B = P3 / "build"
 WORK = FLEXENGINE / "tests" / "work" / "edge"
-RESULTS = FLEXENGINE / "results"
+RESULTS = Path(os.environ.get("FLEX_RESULTS_DIR") or FLEXENGINE / "results" / "latest")   # per run, gitignored
 METRICS: dict = {}
 
+import pytest  # noqa: E402
+
+if not EDGE.is_dir():   # stand-ins from the framework (probes, demo/), not vendored: they import flexmodel
+    pytest.skip("needs a modular-interoperable-framework checkout with demo/edge: set FLEX_REPO",
+                allow_module_level=True)
+pytest.importorskip("flexmodel", reason="flexmodel not importable (not on PyPI): set FLEXMODEL_SRC")
 if str(EDGE) not in sys.path:
     sys.path.insert(0, str(EDGE))  # PLC stand-ins only (`sim` package); flexedge itself is never imported
 

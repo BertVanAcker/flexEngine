@@ -99,14 +99,14 @@ def test_systemd_analyze_verify_host(tmp_path):
 
 # ---- the wheel + lock + template ---------------------------------------------------------------------------------------
 def test_wheel_is_pure_python(wheel):
-    assert wheel.name == f"flexengine_v2-{VERSION}-py3-none-any.whl"
+    assert wheel.name == f"flexengine-{VERSION}-py3-none-any.whl"
     with zipfile.ZipFile(wheel) as z:
         names = z.namelist()
-        meta = z.read(f"flexengine_v2-{VERSION}.dist-info/METADATA").decode()
-        ep = z.read(f"flexengine_v2-{VERSION}.dist-info/entry_points.txt").decode()
+        meta = z.read(f"flexengine-{VERSION}.dist-info/METADATA").decode()
+        ep = z.read(f"flexengine-{VERSION}.dist-info/entry_points.txt").decode()
     assert "flexengine2/__init__.py" in names and "flexengine2/local/sdnotify.py" in names
     assert not [n for n in names if n.endswith((".so", ".pyd", ".pyc"))]
-    assert "Name: flexengine-v2" in meta and f"Version: {VERSION}" in meta
+    assert "Name: flexEngine" in meta and f"Version: {VERSION}" in meta
     for extra in ("mcu", "applab", "plc", "otel"):
         assert f"Provides-Extra: {extra}" in meta
     assert "flexengine = flexengine2.local.cli:main" in ep
@@ -278,7 +278,7 @@ ARM_TAGS = ("cp311", "cp313")
 @pytest.mark.parametrize("cp", ARM_TAGS)
 def test_arm64_wheelhouse_resolves(dist, wheel, cp, tmp_path):
     """The aarch64 wheelhouse (pip download --platform manylinux_*_aarch64 --only-binary=:all:) holds a complete,
-    binary-only install set for flexengine-v2[applab,otel]: pip resolves it offline for that platform."""
+    binary-only install set for flexEngine[applab,otel]: pip resolves it offline for that platform."""
     wh = dist / "wheelhouse" / f"linux_aarch64-{cp}"
     if not wh.is_dir():
         pytest.skip(f"{wh.name} not built (build-wheels.sh --targets aarch64-{cp[2]}.{cp[3:]})")
@@ -298,7 +298,7 @@ def test_arm64_wheelhouse_resolves(dist, wheel, cp, tmp_path):
     import json
 
     got = {i["metadata"]["name"].lower() for i in json.loads((tmp_path / "r.json").read_text())["install"]}
-    assert {"flexengine-v2", "cryptography", "pyyaml", "jsonschema", "msgpack", "opentelemetry-sdk"} <= got
+    assert {"flexengine", "cryptography", "pyyaml", "jsonschema", "msgpack", "opentelemetry-sdk"} <= got
 
 
 @pytest.mark.docker
@@ -324,5 +324,5 @@ def test_flexengine_dir_layout():
     for f in ("install.sh", "build-wheels.sh", "gen-lock.py", "requirements-lock.txt", "engine.yaml.template",
               "README.md", "systemd/flexengine.service", "systemd/flexengine@.service"):
         assert (PACKAGING / f).is_file(), f
-    gi = (FLEXENGINE.parent / ".gitignore").read_text().splitlines()
-    assert "flexengine/dist/" in gi
+    gi = (FLEXENGINE / ".gitignore").read_text().splitlines()
+    assert "dist/" in gi

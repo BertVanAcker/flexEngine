@@ -17,15 +17,17 @@ from pathlib import Path
 import pytest
 import yaml
 
-from flexengine2.testing.release import PROBES
+from flexengine2.testing.release import PROBES, VECTORS
 
 from flexengine2.drivers.applab.driver import ApplabDriver
 from flexengine2.drivers.base import Workload
 
 from .base import DEVICE, Harness, digest_of, failing_shim, shim
 
-REPO = Path(__file__).resolve().parents[4]
-FAKECLI = PROBES / "p4-applab-target" / "flexp4" / "fakecli.py"
+# probe P4's fake arduino-app-cli, vendored (tests/vectors/framework/SOURCES.json); else the framework's own
+FAKECLI = next((p for p in (VECTORS / "applab" / "flexp4" / "fakecli.py",
+                            PROBES / "p4-applab-target" / "flexp4" / "fakecli.py") if p.exists()),
+               PROBES / "p4-applab-target" / "flexp4" / "fakecli.py")
 HASH = "FLEX01_" + "ab" * 32
 
 MAIN_PY = """import sys, time
@@ -80,7 +82,7 @@ class ApplabHarness(Harness):
 
     def setup(self):
         if not FAKECLI.exists():
-            pytest.skip(f"P4 fake arduino-app-cli not found at {FAKECLI}")
+            pytest.skip(f"P4 fake arduino-app-cli not found at {FAKECLI} (needs the framework's probes: set FLEX_REPO)")
         self.device = DEVICE
         board = self.tmp / "board"
         self.env = {"ARDUINO_APP_CLI__DATA_DIR": board / "data", "ARDUINO_APP_CLI__APPS_DIR": board / "apps",
@@ -134,6 +136,8 @@ class ApplabHarness(Harness):
 
     def cleanup(self):
         import subprocess
+        if not hasattr(self, "cli"):   # setup skipped (no fake CLI): nothing was started
+            return
         for r in self._ps():
             subprocess.run([str(self.cli), "app", "destroy", f"release:{r}", "--format", "json"], capture_output=True,
                            timeout=60)

@@ -139,13 +139,13 @@ Dockerfiles without `RUN` build for a foreign CPU (and the liveness shim's pytho
   `--accept-lossy`, `--partial`); RoboSAPIENS dry run (order notes, device suffixes, checks); native payloads with
   wheels (lock, SBOM, signature), multi-arch native layers, the generated wrapper and the shim; container releases
   (Docker: process health, `--health shim`, a two-CPU release with one layer per CPU).
-- `flexengine/tests/integration/flexia/test_flexia_e2e.py` (Docker): flcpy publisher (docker workflow,
+- `tests/integration/flexia/test_flexia_e2e.py` (Docker): flcpy publisher (docker workflow,
   flexCommunicator from PyPI wheels, process health, a published port), a two-service compose package (exec probe
   from the compose healthcheck, published port, named volume), an application descriptor with two
   native python runnables and a docker runnable, the RoboSAPIENS example (`local`), and a crashing node: import →
   publish to the reference fake cloud → `--plan` → plan/apply → a real engine (`python -m flexengine2.testing.single`,
   container driver on real Docker + process driver) installs and runs them, health OK (the crash fails the gate).
-- `flexengine/tests/integration/flexia/test_flexia_ordering.py` (EV-42): config.yml `dependencies` (native only) and
+- `tests/integration/flexia/test_flexia_ordering.py` (EV-42): config.yml `dependencies` (native only) and
   the compose example's `depends_on` → proposal `dependsOn` → plan → `x-flex-dependsOn` → the engine installs the
   dependency first and removes it last; `flexmodel/tests/test_flexia.py` covers the mapping (forms, conditions,
   cycles, refused dependencies).

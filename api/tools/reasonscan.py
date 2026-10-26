@@ -14,7 +14,7 @@ Static scan (AST) of the engine sources. A *sink* is a place whose string ends u
 Each found text is rendered as a template: f-string fields become `{}`; an `a if c else b` yields both branches.
 Only literal texts are templates; a bare variable just forwards a text found elsewhere.
 
-    python flexengine/api/tools/reasonscan.py      # prints {file:line: template}
+    python api/tools/reasonscan.py      # prints {file:line: template}
 """
 
 from __future__ import annotations

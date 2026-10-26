@@ -1,0 +1,21 @@
+apiVersion: flex.dev/v1alpha1
+kind: Module
+metadata:
+  name: gige_camera
+  version: 1.2.0
+  description: GigE Vision camera driver.
+spec:
+  language: cpp
+  ports:
+    - name: image
+      direction: out
+      type: uc1/Image
+      qos: {reliability: best_effort, depth: 1, rate_hz: 15}
+  parameters:
+    - {name: fps, type: float32, default: 15.0, min: 1, max: 60, unit: Hz}
+    - {name: exposure_us, type: uint32, default: 8000, unit: us, reconfigurable: true}
+  lifecycle: {profile: managed, startup_timeout_ms: 5000}
+  resources: {cpu_cores: 0.5, memory_mb: 200}
+  requires:
+    target_classes: [T2, T3]
+    features: [gige]

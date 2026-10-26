@@ -8,7 +8,7 @@
 #                             [--enable] [--start] [--no-service] [--root DIR] [--dry-run]
 #   sudo packaging/install.sh --uninstall [--purge] [--prefix ...] [--root DIR] [--dry-run]
 #
-#   --wheel FILE       install this flexengine-v2 wheel (dist/flexengine_v2-<ver>-py3-none-any.whl)
+#   --wheel FILE       install this flexEngine wheel (dist/flexengine-<ver>-py3-none-any.whl)
 #   --from-source DIR  build + install from a checkout's flexengine/ directory (non-editable)
 #                      default: the wheel next to this script (offline bundle), else the checkout this script is in
 #   --wheelhouse DIR   offline install: pip --no-index --find-links DIR (DIR or DIR/linux_<arch>-cp<XY>, as written by
@@ -63,7 +63,7 @@ if [[ -n "$ROOT" ]]; then
 fi
 LIVE=1; [[ -n "$ROOT" ]] && LIVE=0           # LIVE=1: touch users, ownership, systemd, apt of this host
 if [[ $LIVE == 1 && $NOSVC == 0 && $(uname -s) != Linux ]]; then
-  echo "install.sh: no systemd on $(uname -s): use --no-service (or pip install -e 'flexengine[dev]', see README)" >&2
+  echo "install.sh: no systemd on $(uname -s): use --no-service (or pip install -e '.[dev]', see README)" >&2
   exit 2
 fi
 OWN=0; [[ $LIVE == 1 && $EUID -eq 0 ]] && OWN=1   # set owner/group (root only)
@@ -166,7 +166,7 @@ fi
 # ---- inputs ------------------------------------------------------------------------------------------------------------
 step "inputs"
 if [[ -z "$WHEEL" && -z "$SRC" ]]; then
-  for w in "$HERE"/../flexengine_v2-*-py3-none-any.whl; do [[ -f "$w" ]] && WHEEL="$w"; done   # offline bundle
+  for w in "$HERE"/../flexengine-*-py3-none-any.whl; do [[ -f "$w" ]] && WHEEL="$w"; done   # offline bundle
   [[ -n "$WHEEL" ]] || { [[ -f "$HERE/../pyproject.toml" && -d "$HERE/../src/flexengine2" ]] && SRC="$HERE/.."; }
   [[ -n "$WHEEL$SRC" ]] || die "nothing to install: pass --wheel FILE or --from-source DIR"
 fi
@@ -205,7 +205,7 @@ python=$PYV
 src=$SRC_ID
 extras=$EXTRAS
 lock=$(sha < "$LOCK")"
-ok "flexengine-v2 $NEWVER from ${WHEEL:-$SRC}"
+ok "flexEngine $NEWVER from ${WHEEL:-$SRC}"
 if [[ -n "$WHOUSE" ]]; then FROM="offline wheelhouse $WHOUSE"; else FROM="package index (online)"; fi
 ok "python $PY ($PYV, $ARCH), extras [${EXTRAS:-none}], $FROM"
 ok "prefix $PREFIX, config $ETC, data $STATE${ROOT:+, staged under $ROOT}"

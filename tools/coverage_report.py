@@ -1,6 +1,6 @@
 """Coverage gate of flexEngineV2 (docs/flexengine-v2-plan.md §7.3) from a coverage.py JSON report.
 
-    python flexengine/tools/coverage_report.py <coverage.json> [--out summary.json] [--no-gate]
+    python tools/coverage_report.py <coverage.json> [--out summary.json] [--no-gate]
 
 Groups (paths below src/flexengine2/):
   core      the reconciler and what it needs to accept, verify and report: core/, artefacts/, identity/, cloud/,

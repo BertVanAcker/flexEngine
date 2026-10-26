@@ -24,7 +24,7 @@ from flexengine2.identity import crypto
 from .flexialab import PACKAGES, REPO, Cloud, Engine, container_ip, flcpy_wheels, http_get, import_flexia
 
 ROBOSAPIENS = REPO / "flexmodel" / "tests" / "fixtures" / "flexia" / "robosapiens"
-pytestmark = pytest.mark.docker
+pytestmark = [pytest.mark.docker, pytest.mark.flexmodel]   # `flex import-flexia` is flexmodel's
 
 
 @pytest.fixture
@@ -145,6 +145,7 @@ def test_import_publish_plan_apply_run(lab):
     cloud.wait(lambda: json.loads(cnt.read_text())["count"] > first["count"] + 2, 10, "counter counts")
 
 
+@pytest.mark.framework   # the fixture lives in the framework's flexmodel/tests
 def test_robosapiens_example_local_runs(lab):
     """The v1 RoboSAPIENS flexIA.ini (verbatim) with its compose files: device `local` imports, verifies and runs."""
     cloud, tmp = lab["cloud"], lab["tmp"]

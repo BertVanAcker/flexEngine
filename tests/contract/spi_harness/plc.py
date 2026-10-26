@@ -1,4 +1,4 @@
-"""Harnesses: PlcVerifyDriver over its three hash readers, against the D1 stand-ins (demo/edge/sim, read-only).
+"""Harnesses: PlcVerifyDriver over its three hash readers, against the D1 stand-ins (demo/edge/sim, vendored in tests/vectors/framework/plc-sim).
 
   ads     pyads test server answering the bridge FB's `Hello` (demo/edge/sim/ads_plc.py; AMS TCP port 48898)
   modbus  pymodbus server with the interface-hash holding registers (demo/edge/sim/modbus_plc.py)
@@ -23,8 +23,8 @@ from flexengine2.drivers.plc.verify import RT_MAGIC, PlcVerifyDriver
 
 from .base import DEVICE, Harness, Release, deployment, digest_of, free_port, targz
 
-REPO = Path(__file__).resolve().parents[4]
-SIM = REPO / "demo" / "edge" / "sim"
+# demo/edge/sim of the framework, vendored (tests/vectors/framework/SOURCES.json)
+SIM = Path(__file__).resolve().parents[2] / "vectors" / "framework" / "plc-sim"
 GOOD = "FLEX01_" + "5a" * 32
 OTHER = "FLEX01_" + "c3" * 32
 HEALTH = {"type": "plc-verify", "periodSeconds": 0.2, "successThreshold": 2, "timeoutSeconds": 6}

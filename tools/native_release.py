@@ -14,7 +14,7 @@ and one signed release carrying several native layers.
 
 Every payload is written with a sidecar `<payload>.json` holding its layer annotations (dev.flex.profile, and
 dev.flex.arch / dev.flex.pyabi when the payload is CPU / Python specific). The device side is
-flexengine2/drivers/native/pyenv.py; the format is CP-3, flexengine/api/bundle.v1alpha1.md §2.
+flexengine2/drivers/native/pyenv.py; the format is CP-3, api/bundle.v1alpha1.md §2.
 
 CI recipe for aarch64 on an x86_64 runner (ubuntu-24.04):
     rustup target add aarch64-unknown-linux-gnu

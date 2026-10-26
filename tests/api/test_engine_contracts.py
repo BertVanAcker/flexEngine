@@ -376,7 +376,7 @@ def test_recorded_releases_validate():
     """Release manifests, descriptors and signatures in every OCI layout written by `flex release` / the probe
     release tools (demo/edge/work/tests/*/rel is `flex release` output for examples/models/demo-pick)."""
     n = 0
-    for idx in recorded("demo/**/oci/index.json") + recorded("probes/**/oci/index.json") + recorded("flexengine/tests/work/**/oci/index.json"):
+    for idx in recorded("demo/**/oci/index.json") + recorded("probes/**/oci/index.json") + recorded("tests/work/**/oci/index.json"):
         root = idx.parent
         for e in json.loads(idx.read_text())["manifests"]:
             p = root / "blobs" / "sha256" / e["digest"][7:]

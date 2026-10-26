@@ -2,16 +2,16 @@
 """Desk-runbook runner for flexEngineV2: the pinned flexNode-arduino runner (tools/hwtest/runbook.py, unmodified)
 with the flex step types of flexsteps.py registered into its ACTIONS table (plan 8.2 option (c)).
 
-    python flexengine/hwtest/run.py flexengine/hwtest/runbooks/EV-HW-02_container.yaml
-    python flexengine/hwtest/run.py RUNBOOK --list                  # steps + format check (exit 1 on a problem)
-    python flexengine/hwtest/run.py --check-all                     # --list for every runbook below runbooks/
-    python flexengine/hwtest/run.py RUNBOOK --only s1,s2 --set fe_api=http://lattepanda.lab:8781
-    python flexengine/hwtest/run.py RUNBOOK --unattended --yes --set dry_run=1 ...   # what dryrun.py does
+    python hwtest/run.py hwtest/runbooks/EV-HW-02_container.yaml
+    python hwtest/run.py RUNBOOK --list                  # steps + format check (exit 1 on a problem)
+    python hwtest/run.py --check-all                     # --list for every runbook below runbooks/
+    python hwtest/run.py RUNBOOK --only s1,s2 --set fe_api=http://lattepanda.lab:8781
+    python hwtest/run.py RUNBOOK --unattended --yes --set dry_run=1 ...   # what dryrun.py does
 
 Every option of the runner works (--list, --from, --only, --set, --yes, --unattended, --results). What the wrapper
 adds: the flex step types; `--list` also checks every step's parameters, `${var}` references and marks
-(flexsteps.validate) and fails on a problem; built-in variables ${hwtest}, ${flexengine}, ${repo}; results default
-to flexengine/hwtest/hwtest-results/ (where the GUI looks); result.json also records the upstream pin and hides
+(flexsteps.validate) and fails on a problem; built-in variables ${hwtest}, ${flexengine} (this repository), ${repo} (the framework checkout, $FLEX_REPO); results default
+to hwtest/hwtest-results/ (where the GUI looks); result.json also records the upstream pin and hides
 secret-looking variables (as the runner's GUI commit does).
 """
 
@@ -26,7 +26,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 FLEXENGINE = HERE.parent
-REPO = FLEXENGINE.parent
+# The framework checkout (examples/models, probes, demo/): $FLEX_REPO, default a sibling modular-interoperable-framework
+REPO = Path(os.environ.get("FLEX_REPO") or FLEXENGINE.parent / "modular-interoperable-framework").resolve()
 RESULTS = HERE / "hwtest-results"
 RUNBOOKS = HERE / "runbooks"
 SECRET_VAR = re.compile(r"pass|secret|token(?!_file)", re.I)
@@ -55,7 +56,7 @@ def load_runner():
 
 
 def builtins() -> dict:
-    return {"hwtest": str(HERE), "flexengine": str(FLEXENGINE), "repo": str(REPO), "project_dir": str(REPO)}
+    return {"hwtest": str(HERE), "flexengine": str(FLEXENGINE), "repo": str(REPO), "project_dir": str(FLEXENGINE)}
 
 
 def _install_hooks(R) -> None:

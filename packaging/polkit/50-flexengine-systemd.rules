@@ -5,7 +5,7 @@
 // daemon-reload, which systemd cannot narrow to unit names.
 //
 // Install (root 0644; polkitd picks it up without a restart):
-//   sudo install -m 0644 flexengine/packaging/polkit/50-flexengine-systemd.rules /etc/polkit-1/rules.d/
+//   sudo install -m 0644 packaging/polkit/50-flexengine-systemd.rules /etc/polkit-1/rules.d/
 // and give the driver a unit directory the engine can write (its own unit runs with ProtectSystem=strict):
 //   drivers: {native: {runtime: systemd, unitDir: /var/lib/flexengine/units}}
 //

@@ -1,4 +1,4 @@
-"""CP-3/CP-4 test vectors (flexengine/api/vectors/): deterministic, and the engine's verification code agrees with
+"""CP-3/CP-4 test vectors (api/vectors/): deterministic, and the engine's verification code agrees with
 every expected outcome."""
 
 from __future__ import annotations

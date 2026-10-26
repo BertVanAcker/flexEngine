@@ -1,4 +1,4 @@
-# GUI metadata of EV-HW-09 (read by the runbook GUI: gui.py --scan flexengine/hwtest); the runbook is EV-HW-09_crash_power.yaml
+# GUI metadata of EV-HW-09 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-09_crash_power.yaml
 goal: 'SIGKILL at steady state and during a gate, and a power cut during an update: the engine adopts (no duplicate apply),
   finishes the install, brings the workloads back after the boot and keeps its state.'
 duration: ~20 min

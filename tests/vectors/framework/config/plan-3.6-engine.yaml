@@ -1,0 +1,37 @@
+# /etc/flexengine/engine.yaml  (validated against flexengine2/config/schema.json; unknown keys are errors)
+apiVersion: flexengine/v2alpha1
+cloud:
+  apiUrl: https://lattepanda.lab:8700          # TLS (alpha), mTLS (beta)
+  caFile: /etc/flex/ca.crt                     # pinned CA (alpha); client cert/key under identity (beta)
+  cloudPublicKey: <b64 Ed25519>                # trust anchor for desired-state signatures
+  releaseTrust: {ed25519: [<b64>], cosign: []} # cosign keys/identities in beta
+  pollInterval: 1.0
+  backoff: [0.25, 4.0]
+  httpTimeout: 5
+dataDir: /var/lib/flexengine
+identity: {keyStore: file}                     # file | tpm2 (beta)
+local: {socket: /run/flexengine/api.sock, http: {bind: "", token: ""}}   # TCP off by default
+observability: {logFormat: json, otlpEndpoint: "", history: 1000}
+safeState: {provider: file, file: /var/lib/flexengine/safe-state.json, staleAfter: 5}
+devices:
+  - deviceId: panda
+    role: gateway
+    onboardingTokenFile: /etc/flexengine/tokens/panda
+    drivers:
+      container: {runtime: docker, allowedRunOptions: {devices: [/dev/dri]}}   # podman | quadlet | ankaios
+      native: {mode: systemd}                                                     # process (tests only)
+      os-rauc: {bundleDir: /var/lib/flexengine/rauc, commitTimeout: 300}
+      plc-verify:
+        plcs:
+          panda/cx: {via: ads, amsNetId: <cx>, ip: <cx-ip>, amsPort: 851, localNetId: <lp>}
+          opta: {via: modbus, host: <opta-ip>, port: 502}
+  - deviceId: panda.portenta
+    parent: panda
+    modelDevice: portenta
+    onboardingTokenFile: /etc/flexengine/tokens/panda.portenta
+    mcu: {smp: {host: 127.0.0.1, port: 5555}, modulePublicKey: <hex>}   # flex-smp-bridge (socat) <-> /dev/ttyUSB0
+                                    # (USB-UART on uart4); {tty, baud}: schema only in alpha, the engine opens TCP
+    relay: {enabled: true, maxRateHz: 10, connect: tcp/127.0.0.1:7447, model: /var/lib/flex/runs/current/model}
+  - deviceId: unoq
+    drivers:
+      applab: {board: unoq, cli: arduino-app-cli, ssh: arduino@unoq.lab, healthVia: logs}

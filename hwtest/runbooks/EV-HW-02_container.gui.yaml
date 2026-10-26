@@ -1,4 +1,4 @@
-# GUI metadata of EV-HW-02 (read by the runbook GUI: gui.py --scan flexengine/hwtest); the runbook is EV-HW-02_container.yaml
+# GUI metadata of EV-HW-02 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-02_container.yaml
 goal: Container deploy, update and health-gated rollback on Docker and Podman with gate/rollback times from the engine history,
   the iGPU mapping kept through the rollback and a safety release held until the safe-state signals are set.
 duration: ~25 min

@@ -74,7 +74,7 @@ engine's); its python runs the payload. Layer annotations (optional, string valu
 payload is built for (normalised `uname -m`: `x86_64`, `aarch64`, `armv7l`, …; set when a wheel or binary is
 CPU-specific), `dev.flex.pyabi` = the Python ABI of the wheels (`cp312`, `cp313t`, …; set when a wheel is ABI-specific).
 A multi-platform release carries one native layer per platform (e.g. a Rust binary for x86_64 and aarch64, or flcpy
-wheels for cp312 and cp313); producer: `flexengine/tools/native_release.py` (`py-payload`, `flcrs`, `release`).
+wheels for cp312 and cp313); producer: `tools/native_release.py` (`py-payload`, `flcrs`, `release`).
 
 Container payload [V] (EV-40): one release may carry one image layer per CPU type (docker-archive of that CPU's
 image, annotated `dev.flex.arch` = normalised `uname -m` and `dev.flex.imageRef` = that image's digest); the engine

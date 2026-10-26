@@ -12,11 +12,11 @@ from fe_pkg import DIST, PACKAGING, VERSION, make_bumped, sh
 
 @pytest.fixture(scope="session")
 def dist() -> Path:
-    """flexengine/dist with the engine wheel and the wheelhouses (built by build-wheels.sh when missing;
+    """dist with the engine wheel and the wheelhouses (built by build-wheels.sh when missing;
     FLEXENGINE_PKG_REBUILD=1 forces a rebuild)."""
-    have = list(DIST.glob(f"flexengine_v2-{VERSION}-py3-none-any.whl")) and (DIST / "wheelhouse").is_dir()
+    have = list(DIST.glob(f"flexengine-{VERSION}-py3-none-any.whl")) and (DIST / "wheelhouse").is_dir()
     if have:  # a cached engine wheel older than the source would test yesterday's engine
-        whl = DIST / f"flexengine_v2-{VERSION}-py3-none-any.whl"
+        whl = DIST / f"flexengine-{VERSION}-py3-none-any.whl"
         src = DIST.parent / "src" / "flexengine2"
         newest = max(f.stat().st_mtime for f in src.rglob("*") if f.is_file() and "__pycache__" not in f.parts)
         if newest > whl.stat().st_mtime:
@@ -42,7 +42,7 @@ def dist() -> Path:
 
 @pytest.fixture(scope="session")
 def wheel(dist) -> Path:
-    return dist / f"flexengine_v2-{VERSION}-py3-none-any.whl"
+    return dist / f"flexengine-{VERSION}-py3-none-any.whl"
 
 
 @pytest.fixture

@@ -22,7 +22,7 @@ METRICS_FILE = RESULTS / "metrics-applab-port.json"
 
 def pytest_sessionfinish(session, exitstatus):
     if METRICS:
-        RESULTS.mkdir(exist_ok=True)
+        RESULTS.mkdir(parents=True, exist_ok=True)
         old = read_json(METRICS_FILE, {})
         old.update(METRICS)
         METRICS_FILE.write_text(json.dumps(old, indent=2, sort_keys=True, default=str) + "\n")

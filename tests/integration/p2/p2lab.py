@@ -15,14 +15,14 @@ from pathlib import Path
 
 from flexengine2.identity import crypto
 from flexengine2.testing.fakecloud import CloudServer
-from flexengine2.testing.release import PROBES, REPO
+from flexengine2.testing.release import PROBES, VECTORS
 from flexengine2.util import read_json
 
 FLEXENGINE = Path(__file__).resolve().parents[3]
 PROBE = PROBES / "p2-reconciling-engine"          # read-only: cached payloads, Ankaios binaries
 WORK = FLEXENGINE / "tests" / "work" / "p2"                  # gitignored
-RESULTS = FLEXENGINE / "results"
-MODEL = REPO / "examples" / "models" / "uc1"
+RESULTS = Path(os.environ.get("FLEX_RESULTS_DIR") or FLEXENGINE / "results" / "latest")   # per run, gitignored
+MODEL = VECTORS / "models" / "uc1"   # the framework's examples/models/uc1, vendored
 METRICS: dict = {}
 ANK_DIR = Path(os.environ["FLEX_ANKAIOS_DIR"]) if os.environ.get("FLEX_ANKAIOS_DIR") else PROBE / ".cache" / "ankaios"
 ENGINE_CMD = ["-m", "flexengine2.testing.single"]           # was: -m flexp2.engine

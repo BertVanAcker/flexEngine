@@ -1,7 +1,7 @@
 """Release tooling for native payloads with their own dependencies (EV-36) and per-CPU native layers (EV-37).
 
-Producer side of the CP-3 native payload (flexengine/api/bundle.v1alpha1.md §2; device side:
-flexengine2/drivers/native/pyenv.py). The CLI around it is flexengine/tools/native_release.py.
+Producer side of the CP-3 native payload (api/bundle.v1alpha1.md §2; device side:
+flexengine2/drivers/native/pyenv.py). The CLI around it is tools/native_release.py.
 
 * ``build_py_payload(project, requirements=[...], python="3.12", arch="x86_64")``: the project's files + ``wheels/``
   (``pip download --only-binary :all:`` for the TARGET interpreter and CPU, not the build host's) +

@@ -14,11 +14,11 @@ from pathlib import Path
 
 from flexengine2.identity import crypto
 from flexengine2.testing.fakecloud import CloudServer
+from flexengine2.testing.release import REPO
 
 HERE = Path(__file__).resolve().parent
 PACKAGES = HERE / "packages"
 FLEXENGINE = HERE.parents[2]
-REPO = FLEXENGINE.parent
 WORK = FLEXENGINE / "tests" / "work" / "flexia"
 # Host ports the e2e packages publish (flcpy-docker `-p`, compose-two `ports:`). Below every ephemeral port range
 # (Linux 32768-60999, macOS/Windows 49152-65535): there any outgoing connection of any process on the host may hold
@@ -28,8 +28,9 @@ HOST_PORTS = (28081, 28082)
 
 
 def flex_env() -> dict:
-    """Environment for the importer subprocess: this checkout's flexmodel and flexengine2 first on the path."""
-    pp = [str(REPO / "flexmodel" / "src"), str(FLEXENGINE / "src")]
+    """Environment for the importer subprocess: flexmodel ($FLEXMODEL_SRC, else the framework's) and this checkout's
+    flexengine2 first on the path."""
+    pp = [os.environ.get("FLEXMODEL_SRC") or str(REPO / "flexmodel" / "src"), str(FLEXENGINE / "src")]
     return {**os.environ, "PYTHONPATH": os.pathsep.join(pp + [os.environ.get("PYTHONPATH", "")]).rstrip(os.pathsep)}
 
 

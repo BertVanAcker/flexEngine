@@ -1,0 +1,36 @@
+# demo/edge engine config for D1 (SIL on one host) -- copy and adapt; ${VARS} come from the environment.
+#   PYTHONPATH=demo/edge demo/edge/.venv/bin/python -m flexedge run --config demo/edge/edge.example.yaml
+#   (from the repo root: the relative paths below are relative to it)
+cloud:
+  stackInfo: ${FLEX_DEMO_DATA}/stack.json            # demo/cloud writes it: apiUrl (internal P2) + cloudPublicKey
+  releaseKeyFiles: [demo/release/keys/release-ed25519.key]   # the key `flex release` signs with
+  pollInterval: 1.0
+  backoff: [0.25, 4.0]
+  httpTimeout: 5
+dataDir: demo/edge/work/data                          # per device: <dataDir>/<deviceId>/{state.json,actions.jsonl,...}
+model: examples/models/demo-pick
+deployment: d_pick_lab
+devices:
+  - deviceId: panda                                   # LattePanda: gp-domain containers + PLC verification
+    role: gateway
+    onboardingTokenFile: ${FLEX_EDGE_TOKENS}/panda
+    safeStateFile: demo/edge/work/safe-state.json     # {"machine_parked": true, "operator_confirmed": true}
+    drivers:
+      container: {runtime: podman}                     # D1 CI host: docker
+      plc-verify:
+        plcs:
+          panda/cx: {via: ads, amsNetId: 127.0.0.1.1.1, ip: 127.0.0.1, amsPort: 851, localNetId: 127.0.0.1.1.2}
+          opta: {via: modbus, host: 127.0.0.1, port: 15020}
+  - deviceId: panda.portenta                          # see-thru MCU child (D1: QEMU mps2/an385)
+    parent: panda
+    modelDevice: portenta
+    onboardingTokenFile: ${FLEX_EDGE_TOKENS}/panda.portenta
+    link: smp/uart (QEMU tcp)
+    mcu:
+      smp: {host: 127.0.0.1, port: ${FLEX_MCU_SMP_PORT}}
+      modulePublicKey: ${FLEX_MODULE_PUBKEY_HEX}      # raw P-256 public key of the FLXM signing key (hex)
+    relay: {enabled: true, maxRateHz: 10, connect: "tcp/127.0.0.1:7447"}   # zenohd (rmw_zenoh router)
+  - deviceId: unoq                                    # UNO Q (D1: P4 fake arduino-app-cli + simboard)
+    onboardingTokenFile: ${FLEX_EDGE_TOKENS}/unoq
+    drivers:
+      applab: {board: unoq, cli: arduino-app-cli, healthVia: logs}

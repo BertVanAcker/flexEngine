@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://flex.dev/schemas/trust.v1alpha1.schema.json",
   "title": "CP-4 Trust objects v1alpha1",
-  "description": "Signed objects and trust anchors the engine verifies (identity/crypto.py, artefacts/store.py, core/reconciler.py). See flexengine/api/trust.v1alpha1.md for the byte-level rules and api/vectors/ for signed test vectors.",
+  "description": "Signed objects and trust anchors the engine verifies (identity/crypto.py, artefacts/store.py, core/reconciler.py). See api/trust.v1alpha1.md for the byte-level rules and api/vectors/ for signed test vectors.",
   "$defs": {
     "B64": {"type": "string", "pattern": "^[A-Za-z0-9+/]*={0,2}$"},
     "Ed25519PublicKey": {"type": "string", "pattern": "^[A-Za-z0-9+/]{43}=$", "description": "base64 of the raw 32-byte Ed25519 public key."},

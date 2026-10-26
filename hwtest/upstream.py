@@ -6,14 +6,14 @@ directory laid out like the flexNode-arduino repository (tools/hwtest/runbook.py
 tools/hwtest/hwgui/..., LICENSE.txt) with exactly those bytes:
 
   1. $FLEX_HWTEST_UPSTREAM: an already extracted tree (checked, never written)
-  2. the cache flexengine/hwtest/.upstream/<lock hash>/ (git-ignored), when complete and matching
+  2. the cache hwtest/.upstream/<lock hash>/ (git-ignored), when complete and matching
   3. else filled from a local checkout ($FLEXNODE_ARDUINO_REPO; `git archive <commit>`, the checkout is only read)
      or by a shallow fetch of each commit from the repository URL into a temporary bare repository.
 
 Any sha256 mismatch is an error: the runbooks are only validated against the pinned runner.
 
-    python flexengine/hwtest/upstream.py ensure            # fetch/check, print the directory
-    python flexengine/hwtest/upstream.py pin --repo DIR    # recompute the file hashes for the commits in the lock
+    python hwtest/upstream.py ensure            # fetch/check, print the directory
+    python hwtest/upstream.py pin --repo DIR    # recompute the file hashes for the commits in the lock
 """
 
 from __future__ import annotations

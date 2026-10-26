@@ -12,6 +12,7 @@ test oracle, `flexp3.smp_link` / `flexp3.flxm`. The engine never sees them (chec
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sys
 import time
@@ -22,14 +23,18 @@ import yaml
 from flexengine2.testing.release import PROBES
 
 FLEXENGINE = Path(__file__).resolve().parents[3]
-REPO = FLEXENGINE.parent
 PROBE = PROBES / "p3-mcu-hotload"
 B = PROBE / "build"
 WORK = FLEXENGINE / "tests" / "work" / "mcu" / "lab"
-RESULTS = FLEXENGINE / "results"
+RESULTS = Path(os.environ.get("FLEX_RESULTS_DIR") or FLEXENGINE / "results" / "latest")   # per run, gitignored
 METRICS: dict = {}
 GW, CHILD = "gw1", "gw1.mcu0"
 
+import pytest  # noqa: E402
+
+if not (PROBE / "flexp3").is_dir():   # stand-ins from the framework (probes, demo/), not vendored: they import flexmodel
+    pytest.skip("needs a modular-interoperable-framework checkout with probe P3 (MCU): set FLEX_REPO",
+                allow_module_level=True)
 if str(PROBE) not in sys.path:
     sys.path.insert(0, str(PROBE))  # test stand-ins only (QEMU control, SMP oracle)
 

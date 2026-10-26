@@ -1,4 +1,4 @@
-# GUI metadata of EV-HW-11 (read by the runbook GUI: gui.py --scan flexengine/hwtest); the runbook is EV-HW-11_rauc_ab.yaml
+# GUI metadata of EV-HW-11 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-11_rauc_ab.yaml
 goal: 'RAUC A/B OS update on the LattePanda eMMC with a health-gated mark-good: unbootable and unhealthy images fall back,
   power cuts during the install and before mark-good converge, state survives every slot switch.'
 duration: ~45 min

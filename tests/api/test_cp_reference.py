@@ -19,7 +19,7 @@ def _gen():
 
 def test_committed_cp_reference_is_up_to_date():
     gen = _gen()
-    assert gen.OUT.read_text() == gen.render(), "regenerate: python flexengine/api/tools/gen_cp_reference.py"
+    assert gen.OUT.read_text() == gen.render(), "regenerate: python api/tools/gen_cp_reference.py"
     assert gen.main(["--check"]) == 0
 
 

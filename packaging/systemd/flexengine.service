@@ -1,4 +1,4 @@
-# flexEngineV2 on-device deployment engine (EV-08). Installed by flexengine/packaging/install.sh, which replaces
+# flexEngineV2 on-device deployment engine (EV-08). Installed by packaging/install.sh, which replaces
 # @PREFIX@ (default /opt/flexengine, the venv). Config: /etc/flexengine/engine.yaml; data: /var/lib/flexengine.
 #
 # Local additions go in a drop-in, never in this file (install.sh rewrites it on upgrade):

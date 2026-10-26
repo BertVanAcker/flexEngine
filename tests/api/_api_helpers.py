@@ -15,7 +15,7 @@ from flexengine2.util import sha256_digest
 
 HERE = Path(__file__).resolve().parent
 FLEXENGINE = HERE.parents[1]
-REPO = FLEXENGINE.parent
+VECTORS_FW = FLEXENGINE / "tests" / "vectors" / "framework"   # vendored framework files (SOURCES.json)
 GOLDEN = HERE / "golden"
 API_DOCS = FLEXENGINE / "api"
 VECTORS = API_DOCS / "vectors"
@@ -24,7 +24,7 @@ SRC = FLEXENGINE / "src" / "flexengine2"
 
 
 def tool(name: str):
-    """Import a script from flexengine/api/tools (reasonscan, gen_reason_codes, gen_vectors)."""
+    """Import a script from api/tools (reasonscan, gen_reason_codes, gen_vectors)."""
     if str(TOOLS) not in sys.path:
         sys.path.insert(0, str(TOOLS))
     spec = importlib.util.spec_from_file_location(f"_api_tool_{name}", TOOLS / f"{name}.py")
@@ -43,8 +43,14 @@ def load_ref(ref: str):
 
 
 def recorded(pattern: str) -> list[Path]:
-    """Work-dir recordings of earlier runs (gitignored; absent on a fresh checkout)."""
-    return sorted(p for p in REPO.glob(pattern) if ".venv" not in p.parts)
+    """Work-dir recordings of earlier runs (gitignored; absent on a fresh checkout). Patterns are relative to the
+    framework checkout ($FLEX_REPO) for demo/ and probes/, to this repository for tests/work/."""
+    from flexengine2.testing.release import FRAMEWORK
+    out = []
+    for root, pat in ((FRAMEWORK, pattern), (FLEXENGINE, pattern)):
+        if root is not None:
+            out += [p for p in root.glob(pat) if ".venv" not in p.parts]
+    return sorted(set(out))
 
 
 class FakeDriver(Driver):

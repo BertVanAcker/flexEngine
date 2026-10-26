@@ -1,0 +1,16 @@
+apiVersion: flex.dev/v1alpha1
+kind: System
+metadata:
+  name: uc1_field_safety_supervisor
+  version: 0.1.0
+spec:
+  instances:
+    - {name: cam, module: gige_camera@1.x}
+    - {name: guard, module: perception_guard@0.2, parameters: {score_threshold: 0.55}}
+    - {name: safety, module: safety_gateway@0.3}
+    - {name: logger, module: detection_logger}
+  connections:
+    - {source: cam.image, target: guard.image, transport: zenoh}
+    - {source: guard.detections, target: logger.detections, transport: zenoh}
+    - {source: guard.heartbeat, target: safety.heartbeat, transport: zenoh}
+    - {source: logger.guard_status, target: guard.status, transport: zenoh}

@@ -1,8 +1,9 @@
-"""Shared, generic fixtures for the flexEngineV2 suite (layers in docs/flexengine-v2-plan.md §7.2).
+"""Shared, generic fixtures for the flexEngineV2 suite (layers in the engine plan §7.2, run_tests.sh).
 
 Layer-specific fixtures live next to their tests (e.g. tests/integration/p2/conftest.py). Markers (pyproject.toml):
-`docker` / `podman` tests are skipped with a reason when the runtime is not usable; `slow` is nightly-only
-(deselect with `-m "not slow"`).
+`docker` / `podman` tests are skipped with a reason when the runtime is not usable; `framework` tests without a
+framework checkout ($FLEX_REPO), `flexmodel` tests without flexmodel; `slow` is nightly-only (deselect with
+`-m "not slow"`).
 """
 
 from __future__ import annotations
@@ -17,10 +18,11 @@ from pathlib import Path
 
 import pytest
 
-FLEXENGINE = Path(__file__).resolve().parents[1]   # flexengine/
-REPO = FLEXENGINE.parent                            # repo checkout
+from flexengine2.testing.release import FRAMEWORK, VECTORS  # noqa: E402,F401  (VECTORS: vendored framework files)
+
+FLEXENGINE = Path(__file__).resolve().parents[1]   # repository root
 WORK = FLEXENGINE / "tests" / "work"                # gitignored caches (images, OCI layouts)
-RESULTS = FLEXENGINE / "results"                    # committed results (§7.6)
+RESULTS = Path(os.environ.get("FLEX_RESULTS_DIR") or FLEXENGINE / "results" / "latest")   # per run, gitignored
 
 # The fake cloud speaks plain HTTP. Plain HTTP needs an explicit lab flag (lead decision 2026-10-17); the suites set
 # it for themselves and for every engine subprocess they start (inherited environment).
@@ -37,8 +39,22 @@ def runtime_usable(rt: str) -> bool:
         return False
 
 
+@functools.cache
+def flexmodel_importable() -> bool:
+    try:
+        import flexmodel  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
 def pytest_collection_modifyitems(config, items):
     for it in items:
+        if it.get_closest_marker("framework") and FRAMEWORK is None:
+            it.add_marker(pytest.mark.skip(reason="needs a modular-interoperable-framework checkout: set FLEX_REPO"))
+        if it.get_closest_marker("flexmodel") and not flexmodel_importable():
+            it.add_marker(pytest.mark.skip(reason="flexmodel not importable (not on PyPI; set FLEXMODEL_SRC or "
+                                                  "pip install -e <framework>/flexmodel)"))
         for rt in ("docker", "podman"):
             if it.get_closest_marker(rt) and not runtime_usable(rt):
                 it.add_marker(pytest.mark.skip(reason=f"{rt} not installed or its daemon/service is not usable"))
@@ -54,11 +70,6 @@ def python_exe() -> str:
 def work_dir() -> Path:
     WORK.mkdir(parents=True, exist_ok=True)
     return WORK
-
-
-@pytest.fixture(scope="session")
-def repo_root() -> Path:
-    return REPO
 
 
 @pytest.fixture

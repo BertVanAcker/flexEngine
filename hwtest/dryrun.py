@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Dry runs of the EV-HW desk runbooks against simulated targets (EV-15, plan 7.2 layer 9).
 
-    python flexengine/hwtest/dryrun.py EV-HW-02             # one runbook, full dry run
-    python flexengine/hwtest/dryrun.py --all                # every runbook
-    python flexengine/hwtest/dryrun.py EV-HW-02 --pc-only   # only the PC-side steps (run.py --only)
-    python flexengine/hwtest/dryrun.py EV-HW-02 --keep      # keep the simulated desk's directory
+    python hwtest/dryrun.py EV-HW-02             # one runbook, full dry run
+    python hwtest/dryrun.py --all                # every runbook
+    python hwtest/dryrun.py EV-HW-02 --pc-only   # only the PC-side steps (run.py --only)
+    python hwtest/dryrun.py EV-HW-02 --keep      # keep the simulated desk's directory
 
 For each runbook: `simdesk.py serve --profile <profile>` starts the simulated desk in a short directory under /tmp
 (unix socket paths < 108 characters) and writes the runbook variables that point at it (sim.json); the runbook
@@ -56,7 +56,8 @@ def runbook_path(rid: str) -> Path:
 
 def env() -> dict:
     e = dict(os.environ)
-    src = [str(HERE.parent / "src"), str(HERE.parent.parent / "flexmodel" / "src")]
+    fw = Path(os.environ.get("FLEX_REPO") or HERE.parents[1] / "modular-interoperable-framework")   # as run.py
+    src = [str(HERE.parent / "src"), os.environ.get("FLEXMODEL_SRC") or str(fw / "flexmodel" / "src")]
     e["PYTHONPATH"] = os.pathsep.join(src + ([e["PYTHONPATH"]] if e.get("PYTHONPATH") else []))
     e["PYTHONUNBUFFERED"] = "1"
     return e

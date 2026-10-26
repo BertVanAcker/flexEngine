@@ -127,7 +127,7 @@ image's sha256 and size, checked by the patched library) bind what the board ins
 ### `native`, both drivers: own Python dependencies and platform layers (EV-36, EV-37)
 
 Shared code: `drivers/native/pyenv.py`; producer side `flexengine2/testing/native_release.py` and the CLI
-`flexengine/tools/native_release.py`; payload format CP-3 (bundle.v1alpha1.md §2).
+`tools/native_release.py`; payload format CP-3 (bundle.v1alpha1.md §2).
 
 | SPI | behaviour |
 |---|---|

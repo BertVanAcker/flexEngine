@@ -28,7 +28,7 @@ from flexengine2.artefacts.oci import MT_PAYLOAD_NATIVE, Layout
 from flexengine2.drivers.base import http_probe
 from flexengine2.identity import crypto
 from flexengine2.testing.fakecloud import CloudServer
-from flexengine2.testing.release import (REPO, build_native_payload, descriptor_from_module, model_safety,
+from flexengine2.testing.release import (VECTORS, build_native_payload, descriptor_from_module, model_safety,
                                          module_hashes, publish_release, sbom_stub, sign_release)
 from flexengine2.util import read_json
 
@@ -37,7 +37,7 @@ import prop_oracle as O
 HERE = Path(__file__).resolve().parent
 FLEXENGINE = HERE.parents[1]
 WORK = FLEXENGINE / "tests" / "work" / "property"
-MODEL = REPO / "examples" / "models" / "uc1"
+MODEL = VECTORS / "models" / "uc1"   # the framework's examples/models/uc1, vendored
 RUNNER = HERE / "prop_killrun.py"
 MODULE = "detection_logger"
 KIND = {"1.0.0": "good", "1.1.0": "good", "1.4.0": "good", "1.2.0": "bad-health", "1.3.0": "rejected"}

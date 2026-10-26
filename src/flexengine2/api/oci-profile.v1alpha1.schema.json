@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://flex.dev/schemas/oci-profile.v1alpha1.schema.json",
   "title": "CP-3 OCI artefact access profile v1alpha1",
-  "description": "The OCI image-manifest / referrers subset the engine reads (artefacts/store.py), written by the release tools (flex release; testing/release.py) and served by flexCloud's /v2/ subset (testing/fakecloud.py). See flexengine/api/bundle.v1alpha1.md.",
+  "description": "The OCI image-manifest / referrers subset the engine reads (artefacts/store.py), written by the release tools (flex release; testing/release.py) and served by flexCloud's /v2/ subset (testing/fakecloud.py). See api/bundle.v1alpha1.md.",
   "$defs": {
     "Digest": {
       "$ref": "desired-state.v1alpha1.schema.json#/$defs/Digest"

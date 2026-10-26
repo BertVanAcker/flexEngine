@@ -28,7 +28,6 @@ from flexengine2.drivers.mcu.link import SmpLink
 
 from .base import Harness, Release, deployment, digest_of, free_port
 
-REPO = Path(__file__).resolve().parents[4]
 P3 = PROBES / "p3-mcu-hotload"
 P3B = P3 / "build"
 CHILD = "ct1.mcu0"

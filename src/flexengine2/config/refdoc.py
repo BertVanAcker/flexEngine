@@ -1,6 +1,6 @@
-"""Generate flexengine/docs/config-reference.md from config/schema.json (EV-04 / EV-16).
+"""Generate docs/config-reference.md from config/schema.json (EV-04 / EV-16).
 
-    python -m flexengine2.config.refdoc [--out flexengine/docs/config-reference.md] [--check]
+    python -m flexengine2.config.refdoc [--out docs/config-reference.md] [--check]
 
 Every key of the schema gets one row (key path, type, default, required, description); a key without a description
 is an error, so the reference cannot silently miss one. --check exits 1 when the file differs from the schema.

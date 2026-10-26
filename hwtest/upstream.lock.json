@@ -1,5 +1,5 @@
 {
- "$comment": "Pinned flexNode-arduino desk-runbook tooling (plan 8.2 option (c), DL-7). flexengine/hwtest/upstream.py fetches exactly these files (git archive of a local checkout, else a shallow fetch of the commit) into a cache and checks every sha256; nothing of it is vendored here. To move the pin: update the commits, run `python flexengine/hwtest/upstream.py pin --repo <checkout>` and re-run tests/hwtest.",
+ "$comment": "Pinned flexNode-arduino desk-runbook tooling (plan 8.2 option (c), DL-7). hwtest/upstream.py fetches exactly these files (git archive of a local checkout, else a shallow fetch of the commit) into a cache and checks every sha256; nothing of it is vendored here. To move the pin: update the commits, run `python hwtest/upstream.py pin --repo <checkout>` and re-run tests/hwtest.",
  "repository": "https://github.com/BertVanAcker/flexnode-arduino",
  "license": "LGPL-2.1 (LICENSE.txt of the pinned commit; fetched with the files, used unmodified)",
  "sources": [

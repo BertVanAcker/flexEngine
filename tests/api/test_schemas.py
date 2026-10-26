@@ -14,7 +14,7 @@ import yaml
 
 from flexengine2 import contracts
 
-from _api_helpers import GOLDEN, REPO, SRC, load_ref
+from _api_helpers import GOLDEN, SRC, VECTORS_FW as VECTORS, load_ref
 
 API = contracts.api_dir()
 
@@ -154,7 +154,7 @@ def test_openapi_valid_and_refs_resolve(name):
 
 
 def test_southbound_keeps_every_p2_path_and_fixes_driver_enum():
-    p2 = yaml.safe_load((REPO / "probes/p2-reconciling-engine/openapi.yaml").read_text())
+    p2 = yaml.safe_load((VECTORS / "p2" / "openapi.yaml").read_text())   # probe P2's API, vendored
     v1 = _openapi("openapi-southbound.yaml")
     assert v1["info"]["version"] == "v1alpha1"
     for path, ops in p2["paths"].items():

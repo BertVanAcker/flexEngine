@@ -31,14 +31,14 @@ checkout (`$FLEXNODE_ARDUINO_REPO`, read with `git archive`) or a shallow fetch 
 file that differs from the pin. Nothing is vendored (the tools are LGPL-2.1, used as fetched). `run.py` and `gui.py`
 import the pinned modules, register the flex step types into the runner's `ACTIONS` table (which the GUI uses too)
 and call the upstream `main()` (plan §8.2 option (c), DL-7). Moving the pin: edit the commits, then
-`python flexengine/hwtest/upstream.py pin --repo <checkout>`.
+`python hwtest/upstream.py pin --repo <checkout>`.
 
 ```bash
-python3 -m venv .venv-hwtest && .venv-hwtest/bin/pip install -r flexengine/hwtest/requirements.txt
-.venv-hwtest/bin/python flexengine/hwtest/run.py --check-all                       # format check of every runbook
-.venv-hwtest/bin/python flexengine/hwtest/run.py flexengine/hwtest/runbooks/EV-HW-02_container.yaml
-.venv-hwtest/bin/python flexengine/hwtest/gui.py                                   # http://127.0.0.1:8765
-.venv-hwtest/bin/python flexengine/hwtest/dryrun.py --all                          # every runbook vs. simulation
+python3 -m venv .venv-hwtest && .venv-hwtest/bin/pip install -r hwtest/requirements.txt
+.venv-hwtest/bin/python hwtest/run.py --check-all                       # format check of every runbook
+.venv-hwtest/bin/python hwtest/run.py hwtest/runbooks/EV-HW-02_container.yaml
+.venv-hwtest/bin/python hwtest/gui.py                                   # http://127.0.0.1:8765
+.venv-hwtest/bin/python hwtest/dryrun.py --all                          # every runbook vs. simulation
 ```
 
 ## Bench facts the runbook defaults use
@@ -57,5 +57,5 @@ of the lab keys, Portenta images and RAUC bundles).
 `http_expect`, `cmd_json_expect`, `fe_status_expect`, `fe_history_mark` / `fe_history_expect`, `zenoh_expect`,
 `smp_probe`, `ads_probe`, `modbus_expect`, `ssh_run`, `journal_mark` / `journal_expect`, `power_cycle`, plus the
 runner's `write_file` (extended: `json`, `mode`, `host`, `sudo`) and `manual` (in a dry run: its `sim:` command and
-`sim_answer`). Parameters and matchers: docstring of `flexsteps.py`. Tests: `flexengine/tests/hwtest` (plan §7.2
+`sim_answer`). Parameters and matchers: docstring of `flexsteps.py`. Tests: `tests/hwtest` (plan §7.2
 layer 9; the dry runs run when that directory is selected).

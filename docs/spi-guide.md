@@ -313,9 +313,9 @@ cases. Steps:
 4. Run it:
 
    ```bash
-   flexengine/run_tests.sh contract                 # push tier
-   flexengine/run_tests.sh contract-nightly         # real executors that are installed
-   PYTEST_ARGS="-k example-spool" flexengine/run_tests.sh contract
+   run_tests.sh contract                 # push tier
+   run_tests.sh contract-nightly         # real executors that are installed
+   PYTEST_ARGS="-k example-spool" run_tests.sh contract
    ```
 
 The cases: identity and capabilities, unknown deployment, install healthy, `failed()` is `None` while healthy,
@@ -334,7 +334,7 @@ Conformance is not enough to ship. A new driver also needs:
 3. **Contracts** (additive changes within `v1alpha1`, listed in [api/README.md](../api/README.md)): the profile in
    CP-1 `DriverProfile` (desired state and descriptor `profiles`), a CP-2 capabilities fragment
    `$defs/<Profile>`, a CP-3 payload media type and the layer annotations you read, then regenerate
-   [api/cp-reference.md](../api/cp-reference.md) (`python flexengine/api/tools/gen_cp_reference.py`).
+   [api/cp-reference.md](../api/cp-reference.md) (`python api/tools/gen_cp_reference.py`).
 4. **Reason codes**: every text your driver can report (`DriverError` text, `failed()` and `preflight()` reasons)
    gets a code in `api/tools/gen_reason_codes.py`. `tests/api/test_reason_codes.py` fails while one is missing.
 5. **Tests**: unit tests for the driver's own logic, an integration test through a real engine process, and a desk

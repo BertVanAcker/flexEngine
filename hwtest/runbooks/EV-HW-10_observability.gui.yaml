@@ -1,4 +1,4 @@
-# GUI metadata of EV-HW-10 (read by the runbook GUI: gui.py --scan flexengine/hwtest); the runbook is EV-HW-10_observability.yaml
+# GUI metadata of EV-HW-10 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-10_observability.yaml
 goal: The read-only local API (health, status, history, capabilities, metrics; token, GET only), structured journal records,
   the rollout's OTel spans in Jaeger and the console's desired = actual view.
 duration: ~10 min

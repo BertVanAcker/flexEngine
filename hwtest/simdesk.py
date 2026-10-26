@@ -51,7 +51,8 @@ import yaml
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 FLEXENGINE = HERE.parent
-REPO = FLEXENGINE.parent
+# The framework checkout (examples/models, probes, demo/): $FLEX_REPO, default a sibling modular-interoperable-framework
+REPO = Path(os.environ.get("FLEX_REPO") or FLEXENGINE.parent / "modular-interoperable-framework").resolve()
 SRC = FLEXENGINE / "src"
 FLEXMODEL_SRC = REPO / "flexmodel" / "src"
 PROBES = Path(os.environ.get("FLEX_PROBES_DIR") or REPO / "probes").resolve()
@@ -1092,7 +1093,7 @@ def profile_rauc(sim: Sim):
 
 
 def _wheelhouse() -> Path:
-    """Offline wheelhouse of build-wheels.sh: $FLEX_HWTEST_WHEELHOUSE, this checkout's flexengine/dist/wheelhouse, or
+    """Offline wheelhouse of build-wheels.sh: $FLEX_HWTEST_WHEELHOUSE, this checkout's dist/wheelhouse, or
     the main checkout's (a git worktree shares the main checkout's build outputs)."""
     cands = [os.environ.get("FLEX_HWTEST_WHEELHOUSE"), FLEXENGINE / "dist" / "wheelhouse"]
     r = subprocess.run(["git", "-C", str(REPO), "rev-parse", "--path-format=absolute", "--git-common-dir"],
@@ -1102,7 +1103,7 @@ def _wheelhouse() -> Path:
     for c in cands:
         if c and Path(c).is_dir():
             return Path(c)
-    raise RuntimeError("no offline wheelhouse: run flexengine/packaging/build-wheels.sh or set FLEX_HWTEST_WHEELHOUSE")
+    raise RuntimeError("no offline wheelhouse: run packaging/build-wheels.sh or set FLEX_HWTEST_WHEELHOUSE")
 
 
 def profile_install(sim: Sim):
@@ -1113,7 +1114,7 @@ def profile_install(sim: Sim):
     dist = sim.dir / "dist"
     r = subprocess.run([sys.executable, "-m", "pip", "wheel", "-q", "--no-deps", "-w", str(dist), str(FLEXENGINE)],
                        capture_output=True, text=True, timeout=600)
-    wheels = sorted(dist.glob("flexengine_v2-*-py3-none-any.whl"))
+    wheels = sorted(dist.glob("flexengine-*-py3-none-any.whl"))
     if r.returncode != 0 or not wheels:
         raise RuntimeError(f"engine wheel build failed: {r.stderr[-1500:]}")
     wh = _wheelhouse()

@@ -1,4 +1,4 @@
-# GUI metadata of EV-HW-05 (read by the runbook GUI: gui.py --scan flexengine/hwtest); the runbook is EV-HW-05_mcu_firmware.yaml
+# GUI metadata of EV-HW-05 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-05_mcu_firmware.yaml
 goal: The Portenta's base image is updated through MCUboot with the modules kept, a never-confirming image reverts, and
   a power cut during the test boot boots the last confirmed image.
 duration: ~30 min

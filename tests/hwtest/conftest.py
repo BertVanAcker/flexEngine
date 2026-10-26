@@ -1,7 +1,7 @@
 """Desk-runbook layer (plan 7.2 layer 9, EV-14/EV-15): the pinned flexNode-arduino runner + GUI with the flex step
 types, the step types against stand-ins, every runbook's format, and the dry runs against simulated targets.
 
-The pinned runner is fetched once (flexengine/hwtest/upstream.py: a local checkout in $FLEXNODE_ARDUINO_REPO, else a
+The pinned runner is fetched once (hwtest/upstream.py: a local checkout in $FLEXNODE_ARDUINO_REPO, else a
 shallow fetch of the pinned commits); without it the layer fails, it does not skip."""
 
 from __future__ import annotations

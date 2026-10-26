@@ -1,11 +1,11 @@
-"""Generate the CP-3/CP-4 test vectors under flexengine/api/vectors/ (deterministic: fixed keys, fixed times).
+"""Generate the CP-3/CP-4 test vectors under api/vectors/ (deterministic: fixed keys, fixed times).
 
-    flexengine/.venv/bin/python flexengine/api/tools/gen_vectors.py [OUT_DIR]
+    .venv/bin/python api/tools/gen_vectors.py [OUT_DIR]
 
 TEST KEYS ONLY: every private key is derived from a public seed string and published in vectors/keys.json.
 Never configure them as trust anchors outside tests.
 
-Output (default flexengine/api/vectors/):
+Output (default api/vectors/):
   keys.json                      cloud / release / rogue / device test keys (private, public, keyid)
   manifest/desired.json          exact desired-state bytes (canonical JSON) signed by the cloud key
   manifest/desired-tampered.json same document with manifestVersion changed (signature of the original)

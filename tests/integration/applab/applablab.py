@@ -25,14 +25,18 @@ import yaml
 from flexengine2.testing.release import PROBES
 
 FLEXENGINE = Path(__file__).resolve().parents[3]
-REPO = FLEXENGINE.parent
 PROBE = PROBES / "p4-applab-target"
 WORK = FLEXENGINE / "tests" / "work" / "applab"
-RESULTS = FLEXENGINE / "results"
+RESULTS = Path(os.environ.get("FLEX_RESULTS_DIR") or FLEXENGINE / "results" / "latest")   # per run, gitignored
 FAKEBIN = PROBE / "tools" / "fakebin"
 BOARD_PY = PROBE / ".venv" / "bin" / "python"   # board-side Python (arduino.app_utils, router bridge)
 METRICS: dict = {}
 
+import pytest  # noqa: E402
+
+if not (PROBE / "flexp4").is_dir():   # stand-ins from the framework (probes, demo/), not vendored: they import flexmodel
+    pytest.skip("needs a modular-interoperable-framework checkout with probe P4 (App Lab): set FLEX_REPO",
+                allow_module_level=True)
 if str(PROBE) not in sys.path:
     sys.path.insert(0, str(PROBE))  # test stand-ins only
 
