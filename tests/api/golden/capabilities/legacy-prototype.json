@@ -1,0 +1,55 @@
+{
+ "apiVersion": "device.margo.org/v1alpha1",
+ "kind": "DeviceCapabilities",
+ "properties": {
+  "id": "panda",
+  "interfaces": [
+   {
+    "type": "ethernet"
+   }
+  ],
+  "modelNumber": "cloud-vm",
+  "otelCollector": false,
+  "peripherals": [],
+  "resources": {
+   "cpu": {
+    "architecture": "x86_64",
+    "cores": 4
+   },
+   "memory": "16093Mi"
+  },
+  "roles": [
+   "gateway"
+  ],
+  "serialNumber": "panda",
+  "supportedDeploymentTypes": [
+   "custom"
+  ],
+  "supportedRuntimes": [],
+  "vendor": "probe"
+ },
+ "x-flex": {
+  "children": [
+   {
+    "deviceId": "panda.portenta",
+    "kind": "mcu",
+    "link": "smp/uart (QEMU tcp)",
+    "mode": "see-thru"
+   }
+  ],
+  "drivers": {},
+  "engine": {
+   "edge": "d1a-edge",
+   "impl": "python",
+   "spi": [
+    "preflight",
+    "commit",
+    "platform",
+    "failed",
+    "exclusive"
+   ],
+   "version": "p2-probe"
+  },
+  "safeStateSignals": []
+ }
+}

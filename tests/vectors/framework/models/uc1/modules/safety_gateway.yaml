@@ -1,0 +1,39 @@
+apiVersion: flex.dev/v1alpha1
+kind: Module
+metadata:
+  name: safety_gateway
+  version: 0.3.0
+  description: >-
+    PLC-side interface FB (FB_PerceptionHeartbeatMonitor, probe P7): receives the fixed-layout safety
+    heartbeat as a non-safe input and drives the AI-channel output to a restricted state on silence, stale,
+    repeated, corrupted, foreign or unapproved frames and on a stop/slow request. The safety logic
+    (TwinSAFE / CODESYS Safety) owns the latch and the reset; nothing from flex* can reset it.
+spec:
+  language: st
+  safety_class: safety-relevant
+  ports:
+    - name: heartbeat
+      direction: in
+      type: uc1/SafetyHeartbeat
+      qos: {reliability: reliable, depth: 1, deadline_ms: 120}
+      description: >-
+        The only input from flex*. Stop/slow requests arrive as a level inside every frame (a lost
+        StopRequest edge would be a lost stop), so there is no separate stop_request input any more.
+  # Budgets (P7 spec section 3, T = heartbeat period): silence 2T + 20 ms; frames older than the
+  # self-reported / end-to-end age limits are stale. All are safety parameters: they are set through the
+  # safety project's parameter process, never by flexCloud or an agent (FC-S3, AG-S1).
+  parameters:
+    - {name: heartbeat_period_ms, type: uint32, default: 50, unit: ms, safety: true, description: "Nominal period T of the sender."}
+    - {name: heartbeat_timeout_ms, type: uint32, default: 120, unit: ms, safety: true, description: "Silence timeout, 2T + 20 ms (was 150)."}
+    - {name: period_tol_ms, type: uint32, default: 20, unit: ms, safety: true, description: "Tolerance of delta t_out against delta seq * T."}
+    - {name: max_seq_gap, type: uint32, default: 2, safety: true, description: "Largest accepted sequence step (one lost frame)."}
+    - {name: max_frame_age_ms, type: uint32, default: 150, unit: ms, safety: true, description: "Self-reported age t_out - t_frame (was 200)."}
+    - {name: max_e2e_age_ms, type: uint32, default: 160, unit: ms, safety: true, description: "End-to-end age now - t_frame, only with time sync."}
+    - {name: max_future_skew_ms, type: uint32, default: 10, unit: ms, safety: true}
+    - {name: arm_frames, type: uint32, default: 3, safety: true, description: "Consecutive good frames needed after a local reset."}
+    - {name: channel_id, type: uint16, default: 1793, safety: true, description: "Expected connection id (0x0701)."}
+    - {name: model_allow_list, type: string, default: "bceecb42,70f8da27", safety: true, description: "Approved model ids (<= 8, hex SHA-256 prefixes)."}
+  lifecycle: {profile: simple}
+  requires:
+    target_classes: [T5]
+    runtimes: [st]

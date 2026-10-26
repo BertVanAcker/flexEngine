@@ -1,0 +1,317 @@
+{
+  "runbook": "EV-HW-08",
+  "title": "Security on the LattePanda: tampered, unsigned, unknown key, downgrade, wrong CA",
+  "file": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/runbooks/EV-HW-08_security.yaml",
+  "started": "2026-10-17T18:22:35",
+  "finished": "2026-10-17T18:22:59",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest",
+    "flexengine": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine",
+    "repo": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "project_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "results_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/hwtest-results/20261017-182235_EV-HW-08",
+    "local_ip": "192.0.2.2",
+    "python": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-08-n8y0iyal/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli",
+    "fe_host": "local",
+    "fe_api": "http://127.0.0.1:42833",
+    "fe_api_token_file": "/tmp/rb-08-n8y0iyal/secrets/fe-api.token",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "37863",
+    "cloud_url": "http://127.0.0.1:41573",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-08-n8y0iyal/secrets/admin.token",
+    "catalog": "/tmp/rb-08-n8y0iyal/catalog.yaml",
+    "desk": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py --cloud http://127.0.0.1:41573 --ca '' --admin-token-file /tmp/rb-08-n8y0iyal/secrets/admin.token --catalog /tmp/rb-08-n8y0iyal/catalog.yaml",
+    "journal_source": "file:/tmp/rb-08-n8y0iyal/lp/engine.log",
+    "svc": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-08-n8y0iyal svc",
+    "gp": "rb-panda",
+    "dep": "dl",
+    "cloud_sh": "local",
+    "tamper": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py tamper --layout /tmp/rb-08-n8y0iyal/cloud/oci",
+    "usb_dir": "/tmp/rb-08-n8y0iyal/usb",
+    "lp_usb": "/tmp/rb-08-n8y0iyal/usb",
+    "lp_sh": "sh -c",
+    "fe_config": "/tmp/rb-08-n8y0iyal/lp/engine.yaml",
+    "lab_ca_lp": "/tmp/rb-08-n8y0iyal/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-08-n8y0iyal/pki/rogue-openssl-ca.crt",
+    "sim": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-08-n8y0iyal",
+    "cloud_layout": "/tmp/rb-08-n8y0iyal/cloud/oci",
+    "lab_ca": "/tmp/rb-08-n8y0iyal/pki/ca.crt",
+    "fe_api_port": "42833",
+    "lp_up_host": "127.0.0.1",
+    "lp_up_port": "42833",
+    "gp_podman": "rb-panda-podman",
+    "safe_state_file": "/tmp/rb-08-n8y0iyal/lp/safe-state.json",
+    "igpu_device": "/dev/zero",
+    "rt": "docker",
+    "rt_podman": "podman",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-08-n8y0iyal/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli enroll",
+    "jaeger_url": "http://127.0.0.1:45891",
+    "dry_run": "1",
+    "uplink_down": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-08-n8y0iyal uplink down",
+    "uplink_up": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-08-n8y0iyal uplink up",
+    "power_cut": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-08-n8y0iyal power-cycle --down 3",
+    "sim_dir": "/tmp/rb-08-n8y0iyal"
+  },
+  "project_commit": "52e7172-dirty",
+  "runner_commit": "52e7172-dirty",
+  "summary": {
+    "PASS": 36,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:37863 reachable"
+    },
+    {
+      "id": "engine-up",
+      "title": "${gp} onboarded and online",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "publish",
+      "title": "Publish the good release and the three bad ones (unsigned, rogue key, to be tampered)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "tamper",
+      "title": "Flip one byte of the 3.2.0 payload blob in the stub's registry (signature stays valid)",
+      "status": "PASS",
+      "detail": "exit 0, matched '\"tampered\": true'"
+    },
+    {
+      "id": "deploy-good",
+      "title": "Deploy the good release 1.0.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "good-installed",
+      "title": "1.0.0 Installed and healthy",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "old-bundle",
+      "title": "Keep the current signed bundle (manifestVersion now) for the downgrade step",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "unsigned",
+      "title": "Unsigned release 3.0.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "unsigned-refused",
+      "title": "Refused: artefact rejected (FE-REC-002): release not signed by a trusted key (no signature)",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Failed 3.0.0, reasonCode FE-REC-002"
+    },
+    {
+      "id": "rogue",
+      "title": "Release 3.1.0 signed with a key the device does not trust",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "rogue-refused",
+      "title": "Refused: artefact rejected (FE-REC-002): release not signed by a trusted key (untrusted key ...)",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Failed 3.1.0, reasonCode FE-REC-002"
+    },
+    {
+      "id": "tampered",
+      "title": "Tampered release 3.2.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "tampered-refused",
+      "title": "Refused: artefact rejected (FE-REC-002): digest mismatch of the payload blob",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Failed 3.2.0, reasonCode FE-REC-002"
+    },
+    {
+      "id": "rejects-logged",
+      "title": "Each refusal is in the action log as `reject` with its reason",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "no-bad-apply",
+      "title": "No driver call (apply, remove, rollback) for any refused release",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "good-once",
+      "title": "The good release was applied exactly once and never removed",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "back-to-good",
+      "title": "Desired state back to 1.0.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "good-again",
+      "title": "1.0.0 Installed again without touching the workload",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "still-once",
+      "title": "Still exactly one apply of 1.0.0",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "downgrade-copy",
+      "title": "Copy the old bundle to the LattePanda",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "downgrade",
+      "title": "Import the old signed bundle (lower manifestVersion) -> refused (422)",
+      "status": "PASS",
+      "detail": "exit 1, matched '422 manifestVersion 1 is older than the accepted 5 (downgrade)'"
+    },
+    {
+      "id": "downgrade-refused",
+      "title": "Downgrade refused and counted (FE-DS-003)",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 5, onboarded true"
+    },
+    {
+      "id": "downgrade-kept",
+      "title": "1.0.0 keeps running",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "rogue-ca",
+      "title": "Make a CA the flexCloud certificate does not chain to",
+      "status": "PASS",
+      "detail": "exit 0, matched 'made'"
+    },
+    {
+      "id": "wrong-ca-mark",
+      "title": "Journal mark",
+      "status": "PASS",
+      "detail": "mark wrongca at byte 3954 of /tmp/rb-08-n8y0iyal/lp/engine.log"
+    },
+    {
+      "id": "wrong-ca",
+      "title": "Pin the wrong CA",
+      "status": "PASS",
+      "detail": "dry run: simulated (engine.yaml: cloud.caFile=/tmp/rb-08-n8y0iyal/pki/rogue-openssl-ca.crt; restarted), done"
+    },
+    {
+      "id": "wrong-ca-logged",
+      "title": "Engine refuses the TLS handshake (certificate verify failed)",
+      "status": "PASS",
+      "detail": "3 line(s) matching (?i)certificate verify failed|CERTIFICATE_VERIFY_FAILED|verif: {\"ts\":\"2026-10-17T18:22:47.985Z\",\"level\":\"warning\",\"device\":\"rb-panda-podman\",\"event\":\"offline\",\"msg\":\"offline (GET /api/v1/devices/rb-panda-podman/deployments: TLS verification failed: unable to get "
+    },
+    {
+      "id": "wrong-ca-offline",
+      "title": "Engine reports itself offline",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 5, onboarded true"
+    },
+    {
+      "id": "wrong-ca-deploy",
+      "title": "Publish 1.1.0 while the device does not trust the cloud",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "wrong-ca-hold",
+      "title": "Nothing reaches the device",
+      "status": "PASS",
+      "detail": "waited 8s"
+    },
+    {
+      "id": "wrong-ca-kept",
+      "title": "1.0.0 still running, 1.1.0 not fetched",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "right-ca",
+      "title": "Pin the lab CA again",
+      "status": "PASS",
+      "detail": "dry run: simulated (engine.yaml: cloud.caFile=/tmp/rb-08-n8y0iyal/pki/ca.crt; restarted), done"
+    },
+    {
+      "id": "right-ca-online",
+      "title": "Online again",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 6, onboarded true"
+    },
+    {
+      "id": "right-ca-v2",
+      "title": "1.1.0 Installed",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.1.0, health healthy"
+    },
+    {
+      "id": "cleanup",
+      "title": "Remove the deployment",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "removed",
+      "title": "${dep} removed",
+      "status": "PASS",
+      "detail": "rb-panda/dl: absent "
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

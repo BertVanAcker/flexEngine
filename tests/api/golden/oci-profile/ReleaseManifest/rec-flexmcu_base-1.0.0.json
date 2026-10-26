@@ -1,0 +1,34 @@
+{
+ "annotations": {
+  "dev.flex.interfaceHash": "",
+  "dev.flex.safetyClass": "none",
+  "org.opencontainers.image.title": "flexmcu_base",
+  "org.opencontainers.image.version": "1.0.0"
+ },
+ "artifactType": "application/vnd.flex.node.v1+json",
+ "config": {
+  "digest": "sha256:f8f196e48f70d32457aa3400f83ee3f3407d39b2d467a98e71c2a479641f91f7",
+  "mediaType": "application/vnd.flex.node.descriptor.v1+json",
+  "size": 432
+ },
+ "layers": [
+  {
+   "annotations": {
+    "dev.flex.profile": "mcu-firmware"
+   },
+   "digest": "sha256:b60e9b511a8f2ff1563028181d9aa5a4dc084541e89b0b22be87ff27b7e2ddbe",
+   "mediaType": "application/vnd.flex.payload.mcu-firmware.v1+mcuboot",
+   "size": 77148
+  },
+  {
+   "annotations": {
+    "dev.flex.role": "sbom"
+   },
+   "digest": "sha256:e6ab2fa0aa786a8e61baa09cc604b03ca9c34809c1288d36a8ce8e97851097e0",
+   "mediaType": "application/spdx+json",
+   "size": 720
+  }
+ ],
+ "mediaType": "application/vnd.oci.image.manifest.v1+json",
+ "schemaVersion": 2
+}

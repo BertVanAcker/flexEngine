@@ -1,0 +1,112 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "health": {
+  "path": "/healthz",
+  "periodSeconds": 0.25,
+  "port": "${FLEX_HEALTH_PORT}",
+  "successThreshold": 2,
+  "timeoutSeconds": 8,
+  "type": "http"
+ },
+ "interfaceHash": "FLEX01_0d4b1a3464d19eab5c2ccb456f80c90f8555e9c58d8534b861f69def9e14d6bb",
+ "kind": "FlexNodeDescriptor",
+ "language": "python",
+ "lifecycle": {
+  "profile": "managed"
+ },
+ "module": "cell_controller",
+ "moduleVersion": "0.3.0",
+ "parameters": [
+  {
+   "default": 1500,
+   "max": 60000,
+   "min": 100,
+   "name": "cycle_time_ms",
+   "type": "uint32",
+   "unit": "ms"
+  },
+  {
+   "default": 30.0,
+   "max": 200,
+   "min": 1,
+   "name": "max_force_n",
+   "type": "float32",
+   "unit": "N"
+  }
+ ],
+ "ports": [
+  {
+   "direction": "in",
+   "name": "grasp_target",
+   "type": "uc2split/GraspTarget"
+  },
+  {
+   "direction": "out",
+   "name": "interlock_cmd",
+   "pattern": "rpc",
+   "request": "uc2/GripCommand",
+   "response": "uc2/GripAck"
+  },
+  {
+   "direction": "out",
+   "name": "gripper_cmd",
+   "pattern": "rpc",
+   "request": "uc2/GripCommand",
+   "response": "uc2/GripAck"
+  },
+  {
+   "direction": "in",
+   "name": "gripper_state",
+   "type": "uc2/GripperState"
+  },
+  {
+   "direction": "in",
+   "name": "gripper_fault",
+   "type": "uc2split/GripperFault"
+  },
+  {
+   "direction": "in",
+   "name": "operator",
+   "type": "dpick/OperatorInput"
+  },
+  {
+   "direction": "out",
+   "name": "status",
+   "type": "dpick/CellStatus"
+  },
+  {
+   "direction": "out",
+   "name": "stack_light",
+   "type": "dpick/StackLight"
+  }
+ ],
+ "profiles": [
+  "native"
+ ],
+ "releaseVersion": "1.0.0",
+ "requires": {
+  "realm": "gp",
+  "runtimes": [
+   "python3"
+  ],
+  "target_classes": [
+   "T1",
+   "T2",
+   "T3"
+  ]
+ },
+ "resources": {
+  "cpu_cores": 0.25,
+  "memory_mb": 96
+ },
+ "restartPolicy": {
+  "maxRetries": 5,
+  "policy": "on-failure",
+  "restartSec": 0.5
+ },
+ "safetyClass": "none",
+ "safetyClassSource": "model (flex safety)",
+ "source": {
+  "model": "examples/models/demo-pick"
+ }
+}

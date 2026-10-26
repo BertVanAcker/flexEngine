@@ -1,0 +1,115 @@
+id: EV-HW-03
+title: Offline convergence and offline bundle on the LattePanda
+description: >
+  The uplink between the engine and flexCloud is cut (the lab's link shim, or the cable by hand) while a new desired
+  state is published; the engine keeps running the old release, reports itself offline, and converges with exactly
+  one apply once the link is back. Then a third release reaches the LattePanda only as a signed offline bundle on a
+  USB stick (`flexengine bundle import`), again with exactly one apply. Replaces L3-P2 s7; complements D2-REHEARSAL
+  step 12.
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
+  fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
+  fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API (DA-7: one per desk)"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda"}
+  dep: {default: dl, prompt: "deployment id"}
+  uplink_down: {default: "ssh -o BatchMode=yes ${lp} curl -fsS -X POST http://127.0.0.1:8691/cut", prompt: "command that cuts the engine's uplink (lab link shim control port)"}
+  uplink_up: {default: "ssh -o BatchMode=yes ${lp} curl -fsS -X POST http://127.0.0.1:8691/restore", prompt: "command that restores the uplink"}
+  usb_dir: {default: "~/flexhwtest-usb", prompt: "directory on this PC that goes onto the USB stick"}
+  lp_usb: {default: /media/usb, prompt: "mount point of the USB stick on the LattePanda"}
+setup:
+  - "LattePanda: EV-HW-01 passed; device ${gp} has drivers.native (process or systemd) in /etc/flexengine/engine.yaml"
+  - "The engine's cloud.apiUrl goes through the link shim (flex-linkshim, control port 8691), as labinv.py renders it"
+  - "A USB stick at hand (mounted at ${lp_usb} on the LattePanda when plugged in)"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: engine-up
+    title: "${gp} onboarded and online"
+    fe_status_expect: {device: "${gp}", device_fields: {onboarded: true, online: true}, timeout: 60}
+  - id: publish
+    title: Publish three native releases (1.0.0, 1.1.0, 2.0.0)
+    cmd_json_expect: {cmd: "${desk} publish dl_v1 dl_v2 dl_v3", match: {"/published": {len: 3}}, cmd_timeout: 900}
+  - id: deploy-v1
+    title: Deploy 1.0.0 (link up)
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_v1"}
+  - id: v1-installed
+    title: 1.0.0 Installed and healthy
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 120}
+  - id: uplink-down
+    title: Cut the uplink (engine <-> flexCloud)
+    run: {cmd: "${uplink_down}"}
+  - id: deploy-v2-offline
+    title: Publish the 1.1.0 desired state while the device is offline
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_v2"}
+  - id: offline-reported
+    title: Engine reports itself offline
+    fe_status_expect: {device: "${gp}", device_fields: {online: false}, timeout: 60}
+  - id: keeps-v1
+    title: 1.0.0 keeps running while offline
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 10}
+  - id: offline-hold
+    title: Stay offline for a while
+    wait: {seconds: 10, message: "the engine retries with backoff; nothing changes on the device"}
+  - id: uplink-up
+    title: Restore the uplink
+    run: {cmd: "${uplink_up}"}
+  - id: v2-converged
+    title: 1.1.0 Installed after the link returns
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.1.0, health: healthy, timeout: 180}
+  - id: v2-one-apply
+    title: Exactly one apply of 1.1.0 in the action log
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} logs --json -n 5000 --device ${gp}", json_lines: true, timeout: 30, match: {"": {where: {"/source": actions, "/action": apply, "/dep": "${dep}", "/version": 1.1.0}, count: 1}}}
+  - id: cloud-converged
+    title: flexCloud sees desired = actual
+    cmd_json_expect: {cmd: "${desk} converged ${gp}", match: {"/converged": true}, timeout: 60, every: 2}
+  - id: uplink-down-2
+    title: Cut the uplink again
+    run: {cmd: "${uplink_down}"}
+  - id: deploy-v3
+    title: Publish 2.0.0 (it reaches the device only through the bundle)
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_v3"}
+  - id: bundle-export
+    title: Export the signed offline bundle onto this PC
+    cmd_json_expect: {cmd: "${desk} bundle ${gp} --out ${usb_dir}/bundle-${gp}.tar", match: {"/bytes": {gt: 1000}}}
+  - id: usb
+    title: Carry the bundle to the LattePanda
+    manual:
+      instruction: "Copy ${usb_dir}/bundle-${gp}.tar onto the USB stick and plug it into the LattePanda (mounted at ${lp_usb})."
+      confirm: "Is ${lp_usb}/bundle-${gp}.tar visible on the LattePanda?"
+      sim: "test -f ${lp_usb}/bundle-${gp}.tar"
+  - id: bundle-import
+    title: flexengine bundle import from the USB stick
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} bundle import ${lp_usb}/bundle-${gp}.tar --device ${gp} --json", match: {"/accepted": true, "/deviceId": "${gp}"}}
+  - id: v3-installed-offline
+    title: 2.0.0 Installed from the bundle while still offline
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 2.0.0, health: healthy, device_fields: {online: false}, timeout: 180}
+  - id: uplink-up-2
+    title: Restore the uplink
+    run: {cmd: "${uplink_up}"}
+  - id: cloud-converged-2
+    title: flexCloud sees 2.0.0 installed (desired = actual)
+    cmd_json_expect: {cmd: "${desk} converged ${gp}", match: {"/converged": true, "/actual/${dep}/version": 2.0.0}, timeout: 120, every: 2}
+  - id: v3-one-apply
+    title: Exactly one apply of 2.0.0 (bundle and cloud did not both apply)
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} logs --json -n 5000 --device ${gp}", json_lines: true, match: {"": {where: {"/source": actions, "/action": apply, "/dep": "${dep}", "/version": 2.0.0}, count: 1}}}
+  - id: outbox-empty
+    title: Every status report delivered (outbox empty)
+    fe_status_expect: {device: "${gp}", device_fields: {outboxLength: 0, online: true}, timeout: 60}
+  - id: cleanup
+    title: Remove the deployment
+    run: {cmd: "${desk} deploy ${gp}"}
+  - id: removed
+    title: "${dep} removed"
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", absent: true, timeout: 120}

@@ -1,0 +1,4 @@
+TIME                      DEVICE  DEPLOYMENT  SEQ  STATE       VERSION  DETAIL
+2026-10-16T23:56:40.250Z  panda   cell        7    Installing  1.1.0
+2026-10-16T23:58:20.000Z  panda   cell        8    Installed   1.1.0    healthy
+2026-10-16T23:59:20.500Z  panda   cx-bridge   9    Failed      1.1.0    health check failed; rolled back to 1.0.0; (not yet delivered)

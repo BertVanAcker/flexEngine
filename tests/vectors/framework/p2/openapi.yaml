@@ -1,0 +1,292 @@
+openapi: 3.1.0
+info:
+  title: flexCloud desired-state API (probe P2 stub)
+  version: 0.1.0-p2
+  summary: Margo-shaped (Workload Management API 1.0.0-rc.3 / PR3) pull contract between flexCloud and flexEngine, with x-flex extensions.
+  description: |
+    Southbound endpoints are called by flexEngine. Every southbound request except onboarding carries an
+    Ed25519 request signature (headers below) made with the device key registered at onboarding; the
+    cloud scopes every request to that device identity. Margo specifies mTLS with SPIFFE X.509-SVIDs
+    instead; see the conformance gap list in docs/probes/p2-report.md.
+
+    The desired state is pulled. `ETag` + `If-None-Match` give 304 when unchanged. `manifestVersion` is
+    strictly increasing and the device refuses lower values (rollback protection). Each deployment names
+    its release by sha256 digest; any digest or signature mismatch keeps the previous state. A deployment
+    absent from the manifest is removed. Each desired-state body is signed by the cloud key
+    (`X-Flex-Manifest-Signature`), so a bundle carried offline is as trustworthy as an online pull.
+
+    Northbound endpoints are for the console and the P6 MCP gateway (`fleet.read`, `deploy.plan`,
+    `deploy.apply` bound to the plan hash). Errors use RFC 9457 problem+json.
+servers:
+  - url: http://127.0.0.1:8700
+components:
+  securitySchemes:
+    deviceSignature:
+      type: apiKey
+      in: header
+      name: X-Flex-Signature
+      description: |
+        Ed25519 over "METHOD\nPATH?QUERY\nX-Flex-Date\nX-Flex-Nonce\nhex(sha256(body))", base64.
+        Also required: X-Flex-Device, X-Flex-Date (unix ms, ±300 s), X-Flex-Nonce (unique; bounded replay cache).
+    admin:
+      type: http
+      scheme: bearer
+      description: Stub only. Target is OIDC/OAuth2 with RBAC (synthesis K3); X-Flex-User names the human.
+  headers:
+    ETag:
+      schema: {type: string}
+      description: '"sha256:<hex of the body>"'
+    ManifestSignature:
+      schema: {type: string}
+      description: base64 Ed25519 signature of the exact response body by the flexCloud key.
+  schemas:
+    Problem:
+      type: object
+      properties: {type: {type: string}, title: {type: string}, status: {type: integer}, detail: {type: string}}
+    DesiredState:
+      type: object
+      required: [apiVersion, kind, deviceId, manifestVersion, deployments]
+      properties:
+        apiVersion: {const: flex.dev/v1alpha1}
+        kind: {const: DesiredState}
+        deviceId: {type: string}
+        manifestVersion: {type: integer, minimum: 0, description: 'strictly increasing per device; persisted by the device'}
+        deployments:
+          type: array
+          items: {$ref: '#/components/schemas/ApplicationDeployment'}
+    ApplicationDeployment:
+      type: object
+      description: Margo ApplicationDeployment with x-flex extensions.
+      required: [apiVersion, kind, metadata, spec, x-flex-driver]
+      properties:
+        apiVersion: {const: application.margo.org/v1alpha1}
+        kind: {const: ApplicationDeployment}
+        metadata:
+          type: object
+          properties:
+            id: {type: string, description: 'stable across versions; identity for update/rollback/removal'}
+            name: {type: string}
+            namespace: {type: string}
+            deviceId: {type: string}
+        spec:
+          type: object
+          properties:
+            applicationId: {type: string, description: flexModel module name}
+            deploymentProfile:
+              type: object
+              properties:
+                type: {enum: [custom, compose, helm]}
+                components:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name: {type: string}
+                      properties:
+                        type: object
+                        properties:
+                          repository: {type: string, example: oci://flexcloud/flexnodes/perception_guard}
+                          revision: {type: string, description: 'release version (SemVer)'}
+                          digest: {type: string, pattern: '^sha256:[0-9a-f]{64}$', description: release manifest digest}
+                          size: {type: integer}
+            parameters: {type: object, additionalProperties: true}
+        x-flex-driver: {enum: [container, native], description: driver profile on the device (SPI)}
+        x-flex-safetyClass: {enum: [none, safety-relevant], description: 'safety-relevant implies the FE-S6 interlock and a two-person signed approval'}
+        x-flex-activation:
+          type: object
+          properties:
+            requires: {type: array, items: {type: string}, example: [machine_parked, operator_confirmed]}
+            window: {type: object, properties: {start: {type: string, example: '22:00'}, end: {type: string, example: '04:00'}}}
+    Capabilities:
+      type: object
+      description: Margo DeviceCapabilities shape (properties.*) plus x-flex.drivers and x-flex.safeStateSignals.
+    DeploymentStatus:
+      type: object
+      required: [seq, state]
+      properties:
+        seq: {type: integer, description: per-device monotonic; the cloud drops seq <= last seen (idempotent re-send)}
+        state: {enum: [Pending, Installing, Installed, Failed, Removing, Removed]}
+        manifestVersion: {type: integer}
+        version: {type: string}
+        digest: {type: string}
+        reason: {type: string}
+        health: {enum: [healthy, unhealthy]}
+        rolledBackTo: {type: [string, 'null']}
+        rollbackHealthy: {type: boolean}
+        plan: {type: array, items: {type: string}, description: 'driver plan steps (Installing only)'}
+        deviceTime: {type: number}
+    PlanRequest:
+      type: object
+      required: [deviceId, deployments]
+      properties:
+        deviceId: {type: string}
+        reason: {type: string}
+        deployments:
+          type: array
+          items:
+            type: object
+            required: [module, version]
+            properties:
+              id: {type: string}
+              module: {type: string}
+              version: {type: string}
+              driver: {enum: [container, native]}
+              parameters: {type: object}
+              safetyClass: {enum: [none, safety-relevant]}
+              activation: {type: object}
+    Plan:
+      type: object
+      properties:
+        planHash: {type: string, description: 'sha256 over {deviceId, baseManifestVersion, resolved deployments}'}
+        deviceId: {type: string}
+        baseManifestVersion: {type: integer}
+        requiresApproval: {type: boolean}
+        diff:
+          type: array
+          items: {type: object, properties: {op: {enum: [add, update, remove]}, id: {type: string}, from: {type: object}, to: {type: object}}}
+paths:
+  /api/v1/onboarding:
+    post:
+      summary: Register the device public key with a one-time token
+      requestBody:
+        content:
+          application/json:
+            schema: {type: object, required: [deviceId, publicKey, token], properties: {deviceId: {type: string}, publicKey: {type: string, description: 'base64 raw Ed25519'}, token: {type: string}}}
+      responses:
+        '201': {description: 'onboarded; returns cloudPublicKey (must equal the provisioned trust anchor)'}
+        '403': {description: invalid or used token, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+  /api/v1/devices/{deviceId}/capabilities:
+    put:
+      security: [{deviceSignature: []}]
+      parameters: [{name: deviceId, in: path, required: true, schema: {type: string}}]
+      requestBody: {content: {application/json: {schema: {$ref: '#/components/schemas/Capabilities'}}}}
+      responses: {'200': {description: stored}, '403': {description: other device}}
+  /api/v1/devices/{deviceId}/deployments:
+    get:
+      security: [{deviceSignature: []}]
+      parameters:
+        - {name: deviceId, in: path, required: true, schema: {type: string}}
+        - {name: If-None-Match, in: header, schema: {type: string}}
+      responses:
+        '200':
+          description: desired state
+          headers: {ETag: {$ref: '#/components/headers/ETag'}, X-Flex-Manifest-Signature: {$ref: '#/components/headers/ManifestSignature'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/DesiredState'}}}
+        '304': {description: unchanged}
+        '503': {description: 'unavailable; honour Retry-After', headers: {Retry-After: {schema: {type: integer}}}}
+  /api/v1/devices/{deviceId}/deployments/{deploymentId}/status:
+    post:
+      security: [{deviceSignature: []}]
+      parameters:
+        - {name: deviceId, in: path, required: true, schema: {type: string}}
+        - {name: deploymentId, in: path, required: true, schema: {type: string}}
+      requestBody: {content: {application/json: {schema: {$ref: '#/components/schemas/DeploymentStatus'}}}}
+      responses: {'200': {description: 'stored, or {duplicate: true}'}}
+  /api/v1/devices/{deviceId}/bundle:
+    get:
+      security: [{deviceSignature: []}]
+      summary: 'Offline bundle (tar): desired.json, desired.sig and every referenced blob'
+      parameters: [{name: deviceId, in: path, required: true, schema: {type: string}}]
+      responses: {'200': {description: bundle, content: {application/x-tar: {}}}}
+  /v2/{repository}/manifests/{digest}:
+    get:
+      security: [{deviceSignature: []}]
+      parameters:
+        - {name: repository, in: path, required: true, schema: {type: string}}
+        - {name: digest, in: path, required: true, schema: {type: string}}
+      responses: {'200': {description: 'OCI image manifest (flexNode release or signature)'}}
+  /v2/{repository}/blobs/{digest}:
+    get:
+      security: [{deviceSignature: []}]
+      parameters:
+        - {name: repository, in: path, required: true, schema: {type: string}}
+        - {name: digest, in: path, required: true, schema: {type: string}}
+      responses: {'200': {description: blob}}
+  /v2/{repository}/referrers/{digest}:
+    get:
+      security: [{deviceSignature: []}]
+      parameters:
+        - {name: repository, in: path, required: true, schema: {type: string}}
+        - {name: digest, in: path, required: true, schema: {type: string}}
+      responses: {'200': {description: 'OCI image index of referrers (signatures)'}}
+  /api/v1/admin/onboarding-tokens:
+    post:
+      security: [{admin: []}]
+      responses: {'201': {description: '{token, deviceId}'}}
+  /api/v1/admin/devices:
+    get:
+      security: [{admin: []}]
+      summary: fleet.read
+      responses: {'200': {description: 'devices with manifestVersion, lastSeen and latest status per deployment'}}
+  /api/v1/admin/devices/{deviceId}:
+    get:
+      security: [{admin: []}]
+      parameters: [{name: deviceId, in: path, required: true, schema: {type: string}}]
+      responses: {'200': {description: 'desired state, capabilities, status, status history, counters'}}
+  /api/v1/admin/devices/{deviceId}/bundle:
+    get:
+      security: [{admin: []}]
+      parameters: [{name: deviceId, in: path, required: true, schema: {type: string}}]
+      responses: {'200': {description: offline bundle for sneakernet/USB delivery}}
+  /api/v1/admin/plans:
+    post:
+      security: [{admin: []}]
+      summary: deploy.plan - resolve releases to digests, diff against current desired state, hash
+      requestBody: {content: {application/json: {schema: {$ref: '#/components/schemas/PlanRequest'}}}}
+      responses:
+        '201': {description: plan, content: {application/json: {schema: {$ref: '#/components/schemas/Plan'}}}}
+        '422': {description: unknown release}
+  /api/v1/admin/plans/{planHash}/approve:
+    post:
+      security: [{admin: []}]
+      summary: second-person approval (approver != requester)
+      parameters: [{name: planHash, in: path, required: true, schema: {type: string}}]
+      responses: {'200': {description: approved}, '403': {description: requester tried to approve}}
+  /api/v1/admin/plans/{planHash}/apply:
+    post:
+      security: [{admin: []}]
+      summary: deploy.apply - publishes exactly the planned desired state as manifestVersion+1
+      description: >-
+        With an approval policy configured (S4), the body must carry console-signed approvals for exactly
+        this plan hash (verified by the backend: key, TTL, distinct humans, roles, requester excluded), or
+        `preauthorized: rollback-known-good` for a non-safety rollback to a version reported Installed and
+        healthy on the device.
+      parameters: [{name: planHash, in: path, required: true, schema: {type: string}}]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approvals: {type: array, items: {type: object}}
+                preauthorized: {type: string, enum: [rollback-known-good]}
+      responses:
+        '200': {description: '{manifestVersion}'}
+        '403': {description: approval required / approvals not verified}
+        '409': {description: 'stale plan (desired state moved) or already applied'}
+  /api/v1/admin/releases:
+    post:
+      security: [{admin: []}]
+      summary: upload a release (tar of an OCI image layout, written by `python -m flexp2.publish`)
+      description: >-
+        Blobs are checked against their digests; flexNode releases whose declared safety class differs from
+        the model-derived class are refused (S4).
+      requestBody:
+        required: true
+        content:
+          application/x-tar:
+            schema: {type: string, format: binary}
+      responses:
+        '201': {description: '{imported, releases}'}
+        '422': {description: digest mismatch or safety class differs from the model}
+  /api/v1/admin/audit:
+    get:
+      security: [{admin: []}]
+      summary: append-only, hash-chained audit log (FC-S4)
+      responses: {'200': {description: 'entries with prev/hash'}}
+  /api/v1/admin/faults:
+    post:
+      security: [{admin: []}]
+      summary: test-only fault injection (503 + Retry-After for N seconds)
+      responses: {'200': {description: ok}}

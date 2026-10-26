@@ -1,0 +1,31 @@
+apiVersion: flex.dev/v1alpha1
+kind: Deployment
+metadata:
+  name: uc1_tractor_a
+  version: 0.1.0
+spec:
+  system: uc1_field_safety_supervisor
+  devices:
+    - name: edge1
+      target_class: T2
+      capabilities:
+        arch: aarch64
+        os: jetpack-6
+        runtimes: [python3.12, cuda, cpp]
+        features: [gige]
+        cpu_cores: 8
+        memory_mb: 16000
+        accelerator_tops: 100
+    - name: plc1
+      target_class: T5
+      capabilities:
+        arch: x86_64
+        os: twincat-rt-linux
+        runtimes: [st]
+        features: [ethercat]
+        max_message_bytes: 1024
+  allocations:
+    - {instance: cam, device: edge1}
+    - {instance: guard, device: edge1}
+    - {instance: logger, device: edge1}
+    - {instance: safety, device: plc1}

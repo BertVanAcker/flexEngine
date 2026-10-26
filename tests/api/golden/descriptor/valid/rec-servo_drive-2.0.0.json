@@ -1,0 +1,84 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "deployment": {
+  "device": "portenta",
+  "instance": "servo",
+  "name": "d_pick_lab",
+  "parameters": {}
+ },
+ "health": {
+  "minSeconds": 4.0,
+  "periodSeconds": 0.1,
+  "successThreshold": 2,
+  "timeoutSeconds": 6.0,
+  "type": "mcu-heartbeat"
+ },
+ "interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+ "kind": "FlexNodeDescriptor",
+ "language": "c",
+ "module": "servo_drive",
+ "moduleVersion": "0.1.0",
+ "parameters": [],
+ "ports": [
+  {
+   "direction": "out",
+   "name": "joint",
+   "pattern": "pubsub",
+   "rate_hz": 200.0,
+   "topic": 769602031,
+   "type": "uc2/JointSample"
+  }
+ ],
+ "profiles": [
+  "mcu-module"
+ ],
+ "releaseVersion": "2.0.0",
+ "requires": {
+  "features": [
+   "localbus",
+   "pwm"
+  ],
+  "target_classes": [
+   "T4"
+  ]
+ },
+ "restartPolicy": {},
+ "safetyClass": "none",
+ "safetyClassSource": "model (flex safety)",
+ "x-flex-mcu": {
+  "cortex-m3": {
+   "abi": "1.0",
+   "arch": "armv7m",
+   "caps": [
+    "pwm",
+    "localbus"
+   ],
+   "elfSha256": "578c5db156b43431933a63fc4432fa883cc2e3d5e46cbcaa349a01d18a003a59",
+   "elfSize": 5752,
+   "floatAbi": "soft",
+   "interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+   "name": "servo_drive",
+   "ramEstimate": 3153,
+   "stepPeriodMs": 5,
+   "testWindowMs": 4000,
+   "version": "2.0.0"
+  },
+  "cortex-m7-hard": {
+   "abi": "1.0",
+   "arch": "armv7m",
+   "caps": [
+    "pwm",
+    "localbus"
+   ],
+   "elfSha256": "d02e8234a4e4126efcefa2c6eb2d862956a345da79f89536aa6208557a1a11a5",
+   "elfSize": 3040,
+   "floatAbi": "hard",
+   "interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+   "name": "servo_drive",
+   "ramEstimate": 1589,
+   "stepPeriodMs": 5,
+   "testWindowMs": 4000,
+   "version": "2.0.0"
+  }
+ }
+}

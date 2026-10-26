@@ -1,0 +1,133 @@
+# UC1 field safety supervisor: neutral message types.
+# Every string and sequence is bounded, so the types can be used on T4 (MCU) and T5 (PLC) targets.
+apiVersion: flex.dev/v1alpha1
+kind: Types
+metadata:
+  name: uc1
+  version: 0.1.0
+  description: Messages of the UC1 camera -> PerceptionGuard -> safety gateway chain.
+spec:
+  package: uc1
+  types:
+    - name: Header
+      fields:
+        - {name: stamp_ns, type: int64, unit: ns, description: "Acquisition time (UTC, ns)."}
+        - {name: frame_id, type: string, max_length: 32}
+
+    - name: Image
+      description: Raw camera frame (ROS 2 sensor_msgs/Image shape, bounded to 1920x1080x3).
+      fields:
+        - {name: header, type: Header}
+        - {name: height, type: uint32, unit: px}
+        - {name: width, type: uint32, unit: px}
+        - {name: encoding, type: string, max_length: 16, description: "e.g. rgb8, mono8, bgr8"}
+        - {name: step, type: uint32, unit: By, description: Row length in bytes.}
+        - {name: data, type: bytes, max_items: 6220800}
+
+    - name: BoundingBox
+      fields:
+        - {name: x_min, type: float32, unit: px}
+        - {name: y_min, type: float32, unit: px}
+        - {name: x_max, type: float32, unit: px}
+        - {name: y_max, type: float32, unit: px}
+
+    - name: ObjectClass
+      kind: enum
+      literals:
+        - {name: unknown, value: 0}
+        - {name: person, value: 1}
+        - {name: animal, value: 2}
+        - {name: vehicle, value: 3}
+
+    - name: Detection
+      fields:
+        - {name: label, type: string, max_length: 32}
+        - {name: object_class, type: ObjectClass}
+        - {name: confidence, type: float32, unit: "1"}
+        - {name: bbox, type: BoundingBox}
+        - {name: distance_m, type: float32, unit: m}
+        - {name: track_id, type: uint32}
+
+    - name: DetectionStatus
+      kind: enum
+      literals:
+        - {name: ok, value: 0}
+        - {name: degraded, value: 1}
+        - {name: error, value: 2}
+
+    - name: Detections
+      fields:
+        - {name: header, type: Header}
+        - {name: camera_id, type: string, max_length: 32}
+        - {name: model_id, type: string, max_length: 64}
+        - {name: status, type: DetectionStatus}
+        - {name: items, type: Detection, sequence: true, max_items: 32}
+
+    - name: HealthState
+      kind: enum
+      literals:
+        - {name: ok, value: 0}
+        - {name: degraded, value: 1}
+        - {name: fault, value: 2}
+
+    - name: Heartbeat
+      description: >-
+        PerceptionGuard liveness + freshness signal, flex<->flex form (XCDR2 appendable: logging, fleet
+        dashboards, P0 wire tests). The safety PLC does NOT consume this type; its input is the fixed-layout
+        SafetyHeartbeat below (P7 spec section 2.2).
+      fields:
+        - {name: seq, type: uint64}
+        - {name: t_frame_ns, type: int64, unit: ns}
+        - {name: t_out_ns, type: int64, unit: ns}
+        - {name: model_id, type: string, max_length: 64}
+        - {name: health, type: HealthState}
+        - {name: source_id, type: string, max_length: 32}
+
+    - name: SafetyHeartbeat
+      description: >-
+        Safety-channel heartbeat frame, PerceptionGuard -> safety gateway (P7 spec.md section 2): a non-safe
+        input to the safety controller with the black-channel *pattern* (counter, session, channel id,
+        CRC-32). Fixed 36-byte XCDR1 layout (4-byte encapsulation header + 32 bytes, no padding), so a PLC
+        can decode it from a process-image byte array. Stop/slow is a level repeated in every frame.
+      extensibility: final
+      safety_relevant: true
+      integrity: crc32
+      fields:
+        - {name: seq, type: uint32, description: "+1 per heartbeat period; wraps 2^32 -> 0."}
+        - {name: session, type: uint32, description: "Random per node start; a change shows a restart (FE-S3)."}
+        - {name: t_frame_us, type: uint32, unit: us, description: "Capture time of the newest frame the detector has fully processed (node clock, wraps)."}
+        - {name: t_out_us, type: uint32, unit: us, description: "Send time of this heartbeat (node clock, wraps)."}
+        - {name: model_id, type: uint32, description: "First 4 bytes (big-endian) of SHA-256 over the approved release id (FC-S1)."}
+        - {name: channel_id, type: uint16, description: "Configured connection id of this advisory channel."}
+        - {name: health, type: uint16, description: "Bitfield: bit0 OK, bit1 CAMERA_OK, bit2 DETECTOR_OK, bit3 TIME_SYNC_OK, bit4 IN_DISTRIBUTION; others reserved."}
+        - {name: request, type: uint8, description: "0 none, 1 slow, 2 stop (a level, repeated in every frame while active)."}
+        - {name: reason, type: uint8, description: "uc1/StopReason value (diagnostic only)."}
+        - {name: reserved, type: uint16, description: "Must be 0."}
+        - {name: crc32, type: uint32, description: "CRC-32 (IEEE 802.3 / zlib) over encoded bytes [0, 32), incl. the encapsulation header."}
+
+    - name: StopReason
+      kind: enum
+      literals:
+        - {name: none, value: 0}
+        - {name: person_in_zone, value: 1}
+        - {name: animal_in_zone, value: 2}
+        - {name: perception_fault, value: 3}
+
+    - name: StopRequest
+      fields:
+        - {name: seq, type: uint64}
+        - {name: stamp_ns, type: int64, unit: ns}
+        - {name: reason, type: StopReason}
+        - {name: zone_id, type: uint8}
+        - {name: min_distance_m, type: float32, unit: m}
+
+    - name: GuardStatusRequest
+      fields:
+        - {name: include_counters, type: bool}
+
+    - name: GuardStatus
+      fields:
+        - {name: health, type: HealthState}
+        - {name: frames_processed, type: uint64}
+        - {name: last_stop_ns, type: int64, unit: ns}
+        - {name: model_id, type: string, max_length: 64}

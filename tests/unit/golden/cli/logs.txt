@@ -1,0 +1,4 @@
+2026-10-16T23:56:40.500Z [panda] actions apply cell version=1.1.0 digest=sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd
+2026-10-16T23:59:20.000Z [panda] actions rollback cx-bridge version=1.0.0 failed=1.1.0
+2026-10-17T10:00:00.000Z [panda] log     offline (connection refused); retry in 0.50s
+2026-10-17T10:00:01.000Z [panda] log     {"event": "x"}

@@ -1,0 +1,6 @@
+[ ok ] config             /etc/flexengine/engine.yaml: valid
+[fix ] panda: state.json  moved aside
+[warn] local API          unix:/run/flexengine/api.sock: no socket
+[FAIL] cloud              https://x: refused
+[skip] panda: plc sim     shm
+5 checks: 1 failed, 1 warning(s)

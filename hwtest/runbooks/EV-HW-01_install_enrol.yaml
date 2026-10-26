@@ -1,0 +1,120 @@
+id: EV-HW-01
+title: Install and enrol flexEngineV2 on the LattePanda
+description: >
+  packaging/install.sh installs flexEngineV2 on the LattePanda (venv under /opt/flexengine, flexengine.service with
+  Type=notify + watchdog, flex user, /etc/flexengine, /var/lib/flexengine), the operator configures engine.yaml,
+  `flexengine config check` validates it, a one-time onboarding token from flexCloud is enrolled with
+  `flexengine enroll`, the service onboards (journal), sends its capabilities, runs a first native release, passes the
+  V2 test suite on the box, and a second install.sh run changes nothing. Replaces SETUP s10-6 and L4-P6 s2-4..s2-6;
+  complements D2-BRINGUP s2.
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
+  lp_sh: {default: "ssh -o BatchMode=yes ${lp}", prompt: "shell on the LattePanda that reads stdin (sh -c = this host)"}
+  install: {default: "cd ~/flexengine-2.0.0a1-linux_x86_64 && sudo ./packaging/install.sh --device-id panda --extras mcu,plc,applab,otel", prompt: "install command on the LattePanda (offline bundle of build-wheels.sh)"}
+  fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
+  fe_enroll: {default: "sudo /opt/flexengine/bin/flexengine enroll --owner flex", prompt: "flexengine enroll as root (writes the token file flex:flex 0600)"}
+  fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
+  fe_config: {default: /etc/flexengine/engine.yaml, prompt: "engine config"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind configured in this run)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API on this PC (DA-7)"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  journal_source: {default: journal, prompt: "engine log source: journal (journalctl -u flexengine) or file:<path>"}
+  svc: {default: "sudo systemctl", prompt: "service control on the LattePanda"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda (install.sh --device-id)"}
+  usb_dir: {default: "~/flexhwtest-usb", prompt: "scratch directory on this PC (onboarding token file)"}
+  token_path: {default: "/etc/flexengine/tokens/${gp}", prompt: "onboardingTokenFile of the device (engine.yaml)"}
+  lp_sudo: {default: sudo, prompt: "sudo on the LattePanda (empty when already root)"}
+  suite: {default: "cd /opt/flex/modular-interoperable-framework/flexengine && ../.venv/bin/python -m pytest -q -p no:cacheprovider tests/unit", prompt: "V2 test suite on the LattePanda (unit layer)"}
+  sim: {default: "true", prompt: "simulation hook (dry run only)"}
+setup:
+  - "LattePanda: Ubuntu 24.04, the offline bundle flexengine-<ver>-linux_x86_64.tar.gz (build-wheels.sh) unpacked in ~ of ${lp}, sudo for ${lp}"
+  - "flexCloud stub (flex-stack) running; its cloud public key, the release public key and the lab CA at hand (stack.json, keys/, tls/ca.crt)"
+  - "No older flex-edge.service running (D2-BRINGUP s2: lattepanda-install.sh installs V2 instead)"
+  - "This PC: the admin token in ${admin_token_file}, the lab CA in ${cloud_ca}"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: install
+    title: packaging/install.sh (venv, user, dirs, unit; config written once)
+    ssh_run: {host: "${lp}", cmd: "${install}", match: "changes: \\d+", timeout: 900}
+  - id: version
+    title: Installed flexengine answers
+    ssh_run: {host: "${fe_host}", cmd: "${fe} version", match: "^2\\.0\\.0"}
+  - id: configure
+    title: Configure engine.yaml
+    manual:
+      instruction: >-
+        Edit ${fe_config} on the LattePanda: cloud.apiUrl (via the link shim), cloud.cloudPublicKey (stack.json),
+        cloud.releaseKeyFiles or releasePublicKeys, cloud.caFile (lab CA), local.tcp {bind: 0.0.0.0:8781, tokenFile:
+        /etc/flexengine/api-token} (copy that token to ${fe_api_token_file} on this PC), the device's drivers
+        (container: docker, native, allowedRunOptions) and safeStateFile.
+      sim: "${sim} install-configure"
+  - id: config-check
+    title: "`flexengine config check` (schema, keys, paths)"
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} config check ${fe_config} --json", expect_rc: "", match: {/valid: true, /errors: {len: 0}}}
+  - id: token
+    title: One-time onboarding token from flexCloud (this PC)
+    cmd_json_expect: {cmd: "${desk} token ${gp} --out ${usb_dir}/token-${gp}", match: {/deviceId: "${gp}"}}
+  - id: enroll
+    title: "`flexengine enroll --token-file -` on the LattePanda"
+    run: {cmd: "cat ${usb_dir}/token-${gp} | ${lp_sh} '${fe_enroll} --token-file -'"}
+  - id: config-resolve
+    title: "`config check --resolve` (key files and the token file readable)"
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} config check ${fe_config} --json --resolve", expect_rc: "", match: {/valid: true}}
+  - id: journal-mark
+    title: Journal mark before the start
+    journal_mark: {name: start, unit: flexengine, host: "${fe_host}"}
+  - id: start
+    title: Enable and start flexengine.service
+    ssh_run: {host: "${lp}", cmd: "${svc} enable --now flexengine"}
+  - id: onboarded-log
+    title: "Journal: onboarded"
+    journal_expect: {since: start, fields: {event: onboarded, device: "${gp}"}, timeout: 90}
+  - id: status-onboarded
+    title: "`flexengine status`: onboarded and online"
+    fe_status_expect: {device: "${gp}", device_fields: {onboarded: true, online: true}, timeout: 90}
+  - id: token-deleted
+    title: Onboarding token used once and deleted by the engine
+    ssh_run: {host: "${lp}", cmd: "${lp_sudo} test ! -e ${token_path} && echo token gone", match: "token gone"}
+  - id: capabilities-api
+    title: Capabilities from the local API
+    http_expect: {url: "${fe_api}/v1/capabilities/${gp}", token_file: "${fe_api_token_file}", json_match: {"/x-flex/drivers": {exists: true}}, timeout: 60}
+  - id: capabilities-cloud
+    title: flexCloud received the capabilities
+    cmd_json_expect: {cmd: "${desk} wait-device ${gp} --capabilities --timeout 60", match: {/onboarded: true, /capabilities: true}}
+  - id: doctor
+    title: "`flexengine doctor` on the box"
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} doctor --json", expect_rc: "", match: {"/checks": {where: {"/status": fail}, count: 0}}}
+  - id: first-release
+    title: A first native release runs (publish + deploy)
+    run: {cmd: "${desk} publish dl_v1 && ${desk} deploy ${gp} dl=dl_v1"}
+  - id: first-installed
+    title: dl 1.0.0 Installed and healthy
+    fe_status_expect: {device: "${gp}", deployment: dl, state: Installed, version: 1.0.0, health: healthy, timeout: 120}
+  - id: suite
+    title: V2 test suite on the LattePanda
+    ssh_run: {host: "${lp}", cmd: "${suite}", match: "\\d+ passed", timeout: 1800}
+  - id: reinstall
+    title: install.sh again changes nothing (idempotent)
+    ssh_run: {host: "${lp}", cmd: "${install}", match: "changes: 0", timeout: 900}
+  - id: config-kept
+    title: engine.yaml kept (never overwritten) and still valid
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} config check ${fe_config} --json", expect_rc: "", match: {/valid: true}}
+  - id: still-running
+    title: Service still active, deployment still Installed
+    fe_status_expect: {device: "${gp}", deployment: dl, state: Installed, version: 1.0.0, health: healthy, device_fields: {online: true}, timeout: 60}
+  - id: cleanup
+    title: Remove the first release
+    run: {cmd: "${desk} deploy ${gp}"}
+  - id: removed
+    title: dl removed
+    fe_status_expect: {device: "${gp}", deployment: dl, absent: true, timeout: 120}

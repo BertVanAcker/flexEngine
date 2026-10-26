@@ -1,0 +1,73 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "applab": {
+  "appName": "UC3 Greenhouse",
+  "board": "unoq",
+  "createdAt": "2026-10-15T12:00:00Z",
+  "prebuild": [
+   "bricks-list.yaml",
+   "flex-host-mcu",
+   "models-list.yaml"
+  ],
+  "releaseLabel": "1.0.0",
+  "releaseName": "uc3-greenhouse-1-0-0-unoq"
+ },
+ "bridgeContractHash": "FLEX01_12fcffaae6dbd8206c039eb890b0772a5043e6ebb9f6200fb89ecbd56f8ba053",
+ "composite": {
+  "mcu": {
+   "io": {
+    "interfaceHash": "FLEX01_99889a24f93e6809e3cba26e44b9872a36b2e35c48b3eb5b2c5a5f98f483d450",
+    "module": "climate_io",
+    "version": "0.1.0"
+   }
+  },
+  "mpu": {
+   "ctl": {
+    "interfaceHash": "FLEX01_4ac4647dbef147a4a50d0050d27f300fa0a452138f60788e9d5191be4d3449f5",
+    "module": "climate_ctl",
+    "version": "0.1.0"
+   }
+  }
+ },
+ "health": {
+  "periodSeconds": 0.5,
+  "successThreshold": 2,
+  "timeoutSeconds": 15,
+  "type": "applab-handshake"
+ },
+ "interfaceHash": "FLEX01_12fcffaae6dbd8206c039eb890b0772a5043e6ebb9f6200fb89ecbd56f8ba053",
+ "kind": "FlexNodeDescriptor",
+ "language": "applab (python + arduino sketch)",
+ "module": "uc3_greenhouse",
+ "moduleVersion": "0.1.0",
+ "ports": [
+  {
+   "name": "ctl.status_led",
+   "pattern": "notify",
+   "provider": "mcu"
+  },
+  {
+   "name": "io.climate",
+   "pattern": "notify",
+   "provider": "mpu"
+  },
+  {
+   "name": "io.vent",
+   "pattern": "call",
+   "provider": "mcu"
+  }
+ ],
+ "profiles": [
+  "applab"
+ ],
+ "releaseVersion": "1.0.0",
+ "restartPolicy": {
+  "maxRetries": 3,
+  "policy": "on-failure"
+ },
+ "safetyClass": "none",
+ "safetyClassSource": "model (flex safety; max over the App's modules)",
+ "source": {
+  "model": "/home/user/modular-interoperable-framework/probes/p4-applab-target/model/uc3"
+ }
+}

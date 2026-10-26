@@ -1,0 +1,251 @@
+{
+  "runbook": "EV-HW-10",
+  "title": "Observability and status of flexEngineV2 on the LattePanda",
+  "file": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/runbooks/EV-HW-10_observability.yaml",
+  "started": "2026-10-17T18:23:23",
+  "finished": "2026-10-17T18:23:31",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest",
+    "flexengine": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine",
+    "repo": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "project_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "results_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/hwtest-results/20261017-182323_EV-HW-10",
+    "local_ip": "192.0.2.2",
+    "python": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-10-ciu_xvra/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli",
+    "fe_host": "local",
+    "fe_api": "http://127.0.0.1:60267",
+    "fe_api_token_file": "/tmp/rb-10-ciu_xvra/secrets/fe-api.token",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "46787",
+    "cloud_url": "http://127.0.0.1:34097",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-10-ciu_xvra/secrets/admin.token",
+    "catalog": "/tmp/rb-10-ciu_xvra/catalog.yaml",
+    "desk": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py --cloud http://127.0.0.1:34097 --ca '' --admin-token-file /tmp/rb-10-ciu_xvra/secrets/admin.token --catalog /tmp/rb-10-ciu_xvra/catalog.yaml",
+    "journal_source": "file:/tmp/rb-10-ciu_xvra/lp/engine.log",
+    "gp": "rb-panda",
+    "dep": "dl",
+    "jaeger_url": "http://127.0.0.1:46083",
+    "cloud_layout": "/tmp/rb-10-ciu_xvra/cloud/oci",
+    "lab_ca": "/tmp/rb-10-ciu_xvra/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-10-ciu_xvra/pki/rogue-openssl-ca.crt",
+    "fe_api_port": "60267",
+    "tamper": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py tamper --layout /tmp/rb-10-ciu_xvra/cloud/oci",
+    "cloud_sh": "local",
+    "lab_ca_lp": "/tmp/rb-10-ciu_xvra/pki/ca.crt",
+    "lp_up_host": "127.0.0.1",
+    "lp_up_port": "60267",
+    "gp_podman": "rb-panda-podman",
+    "safe_state_file": "/tmp/rb-10-ciu_xvra/lp/safe-state.json",
+    "igpu_device": "/dev/zero",
+    "usb_dir": "/tmp/rb-10-ciu_xvra/usb",
+    "lp_usb": "/tmp/rb-10-ciu_xvra/usb",
+    "rt": "docker",
+    "rt_podman": "podman",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-10-ciu_xvra/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli enroll",
+    "fe_config": "/tmp/rb-10-ciu_xvra/lp/engine.yaml",
+    "svc": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-10-ciu_xvra svc",
+    "sim": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-10-ciu_xvra",
+    "dry_run": "1",
+    "lp_sh": "sh -c",
+    "uplink_down": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-10-ciu_xvra uplink down",
+    "uplink_up": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-10-ciu_xvra uplink up",
+    "power_cut": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-10-ciu_xvra power-cycle --down 3",
+    "sim_dir": "/tmp/rb-10-ciu_xvra"
+  },
+  "project_commit": "52e7172-dirty",
+  "runner_commit": "52e7172-dirty",
+  "summary": {
+    "PASS": 25,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:46787 reachable"
+    },
+    {
+      "id": "health",
+      "title": "GET /v1/health (engine ticks within its watchdog interval)",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:60267/v1/health -> 200, 2 field(s) match"
+    },
+    {
+      "id": "publish",
+      "title": "Publish 1.0.0 and 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "deploy-v1",
+      "title": "Deploy 1.0.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "v1-installed",
+      "title": "1.0.0 Installed",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "status-doc",
+      "title": "GET /v1/status (cli-status.v1 document)",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:60267/v1/status -> 200, 6 field(s) match"
+    },
+    {
+      "id": "deployment-doc",
+      "title": "GET /v1/devices/{device}/deployments/{dep}",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:60267/v1/devices/rb-panda/deployments/dl -> 200, 3 field(s) match"
+    },
+    {
+      "id": "capabilities",
+      "title": "GET /v1/capabilities/{device}",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:60267/v1/capabilities/rb-panda -> 200, 1 field(s) match"
+    },
+    {
+      "id": "metrics",
+      "title": "GET /v1/metrics (reconcile, outbox, gate metrics per device)",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:60267/v1/metrics -> 200, 1 field(s) match"
+    },
+    {
+      "id": "no-token",
+      "title": "Read-only bind refuses a request without the bearer token (401)",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:60267/v1/status -> 401"
+    },
+    {
+      "id": "no-write",
+      "title": "Read-only bind refuses a write operation (403)",
+      "status": "PASS",
+      "detail": "POST http://127.0.0.1:60267/v1/reconcile -> 403"
+    },
+    {
+      "id": "journal-mark",
+      "title": "Journal mark",
+      "status": "PASS",
+      "detail": "mark update at byte 2017 of /tmp/rb-10-ciu_xvra/lp/engine.log"
+    },
+    {
+      "id": "mark-update",
+      "title": "History mark",
+      "status": "PASS",
+      "detail": "mark update at deviceTime 1792261406.526 (2 record(s) before it)"
+    },
+    {
+      "id": "deploy-v2",
+      "title": "Update to 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "v2-installed",
+      "title": "1.1.0 Installed",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.1.0, health healthy"
+    },
+    {
+      "id": "history",
+      "title": "GET /v1/history has the transitions of the update (Installing -> Installed)",
+      "status": "PASS",
+      "detail": "dl Installing 1.1.0 -> dl Installed 1.1.0; 0.98 s from the first to the last record"
+    },
+    {
+      "id": "history-delivered",
+      "title": "History records delivered to flexCloud",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:60267/v1/history?device=rb-panda -> 200, 1 field(s) match"
+    },
+    {
+      "id": "log-structured",
+      "title": "Structured log record of the apply (event, device, dep, version, ts)",
+      "status": "PASS",
+      "detail": "1 line(s) matching {'event': 'action.apply', 'device': 'rb-panda', 'dep': 'dl', 'version': '1.1.0', 'level': 'info', 'ts': {'regex': 'Z$'}}: {\"ts\":\"2026-10-17T18:23:28.144Z\",\"level\":\"info\",\"device\":\"rb-panda\",\"event\":\"action.apply\",\"dep\":\"dl\",\"version\":\"1.1.0\",\"msg\":\"apply dl 1.1.0\",\"digest\":\"sha256:3ed8517aa0f0f0d353e74d951f77217d65bd0f26"
+    },
+    {
+      "id": "log-correlation",
+      "title": "Status reports carry the correlation id of the desired state",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:60267/v1/history?device=rb-panda -> 200, 1 field(s) match"
+    },
+    {
+      "id": "jaeger",
+      "title": "Jaeger has the engine.install span of this rollout",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:46083/api/traces?service=flex-engine-rb-panda&operation=engine.install%20dl&lookback=1h&limit=20 -> 200, 1 field(s) match"
+    },
+    {
+      "id": "jaeger-gate",
+      "title": "Jaeger has the health-gate span",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:46083/api/traces?service=flex-engine-rb-panda&operation=engine.health-gate&lookback=1h&limit=20 -> 200, 1 field(s) match"
+    },
+    {
+      "id": "cli-status",
+      "title": "`flexengine status --json` on the LattePanda agrees",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "console-fleet",
+      "title": "Console fleet view (flexCloud) shows desired = actual",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "cleanup",
+      "title": "Remove the deployment",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "removed",
+      "title": "${dep} removed",
+      "status": "PASS",
+      "detail": "rb-panda/dl: absent "
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

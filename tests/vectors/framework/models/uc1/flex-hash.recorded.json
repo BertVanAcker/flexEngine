@@ -1,0 +1,36 @@
+{
+ "modules": {
+  "detection_logger@0.1.0": "FLEX01_15e2f07def1c88a3fe1d308cab8d8cdc93a95d0e482f155859b530e4176bc219",
+  "gige_camera@1.2.0": "FLEX01_d33c46ef44ac61311bc21a01d17644cd23842efe3f6b51e0f2e2997a561e5410",
+  "perception_guard@0.2.0": "FLEX01_5af1c06aad3ed99f69f7795d4ffd44be58fd20d5e5aae57d49cf742df8e75698",
+  "safety_gateway@0.3.0": "FLEX01_64f2d43dbe73a2d01c93c87325d62132f7122a4a3495a8d5de84b9b856db3c3c"
+ },
+ "rihs01": {
+  "uc1/BoundingBox": "RIHS01_447b0187760d5bcf7af80a3ab027aef4612b8e608c793cbe0418db6815da3415",
+  "uc1/Detection": "RIHS01_34fe5056b600fa297bf7e7af9fb70ee184bb6a397e1c14b8a8268bedc97c6f23",
+  "uc1/Detections": "RIHS01_aadf4cd53e20e6782822534d9132697158bb2dd7929c660f07be45943e50297b",
+  "uc1/GuardStatus": "RIHS01_48e7b3997ae3d9cdb651aaf6adbee100d2dac9a35f2eb97031b458521ce6dcd2",
+  "uc1/GuardStatusRequest": "RIHS01_1fdc50d1697862a550c4dea383412f9f3e5f84c79d1209ec8f768b56fedf599c",
+  "uc1/Header": "RIHS01_758f402e02bffbf08691df0673036055d8f227f9f89403d3d506a5ea9c8ccca3",
+  "uc1/Heartbeat": "RIHS01_80375f29f43d3af0537259b470664618ee6339a56d73005bf40cb63b7f345444",
+  "uc1/Image": "RIHS01_8fdfb3dc5ae6625c39c23b987b9d569bab2d8ec0e0e31b30f7fbbab5e6dd2991",
+  "uc1/SafetyHeartbeat": "RIHS01_1c4b9a7ef385f3b9004bf6793cd0963dec0c49178dd61363f22a0453cead0838",
+  "uc1/StopRequest": "RIHS01_92565dd09eae82b69a8a7581fe4d9a48aff28df31abc5bdb5520729ecc26350b"
+ },
+ "types": {
+  "uc1/BoundingBox": "FLEX01_a771597915de8e5d32cdf0e6e6a43e69e166189ec5e1f99c1b60209fcf0efa0b",
+  "uc1/Detection": "FLEX01_5ed2cc4a55ea3be583fa530cbb1de28a8143fa1205e247d8950ee2be60d87eae",
+  "uc1/DetectionStatus": "FLEX01_ac70284474d2a56bdd41cfe317d210762b0930d42d77597cae34b5e0985a4e1c",
+  "uc1/Detections": "FLEX01_d4ab285e098bfbb9b819a4cf7c87b2ddf94820f8d3fb35ab4ac62a744d1bae22",
+  "uc1/GuardStatus": "FLEX01_c6dd9b9ff2eeb07dca422f3fa086237c71041efe830c302c267bebc5b4866bc0",
+  "uc1/GuardStatusRequest": "FLEX01_56aff64e8ab5e0d2a1e95ce74dc840840ed83bdbc0af6f8e18801fa705c1fb3e",
+  "uc1/Header": "FLEX01_8cc015cf78bb8bba9ae7fba6d0b3d3a12b48af6c5ee06c33b783f3ec179a83bb",
+  "uc1/HealthState": "FLEX01_9ed11bbd9c75d8d004c46dc496a24928642f0b22b5094bc214ab8e98835d6f09",
+  "uc1/Heartbeat": "FLEX01_2286e848396adbcdae2f53a04d6e0fcc62303496daafff3a7f4eaa587d58473e",
+  "uc1/Image": "FLEX01_d41666d6f67954a48cdf4341a472d044b0c430464c0d7edbaa6fd071f8e72635",
+  "uc1/ObjectClass": "FLEX01_6d5cd9825c301b23e567204955f7051073b8c4b3ff30887462058544795ad954",
+  "uc1/SafetyHeartbeat": "FLEX01_62b1a8759b2a7e6f3bc459084127b8ccd0925d218e9093b5327ec1da71a76f4b",
+  "uc1/StopReason": "FLEX01_b8bb4ab09bee48d115bea445c4fa76bb6f9b3791a769722344f4353c32449d9d",
+  "uc1/StopRequest": "FLEX01_a41278d1cc3019241202dde8584ac3436c585b5f608418ecbd29e3fa5a7023db"
+ }
+}

@@ -1,0 +1,59 @@
+{
+ "apiVersion": "device.margo.org/v1alpha1",
+ "kind": "DeviceCapabilities",
+ "properties": {
+  "id": "panda",
+  "interfaces": [
+   {
+    "type": "ethernet"
+   }
+  ],
+  "modelNumber": "cloud-vm",
+  "otelCollector": false,
+  "peripherals": [],
+  "resources": {
+   "cpu": {
+    "architecture": "x86_64",
+    "cores": 4
+   },
+   "memory": "16093Mi"
+  },
+  "roles": [
+   "gateway"
+  ],
+  "serialNumber": "panda",
+  "supportedDeploymentTypes": [
+   "custom"
+  ],
+  "supportedRuntimes": [],
+  "vendor": "probe"
+ },
+ "x-flex": {
+  "drivers": {
+   "native": {
+    "driver": "process",
+    "executor": "process (systemd-like, simulated)",
+    "profile": "native",
+    "python": "3.13.16"
+   },
+   "plc-verify": {
+    "download": false,
+    "driver": "plc-verify",
+    "plcs": {
+     "opta": "modbus",
+     "panda/cx": "ads"
+    },
+    "profile": "plc-verify"
+   }
+  },
+  "engine": {
+   "impl": "flexengine2",
+   "spi": "1.0",
+   "version": "2.0.0a1"
+  },
+  "safeStateSignals": [
+   "machine_parked",
+   "operator_confirmed"
+  ]
+ }
+}

@@ -1,0 +1,17 @@
+# GUI metadata of EV-HW-07 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-07_plc_verify.yaml
+goal: plc-verify checks the Opta's hash registers (Modbus) and the CX bridge's Hello (ADS), holds a GP release until the
+  CX runs the needed layout, fails fast on an unprovisioned CX program and reports a swapped Opta program unhealthy.
+duration: ~30 min
+boards:
+- LattePanda 3 Delta
+- Opta
+- Beckhoff CX
+tags:
+- flexengine-v2
+- plc
+- ads
+- modbus
+- hold gate
+target:
+  board: beckhoff_cx
+  notes: ADS routes LattePanda <-> CX and runner <-> CX; XAE ready on the Windows PC; the Opta on Ethernet (Modbus 502).

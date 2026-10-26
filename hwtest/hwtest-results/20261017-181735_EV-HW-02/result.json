@@ -1,0 +1,307 @@
+{
+  "runbook": "EV-HW-02",
+  "title": "Container deploy, update, rollback (Docker and Podman) on the LattePanda",
+  "file": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/runbooks/EV-HW-02_container.yaml",
+  "started": "2026-10-17T18:17:35",
+  "finished": "2026-10-17T18:18:14",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest",
+    "flexengine": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine",
+    "repo": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "project_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "results_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/hwtest-results/20261017-181735_EV-HW-02",
+    "local_ip": "192.0.2.2",
+    "python": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-02-jxodt28w/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli",
+    "fe_host": "local",
+    "fe_api": "http://127.0.0.1:50485",
+    "fe_api_token_file": "/tmp/rb-02-jxodt28w/secrets/fe-api.token",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "40659",
+    "cloud_url": "http://127.0.0.1:42449",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-02-jxodt28w/secrets/admin.token",
+    "catalog": "/tmp/rb-02-jxodt28w/catalog.yaml",
+    "desk": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py --cloud http://127.0.0.1:42449 --ca '' --admin-token-file /tmp/rb-02-jxodt28w/secrets/admin.token --catalog /tmp/rb-02-jxodt28w/catalog.yaml",
+    "gp": "rb-panda",
+    "gp_podman": "rb-panda-podman",
+    "dep": "pg",
+    "rt": "docker",
+    "rt_podman": "podman",
+    "igpu_device": "/dev/zero",
+    "safe_state_file": "/tmp/rb-02-jxodt28w/lp/safe-state.json",
+    "cloud_layout": "/tmp/rb-02-jxodt28w/cloud/oci",
+    "lab_ca": "/tmp/rb-02-jxodt28w/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-02-jxodt28w/pki/rogue-openssl-ca.crt",
+    "fe_api_port": "50485",
+    "tamper": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py tamper --layout /tmp/rb-02-jxodt28w/cloud/oci",
+    "cloud_sh": "local",
+    "lab_ca_lp": "/tmp/rb-02-jxodt28w/pki/ca.crt",
+    "lp_up_host": "127.0.0.1",
+    "lp_up_port": "50485",
+    "usb_dir": "/tmp/rb-02-jxodt28w/usb",
+    "lp_usb": "/tmp/rb-02-jxodt28w/usb",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-02-jxodt28w/lp/engine.yaml /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m flexengine2.local.cli enroll",
+    "fe_config": "/tmp/rb-02-jxodt28w/lp/engine.yaml",
+    "journal_source": "file:/tmp/rb-02-jxodt28w/lp/engine.log",
+    "svc": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-02-jxodt28w svc",
+    "jaeger_url": "http://127.0.0.1:35537",
+    "sim": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-02-jxodt28w",
+    "dry_run": "1",
+    "lp_sh": "sh -c",
+    "uplink_down": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-02-jxodt28w uplink down",
+    "uplink_up": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-02-jxodt28w uplink up",
+    "power_cut": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-02-jxodt28w power-cycle --down 3",
+    "sim_dir": "/tmp/rb-02-jxodt28w",
+    "update_s": "1.171",
+    "rollback_s": "9.851"
+  },
+  "project_commit": "52e7172-dirty",
+  "runner_commit": "52e7172-dirty",
+  "summary": {
+    "PASS": 34,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:40659 reachable"
+    },
+    {
+      "id": "engine-up",
+      "title": "${gp} and ${gp_podman} onboarded and online",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "engine-up-podman",
+      "title": "${gp_podman} onboarded and online",
+      "status": "PASS",
+      "detail": "rb-panda-podman: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "publish",
+      "title": "Publish the container releases (1.0.0, 1.1.0, 1.2.0 failing its health check, 1.3.0 with safe-state activation)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "deploy-v1",
+      "title": "Deploy v1 (1.0.0)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "v1-installed",
+      "title": "v1 Installed and healthy",
+      "status": "PASS",
+      "detail": "rb-panda/pg: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "v1-running",
+      "title": "Container runs 1.0.0",
+      "status": "PASS",
+      "detail": "exit 0, matched '1.0.0 true'"
+    },
+    {
+      "id": "mark-update",
+      "title": "History mark before the update",
+      "status": "PASS",
+      "detail": "mark update at deviceTime 1792261060.368 (2 record(s) before it)"
+    },
+    {
+      "id": "deploy-v2",
+      "title": "Update to v2 (1.1.0)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "v2-installed",
+      "title": "v2 Installed and healthy",
+      "status": "PASS",
+      "detail": "rb-panda/pg: Installed 1.1.0, health healthy"
+    },
+    {
+      "id": "update-time",
+      "title": "Update time from the history (Installing -> Installed)",
+      "status": "PASS",
+      "detail": "pg Installing 1.1.0 -> pg Installed 1.1.0; 1.17 s from the first to the last record"
+    },
+    {
+      "id": "mark-bad",
+      "title": "History mark before the failing release",
+      "status": "PASS",
+      "detail": "mark bad at deviceTime 1792261062.781 (4 record(s) before it)"
+    },
+    {
+      "id": "deploy-bad",
+      "title": "Deploy 1.2.0 (fails its health gate)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "bad-failed",
+      "title": "1.2.0 Failed, rolled back to 1.1.0",
+      "status": "PASS",
+      "detail": "rb-panda/pg: Failed 1.2.0, reasonCode FE-REC-004, rolledBackTo 1.1.0, failFast false"
+    },
+    {
+      "id": "rollback-time",
+      "title": "Gate + rollback time from the history (Installing -> Failed)",
+      "status": "PASS",
+      "detail": "pg Installing 1.2.0 -> pg Failed 1.2.0; 9.85 s from the first to the last record"
+    },
+    {
+      "id": "v2-running-after-rollback",
+      "title": "Container runs 1.1.0 again",
+      "status": "PASS",
+      "detail": "exit 0, matched '1.1.0 true'"
+    },
+    {
+      "id": "igpu-after-rollback",
+      "title": "${igpu_device} still mapped into the container after the rollback",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "safe-state-off",
+      "title": "Safe-state signals off (machine running, operator not confirmed)",
+      "status": "PASS",
+      "detail": "wrote /tmp/rb-02-jxodt28w/lp/safe-state.json"
+    },
+    {
+      "id": "deploy-safety",
+      "title": "Deploy the safety-relevant 1.3.0 (two-person plan, activation needs the safe state)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "safety-pending",
+      "title": "1.3.0 held in Pending (machine not parked)",
+      "status": "PASS",
+      "detail": "rb-panda/pg: Pending 1.3.0, reasonCode FE-GATE-001"
+    },
+    {
+      "id": "still-v2",
+      "title": "1.1.0 keeps running while held",
+      "status": "PASS",
+      "detail": "exit 0, matched '1.1.0 true'"
+    },
+    {
+      "id": "safe-state-on",
+      "title": "Safe-state signals on (machine parked, operator confirmed)",
+      "status": "PASS",
+      "detail": "wrote /tmp/rb-02-jxodt28w/lp/safe-state.json"
+    },
+    {
+      "id": "safety-installed",
+      "title": "1.3.0 Installed once the safe state holds",
+      "status": "PASS",
+      "detail": "rb-panda/pg: Installed 1.3.0, health healthy"
+    },
+    {
+      "id": "podman-v1",
+      "title": "Podman: deploy 1.0.0 on ${gp_podman}",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "podman-v1-installed",
+      "title": "Podman: 1.0.0 Installed",
+      "status": "PASS",
+      "detail": "rb-panda-podman/pg: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "podman-v2",
+      "title": "Podman: update to 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "podman-v2-installed",
+      "title": "Podman: 1.1.0 Installed",
+      "status": "PASS",
+      "detail": "rb-panda-podman/pg: Installed 1.1.0, health healthy"
+    },
+    {
+      "id": "podman-bad",
+      "title": "Podman: deploy 1.2.0 (fails its health gate)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "podman-bad-failed",
+      "title": "Podman: 1.2.0 Failed, rolled back to 1.1.0",
+      "status": "PASS",
+      "detail": "rb-panda-podman/pg: Failed 1.2.0, reasonCode FE-REC-004, rolledBackTo 1.1.0, failFast false"
+    },
+    {
+      "id": "podman-running",
+      "title": "Podman: container runs 1.1.0",
+      "status": "PASS",
+      "detail": "exit 0, matched '1.1.0 true'"
+    },
+    {
+      "id": "remove",
+      "title": "Remove the deployments (empty desired state)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "removed",
+      "title": "${dep} removed on ${gp}",
+      "status": "PASS",
+      "detail": "rb-panda/pg: absent "
+    },
+    {
+      "id": "removed-podman",
+      "title": "${dep} removed on ${gp_podman}",
+      "status": "PASS",
+      "detail": "rb-panda-podman/pg: absent "
+    },
+    {
+      "id": "no-container",
+      "title": "No flex container left for ${gp}",
+      "status": "PASS",
+      "detail": "exit 0, matched '0'"
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

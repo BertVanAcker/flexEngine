@@ -1,0 +1,114 @@
+id: EV-HW-10
+title: Observability and status of flexEngineV2 on the LattePanda
+description: >
+  The engine's own observability on the bench: the read-only local API (health, status, deployment, history,
+  capabilities, metrics; bearer token, GET only), structured JSON log records in the journal, OTel spans of the last
+  rollout in Jaeger, and the console's fleet view (desired = actual). Complements D2-BRINGUP s8 (doctor).
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
+  fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
+  fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API (DA-7: one per desk)"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  journal_source: {default: journal, prompt: "engine log source: journal (journalctl -u flexengine) or file:<path>"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda"}
+  dep: {default: dl, prompt: "deployment id"}
+  jaeger_url: {default: "http://127.0.0.1:16686", prompt: "Jaeger query UI/API (ssh -L 16686:127.0.0.1:16686 ${lp})"}
+setup:
+  - "LattePanda: EV-HW-01 passed; flexengine.service runs with FLEX_OTEL=1 and the OTLP endpoint of the lab collector"
+  - "Device ${gp} has drivers.native; the read-only API listens on ${fe_api}"
+  - "Jaeger reachable on ${jaeger_url} (from the Mac: ssh -L 16686:127.0.0.1:16686 ${lp})"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: health
+    title: GET /v1/health (engine ticks within its watchdog interval)
+    http_expect: {url: "${fe_api}/v1/health", token_file: "${fe_api_token_file}", json_match: {"/ok": true, "/ticks": {gt: 0}}, timeout: 30}
+  - id: publish
+    title: Publish 1.0.0 and 1.1.0
+    cmd_json_expect: {cmd: "${desk} publish dl_v1 dl_v2", match: {"/published": {len: 2}}, cmd_timeout: 900}
+  - id: deploy-v1
+    title: Deploy 1.0.0
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_v1"}
+  - id: v1-installed
+    title: 1.0.0 Installed
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 120}
+  - id: status-doc
+    title: GET /v1/status (cli-status.v1 document)
+    http_expect:
+      url: "${fe_api}/v1/status"
+      token_file: "${fe_api_token_file}"
+      json_match:
+        /apiVersion: flexengine.local/v1
+        /kind: EngineStatus
+        /engine/mode: running
+        /engine/spi: {regex: "^1\\."}
+        "/devices[deviceId=${gp}]/deployments[id=${dep}]/state": Installed
+        "/devices[deviceId=${gp}]/outboxLength": {gte: 0}
+  - id: deployment-doc
+    title: GET /v1/devices/{device}/deployments/{dep}
+    http_expect: {url: "${fe_api}/v1/devices/${gp}/deployments/${dep}", token_file: "${fe_api_token_file}", json_match: {/state: Installed, /version: 1.0.0, /digest: {regex: "^sha256:"}}}
+  - id: capabilities
+    title: GET /v1/capabilities/{device}
+    http_expect: {url: "${fe_api}/v1/capabilities/${gp}", token_file: "${fe_api_token_file}", json_match: {"/x-flex/drivers": {exists: true}}}
+  - id: metrics
+    title: GET /v1/metrics (reconcile, outbox, gate metrics per device)
+    http_expect: {url: "${fe_api}/v1/metrics", token_file: "${fe_api_token_file}", json_match: {"/${gp}": {exists: true}}}
+  - id: no-token
+    title: Read-only bind refuses a request without the bearer token (401)
+    http_expect: {url: "${fe_api}/v1/status", status: 401}
+  - id: no-write
+    title: Read-only bind refuses a write operation (403)
+    http_expect: {url: "${fe_api}/v1/reconcile", method: POST, token_file: "${fe_api_token_file}", status: [403, 405]}
+  - id: journal-mark
+    title: Journal mark
+    journal_mark: {name: update, unit: flexengine, host: "${fe_host}"}
+  - id: mark-update
+    title: History mark
+    fe_history_mark: {name: update, device: "${gp}"}
+  - id: deploy-v2
+    title: Update to 1.1.0
+    run: {cmd: "${desk} deploy ${gp} ${dep}=dl_v2"}
+  - id: v2-installed
+    title: 1.1.0 Installed
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.1.0, health: healthy, timeout: 120}
+  - id: history
+    title: GET /v1/history has the transitions of the update (Installing -> Installed)
+    fe_history_expect: {since: update, device: "${gp}", via: api, match: [{dep: "${dep}", state: Installing, version: 1.1.0}, {dep: "${dep}", state: Installed, version: 1.1.0}], timeout: 30}
+  - id: history-delivered
+    title: History records delivered to flexCloud
+    http_expect: {url: "${fe_api}/v1/history?device=${gp}", token_file: "${fe_api_token_file}", json_match: {"": {where: {"/record/dep": "${dep}", "/record/state": Installed, "/record/version": 1.1.0, "/delivered": true}, count: {gte: 1}}}, timeout: 30}
+  - id: log-structured
+    title: "Structured log record of the apply (event, device, dep, version, ts)"
+    journal_expect: {since: update, fields: {event: action.apply, device: "${gp}", dep: "${dep}", version: 1.1.0, level: info, ts: {regex: "Z$"}}, timeout: 30}
+  - id: log-correlation
+    title: Status reports carry the correlation id of the desired state
+    http_expect: {url: "${fe_api}/v1/history?device=${gp}", token_file: "${fe_api_token_file}", json_match: {"": {where: {"/record/dep": "${dep}", "/record/version": 1.1.0, "/record/correlationId": {regex: "^[0-9a-f]{16,}$"}}, count: {gte: 1}}}}
+  - id: jaeger
+    title: Jaeger has the engine.install span of this rollout
+    http_expect: {url: "${jaeger_url}/api/traces?service=flex-engine-${gp}&operation=engine.install%20${dep}&lookback=1h&limit=20", json_match: {/data: {len: {gte: 1}}}, timeout: 60, every: 2}
+  - id: jaeger-gate
+    title: Jaeger has the health-gate span
+    http_expect: {url: "${jaeger_url}/api/traces?service=flex-engine-${gp}&operation=engine.health-gate&lookback=1h&limit=20", json_match: {/data: {len: {gte: 1}}}, timeout: 60, every: 2}
+  - id: cli-status
+    title: "`flexengine status --json` on the LattePanda agrees"
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} status --json", match: {"/devices[deviceId=${gp}]/deployments[id=${dep}]/version": 1.1.0, /engine/mode: running}}
+  - id: console-fleet
+    title: Console fleet view (flexCloud) shows desired = actual
+    cmd_json_expect: {cmd: "${desk} converged ${gp}", match: {"/converged": true, "/desired/${dep}": 1.1.0}, timeout: 60, every: 2}
+  - id: cleanup
+    title: Remove the deployment
+    run: {cmd: "${desk} deploy ${gp}"}
+  - id: removed
+    title: "${dep} removed"
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", absent: true, timeout: 120}

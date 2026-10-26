@@ -1,0 +1,147 @@
+id: EV-HW-02
+title: Container deploy, update, rollback (Docker and Podman) on the LattePanda
+description: >
+  flexEngineV2 on the LattePanda installs a container release, updates it, rolls a release that fails its health
+  gate back to the previous version (gate and rollback times from the engine's own history), keeps the iGPU device
+  mapping through the rollback, holds a safety-relevant release in Pending until the safe-state signals are set,
+  and does the same on Podman. Replaces the L3-P2 s2-1/s2-3 procedure (acceptance stays on the runbook page).
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
+  fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
+  fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API (DA-7: one per desk)"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port the engine uses)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda (Docker)"}
+  gp_podman: {default: panda-podman, prompt: "engine device id with drivers.container.runtime podman"}
+  dep: {default: pg, prompt: "deployment id"}
+  rt: {default: docker, prompt: "container CLI on the LattePanda for the Docker device"}
+  rt_podman: {default: "sudo -u flex podman", prompt: "podman CLI of the engine user (rootless podman of flex)"}
+  igpu_device: {default: /dev/dri, prompt: "device the release maps (runOptions.devices, allow-listed in engine.yaml)"}
+  safe_state_file: {default: /var/lib/flexengine/safe-state.json, prompt: "safeStateFile of the device (engine.yaml)"}
+setup:
+  - "LattePanda: flexEngineV2 installed and enrolled (EV-HW-01), devices ${gp} (Docker) and ${gp_podman} (Podman) in /etc/flexengine/engine.yaml, local.tcp bind = ${fe_api}"
+  - "engine.yaml of ${gp} and ${gp_podman}: drivers.container.allowedRunOptions.devices contains ${igpu_device}; safeStateFile = ${safe_state_file}"
+  - "This PC: venv with hwtest/requirements.txt, the lab CA in ${cloud_ca}, the admin token in ${admin_token_file}, ssh key login to ${lp}"
+  - "No other deployment on ${gp} / ${gp_podman} (they are replaced)"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: engine-up
+    title: "${gp} and ${gp_podman} onboarded and online"
+    fe_status_expect: {device: "${gp}", device_fields: {onboarded: true, online: true}, timeout: 60}
+  - id: engine-up-podman
+    title: "${gp_podman} onboarded and online"
+    fe_status_expect: {device: "${gp_podman}", device_fields: {onboarded: true, online: true}, timeout: 60}
+  - id: publish
+    title: Publish the container releases (1.0.0, 1.1.0, 1.2.0 failing its health check, 1.3.0 with safe-state activation)
+    cmd_json_expect: {cmd: "${desk} publish app_v1 app_v2 app_bad app_safety", match: {"/published": {len: 4}}, cmd_timeout: 1200}
+  - id: deploy-v1
+    title: Deploy v1 (1.0.0)
+    run: {cmd: "${desk} deploy ${gp} ${dep}=app_v1"}
+  - id: v1-installed
+    title: v1 Installed and healthy
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 240}
+  - id: v1-running
+    title: Container runs 1.0.0
+    ssh_run: {host: "${lp}", cmd: "${rt} inspect -f '{{index .Config.Labels \"dev.flex.version\"}} {{.State.Running}}' flex_${gp}_${dep}", match: "^1\\.0\\.0 true"}
+  - id: mark-update
+    title: History mark before the update
+    fe_history_mark: {name: update, device: "${gp}"}
+  - id: deploy-v2
+    title: Update to v2 (1.1.0)
+    run: {cmd: "${desk} deploy ${gp} ${dep}=app_v2"}
+  - id: v2-installed
+    title: v2 Installed and healthy
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.1.0, health: healthy, timeout: 240}
+  - id: update-time
+    title: Update time from the history (Installing -> Installed)
+    fe_history_expect:
+      since: update
+      device: "${gp}"
+      match: [{dep: "${dep}", state: Installing, version: 1.1.0}, {dep: "${dep}", state: Installed, version: 1.1.0}]
+      max_duration: 120
+      save_duration: update_s
+  - id: mark-bad
+    title: History mark before the failing release
+    fe_history_mark: {name: bad, device: "${gp}"}
+  - id: deploy-bad
+    title: Deploy 1.2.0 (fails its health gate)
+    run: {cmd: "${desk} deploy ${gp} ${dep}=app_bad"}
+  - id: bad-failed
+    title: 1.2.0 Failed, rolled back to 1.1.0
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Failed, version: 1.2.0, fields: {rolledBackTo: 1.1.0}, timeout: 240}
+  - id: rollback-time
+    title: Gate + rollback time from the history (Installing -> Failed)
+    fe_history_expect:
+      since: bad
+      device: "${gp}"
+      match: [{dep: "${dep}", state: Installing, version: 1.2.0}, {dep: "${dep}", state: Failed, version: 1.2.0}]
+      max_duration: 60
+      save_duration: rollback_s
+  - id: v2-running-after-rollback
+    title: Container runs 1.1.0 again
+    ssh_run: {host: "${lp}", cmd: "${rt} inspect -f '{{index .Config.Labels \"dev.flex.version\"}} {{.State.Running}}' flex_${gp}_${dep}", match: "^1\\.1\\.0 true"}
+  - id: igpu-after-rollback
+    title: "${igpu_device} still mapped into the container after the rollback"
+    cmd_json_expect: {host: "${lp}", cmd: "${rt} inspect flex_${gp}_${dep}", match: {"/0/HostConfig/Devices": {contains: {"/PathOnHost": "${igpu_device}"}}}}
+  - id: safe-state-off
+    title: "Safe-state signals off (machine running, operator not confirmed)"
+    write_file: {host: "${lp}", sudo: true, path: "${safe_state_file}", json: {machine_parked: false, operator_confirmed: false}}
+  - id: deploy-safety
+    title: Deploy the safety-relevant 1.3.0 (two-person plan, activation needs the safe state)
+    run: {cmd: "${desk} deploy ${gp} ${dep}=app_safety"}
+  - id: safety-pending
+    title: 1.3.0 held in Pending (machine not parked)
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Pending, version: 1.3.0, fields: {reason: {regex: "machine_parked|safe"}}, timeout: 120}
+  - id: still-v2
+    title: 1.1.0 keeps running while held
+    ssh_run: {host: "${lp}", cmd: "${rt} inspect -f '{{index .Config.Labels \"dev.flex.version\"}} {{.State.Running}}' flex_${gp}_${dep}", match: "^1\\.1\\.0 true"}
+  - id: safe-state-on
+    title: Safe-state signals on (machine parked, operator confirmed)
+    write_file: {host: "${lp}", sudo: true, path: "${safe_state_file}", json: {machine_parked: true, operator_confirmed: true}}
+  - id: safety-installed
+    title: 1.3.0 Installed once the safe state holds
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.3.0, health: healthy, timeout: 240}
+  - id: podman-v1
+    title: "Podman: deploy 1.0.0 on ${gp_podman}"
+    run: {cmd: "${desk} deploy ${gp_podman} ${dep}=app_v1"}
+  - id: podman-v1-installed
+    title: "Podman: 1.0.0 Installed"
+    fe_status_expect: {device: "${gp_podman}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 300}
+  - id: podman-v2
+    title: "Podman: update to 1.1.0"
+    run: {cmd: "${desk} deploy ${gp_podman} ${dep}=app_v2"}
+  - id: podman-v2-installed
+    title: "Podman: 1.1.0 Installed"
+    fe_status_expect: {device: "${gp_podman}", deployment: "${dep}", state: Installed, version: 1.1.0, health: healthy, timeout: 300}
+  - id: podman-bad
+    title: "Podman: deploy 1.2.0 (fails its health gate)"
+    run: {cmd: "${desk} deploy ${gp_podman} ${dep}=app_bad"}
+  - id: podman-bad-failed
+    title: "Podman: 1.2.0 Failed, rolled back to 1.1.0"
+    fe_status_expect: {device: "${gp_podman}", deployment: "${dep}", state: Failed, version: 1.2.0, fields: {rolledBackTo: 1.1.0}, timeout: 300}
+  - id: podman-running
+    title: "Podman: container runs 1.1.0"
+    ssh_run: {host: "${lp}", cmd: "${rt_podman} inspect -f '{{index .Config.Labels \"dev.flex.version\"}} {{.State.Running}}' flex_${gp_podman}_${dep}", match: "^1\\.1\\.0 true"}
+  - id: remove
+    title: Remove the deployments (empty desired state)
+    run: {cmd: "${desk} deploy ${gp} && ${desk} deploy ${gp_podman}"}
+  - id: removed
+    title: "${dep} removed on ${gp}"
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", absent: true, timeout: 120}
+  - id: removed-podman
+    title: "${dep} removed on ${gp_podman}"
+    fe_status_expect: {device: "${gp_podman}", deployment: "${dep}", absent: true, timeout: 120}
+  - id: no-container
+    title: No flex container left for ${gp}
+    ssh_run: {host: "${lp}", cmd: "${rt} ps -a -q --filter name=flex_${gp}_${dep} | wc -l", match: "^0$"}

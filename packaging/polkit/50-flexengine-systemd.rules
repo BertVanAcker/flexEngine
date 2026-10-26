@@ -1,0 +1,32 @@
+// flexEngineV2 native systemd driver (EV-19, drivers.native: {runtime: systemd, scope: system}).
+//
+// Lets the engine (user flex, group flex) manage ITS workload units on the system manager without root:
+// start/stop/restart/reset-failed only for units named flex-*.service, plus linking/enabling unit files and
+// daemon-reload, which systemd cannot narrow to unit names.
+//
+// Install (root 0644; polkitd picks it up without a restart):
+//   sudo install -m 0644 packaging/polkit/50-flexengine-systemd.rules /etc/polkit-1/rules.d/
+// and give the driver a unit directory the engine can write (its own unit runs with ProtectSystem=strict):
+//   drivers: {native: {runtime: systemd, unitDir: /var/lib/flexengine/units}}
+//
+// Security note: whoever may link/enable unit files and reload the manager can make systemd run code as root
+// (a unit file may say User=root). With this rule, group flex is root-equivalent on this host, like the docker
+// group. Without the rule, run the engine as root or use scope: user (the flex user's own manager, with
+// `loginctl enable-linger flex` so its units start at boot).
+polkit.addRule(function (action, subject) {
+    if (!subject.isInGroup("flex")) {
+        return polkit.Result.NOT_HANDLED;
+    }
+    if (action.id == "org.freedesktop.systemd1.manage-units") {
+        var unit = action.lookup("unit") || "";
+        if (/^flex-[A-Za-z0-9_.-]+\.service$/.test(unit)) {
+            return polkit.Result.YES;
+        }
+        return polkit.Result.NOT_HANDLED;
+    }
+    if (action.id == "org.freedesktop.systemd1.manage-unit-files" ||
+        action.id == "org.freedesktop.systemd1.reload-daemon") {
+        return polkit.Result.YES;
+    }
+    return polkit.Result.NOT_HANDLED;
+});

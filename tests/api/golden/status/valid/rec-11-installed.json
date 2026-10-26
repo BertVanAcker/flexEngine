@@ -1,0 +1,12 @@
+{
+ "correlationId": "224b182c1f9226ab2babdfe6a8044f8e",
+ "dep": "servo",
+ "deviceTime": 1792131039.4399137,
+ "digest": "sha256:0f9dcae18fc241689d5198a8fbd411862e78c039ade0af4dc102c8ce50cb1c4d",
+ "health": "healthy",
+ "manifestVersion": 4,
+ "seq": 11,
+ "state": "Installed",
+ "traceparent": "00-224b182c1f9226ab2babdfe6a8044f8e-8e4bd02c80e73e89-01",
+ "version": "2.1.0"
+}

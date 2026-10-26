@@ -1,0 +1,54 @@
+[
+ {
+  "delivered": true,
+  "deviceId": "panda",
+  "record": {
+   "dep": "cell",
+   "deviceTime": 1792195000.25,
+   "digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+   "fromVersion": "1.0.0",
+   "manifestVersion": 12,
+   "plan": [
+    "docker pull",
+    "docker run"
+   ],
+   "seq": 7,
+   "state": "Installing",
+   "version": "1.1.0"
+  }
+ },
+ {
+  "delivered": true,
+  "deviceId": "panda",
+  "record": {
+   "dep": "cell",
+   "deviceTime": 1792195100.0,
+   "digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+   "health": "healthy",
+   "manifestVersion": 12,
+   "seq": 8,
+   "state": "Installed",
+   "version": "1.1.0"
+  }
+ },
+ {
+  "delivered": false,
+  "deviceId": "panda",
+  "record": {
+   "dep": "cx-bridge",
+   "detectSeconds": 1.5,
+   "deviceTime": 1792195160.5,
+   "digest": "sha256:efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+   "failFast": true,
+   "failure": "FE-HG-001: process exited",
+   "manifestVersion": 12,
+   "reason": "health check failed",
+   "rollbackHealthy": true,
+   "rolledBackTo": "1.0.0",
+   "seq": 9,
+   "state": "Failed",
+   "totalSeconds": 2.0,
+   "version": "1.1.0"
+  }
+ }
+]

@@ -1,0 +1,18 @@
+{
+ "correlationId": "3162790bd03c9409c85b14fc49d4bc01",
+ "dep": "cell",
+ "detectSeconds": 8.343,
+ "deviceTime": 1792131101.6867661,
+ "digest": "sha256:fe8bee27de990334cd953f926a09ccf6a842f4b597b27cc823f4095dff2c0cf0",
+ "failFast": false,
+ "failure": "timeout after 8 s",
+ "manifestVersion": 6,
+ "reason": "health check failed",
+ "rollbackHealthy": true,
+ "rolledBackTo": "1.1.0",
+ "seq": 22,
+ "state": "Failed",
+ "totalSeconds": 11.806,
+ "traceparent": "00-3162790bd03c9409c85b14fc49d4bc01-59bf88b2d47db2cc-01",
+ "version": "1.2.0"
+}

@@ -1,0 +1,14 @@
+# GUI metadata of EV-HW-03 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-03_offline_bundle.yaml
+goal: The engine converges with exactly one apply after an uplink cut, and installs a release that only arrives as a signed
+  offline bundle on a USB stick while offline.
+duration: ~15 min
+boards:
+- LattePanda 3 Delta
+tags:
+- flexengine-v2
+- offline
+- bundle
+- link shim
+target:
+  board: lattepanda_3_delta
+  notes: The uplink is cut with the lab link shim (control port 8691); a USB stick at hand.

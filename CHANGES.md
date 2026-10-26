@@ -1,0 +1,45 @@
+# Changes
+
+## 2.0.0 (in progress: 2.0.0a1)
+
+flexEngine 2 replaces flexEngine 0.x. It is a new engine with a new package, configuration, CLI and cloud protocol;
+nothing of 0.6 is carried over. What a 0.6 user must do: [MIGRATION.md](MIGRATION.md).
+
+The code was developed as flexEngineV2 in `modular-interoperable-framework/flexengine/` (package `flexengine-v2`) and
+moved here with its history (`git subtree split`). 0.6.x stays on branch `v1.x` for fixes while the flexCloud console
+still drives v1 devices.
+
+### 2.0.0 compared with 0.6.0
+
+| | 0.6.0 | 2.0.0 |
+|---|---|---|
+| Model | imperative: the console sends `PUSH`, `BUILD`, `RUN`, `STOP` commands, the engine runs them | declarative: the engine pulls a signed desired state and reconciles the device to it; health gate and automatic rollback per deployment |
+| Cloud link | Redis channel `<project>:devices:<device>:cmd`, HMAC-SHA256 with a project shared secret, heartbeat keys | HTTPS southbound API (`openapi-southbound.yaml`, `v1alpha1`): onboarding with a one-time token, per-device Ed25519 key, signed desired state (CP-1), status and events (CP-2), OCI releases (CP-3) |
+| What is deployed | a source repository (GitHub or Docker Hub) cloned and built on the device from `flexIA.ini` | signed releases (OCI artefacts, digest-pinned, SBOM, Ed25519 signature, two-person approval for safety-relevant releases); the device never builds |
+| Runtimes | `docker build` / `docker run` / `docker compose` | drivers behind a versioned SPI (CP-5): container (docker, podman, ankaios), native (systemd or process, Python wheels), os-rauc, arduino-ota, mcu-module / mcu-firmware (SMP), applab, plc-verify |
+| Devices per process | one agent workspace per device | one host process, one engine per device under `devices:`, MCU children through a gateway |
+| Offline | none | signed offline bundles (`flexengine bundle import`) |
+| Local interface | `flexEngine init/start/stop/status/stats/logs` on a workspace | `flexengine run/status/deployments/logs/history/bundle/enroll/doctor/config/plc-read/version`, a local API (CP-7, Unix socket, optional read-only TCP) |
+| Configuration | `configuration/config.yaml` in the workspace (Redis, device credentials, heartbeat) | `/etc/flexengine/engine.yaml`, schema-checked, unknown keys are errors (`flexengine config check`) |
+| Installation | `pip install flexEngine` + `flexEngine init`, `scripts/install.sh` / `install.ps1` | `pip install flexEngine` (2.x) for development; on devices the offline bundle with `packaging/install.sh` (user `flex`, systemd unit, polkit rules) |
+| Observability | log file, remote log over Redis | structured JSON logs, status history, OpenTelemetry spans and metrics (`otel` extra) |
+| Python | ≥ 3.10 | ≥ 3.11 |
+| Platforms | Windows, macOS, Linux, Linux ARMv6 | Linux (x86_64, aarch64) for devices; macOS for development. No Windows, no ARMv6 |
+| Import name / CLI | `flexEngine` / `flexEngine` | `flexengine2` / `flexengine` (alias `flexengine2`) |
+| Dependencies | redis, requests, psutil, PyYAML | cryptography, PyYAML, jsonschema; extras `mcu`, `plc`, `applab`, `otel`, `relay` |
+
+### Contracts
+
+The connection points CP-1 to CP-8 are versioned (`v1alpha1`; the driver SPI, the local API and telemetry `v1`) and
+documented in `api/` (`cp-reference.md` is generated). Within `v1alpha1` changes are additive only; a breaking change
+is a new version.
+
+### Repository
+
+- `master` holds 2.x; v1's tree (`flexEngine/`, `setup.py`, `requirements.txt`, `examples/`, `scripts/install.*`)
+  is on `v1.x` only.
+- CI: `ci.yml` (push tier, coverage gate, build; required check `ci-ok`), `nightly.yml`, `release.yml` (tags `v2.*`
+  publish to PyPI through the existing trusted publisher).
+- The test suite runs without the framework: the framework files it reads are vendored in `tests/vectors/framework/`;
+  `flexengine2.testing` ships probe P2's stand-in apps as package data, so its release builders work from a wheel.
+- The distribution is `flexEngine` (was `flexengine-v2` in the framework); wheel and bundles are `flexengine-<ver>-…`.

@@ -1,0 +1,116 @@
+id: EV-HW-11
+title: RAUC A/B OS update with a health-gated commit on the LattePanda (alpha.2)
+description: >
+  The os-rauc driver installs a signed RAUC bundle into the other slot of the LattePanda's eMMC, reboots into it and
+  commits (`rauc status mark-good`) only when the engine is up, the cloud (or a bundle) reachable and every workload
+  healthy. A rootfs that never boots falls back through the bootloader's try counter; a booting image whose health
+  check fails is not marked good and the device reboots back; power cuts during the install and before mark-good
+  converge; manifestVersion and the outbox survive every slot switch (shared data partition). Replaces the L3-P2 s9
+  procedure (acc-7..9 stay on the web page).
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (run this runbook from the Mac: the LattePanda reboots)"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda"}
+  dep: {default: os, prompt: "deployment id of the OS image"}
+  rauc: {default: "sudo rauc", prompt: "rauc CLI on the LattePanda"}
+  rauc_host: {default: "${lp}", prompt: "host rauc runs on"}
+  sim: {default: "true", prompt: "simulation hook (dry run only)"}
+setup:
+  - "LattePanda eMMC partitioned A/B (rootfs.0 / rootfs.1) with RAUC 1.11 + bootloader integration, flexEngineV2 in both slots, the data partition shared (/var/lib/flexengine) - L3-P2 s9-1"
+  - "engine.yaml: drivers.os-rauc {keyring, sharedDataPath: /var/lib/flexengine, rebootCommand: [systemctl, reboot], healthChecks}"
+  - "Bundles 1.1.0, 2.0.0 (rootfs without the engine), 2.1.0 (health check fails), 1.2.0 and 1.3.0 (20 s soak) signed and in the catalog (os_*)"
+  - "Run from the Mac (the LattePanda reboots during the run); you can pull the LattePanda's power plug safely"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: engine-up
+    title: "${gp} onboarded and online"
+    fe_status_expect: {device: "${gp}", device_fields: {onboarded: true, online: true}, timeout: 120}
+  - id: publish
+    title: Publish the OS bundles as signed releases
+    cmd_json_expect: {cmd: "${desk} publish os_1_1 os_no_boot os_bad_health os_1_2 os_1_3", match: {"/published": {len: 5}}, cmd_timeout: 1800}
+  - id: slot-before
+    title: "rauc status: remember the booted slot"
+    cmd_json_expect: {host: "${rauc_host}", cmd: "${rauc} status --detailed --output-format=json", match: {"/slots/*[state=booted]/boot_status": good}, save: {slot0: /booted}}
+  - id: deploy-11
+    title: Deploy OS 1.1.0 (install into the other slot, reboot, gate, mark-good)
+    run: {cmd: "${desk} deploy ${gp} ${dep}=os_1_1"}
+  - id: v11-installed
+    title: 1.1.0 Installed after the reboot (committed)
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.1.0, health: healthy, timeout: 900}
+  - id: v11-slot
+    title: "rauc status: booted the other slot, 1.1.0, marked good"
+    cmd_json_expect: {host: "${rauc_host}", cmd: "${rauc} status --detailed --output-format=json", match: {/booted: {ne: "${slot0}"}, "/slots/*[state=booted]/boot_status": good, "/slots/*[state=booted]/slot_status/bundle/version": 1.1.0}, save: {slot11: /booted}}
+  - id: v11-state
+    title: Engine state survived the slot switch (manifestVersion, outbox delivered)
+    fe_status_expect: {device: "${gp}", device_fields: {manifestVersion: {gte: 1}, outboxLength: 0, journal: null}, save: {mv11: /manifestVersion}, timeout: 120}
+  - id: deploy-noboot
+    title: Deploy 2.0.0, a rootfs that never boots the engine
+    run: {cmd: "${desk} deploy ${gp} ${dep}=os_no_boot"}
+  - id: noboot-failed
+    title: Bootloader fell back; 2.0.0 Failed fail-fast, 1.1.0 kept
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Failed, version: 2.0.0, fields: {rolledBackTo: 1.1.0, failFast: true, reasonCode: FE-REC-003}, timeout: 900}
+  - id: noboot-slot
+    title: "rauc status: still the 1.1.0 slot"
+    cmd_json_expect: {host: "${rauc_host}", cmd: "${rauc} status --detailed --output-format=json", match: {/booted: "${slot11}", "/slots/*[state=booted]/slot_status/bundle/version": 1.1.0}, timeout: 120, every: 3}
+  - id: deploy-badhealth
+    title: Deploy 2.1.0, an image whose health check fails
+    run: {cmd: "${desk} deploy ${gp} ${dep}=os_bad_health"}
+  - id: badhealth-failed
+    title: Not marked good; rebooted back; 2.1.0 Failed, rolled back to 1.1.0
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Failed, version: 2.1.0, fields: {rolledBackTo: 1.1.0, reason: health check failed}, timeout: 900}
+  - id: badhealth-slot
+    title: "rauc status: back on the 1.1.0 slot, the other slot marked bad"
+    cmd_json_expect: {host: "${rauc_host}", cmd: "${rauc} status --detailed --output-format=json", match: {/booted: "${slot11}", "/slots/*[state=booted]/boot_status": good, "/slots/*[state=inactive]/boot_status": bad}, timeout: 120, every: 3}
+  - id: prepare-cut-install
+    title: Get ready to cut the power during `rauc install`
+    manual:
+      instruction: "Open `journalctl -fu flexengine` on the LattePanda (from the Mac over ssh) to see when `rauc install` starts writing the slot."
+      sim: "${sim} rauc-set installDelay=4"
+  - id: deploy-12
+    title: Deploy 1.2.0
+    run: {cmd: "${desk} deploy ${gp} ${dep}=os_1_2"}
+  - id: cut-install
+    title: Power cut while `rauc install` writes the other slot
+    power_cycle:
+      instruction: "When the journal shows the install of 1.2.0 running, pull the LattePanda's power plug, wait 5 s, plug it back in."
+      simulate: "${sim} rauc-power-cut --during-install"
+      timeout: 900
+  - id: v12-converged
+    title: 1.2.0 Installed after the power cut (install repeated, reboot, commit)
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.2.0, health: healthy, timeout: 900}
+  - id: v12-slot
+    title: "rauc status: 1.2.0 booted and good"
+    cmd_json_expect: {host: "${rauc_host}", cmd: "${rauc} status --detailed --output-format=json", match: {"/slots/*[state=booted]/boot_status": good, "/slots/*[state=booted]/slot_status/bundle/version": 1.2.0}, save: {slot12: /booted}}
+  - id: deploy-13
+    title: Deploy 1.3.0 (its health gate soaks before mark-good; 20 s in the lab catalog)
+    run: {cmd: "${desk} deploy ${gp} ${dep}=os_1_3"}
+  - id: cut-before-good
+    title: Power cut after the reboot into 1.3.0, before mark-good
+    power_cycle:
+      instruction: "After the LattePanda rebooted into 1.3.0 and the engine logged `adopt` (journal), pull the power plug during the soak (before mark-good), wait 5 s, plug it back in."
+      simulate: "${sim} rauc-power-cut --before-mark-good"
+      timeout: 900
+  - id: v13-converged
+    title: 1.3.0 Installed (adopted again after the cut, committed)
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.3.0, health: healthy, timeout: 900}
+  - id: v13-slot
+    title: "rauc status: 1.3.0 booted and good"
+    cmd_json_expect: {host: "${rauc_host}", cmd: "${rauc} status --detailed --output-format=json", match: {/booted: {ne: "${slot12}"}, "/slots/*[state=booted]/boot_status": good, "/slots/*[state=booted]/slot_status/bundle/version": 1.3.0}}
+  - id: state-survives
+    title: manifestVersion and outbox survived every switch and cut
+    fe_status_expect: {device: "${gp}", device_fields: {manifestVersion: {gt: "${mv11}"}, outboxLength: 0, journal: null, online: true}, timeout: 120}
+  - id: cloud-converged
+    title: flexCloud sees desired = actual
+    cmd_json_expect: {cmd: "${desk} converged ${gp}", match: {"/converged": true, "/actual/${dep}/version": 1.3.0}, timeout: 120, every: 3}

@@ -1,0 +1,37 @@
+{
+ "annotations": {
+  "dev.flex.interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+  "dev.flex.safetyClass": "none",
+  "org.opencontainers.image.title": "servo_drive",
+  "org.opencontainers.image.version": "1.0.0"
+ },
+ "artifactType": "application/vnd.flex.node.v1+json",
+ "config": {
+  "digest": "sha256:efbf89ec003b7e4faf28a0a27890d92444ac787e3d9a1e4e88c09a03a551ba75",
+  "mediaType": "application/vnd.flex.node.descriptor.v1+json",
+  "size": 990
+ },
+ "layers": [
+  {
+   "annotations": {
+    "dev.flex.arch": "armv7m",
+    "dev.flex.floatAbi": "soft",
+    "dev.flex.moduleAbi": "1.0",
+    "dev.flex.profile": "mcu-module"
+   },
+   "digest": "sha256:97ca8f48f826f5cb3e2587e6f84317dfb8bc0b729cf98205423623c66fa7d0ef",
+   "mediaType": "application/vnd.flex.payload.mcu-module.v1+flxm",
+   "size": 5980
+  },
+  {
+   "annotations": {
+    "dev.flex.role": "sbom"
+   },
+   "digest": "sha256:711774871b0699e7f31b08e729525d861f86e1e42df60c5f19be56874b70bed7",
+   "mediaType": "application/spdx+json",
+   "size": 732
+  }
+ ],
+ "mediaType": "application/vnd.oci.image.manifest.v1+json",
+ "schemaVersion": 2
+}

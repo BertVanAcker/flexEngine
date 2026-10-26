@@ -1,0 +1,416 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/oci-profile.v1alpha1.schema.json",
+  "title": "CP-3 OCI artefact access profile v1alpha1",
+  "description": "The OCI image-manifest / referrers subset the engine reads (artefacts/store.py), written by the release tools (flex release; testing/release.py) and served by flexCloud's /v2/ subset (testing/fakecloud.py). See api/bundle.v1alpha1.md.",
+  "$defs": {
+    "Digest": {
+      "$ref": "desired-state.v1alpha1.schema.json#/$defs/Digest"
+    },
+    "PayloadMediaType": {
+      "enum": [
+        "application/vnd.flex.payload.image.docker-archive.v1.tar",
+        "application/vnd.flex.payload.native.v1.tar+gzip",
+        "application/vnd.flex.payload.applab-release.v1.tar+gzip",
+        "application/vnd.flex.payload.mcu-module.v1+flxm",
+        "application/vnd.flex.payload.mcu-firmware.v1+mcuboot",
+        "application/vnd.flex.payload.plc-artefact.v1.tar+gzip",
+        "application/vnd.flex.payload.os-rauc.v1+raucb",
+        "application/vnd.flex.payload.arduino-ota.v1+ota",
+        "application/vnd.flex.payload.system.v1+json"
+      ]
+    },
+    "Descriptor": {
+      "type": "object",
+      "required": [
+        "mediaType",
+        "digest",
+        "size"
+      ],
+      "properties": {
+        "mediaType": {
+          "type": "string"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "PayloadLayer": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Descriptor"
+        }
+      ],
+      "required": [
+        "annotations"
+      ],
+      "properties": {
+        "mediaType": {
+          "$ref": "#/$defs/PayloadMediaType"
+        },
+        "annotations": {
+          "type": "object",
+          "required": [
+            "dev.flex.profile"
+          ],
+          "propertyNames": {
+            "anyOf": [
+              {
+                "pattern": "^dev\\.flex\\.(profile|platform|imageDigest|imageRef|imageTag|releaseName|contractHash|board|arch|pyabi|floatAbi|moduleAbi|cpuProfile|ifaceHash|verify|compatible|firmwareVersion)$"
+              },
+              {
+                "not": {
+                  "pattern": "^dev\\.flex\\."
+                }
+              }
+            ]
+          },
+          "properties": {
+            "dev.flex.profile": {
+              "enum": [
+                "container",
+                "native",
+                "applab",
+                "mcu-module",
+                "mcu-firmware",
+                "plc-verify",
+                "os-rauc",
+                "arduino-ota",
+                "system"
+              ],
+              "description": "The engine picks the layer whose profile equals the deployment's x-flex-driver."
+            },
+            "dev.flex.arch": {
+              "enum": [
+                "armv7m",
+                "armv8m.main",
+                "x86_64",
+                "aarch64",
+                "armv7l",
+                "armv6l",
+                "i686",
+                "riscv64",
+                "ppc64le",
+                "s390x"
+              ],
+              "description": "mcu-module: the module's CPU profile (armv7m, armv8m.main); required, with dev.flex.floatAbi (DA-15: the engine selects MCU module layers strictly and refuses a release whose mcu-module layers lack either, FE-ART-REL-004). native (EV-37) and container (EV-40: one image layer per CPU in one release): the CPU the payload is built for, normalised `uname -m` (x86_64, aarch64, armv7l ...); absent = any CPU. The engine picks the layer that fits the driver's platform() (permissive: an absent key fits); preflight refuses a layer for another CPU."
+            },
+            "dev.flex.pyabi": {
+              "type": "string",
+              "pattern": "^(cp|pp)[0-9]{2,3}t?$",
+              "description": "native (EV-36/37): the Python ABI of the payload's wheels/ (cp312, cp313t, pp310 ...) = the device interpreter's; absent = any interpreter (no wheels, or pure-Python wheels only)."
+            },
+            "dev.flex.floatAbi": {
+              "enum": [
+                "soft",
+                "hard"
+              ]
+            },
+            "dev.flex.imageRef": {
+              "type": "string",
+              "pattern": "@sha256:[0-9a-f]{64}$"
+            },
+            "dev.flex.imageDigest": {
+              "$ref": "#/$defs/Digest"
+            },
+            "dev.flex.ifaceHash": {
+              "type": "string",
+              "pattern": "^FLEX01_[0-9a-f]{64}$"
+            },
+            "dev.flex.contractHash": {
+              "type": "string",
+              "pattern": "^FLEX01_[0-9a-f]{64}$"
+            },
+            "dev.flex.verify": {
+              "enum": [
+                "ads",
+                "modbus",
+                "shm"
+              ]
+            },
+            "dev.flex.compatible": {
+              "type": "string",
+              "minLength": 1,
+              "description": "os-rauc: the RAUC compatible string of the bundle (= `rauc status` compatible of the target device); the engine picks the layer whose compatible equals the device's (Driver.platform()), the driver's preflight refuses a mismatch."
+            },
+            "dev.flex.board": {
+              "type": "string",
+              "minLength": 1,
+              "description": "arduino-ota: the board FQBN the .ota image is built for (e.g. arduino:mbed_portenta:envie_m7, arduino:mbed_opta:opta); matched against the driver's platform() / the target board, preflight refuses a mismatch."
+            },
+            "dev.flex.firmwareVersion": {
+              "type": "string",
+              "minLength": 1,
+              "description": "arduino-ota: the version the sketch reports in its flexCloud version key (set_application_version); the health gate waits for exactly this value."
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "dev.flex.profile": {
+                    "const": "container"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "dev.flex.imageRef"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "dev.flex.profile": {
+                    "const": "applab"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "dev.flex.releaseName"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "dev.flex.profile": {
+                    "const": "mcu-module"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "dev.flex.arch",
+                  "dev.flex.floatAbi"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "dev.flex.profile": {
+                    "const": "os-rauc"
+                  }
+                },
+                "required": [
+                  "dev.flex.profile"
+                ]
+              },
+              "then": {
+                "required": [
+                  "dev.flex.compatible"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "dev.flex.profile": {
+                    "const": "arduino-ota"
+                  }
+                },
+                "required": [
+                  "dev.flex.profile"
+                ]
+              },
+              "then": {
+                "required": [
+                  "dev.flex.board",
+                  "dev.flex.firmwareVersion"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "SbomLayer": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Descriptor"
+        }
+      ],
+      "properties": {
+        "mediaType": {
+          "const": "application/spdx+json"
+        },
+        "annotations": {
+          "properties": {
+            "dev.flex.role": {
+              "const": "sbom"
+            }
+          }
+        }
+      }
+    },
+    "ReleaseManifest": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "mediaType",
+        "config",
+        "layers"
+      ],
+      "description": "GET /v2/<repo>/manifests/<digest>. sha256(exact bytes) must equal the digest in the desired state.",
+      "properties": {
+        "schemaVersion": {
+          "const": 2
+        },
+        "mediaType": {
+          "const": "application/vnd.oci.image.manifest.v1+json"
+        },
+        "artifactType": {
+          "const": "application/vnd.flex.node.v1+json"
+        },
+        "config": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Descriptor"
+            }
+          ],
+          "properties": {
+            "mediaType": {
+              "const": "application/vnd.flex.node.descriptor.v1+json"
+            }
+          }
+        },
+        "layers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "if": {
+              "properties": {
+                "mediaType": {
+                  "const": "application/spdx+json"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/$defs/SbomLayer"
+            },
+            "else": {
+              "$ref": "#/$defs/PayloadLayer"
+            }
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SignatureManifest": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "mediaType",
+        "artifactType",
+        "config",
+        "layers",
+        "subject"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 2
+        },
+        "mediaType": {
+          "const": "application/vnd.oci.image.manifest.v1+json"
+        },
+        "artifactType": {
+          "const": "application/vnd.flex.signature.v1+json"
+        },
+        "config": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Descriptor"
+            }
+          ],
+          "properties": {
+            "mediaType": {
+              "const": "application/vnd.oci.empty.v1+json"
+            }
+          }
+        },
+        "layers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Descriptor"
+              }
+            ],
+            "properties": {
+              "mediaType": {
+                "const": "application/vnd.flex.signature.v1+json"
+              }
+            }
+          }
+        },
+        "subject": {
+          "$ref": "#/$defs/Descriptor"
+        }
+      }
+    },
+    "ReferrersIndex": {
+      "type": "object",
+      "required": [
+        "manifests"
+      ],
+      "description": "GET /v2/<repo>/referrers/<digest>. The engine uses the entries with artifactType application/vnd.flex.signature.v1+json, in order, until one verifies.",
+      "properties": {
+        "schemaVersion": {
+          "const": 2
+        },
+        "mediaType": {
+          "const": "application/vnd.oci.image.index.v1+json"
+        },
+        "manifests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "mediaType",
+              "digest",
+              "artifactType"
+            ],
+            "properties": {
+              "mediaType": {
+                "type": "string"
+              },
+              "digest": {
+                "$ref": "#/$defs/Digest"
+              },
+              "size": {
+                "type": "integer"
+              },
+              "artifactType": {
+                "type": "string"
+              },
+              "annotations": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+ "$comment": "Files vendored from the framework so the engine's tests run without a framework checkout (flexDeploy plan FE-2). Keys are paths in this repository, 'from' is the path in the framework at 'commit'; 'extract' / 'generated' say how a derived file was made. tools/vendor_framework.py --framework <checkout> reports the ones that changed there.",
+ "repository": "BertVanAcker/modular-interoperable-framework",
+ "commit": "0f3586f14792f4a9756ade73b5d236a6290d60ef",
+ "files": {
+  "src/flexengine2/testing/apps/container/Dockerfile": {
+   "from": "probes/p2-reconciling-engine/apps/container/Dockerfile",
+   "sha256": "sha256:1c7f95f9bfd2f0ed152fd757395294eb7fa9c0da31c2d73d302ea60c6da7c4ff"
+  },
+  "src/flexengine2/testing/apps/container/health.sh": {
+   "from": "probes/p2-reconciling-engine/apps/container/health.sh",
+   "sha256": "sha256:d2010d3e5296bb80d7dd5773f071e6c3049647865e72e3da6a1a9bb38d5b8bbf"
+  },
+  "src/flexengine2/testing/apps/container/run.sh": {
+   "from": "probes/p2-reconciling-engine/apps/container/run.sh",
+   "sha256": "sha256:28caa6543e7365e819a451e5eeb93e4e84b73119e41d29dea95e53644586c308"
+  },
+  "src/flexengine2/testing/apps/native/app.py": {
+   "from": "probes/p2-reconciling-engine/apps/native/app.py",
+   "sha256": "sha256:694f41a7807ed0c923efea4aadac25d5fe62b819a83e0913066534f4669a9462"
+  },
+  "tests/vectors/framework/applab/flexp4/__init__.py": {
+   "from": "probes/p4-applab-target/flexp4/__init__.py",
+   "written": "the original puts probe P2 on sys.path, which the vendored modules do not use",
+   "fromSha256": "sha256:cdb2b9f7dc58b3e781d5f28209b1163024ae1d0b38c1c4e3c95370ab63e095f9",
+   "sha256": "sha256:bb98e753de49a56ea6ccd0461c718776340ac998a2be0d2df24667541250f07f"
+  },
+  "tests/vectors/framework/applab/flexp4/appgen.py": {
+   "from": "flexmodel/src/flexmodel/applab/appgen.py",
+   "extract": "def source_hashes",
+   "sha256": "sha256:c6e269db0b2fc7e435c66371599eee28a70e140c1f6890f1627c053e32c57f31"
+  },
+  "tests/vectors/framework/applab/flexp4/ardrelease.py": {
+   "from": "probes/p4-applab-target/flexp4/ardrelease.py",
+   "sha256": "sha256:528156409180aad1210ab37a0c6c835b949af98c00c72027fc03b9d7985d6937"
+  },
+  "tests/vectors/framework/applab/flexp4/fakecli.py": {
+   "from": "probes/p4-applab-target/flexp4/fakecli.py",
+   "sha256": "sha256:31f4a1eea10266f935b6e8a501d4e1e586c84bf5d900f22f7b34a83d0b06da7b"
+  },
+  "tests/vectors/framework/applab/flexp4/hostbuild.py": {
+   "from": "probes/p4-applab-target/flexp4/hostbuild.py",
+   "sha256": "sha256:4323ab4085179d4fbdf638bb0385370b6c0252ce6bda596dcb3d9843acfecde2"
+  },
+  "tests/vectors/framework/config/edge.example.yaml": {
+   "from": "demo/edge/edge.example.yaml",
+   "sha256": "sha256:9f3531ab2e417d8fd6381a4f06aed08910305c3ea0f716eb581a72697165492d"
+  },
+  "tests/vectors/framework/config/plan-3.6-engine.yaml": {
+   "from": "docs/flexengine-v2-plan.md",
+   "extract": "the first ```yaml block after '### 3.6'",
+   "sha256": "sha256:84b7da9d040401bb106b41a42c7abeed6ecd669cc89b73bf3a0dfd82b87de68d"
+  },
+  "tests/vectors/framework/models/uc1/flex-hash.recorded.json": {
+   "from": "examples/models/uc1",
+   "generated": "flex hash examples/models/uc1",
+   "sha256": "sha256:7b5a1b7f5be5019860efde23cc0dbe106460a242a63877a25388e52531bfa067"
+  },
+  "tests/vectors/framework/models/uc1/flex-safety.recorded.json": {
+   "from": "examples/models/uc1",
+   "generated": "flex safety examples/models/uc1 --json",
+   "sha256": "sha256:3b201b4a4d4d326894bd99398e2215acf5c2199cf99f365bcd317f8c2a711653"
+  },
+  "tests/vectors/framework/models/uc1/modules/detection_logger.yaml": {
+   "from": "examples/models/uc1/modules/detection_logger.yaml",
+   "sha256": "sha256:ab0e506856427482e476f458053f8b8e5fc8ebe365a3ac302343df845b0ea8ea"
+  },
+  "tests/vectors/framework/models/uc1/modules/gige_camera.yaml": {
+   "from": "examples/models/uc1/modules/gige_camera.yaml",
+   "sha256": "sha256:7c1a8f357d24d62fdd85aa7ced7ece8ad3baf30c3a41d461600897ee7cdf0843"
+  },
+  "tests/vectors/framework/models/uc1/modules/perception_guard.yaml": {
+   "from": "examples/models/uc1/modules/perception_guard.yaml",
+   "sha256": "sha256:28352b5817ad3acb194d0c578c67ca2d57fe8bf93dd15213852a4889b89bf2d6"
+  },
+  "tests/vectors/framework/models/uc1/modules/safety_gateway.yaml": {
+   "from": "examples/models/uc1/modules/safety_gateway.yaml",
+   "sha256": "sha256:ae8d4bf15df74fd664f4f00943603707cbdb5e1e4169c5a58a900a8011a7c29b"
+  },
+  "tests/vectors/framework/models/uc1/systems/deployment.yaml": {
+   "from": "examples/models/uc1/systems/deployment.yaml",
+   "sha256": "sha256:8152c1db59babe573d06a37639c38e75f8b5b4df3b0ca15710a8edc1d18be95f"
+  },
+  "tests/vectors/framework/models/uc1/systems/system.yaml": {
+   "from": "examples/models/uc1/systems/system.yaml",
+   "sha256": "sha256:ec240bd651ffb7f71489a8e8ffd840eb5344b1816da47d13da9017ae9624fbd2"
+  },
+  "tests/vectors/framework/models/uc1/types/uc1.yaml": {
+   "from": "examples/models/uc1/types/uc1.yaml",
+   "sha256": "sha256:989a7224a3119c4e5c4a6e1121f44bcf777891652f8bf7fb6e725419d1049553"
+  },
+  "tests/vectors/framework/p2/openapi.yaml": {
+   "from": "probes/p2-reconciling-engine/openapi.yaml",
+   "sha256": "sha256:4ba9d8d633d87dc7a5d46582ab54d7337a6177ba29a8e2d647dd547f51a1bb14"
+  },
+  "tests/vectors/framework/plc-sim/ads_plc.py": {
+   "from": "demo/edge/sim/ads_plc.py",
+   "sha256": "sha256:2620e1a6f7f46c43f8a95bb471e413e80907a3cc01226804d426d3ef5ef078a7"
+  },
+  "tests/vectors/framework/plc-sim/modbus_plc.py": {
+   "from": "demo/edge/sim/modbus_plc.py",
+   "sha256": "sha256:3d566aaa7065be5e71b2519dbaacf41926b20886445070106bdd76cdab92dab4"
+  }
+ }
+}

@@ -1,0 +1,12 @@
+{
+ "correlationId": "0e0e638786c94c64a2479fbe5b9f398a",
+ "dep": "guard",
+ "deviceTime": 1792132316.9986215,
+ "health": "unhealthy",
+ "manifestVersion": 7,
+ "restarts": 0,
+ "seq": 24,
+ "state": "Installed",
+ "traceparent": "00-0e0e638786c94c64a2479fbe5b9f398a-351547b793f63d63-01",
+ "version": "1.0.0"
+}

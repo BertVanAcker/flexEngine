@@ -1,31 +1,25 @@
-# Byte-compiled / optimized files
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
-
-# Distribution / packaging
-build/
-dist/
 *.egg-info/
-*.egg
-
-# Virtual environments
 .venv/
 venv/
-env/
-*-venv/
-
-# Runtime logs / workspaces
-logs/
-*.log
-
-# Test / tool caches
 .pytest_cache/
+.ruff_cache/
 .mypy_cache/
+.hypothesis/
 
-# OS
+# Build output (python -m build, packaging/build-wheels.sh)
+build/
+dist/
+
+# Test runs: work dirs and per-run results (results/ itself holds the committed alpha-exit evidence)
+tests/work/
+results/latest/
+.coverage
+.coverage.*
+
+# OS / editors
 .DS_Store
-
-# Editors
-.vscode/
 .idea/
+.vscode/

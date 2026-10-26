@@ -1,0 +1,11 @@
+# venv of the desk runner (flexNode-arduino runner + GUI + the flex step types + deskctl), from the repository root:
+#   python3 -m venv .venv-hwtest && .venv-hwtest/bin/pip install -r hwtest/requirements.txt
+# the pinned runner's own packages (tools/hwtest/requirements.txt of flexNode-arduino 684bc02)
+pyyaml
+pyserial
+redis
+paho-mqtt
+# flex step types: smp_probe (SMP), zenoh_expect, ads_probe, modbus_expect (same pins as flexengine's extras)
+-e .[mcu,plc,relay]
+# deskctl.py: release builds (flex release) and CDR decoding of the relay's samples
+-e ./flexmodel

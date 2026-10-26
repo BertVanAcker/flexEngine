@@ -1,0 +1,16 @@
+// flexEngineV2 os-rauc driver (EV-17): lets the engine (system user `flex`, no login session) reboot the device
+// into the slot `rauc install` just activated. The driver's default rebootCommand is `systemctl reboot`, which asks
+// systemd-logind (org.freedesktop.login1.reboot*); without this rule polkit refuses it for a service user.
+//
+// Install:  sudo install -m 0644 packaging/polkit/50-flexengine-rauc.rules /etc/polkit-1/rules.d/
+// Check:    pkcheck --action-id org.freedesktop.login1.reboot --process $(pgrep -u flex -f "flexengine run")
+//
+// RAUC itself is reached over the system D-Bus (de.pengutronix.rauc, rauc-service); its stock policy lets every
+// local user call it. packaging/dbus/flexengine-rauc.conf restricts it to root and group flex (optional hardening).
+polkit.addRule(function(action, subject) {
+    if (subject.user == "flex" &&
+        (action.id == "org.freedesktop.login1.reboot" ||
+         action.id == "org.freedesktop.login1.reboot-multiple-sessions")) {
+        return polkit.Result.YES;
+    }
+});

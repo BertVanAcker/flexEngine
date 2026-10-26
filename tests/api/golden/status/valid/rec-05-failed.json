@@ -1,0 +1,16 @@
+{
+ "dep": "cx-bridge",
+ "detectSeconds": 0.001,
+ "deviceTime": 1792140855.5933235,
+ "digest": "sha256:fa6ae513fcf69fc530a98751354840ee6ac23973b1620a874d75852a9f25167f",
+ "failFast": true,
+ "failure": "panda/cx runs interface FLEX01_28ebc981b006b003f…, the release expects FLEX01_f4574d6f05c5ad863… (Hello -> HASH_MISMATCH): program not provisioned for this release",
+ "manifestVersion": 2,
+ "reason": "health check failed",
+ "rollbackHealthy": true,
+ "rolledBackTo": "1.0.0",
+ "seq": 8,
+ "state": "Failed",
+ "totalSeconds": 0.02,
+ "version": "1.1.0"
+}

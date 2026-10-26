@@ -1,0 +1,133 @@
+id: EV-HW-07
+title: plc-verify on the Opta (Modbus) and the CX (ADS) with the hold gate
+description: >
+  flexEngineV2 verifies the programs the PLCs run against the released interface hashes (verify only: nothing is
+  downloaded to a PLC): the Opta's hash holding registers over Modbus and the CX bridge's `Hello` RPC over ADS. A GP
+  release that needs the CX bridge layout (`plc:` requirement) is held in Pending until the CX runs that layout; a CX
+  bridge release whose program is not on the CX fails fast and is rolled back; once the program is provisioned by
+  hand (XAE) a re-release verifies; a program swapped behind the engine's back is reported unhealthy. New (L8-PLC
+  s10); complements D2-BRINGUP s5-3/s6-2.
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login"}
+  fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
+  fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda (gateway with drivers.plc-verify)"}
+  cx_net_id: {default: "192.168.50.30.1.1", prompt: "AMS Net ID of the CX (RECORD: XAE target browser)"}
+  cx_ip: {default: "192.168.50.30", prompt: "CX address"}
+  cx_port: {default: "851", prompt: "AMS port of TC3 PLC runtime 1"}
+  ads_local_net_id: {default: "192.168.50.10.1.1", prompt: "AMS Net ID of THIS runner (the Mac; the CX needs a route back to it)"}
+  opta_host: {default: "192.168.50.40", prompt: "Opta address"}
+  opta_port: {default: "502", prompt: "Opta Modbus TCP port"}
+  opta_unit: {default: "1", prompt: "Opta Modbus unit id"}
+  sim: {default: "true", prompt: "simulation hook (dry run only)"}
+setup:
+  - "CX: TwinCAT 3.1.4024 running the generated 1.0 bridge program (D2-BRINGUP s5), ADS routes LattePanda <-> CX and ${ads_local_net_id} <-> CX (SETUP s9-3)"
+  - "Opta: the generated stack_light program with the hash registers 256..271 (D2-BRINGUP s6)"
+  - "engine.yaml of ${gp}: drivers.plc-verify.plcs {panda/cx: {via: ads, amsNetId: ${cx_net_id}, ip: ${cx_ip}, amsPort: ${cx_port}, localNetId: <LattePanda Net ID>}, opta: {via: modbus, host: ${opta_host}, port: ${opta_port}}}; drivers.native; safeStateFile with machine_parked + operator_confirmed true"
+  - "XAE on the Windows PC ready to activate the 1.1 bridge program when the runbook asks"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: engine-up
+    title: "${gp} onboarded and online"
+    fe_status_expect: {device: "${gp}", device_fields: {onboarded: true, online: true}, timeout: 60}
+  - id: capabilities
+    title: "Capabilities: plc-verify, verify only (no download), Opta over Modbus, CX over ADS"
+    http_expect: {url: "${fe_api}/v1/capabilities/${gp}", token_file: "${fe_api_token_file}", json_match: {/x-flex/drivers/plc-verify/download: false, /x-flex/drivers/plc-verify/plcs/opta: modbus, /x-flex/drivers/plc-verify/plcs/panda~1cx: ads}}
+  - id: publish
+    title: Publish CX bridge 1.0.0, Opta stack light 1.0.0, cell controller 1.0.0 / 1.1.0
+    cmd_json_expect: {cmd: "${desk} publish cx_1_0 opta_1_0 cell_1_0 cell_1_1", match: {"/published": {len: 4}}, cmd_timeout: 1800, save: {cx1: "/published[name=cx_1_0]/interfaceHash", opta1: "/published[name=opta_1_0]/interfaceHash"}}
+  - id: opta-hash
+    title: "Opta: hash registers hold the released interface hash"
+    modbus_expect: {host: "${opta_host}", port: "${opta_port}", unit: "${opta_unit}", holding: [256, 16], equals: "${opta1}"}
+  - id: cx-hello
+    title: "CX: `Hello` answers the released bridge hash"
+    ads_probe: {net_id: "${cx_net_id}", ip: "${cx_ip}", port: "${cx_port}", local_net_id: "${ads_local_net_id}", hello_hash: "${cx1}", timeout: 20}
+  - id: deploy-v1
+    title: Deploy cx-bridge 1.0.0, opta-stack 1.0.0 and the cell (needs the CX at the 1.0 layout)
+    run: {cmd: "${desk} deploy ${gp} cx-bridge=cx_1_0 opta-stack=opta_1_0 cell=cell_1_0"}
+  - id: cx-installed
+    title: cx-bridge Installed 1.0.0 (verified over ADS)
+    fe_status_expect: {device: "${gp}", deployment: cx-bridge, state: Installed, version: 1.0.0, health: healthy, timeout: 120}
+  - id: opta-installed
+    title: opta-stack Installed 1.0.0 (verified over Modbus)
+    fe_status_expect: {device: "${gp}", deployment: opta-stack, state: Installed, version: 1.0.0, health: healthy, timeout: 120}
+  - id: cell-installed
+    title: cell Installed 1.0.0 once the CX is verified
+    fe_status_expect: {device: "${gp}", deployment: cell, state: Installed, version: 1.0.0, health: healthy, timeout: 120}
+  - id: verify-only
+    title: "cx-bridge: one `apply` (verify), nothing downloaded or committed"
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} logs --json -n 5000 --device ${gp}", json_lines: true, match: {"": {where: {"/source": actions, "/dep": cx-bridge}, count: 1}}}
+  - id: publish-11
+    title: Publish CX bridge 1.1.0 (new layout)
+    cmd_json_expect: {cmd: "${desk} publish cx_1_1", match: {"/published": {len: 1}}, cmd_timeout: 1800, save: {cx2: "/published/0/interfaceHash"}}
+  - id: deploy-11
+    title: Deploy cx-bridge 1.1.0 and the cell 1.1.0 that needs the new layout
+    run: {cmd: "${desk} deploy ${gp} cx-bridge=cx_1_1 opta-stack=opta_1_0 cell=cell_1_1"}
+  - id: old-program
+    title: The CX still runs the 1.0 program
+    manual:
+      instruction: "Do NOT touch the CX: it keeps running the 1.0 bridge program (the 1.1 layout is not provisioned yet)."
+      confirm: "Does XAE show the 1.0 bridge program running on the CX?"
+      sim: "${sim} plc-set cx @cx_1_0"
+  - id: cx-failed
+    title: cx-bridge 1.1.0 Failed fast (program not provisioned), expectation back to 1.0.0
+    fe_status_expect: {device: "${gp}", deployment: cx-bridge, state: Failed, version: 1.1.0, fields: {failFast: true, rolledBackTo: 1.0.0}, timeout: 60}
+  - id: cell-held
+    title: "cell 1.1.0 held in Pending (PLC not verified)"
+    fe_status_expect: {device: "${gp}", deployment: cell, state: Pending, version: 1.1.0, fields: {reason: {regex: "held: PLC not verified"}}, timeout: 60}
+  - id: cell-not-touched
+    title: Nothing applied for the held cell 1.1.0
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} logs --json -n 5000 --device ${gp}", json_lines: true, match: {"": {where: {"/source": actions, "/dep": cell, "/version": 1.1.0}, count: 0}}}
+  - id: provision
+    title: Provision the 1.1 bridge program on the CX
+    manual:
+      instruction: "In XAE: open the 1.1 bridge project (cx_route.py export of the 1.1.0 release), activate the configuration and start the PLC."
+      confirm: "Is the 1.1 bridge program running on the CX?"
+      sim: "${sim} plc-set cx @cx_1_1"
+  - id: cx-hello-11
+    title: "CX: `Hello` now answers the 1.1 hash"
+    ads_probe: {net_id: "${cx_net_id}", ip: "${cx_ip}", port: "${cx_port}", local_net_id: "${ads_local_net_id}", hello_hash: "${cx2}", timeout: 30}
+  - id: rerelease
+    title: Re-release the bridge as 1.1.1 (same layout, forced)
+    cmd_json_expect: {cmd: "${desk} publish cx_1_1_1", match: {"/published/0/interfaceHash": "${cx2}"}, cmd_timeout: 1800}
+  - id: deploy-111
+    title: Deploy cx-bridge 1.1.1 with the cell 1.1.0
+    run: {cmd: "${desk} deploy ${gp} cx-bridge=cx_1_1_1 opta-stack=opta_1_0 cell=cell_1_1"}
+  - id: cx-111-installed
+    title: cx-bridge Installed 1.1.1
+    fe_status_expect: {device: "${gp}", deployment: cx-bridge, state: Installed, version: 1.1.1, health: healthy, timeout: 120}
+  - id: cell-released
+    title: cell 1.1.0 Installed (hold released)
+    fe_status_expect: {device: "${gp}", deployment: cell, state: Installed, version: 1.1.0, health: healthy, timeout: 120}
+  - id: opta-drift
+    title: Replace the Opta program behind the engine's back
+    manual:
+      instruction: "In the Arduino PLC IDE load the empty project onto the Opta (or any program without the stack_light hash registers)."
+      sim: "${sim} plc-set opta zero"
+  - id: opta-unhealthy
+    title: opta-stack reported unhealthy (supervision)
+    fe_status_expect: {device: "${gp}", deployment: opta-stack, state: Installed, health: unhealthy, timeout: 60}
+  - id: opta-restore
+    title: Load the stack_light program back onto the Opta
+    manual:
+      instruction: "Load the generated stack_light program (opta_export.py) back onto the Opta."
+      sim: "${sim} plc-set opta @opta_1_0"
+  - id: opta-healthy
+    title: opta-stack healthy again
+    fe_status_expect: {device: "${gp}", deployment: opta-stack, state: Installed, version: 1.0.0, health: healthy, timeout: 60}
+  - id: opta-hash-again
+    title: "Opta: hash registers back to the released hash"
+    modbus_expect: {host: "${opta_host}", port: "${opta_port}", unit: "${opta_unit}", holding: [256, 16], equals: "${opta1}"}

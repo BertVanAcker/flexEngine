@@ -1,0 +1,9 @@
+{
+ "dep": "cell",
+ "deviceTime": 1792140855.5958142,
+ "manifestVersion": 2,
+ "reason": "held: PLC not verified: plc:cx-bridge@FLEX01_f4574d6f05c5ad86322215f088f9b59b72d02b12a3768f24cdf5976313e360a6",
+ "seq": 9,
+ "state": "Pending",
+ "version": "1.1.0"
+}

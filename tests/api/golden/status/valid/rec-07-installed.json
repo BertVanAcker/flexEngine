@@ -1,0 +1,10 @@
+{
+ "dep": "cx-bridge",
+ "deviceTime": 1792140857.6459155,
+ "health": "unhealthy",
+ "manifestVersion": 2,
+ "restarts": 0,
+ "seq": 10,
+ "state": "Installed",
+ "version": "1.0.0"
+}

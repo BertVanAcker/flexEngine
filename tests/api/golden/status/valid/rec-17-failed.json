@@ -1,0 +1,18 @@
+{
+ "dep": "servo",
+ "detectSeconds": 0.675,
+ "deviceTime": 1792140121.758328,
+ "digest": "sha256:0f2fae932aafcc90521f20cf2767135c142bd8bde9dba3a57b5a979591f59c59",
+ "failFast": true,
+ "failure": "module fault on gw1.mcu0: fail-fast: step() error (last rc -5) -> reverted",
+ "faultToHealthySeconds": 0.782,
+ "faultVisibleAt": 1792140120.976,
+ "manifestVersion": 3,
+ "reason": "health check failed",
+ "rollbackHealthy": true,
+ "rolledBackTo": "2.0.0",
+ "seq": 8,
+ "state": "Failed",
+ "totalSeconds": 3.111,
+ "version": "3.0.0"
+}

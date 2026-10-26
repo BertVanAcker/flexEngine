@@ -1,0 +1,125 @@
+# Release catalog of the D2 Tier-1 desk (deskctl.py --catalog): every release name the EV-HW runbooks deploy, how
+# deskctl builds and publishes it, and how it is deployed. Paths are relative to this file; `~` is the runner's home.
+# The framework paths assume a modular-interoperable-framework checkout next to this repository.
+# RECORD = fill in on the bench (the values below follow demo/lab/inventory.example.yaml and the D2 runbooks).
+# The dry runs do not use this file: simdesk.py writes the same names for the simulated desk.
+model: ../../../modular-interoperable-framework/examples/models/uc1                      # container/native stand-in releases (perception_guard, ...)
+releaseKey: ~/.flexhwtest/release-ed25519.key          # RECORD: copy of the lab release key (/var/lib/flex/keys/...)
+keys:
+  rogue: ~/.flexhwtest/rogue-ed25519.key               # created when missing: a key no device trusts (EV-HW-08)
+work: ~/.flexhwtest/work                               # payload cache, published.json
+runtime: docker
+flexRelease:                                           # `flex release` settings for the MCU and PLC targets
+  deployment: d_pick_lab
+  mcu:
+    module_key: ~/.flexhwtest/module-ec-p256.pem       # RECORD: the FLXM signing key the Portenta base image trusts
+    edk:
+      cortex-m7-hard: ../../../modular-interoperable-framework/probes/p3-mcu-hotload/build/edk-arduino_portenta_h7_m7/flexmcu-edk
+releases:
+  # ---- EV-HW-02 / 09: containers on the LattePanda (stand-in app; 1.2.0 fails its health check) ----------------
+  app_v1: {module: perception_guard, version: 1.0.0, driver: container,
+           build: {kind: container, approvers: [alice, bob], runOptions: {devices: [/dev/dri]}}}
+  app_v2: {module: perception_guard, version: 1.1.0, driver: container,
+           build: {kind: container, approvers: [alice, bob], runOptions: {devices: [/dev/dri]}}}
+  app_bad: {module: perception_guard, version: 1.2.0, driver: container,
+            build: {kind: container, failHealth: true, approvers: [alice, bob], runOptions: {devices: [/dev/dri]}}}
+  app_safety: {module: perception_guard, version: 1.3.0, driver: container,
+               activation: {requires: [machine_parked, operator_confirmed]},
+               build: {kind: container, approvers: [alice, bob], runOptions: {devices: [/dev/dri]}}}
+  # ---- EV-HW-01 / 03 / 08 / 10: native stand-in app (process/systemd driver) ------------------------------------
+  dl_v1: {module: detection_logger, version: 1.0.0, driver: native, build: {kind: native}}
+  dl_v2: {module: detection_logger, version: 1.1.0, driver: native, build: {kind: native}}
+  dl_v3: {module: detection_logger, version: 2.0.0, driver: native, build: {kind: native}}
+  dl_unsigned: {module: detection_logger, version: 3.0.0, driver: native, build: {kind: native, sign: false}}
+  dl_rogue: {module: detection_logger, version: 3.1.0, driver: native, build: {kind: native, key: rogue}}
+  dl_tamper: {module: detection_logger, version: 3.2.0, driver: native, build: {kind: native}}
+  # ---- EV-HW-04 / 05: Portenta H7 M7 (cortex-m7-hard layer) ---------------------------------------------------------
+  servo_2:
+    module: servo_drive
+    version: 2.0.0
+    driver: mcu-module
+    parameters: {_interfaceHash: "@interfaceHash", open_mm: 80, close_mm: 20}
+    build: {kind: flex-release, model: ../../../modular-interoperable-framework/examples/models/demo-pick, targets: [
+      {name: servo_drive, kind: mcu-module, instance: servo, version: 2.0.0,
+       src: ../../../modular-interoperable-framework/probes/p3-mcu-hotload/agent_src/servo_drive, defines: [SERVO_GAIN=0.05f]}]}
+  servo_stall:
+    module: servo_drive
+    version: 3.0.0
+    driver: mcu-module
+    parameters: {_interfaceHash: "@interfaceHash", open_mm: 80, close_mm: 20}
+    build: {kind: flex-release, model: ../../../modular-interoperable-framework/examples/models/demo-pick, targets: [
+      {name: servo_drive, kind: mcu-module, instance: servo, version: 3.0.0,
+       src: ../../../modular-interoperable-framework/probes/p3-mcu-hotload/agent_src/servo_drive, defines: [SERVO_GAIN=0.05f, FLEX_FAULT_STALL=40]}]}
+  grip_1:
+    module: gripper_station
+    version: 1.0.0
+    driver: mcu-module
+    parameters: {_interfaceHash: "@interfaceHash", max_force_n: 30}
+    build: {kind: flex-release, model: ../../../modular-interoperable-framework/examples/models/demo-pick, targets: [
+      {name: gripper_station, kind: mcu-module, instance: gripper, version: 1.0.0,
+       rust_src: ../../../modular-interoperable-framework/probes/p1-model-to-targets/agent_src/rust-nostd/src}]}
+  servo_abi2:
+    # RECORD: an ABI-2 build for the M7: python -m flexp3.build_module --edk <portenta edk> --gen <servo gen>
+    #         --version 4.0.0-abi2 --cpu cortex-m7-hard --abi-major 2 --key <module key> -o servo_drive-abi2-m7.flxm
+    module: servo_drive
+    version: 4.0.0-abi2
+    driver: mcu-module
+    parameters: {_interfaceHash: "@interfaceHash", open_mm: 80, close_mm: 20}
+    build: {kind: mcu-flxm, flxm: ~/.flexhwtest/portenta/servo_drive-abi2-m7.flxm,
+            genMeta: ../../../modular-interoperable-framework/probes/p3-mcu-hotload/build/gen/servo_drive}
+  # base images signed for MCUboot by demo/lab/portenta-build-flash.sh sign --version X (RECORD the paths)
+  fw_1_0_0: {module: flexmcu_base, version: 1.0.0, driver: mcu-firmware,
+             build: {kind: mcu-firmware, image: ~/.flexhwtest/portenta/base-1.0.0.signed.bin,
+                     health: {minSeconds: 20, timeoutSeconds: 40}}}     # 20 s in TESTING: the power-cut window
+  fw_1_1_0: {module: flexmcu_base, version: 1.1.0, driver: mcu-firmware,
+             build: {kind: mcu-firmware, image: ~/.flexhwtest/portenta/base-1.1.0.signed.bin}}
+  fw_1_2_0: {module: flexmcu_base, version: 1.2.0, driver: mcu-firmware,         # the FAULT build: never confirms
+             build: {kind: mcu-firmware, image: ~/.flexhwtest/portenta/base-1.2.0-fault.signed.bin}}
+  # ---- EV-HW-06: UNO Q App Lab (published by unoq-setup.sh build-app + flex release; no build here) ------------------
+  gh_1_0_0: {module: uc3_greenhouse, version: 1.0.0, driver: applab, parameters: {ctl.open_above_c: 25.0}}
+  gh_1_1_0: {module: uc3_greenhouse, version: 1.1.0, driver: applab, parameters: {ctl.open_above_c: 25.0}}
+  gh_1_2_0: {module: uc3_greenhouse, version: 1.2.0, driver: applab, parameters: {ctl.open_above_c: 25.0}}
+  gh_1_3_0: {module: uc3_greenhouse, version: 1.3.0, driver: applab, parameters: {ctl.open_above_c: 25.0}}
+  # ---- EV-HW-07: plc-verify (verify only) + the cell controller held on the CX bridge layout -------------------------
+  cx_1_0:
+    module: pick_cell_bridge
+    version: 1.0.0
+    driver: plc-verify
+    build: {kind: flex-release, model: ../../../modular-interoperable-framework/examples/models/demo-pick,
+            targets: [{name: cx_bridge, kind: plc, domain: panda/cx, version: 1.0.0}]}
+  cx_1_1:   # RECORD: the model with the 1.1 bridge layout (e.g. cell_interlock + door_debounce_ms, as simdesk.py does)
+    module: pick_cell_bridge
+    version: 1.1.0
+    driver: plc-verify
+    build: {kind: flex-release, model: ~/.flexhwtest/models/demo-pick-v2,
+            targets: [{name: cx_bridge, kind: plc, domain: panda/cx, version: 1.1.0}]}
+  cx_1_1_1:
+    module: pick_cell_bridge
+    version: 1.1.1
+    driver: plc-verify
+    build: {kind: flex-release, model: ~/.flexhwtest/models/demo-pick-v2, force: true,
+            targets: [{name: cx_bridge, kind: plc, domain: panda/cx, version: 1.1.1}]}
+  opta_1_0:
+    module: stack_light
+    version: 1.0.0
+    driver: plc-verify
+    build: {kind: flex-release, model: ../../../modular-interoperable-framework/examples/models/demo-pick,
+            targets: [{name: opta_stack_light, kind: plc, device: opta, version: 1.0.0}]}
+  cell_1_0: {module: cell_controller, version: 1.0.0, driver: native,
+             activation: {requires: ["plc:cx-bridge@@iface:cx_1_0"]},
+             build: {kind: native, model: ../../../modular-interoperable-framework/examples/models/demo-pick}}
+  cell_1_1: {module: cell_controller, version: 1.1.0, driver: native,
+             activation: {requires: ["plc:cx-bridge@@iface:cx_1_1"]},
+             build: {kind: native, model: ../../../modular-interoperable-framework/examples/models/demo-pick}}
+  # ---- EV-HW-11: RAUC bundles for the LattePanda eMMC (RECORD: built and signed with the lab's RAUC PKI) ------------
+  os_1_1: {module: os_image, version: 1.1.0, driver: os-rauc,
+           build: {kind: os-rauc, bundle: ~/.flexhwtest/rauc/os-1.1.0.raucb, compatible: lattepanda-3-delta}}
+  os_no_boot: {module: os_image, version: 2.0.0, driver: os-rauc,     # a rootfs without the engine
+               build: {kind: os-rauc, bundle: ~/.flexhwtest/rauc/os-2.0.0-noengine.raucb, compatible: lattepanda-3-delta}}
+  os_bad_health: {module: os_image, version: 2.1.0, driver: os-rauc,  # boots, its health check fails
+                  build: {kind: os-rauc, bundle: ~/.flexhwtest/rauc/os-2.1.0-badhealth.raucb, compatible: lattepanda-3-delta}}
+  os_1_2: {module: os_image, version: 1.2.0, driver: os-rauc,
+           build: {kind: os-rauc, bundle: ~/.flexhwtest/rauc/os-1.2.0.raucb, compatible: lattepanda-3-delta}}
+  os_1_3: {module: os_image, version: 1.3.0, driver: os-rauc,
+           build: {kind: os-rauc, bundle: ~/.flexhwtest/rauc/os-1.3.0.raucb, compatible: lattepanda-3-delta,
+                   health: {type: os-rauc, periodSeconds: 1, successThreshold: 1, timeoutSeconds: 300, minSeconds: 20}}}

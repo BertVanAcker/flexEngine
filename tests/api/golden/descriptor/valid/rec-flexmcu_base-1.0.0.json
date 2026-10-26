@@ -1,0 +1,27 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "health": {
+  "periodSeconds": 0.3,
+  "successThreshold": 3,
+  "timeoutSeconds": 8,
+  "type": "mcu-base"
+ },
+ "interfaceHash": null,
+ "kind": "FlexNodeDescriptor",
+ "language": "c",
+ "module": "flexmcu_base",
+ "moduleVersion": "1.0.0",
+ "parameters": [],
+ "ports": [],
+ "profiles": [
+  "mcu-firmware"
+ ],
+ "releaseVersion": "1.0.0",
+ "restartPolicy": {},
+ "safetyClass": "none",
+ "x-flex-mcu": {
+  "board": "mps2/an385",
+  "bootloader": "mcuboot",
+  "moduleAbi": "1.0"
+ }
+}

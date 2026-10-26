@@ -1,0 +1,41 @@
+{
+ "$comment": "Pinned flexNode-arduino desk-runbook tooling (plan 8.2 option (c), DL-7). hwtest/upstream.py fetches exactly these files (git archive of a local checkout, else a shallow fetch of the commit) into a cache and checks every sha256; nothing of it is vendored here. To move the pin: update the commits, run `python hwtest/upstream.py pin --repo <checkout>` and re-run tests/hwtest.",
+ "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+ "license": "LGPL-2.1 (LICENSE.txt of the pinned commit; fetched with the files, used unmodified)",
+ "sources": [
+  {
+   "name": "runner",
+   "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+   "ref": "porting-strategy",
+   "files": {
+    "tools/hwtest/runbook.py": "38988d62cda66ffaad0440a2621838630f7dc8cd1e0ddea0ee54f4fdbb578590",
+    "tools/hwtest/requirements.txt": "19098032a94d4a62f74b0948813daedf3fc7e9e5ee79ee1150005245499a3bb3",
+    "tests/hardware/README.md": "154fa5218b69bb44409a69121fc522ffa97df0a6eea362cac213095f3613db98",
+    "LICENSE.txt": "20c17d8b8c48a600800dfd14f95d5cb9ff47066a9641ddeab48dc54aec96e331"
+   }
+  },
+  {
+   "name": "gui",
+   "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+   "ref": "claude/runbook-execution-gui-n1awvw",
+   "$comment": "the browser GUI (plan 8.1) is not on porting-strategy yet; only its gui.py + hwgui/ are taken from here, they run on the runner above",
+   "files": {
+    "tools/hwtest/gui.py": "f65d843f47e70636b4130f4936f33b5971342eb65f56f48672dede8fa6c02d4f",
+    "tools/hwtest/hwgui/catalog.py": "1efd4caf726d8ccc7b3d7b381080badafeddd809f52f4f9d04c5f5c331c36619",
+    "tools/hwtest/hwgui/engine.py": "35c9a3afd27e39edff045e9d9f9d7bee2e4ed6e2e3e189976d14e1c5f133ebfa",
+    "tools/hwtest/hwgui/history.py": "b8d9b45caa5e5f9b7399e905ec61096d9632fc1d2bf557d620875f7fb6c8ea36",
+    "tools/hwtest/hwgui/meta.yaml": "39371b056a99425d910e9db62bcc0748cd8a07eb884635d19176d9d9dbee19ad",
+    "tools/hwtest/hwgui/server.py": "256a4ac3b7d933653ade54f5486233f25786efc023454eae85423f320a51acfc",
+    "tools/hwtest/hwgui/static/app.js": "026033f209897e16284bef74fb804e117c82fe01855d777da18a66532b28d85e",
+    "tools/hwtest/hwgui/static/boards/generic_top.svg": "aa2dbfb655055fab906634b6e927f9829ab670ba13304bf4454bed20c535e100",
+    "tools/hwtest/hwgui/static/boards/machine_control_top.svg": "e4eeb46d2f469f8646fdf747b3ff8e242c0dd073ddcd2e302b3573513712a278",
+    "tools/hwtest/hwgui/static/boards/opta_top.svg": "353fdefbc646f73a5af05e4a5d0183a20879c7945323d936eaea10d36a486cf7",
+    "tools/hwtest/hwgui/static/boards/portenta_h7_bottom.svg": "5675ec72948511a48e2bb50b1a728f565fe4993d1f4adc3aee251fa8d3f8dd97",
+    "tools/hwtest/hwgui/static/boards/portenta_h7_top.svg": "2de45138f8e9d534e2fc8afc33890e7ce7f1b753523fbe012c80d203b44b7abf",
+    "tools/hwtest/hwgui/static/index.html": "2f5ac604ae0c532312906f5efb385a6de47705dbcb5ecc78f60de88aa40880c6",
+    "tools/hwtest/hwgui/static/style.css": "1ea5234cf2b15387a90b052f37cd52fda2087a8554dcf9f91efa603c1fe6ecc3",
+    "tools/hwtest/hwgui/test_gui.py": "086672dad6f228f855f7f43641087417e4665c458e92a47ceb5c47aa51568f03"
+   }
+  }
+ ]
+}

@@ -1,0 +1,75 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "deployments": [
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda.portenta",
+    "id": "servo",
+    "name": "servo",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "servo_drive",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "servo_drive",
+       "properties": {
+        "digest": "sha256:15ce7875e1e7371700e636f6f4acdafe531c2bcde4463bb46b7942721c74acde",
+        "repository": "oci://127.0.0.1:42721/flexnodes/servo_drive",
+        "revision": "2.0.0",
+        "size": 1495
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {
+     "_interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+     "close_mm": 20,
+     "open_mm": 80
+    }
+   },
+   "x-flex-driver": "mcu-module",
+   "x-flex-safetyClass": "none"
+  },
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda.portenta",
+    "id": "gripper",
+    "name": "gripper",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "gripper_station",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "gripper_station",
+       "properties": {
+        "digest": "sha256:635e43c04c4106642c6b285e469ad1a604a3e43ef438aa929c58ae138a2c6223",
+        "repository": "oci://127.0.0.1:42721/flexnodes/gripper_station",
+        "revision": "1.0.0",
+        "size": 1509
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {
+     "_interfaceHash": "FLEX01_e70b874bb936360f699d0a7371cac4e142e5b855fde1b8ceee24f4eb03f42e08",
+     "max_force_n": 30
+    }
+   },
+   "x-flex-driver": "mcu-module",
+   "x-flex-safetyClass": "none"
+  }
+ ],
+ "deviceId": "panda.portenta",
+ "kind": "DesiredState",
+ "manifestVersion": 3
+}

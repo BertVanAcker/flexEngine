@@ -1,0 +1,9 @@
+{
+ "dep": "x",
+ "deviceTime": 1792195203.0,
+ "manifestVersion": null,
+ "reason": "supervisor: restarted",
+ "restarts": 1,
+ "seq": 1,
+ "state": "Installed"
+}
