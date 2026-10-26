@@ -1,0 +1,35 @@
+{
+ "annotations": {
+  "dev.flex.interfaceHash": "FLEX01_0d4b1a3464d19eab5c2ccb456f80c90f8555e9c58d8534b861f69def9e14d6bb",
+  "dev.flex.safetyClass": "none",
+  "org.opencontainers.image.title": "cell_controller",
+  "org.opencontainers.image.version": "1.0.0"
+ },
+ "artifactType": "application/vnd.flex.node.v1+json",
+ "config": {
+  "digest": "sha256:8f1282487e0adee2c8643fbb57d85feb8ebeccac20cba2e8f3ee931850db6383",
+  "mediaType": "application/vnd.flex.node.descriptor.v1+json",
+  "size": 1576
+ },
+ "layers": [
+  {
+   "annotations": {
+    "dev.flex.platform": "linux/any+python3",
+    "dev.flex.profile": "native"
+   },
+   "digest": "sha256:3e99646c9f13506a20eb08ff3b77aa3265187a4cc351c5fd6856180c5ebce798",
+   "mediaType": "application/vnd.flex.payload.native.v1.tar+gzip",
+   "size": 1097
+  },
+  {
+   "annotations": {
+    "dev.flex.role": "sbom"
+   },
+   "digest": "sha256:420a6d6a7dbc195206d803058550378eb7ac57c0e5e5029badd3758d0e153934",
+   "mediaType": "application/spdx+json",
+   "size": 729
+  }
+ ],
+ "mediaType": "application/vnd.oci.image.manifest.v1+json",
+ "schemaVersion": 2
+}

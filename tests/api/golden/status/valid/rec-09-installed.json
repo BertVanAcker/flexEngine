@@ -1,0 +1,15 @@
+{
+ "applySeconds": 0.024,
+ "correlationId": "5e5f256237fbee5038923ce95cc810d1",
+ "dep": "cx-bridge",
+ "deviceTime": 1792130920.938254,
+ "digest": "sha256:c9af288328e3d3eef605e377177cdc93e4f04bc330a4363d2f70cda05a3c1220",
+ "health": "healthy",
+ "healthGateSeconds": 0.013,
+ "interfaceHash": "FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72",
+ "manifestVersion": 1,
+ "seq": 2,
+ "state": "Installed",
+ "traceparent": "00-5e5f256237fbee5038923ce95cc810d1-1ce93ccc7270802e-01",
+ "version": "1.0.0"
+}

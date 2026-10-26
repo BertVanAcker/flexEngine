@@ -1,0 +1,183 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "deployments": [
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda",
+    "id": "cx-bridge",
+    "name": "cx-bridge",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "pick_cell_bridge",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "pick_cell_bridge",
+       "properties": {
+        "digest": "sha256:c9af288328e3d3eef605e377177cdc93e4f04bc330a4363d2f70cda05a3c1220",
+        "repository": "oci://127.0.0.1:21700/flexnodes/pick_cell_bridge",
+        "revision": "1.0.0",
+        "size": 1096
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {}
+   },
+   "x-flex-activation": {
+    "requires": [
+     "machine_parked",
+     "operator_confirmed"
+    ]
+   },
+   "x-flex-driver": "plc-verify",
+   "x-flex-safetyClass": "safety-relevant"
+  },
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda",
+    "id": "opta-stack",
+    "name": "opta-stack",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "stack_light",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "stack_light",
+       "properties": {
+        "digest": "sha256:4500c221ee70967ddce8e87c573a049fa07b80e203f5432cbb9df5ec3fc5faf7",
+        "repository": "oci://127.0.0.1:21700/flexnodes/stack_light",
+        "revision": "1.0.0",
+        "size": 1084
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {}
+   },
+   "x-flex-driver": "plc-verify",
+   "x-flex-safetyClass": "none"
+  },
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda",
+    "id": "cell",
+    "name": "cell",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "cell_controller",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "cell_controller",
+       "properties": {
+        "digest": "sha256:ac39669ac224e4290b029ec62344e752c6aa107409c128dfd7b8d94955aa58cd",
+        "repository": "oci://127.0.0.1:21700/flexnodes/cell_controller",
+        "revision": "1.1.0",
+        "size": 1245
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {
+     "opta": "172.17.0.1:59879"
+    }
+   },
+   "x-flex-activation": {
+    "requires": [
+     "plc:cx-bridge@FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72"
+    ]
+   },
+   "x-flex-driver": "container",
+   "x-flex-safetyClass": "none"
+  },
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda",
+    "id": "planner",
+    "name": "planner",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "grasp_planner",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "grasp_planner",
+       "properties": {
+        "digest": "sha256:d7ea3d2ba979a73fd683134e08bcb94fc0dddb11027f111cbb3eb756fcdd361a",
+        "repository": "oci://127.0.0.1:21700/flexnodes/grasp_planner",
+        "revision": "1.0.2",
+        "size": 1239
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {}
+   },
+   "x-flex-activation": {
+    "requires": [
+     "plc:cx-bridge@FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72"
+    ]
+   },
+   "x-flex-driver": "container",
+   "x-flex-safetyClass": "none"
+  },
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda",
+    "id": "guard",
+    "name": "guard",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "perception_guard",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "perception_guard",
+       "properties": {
+        "digest": "sha256:9105ba8e958077c4861d71fac85dcd633f10af023a4792807a37ed222b75fed3",
+        "repository": "oci://127.0.0.1:21700/flexnodes/perception_guard",
+        "revision": "1.0.0",
+        "size": 1259
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {}
+   },
+   "x-flex-activation": {
+    "requires": [
+     "machine_parked",
+     "operator_confirmed",
+     "plc:cx-bridge@FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72"
+    ]
+   },
+   "x-flex-driver": "container",
+   "x-flex-safetyClass": "safety-relevant"
+  }
+ ],
+ "deviceId": "panda",
+ "kind": "DesiredState",
+ "manifestVersion": 7
+}

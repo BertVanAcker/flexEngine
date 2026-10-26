@@ -1,0 +1,122 @@
+id: EV-HW-09
+title: Crash and power-cycle recovery on the LattePanda
+description: >
+  The engine is killed (SIGKILL; systemd restarts it) at steady state and while a release is in its health gate,
+  and the LattePanda loses power during an update. Afterwards the engine adopts what runs (no duplicate apply),
+  finishes or repeats the interrupted install at most once, brings the workloads back after the boot, and keeps its
+  state (manifestVersion, outbox). Replaces the L3-P2 s4/s5 procedure; complements s3 (the Quadlet cold-boot case
+  follows with EV-18).
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
+  fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
+  fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API (DA-7: one per desk)"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  journal_source: {default: journal, prompt: "engine log source: journal (journalctl -u flexengine) or file:<path>"}
+  svc: {default: "sudo systemctl", prompt: "service control on the LattePanda"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda (Docker)"}
+  dep: {default: pg, prompt: "deployment id"}
+  rt: {default: docker, prompt: "container CLI on the LattePanda"}
+  lp_up_host: {default: lattepanda.lab, prompt: "address that answers once the LattePanda is up again"}
+  lp_up_port: {default: "8781", prompt: "port that answers once the engine is up again (the local.tcp bind)"}
+  power_cut: {default: "", prompt: "simulation hook for the power cut (dry run only)"}
+setup:
+  - "LattePanda: EV-HW-01 and EV-HW-02 passed; flexengine.service has Restart=on-failure (packaging/systemd)"
+  - "Docker containers come back after a power cut only through the engine (no --restart=always on flex_* containers)"
+  - "You can pull and re-insert the LattePanda's power plug (12 V DC barrel) safely"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: engine-up
+    title: "${gp} onboarded and online"
+    fe_status_expect: {device: "${gp}", device_fields: {onboarded: true, online: true}, timeout: 60}
+  - id: publish
+    title: Publish 1.0.0 and 1.1.0
+    cmd_json_expect: {cmd: "${desk} publish app_v1 app_v2", match: {"/published": {len: 2}}, cmd_timeout: 1200}
+  - id: deploy-v1
+    title: Deploy 1.0.0
+    run: {cmd: "${desk} deploy ${gp} ${dep}=app_v1"}
+  - id: v1-installed
+    title: 1.0.0 Installed and healthy
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 240}
+  - id: container-started
+    title: Remember when the container started
+    ssh_run: {host: "${lp}", cmd: "${rt} inspect -f 'started={{.State.StartedAt}}' flex_${gp}_${dep}", match: "started=(\\S+)", save: {started: 1}}
+  - id: kill-steady
+    title: SIGKILL the engine at steady state (systemd restarts it)
+    ssh_run: {host: "${lp}", cmd: "${svc} kill -s KILL flexengine"}
+  - id: back-steady
+    title: Engine back, deployment adopted (Installed, healthy)
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 90}
+  - id: same-container
+    title: The same container still runs (adopted, not restarted)
+    ssh_run: {host: "${lp}", cmd: "${rt} inspect -f 'started={{.State.StartedAt}} running={{.State.Running}}' flex_${gp}_${dep}", match: "started=${started} running=true"}
+  - id: no-duplicate
+    title: No duplicate apply after the restart
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} logs --json -n 5000 --device ${gp}", json_lines: true, match: {"": {where: {"/source": actions, "/dep": "${dep}", "/action": apply}, count: 1}}}
+  - id: mark-gate
+    title: History mark before the update
+    fe_history_mark: {name: gate, device: "${gp}"}
+  - id: deploy-v2
+    title: Update to 1.1.0
+    run: {cmd: "${desk} deploy ${gp} ${dep}=app_v2"}
+  - id: in-gate
+    title: Wait until 1.1.0 is installing (in its health gate)
+    fe_history_expect: {since: gate, device: "${gp}", match: [{dep: "${dep}", state: Installing, version: 1.1.0}], timeout: 120, every: 0.3}
+  - id: kill-gate
+    title: SIGKILL the engine during the gate
+    ssh_run: {host: "${lp}", cmd: "${svc} kill -s KILL flexengine"}
+  - id: gate-resumed
+    title: Install finished after the restart
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.1.0, health: healthy, timeout: 300}
+  - id: gate-once
+    title: "1.1.0 applied once, twice only when the kill interrupted the apply itself (EV-13 crash-resume rule)"
+    note: "A second apply is correct only if the journal still named 1.1.0 and the container did not run at the restart; on the bench the kill normally lands in the gate (count 1)."
+    cmd_json_expect: {host: "${fe_host}", cmd: "${fe} logs --json -n 5000 --device ${gp}", json_lines: true, match: {"": {where: {"/source": actions, "/dep": "${dep}", "/action": apply, "/version": 1.1.0}, count: {gte: 1, lte: 2}}}}
+  - id: one-container
+    title: Exactly one container for the deployment (no half state)
+    ssh_run: {host: "${lp}", cmd: "${rt} ps -a -q --filter name=^flex_${gp}_${dep}$ | wc -l", match: "^1$"}
+  - id: state-before
+    title: Remember the accepted manifestVersion
+    fe_status_expect: {device: "${gp}", save: {mv_before: /manifestVersion}, timeout: 10}
+  - id: mark-power
+    title: History mark before the power cut
+    fe_history_mark: {name: power, device: "${gp}"}
+  - id: deploy-v1-again
+    title: Roll forward to 1.0.0 again (an update that the power cut interrupts)
+    run: {cmd: "${desk} deploy ${gp} ${dep}=app_v1"}
+  - id: in-update
+    title: Wait until the update is installing
+    fe_history_expect: {since: power, device: "${gp}", match: [{dep: "${dep}", state: Installing, version: 1.0.0}], timeout: 120, every: 0.3}
+  - id: power-cut
+    title: Power cut during the update
+    power_cycle:
+      instruction: "Pull the LattePanda's power plug NOW, wait 5 s, plug it back in."
+      wait_up: {host: "${lp_up_host}", port: "${lp_up_port}"}
+      simulate: "${power_cut}"
+      timeout: 300
+  - id: after-boot
+    title: After the boot the workload runs again (Installed 1.0.0, healthy)
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", state: Installed, version: 1.0.0, health: healthy, timeout: 300}
+  - id: container-after-boot
+    title: Container 1.0.0 running
+    ssh_run: {host: "${lp}", cmd: "${rt} inspect -f '{{index .Config.Labels \"dev.flex.version\"}} {{.State.Running}}' flex_${gp}_${dep}", match: "^1\\.0\\.0 true"}
+  - id: state-survives
+    title: State survives (manifestVersion not older than before, outbox delivered)
+    fe_status_expect: {device: "${gp}", device_fields: {manifestVersion: {gte: "${mv_before}"}, outboxLength: 0, online: true}, timeout: 120}
+  - id: cleanup
+    title: Remove the deployment
+    run: {cmd: "${desk} deploy ${gp}"}
+  - id: removed
+    title: "${dep} removed"
+    fe_status_expect: {device: "${gp}", deployment: "${dep}", absent: true, timeout: 120}

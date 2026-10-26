@@ -1,0 +1,27 @@
+{
+ "$comment": "TEST KEYS ONLY (derived from public seeds).",
+ "cloud": {
+  "keyId": "ed25519:46f6d9ec4bf6bb97",
+  "private": "1fCA9KUqIwCO26RsHjswnmmkp+HoJqT/9bdiVKgrGYg=",
+  "public": "BfHCoiq9wQ0OVJSiADFVNQ3qmosCN/iePy3lj0kn0dM=",
+  "seed": "flexengine2 test vector key: cloud"
+ },
+ "device": {
+  "keyId": "ed25519:979d1484a9791e5a",
+  "private": "hQofZB6/ktPZ/2WZ2ZXQosFulxIvEWjYYsZUndp1E0I=",
+  "public": "ADD1JLePUCRk2ru8J4dSMKCidT9DvaRQ7FJhEREkYjg=",
+  "seed": "flexengine2 test vector key: device"
+ },
+ "release": {
+  "keyId": "ed25519:433d237a047f2138",
+  "private": "1koHKozZHfSfFLJWqlXDSDY7szc+bRd/Fw4aYjhMRAs=",
+  "public": "ImzAmVMOek9Xw/KZJQ9vUjBCBms96JhS9F1HnIR0HpM=",
+  "seed": "flexengine2 test vector key: release"
+ },
+ "rogue": {
+  "keyId": "ed25519:2bb78d9721e0dfca",
+  "private": "8oNVYqxLM5et47llYBif73/R1DiTVNWsxBa/qo1XxYo=",
+  "public": "Aq1F+xSi8+KhjFdUxGesENd8skYzMl1RYeChEs81kxk=",
+  "seed": "flexengine2 test vector key: rogue"
+ }
+}

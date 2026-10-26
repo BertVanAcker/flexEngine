@@ -1,0 +1,12 @@
+{
+ "dep": "servo",
+ "deviceTime": 1792140125.5360804,
+ "digest": "sha256:552eefdd31d9190b8471071bf58f8958c77d3e52c94ab236324abb14f6669850",
+ "keptPrevious": true,
+ "manifestVersion": 9,
+ "reason": "artefact rejected: interface hash mismatch: deployment expects FLEX01_51f4685e4a6d7…, module has FLEX01_aa108d0dfc409…",
+ "seq": 14,
+ "stage": "preflight",
+ "state": "Failed",
+ "version": "5.0.0-iface"
+}

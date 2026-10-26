@@ -1,0 +1,344 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/desired-state.v1alpha1.schema.json",
+  "title": "CP-1 DesiredState v1alpha1",
+  "description": "Body of GET /api/v1/devices/{deviceId}/deployments (and desired.json in an offline bundle). Margo ApplicationDeployment shape with registered x-flex-* extensions. Derived from what flexengine2.core.reconciler reads and flexengine2.testing.fakecloud writes.",
+  "$comment": "Compatibility (v1alpha1): changes are additive only (new optional fields, new enum values such as a new driver profile, new registered x-flex-* keys). Removing or retyping a field, or making an optional field required, needs v1alpha2. Objects owned by flex (DesiredState, x-flex-activation, its window) are closed. Margo-owned objects (ApplicationDeployment, metadata, spec, deploymentProfile, component) accept unknown Margo keys (the engine ignores them) but reject every unknown key starting with 'x-'. Semantic rules not expressible here (checked by flexengine2.contracts): deployment ids unique; metadata.deviceId, when present, equals deviceId; x-flex-dependsOn names other deployments of this document, without duplicates or cycles.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "deviceId",
+    "manifestVersion",
+    "deployments"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "flex.dev/v1alpha1"
+    },
+    "kind": {
+      "const": "DesiredState"
+    },
+    "deviceId": {
+      "$ref": "#/$defs/DeviceId"
+    },
+    "manifestVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Strictly increasing per device. The engine refuses a lower value, and an equal value with a different body (rollback protection)."
+    },
+    "deployments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ApplicationDeployment"
+      },
+      "description": "Complete set. A deployment absent here is removed from the device."
+    }
+  },
+  "$defs": {
+    "DeviceId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*$",
+      "maxLength": 128,
+      "description": "Device identity. A child device behind a gateway (MCU) is addressed as '<gatewayId>.<child>' (e.g. panda.portenta) and has its own DesiredState; the gateway's engine process runs the child's engine (see-thru). The id is used in URL paths (fakecloud matches [\\w.-]+)."
+    },
+    "DeploymentId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*$",
+      "maxLength": 128,
+      "description": "metadata.id: stable across versions; identity for update, rollback and removal; used in URL paths, container names (flex_<device>_<id>) and driver state."
+    },
+    "Digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "InterfaceHash": {
+      "type": "string",
+      "pattern": "^FLEX01_[0-9a-f]{64}$"
+    },
+    "DriverProfile": {
+      "enum": [
+        "container",
+        "native",
+        "applab",
+        "mcu-module",
+        "mcu-firmware",
+        "plc-verify",
+        "os-rauc",
+        "arduino-ota"
+      ],
+      "description": "Driver SPI profile (CP-5). One profile per driver; the engine refuses a deployment whose profile has no driver on this device ('no driver for <profile>'). os-rauc (EV-17): whole-OS A/B update with RAUC. arduino-ota (EV-38): flexNode-arduino board firmware over the Portenta OTA path (parameter `board` names the board when the driver has several). New profiles (plc-codesys-as, ...) are added here as they ship."
+    },
+    "SafetyClass": {
+      "enum": [
+        "none",
+        "safety-relevant"
+      ]
+    },
+    "Parameters": {
+      "type": "object",
+      "description": "Deployment parameters. Flat map of scalars: container/native drivers pass them as env FLEX_PARAM_<NAME upper-cased>=<value>; mcu-module as 'k=v;...' to the module (keys starting with '_' are not sent); applab splits '<instance>.<name>' keys into {instance: {name: value}} (bare names under '*'); plc-verify reads 'plc' (target override). Typing against the release descriptor's parameter list (Margo M11) is beta (EV-25).",
+      "propertyNames": {
+        "pattern": "^(_interfaceHash|[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)?)$",
+        "$comment": "Names starting with '_' are reserved for the engine; only registered ones are allowed."
+      },
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean"
+        ]
+      },
+      "properties": {
+        "_interfaceHash": {
+          "$ref": "#/$defs/InterfaceHash",
+          "description": "Reserved: the FLEX01 hash the deployment expects. Checked in preflight by mcu-module (module header) and plc-verify (release descriptor)."
+        },
+        "plc": {
+          "type": "string",
+          "description": "plc-verify only: PLC target to verify (overrides flex-plc.json target), e.g. 'panda/cx' or 'opta'."
+        }
+      }
+    },
+    "ActivationRequirement": {
+      "type": "string",
+      "pattern": "^(plc:[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*(@FLEX01_[0-9a-f]{64})?|[A-Za-z][A-Za-z0-9_]*)$",
+      "description": "Either a safe-state signal name (must be true in the device's safe-state provider, e.g. machine_parked, operator_confirmed) or 'plc:<deploymentId>[@<FLEX01 hash>]': hold until the plc-verify driver has verified that deployment (at that hash) on this device."
+    },
+    "Activation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Activation gate (FE-S6 / D1a hold), applied to installs, updates and removals. The deployment stays Pending with the gate's reason until it opens. For x-flex-safetyClass != none the engine adds machine_parked and operator_confirmed implicitly.",
+      "properties": {
+        "requires": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ActivationRequirement"
+          },
+          "uniqueItems": true
+        },
+        "window": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start",
+            "end"
+          ],
+          "description": "UTC time-of-day window [start, end); end < start wraps over midnight.",
+          "properties": {
+            "start": {
+              "type": "string",
+              "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+            },
+            "end": {
+              "type": "string",
+              "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+            }
+          }
+        }
+      }
+    },
+    "DependsOn": {
+      "type": "array",
+      "description": "Deployment ordering on this device (EV-42): this deployment is installed or updated only once every listed deployment of the same desired state runs its desired release (condition started) and is healthy (condition healthy, the default); until then it stays Pending ('held: waiting for <ids>', FE-GATE-004) on its previous version. Removals run in reverse order (a dependency is removed after its dependents, FE-GATE-005). A failed or rolled-back dependency holds its dependents (no cascade rollback). Semantic rules (flexengine2.contracts): every id names another deployment of the same desired state, no duplicates, no cycles; a document that breaks them is refused as a whole (FE-DS-006).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deployment"
+        ],
+        "properties": {
+          "deployment": {
+            "$ref": "#/$defs/DeploymentId",
+            "description": "metadata.id of another deployment in this desired state."
+          },
+          "condition": {
+            "enum": [
+              "started",
+              "healthy"
+            ],
+            "default": "healthy",
+            "description": "started: the dependency is committed at its desired release (Installed, any health); healthy: committed and its last observed health is healthy (compose service_started / service_healthy)."
+          }
+        }
+      }
+    },
+    "ComponentProperties": {
+      "type": "object",
+      "required": [
+        "repository",
+        "revision",
+        "digest"
+      ],
+      "propertyNames": {
+        "not": {
+          "pattern": "^x-"
+        }
+      },
+      "properties": {
+        "repository": {
+          "type": "string",
+          "pattern": "^oci://[^/]+/.+$",
+          "description": "oci://<registry host>/<repository>. The engine strips the scheme and host and fetches /v2/<repository>/manifests|blobs|referrers/<digest> from its configured apiUrl (CP-3)."
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Release version (SemVer); reported back as status.version."
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest",
+          "description": "sha256 of the release manifest bytes: the identity of what runs."
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Release manifest size in bytes (informational)."
+        }
+      }
+    },
+    "Component": {
+      "type": "object",
+      "required": [
+        "properties"
+      ],
+      "propertyNames": {
+        "not": {
+          "pattern": "^x-"
+        }
+      },
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "properties": {
+          "$ref": "#/$defs/ComponentProperties"
+        }
+      }
+    },
+    "ApplicationDeployment": {
+      "type": "object",
+      "required": [
+        "apiVersion",
+        "kind",
+        "metadata",
+        "spec",
+        "x-flex-driver"
+      ],
+      "propertyNames": {
+        "anyOf": [
+          {
+            "not": {
+              "pattern": "^x-"
+            }
+          },
+          {
+            "enum": [
+              "x-flex-driver",
+              "x-flex-safetyClass",
+              "x-flex-activation",
+              "x-flex-dependsOn"
+            ]
+          }
+        ]
+      },
+      "properties": {
+        "apiVersion": {
+          "const": "application.margo.org/v1alpha1"
+        },
+        "kind": {
+          "const": "ApplicationDeployment"
+        },
+        "metadata": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "propertyNames": {
+            "not": {
+              "pattern": "^x-"
+            }
+          },
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/DeploymentId"
+            },
+            "name": {
+              "type": "string"
+            },
+            "namespace": {
+              "type": "string"
+            },
+            "deviceId": {
+              "$ref": "#/$defs/DeviceId",
+              "description": "Informational; equals DesiredState.deviceId (semantic rule)."
+            }
+          }
+        },
+        "spec": {
+          "type": "object",
+          "required": [
+            "applicationId",
+            "deploymentProfile"
+          ],
+          "propertyNames": {
+            "not": {
+              "pattern": "^x-"
+            }
+          },
+          "properties": {
+            "applicationId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "flexModel module (or release) name."
+            },
+            "deploymentProfile": {
+              "type": "object",
+              "required": [
+                "type",
+                "components"
+              ],
+              "propertyNames": {
+                "not": {
+                  "pattern": "^x-"
+                }
+              },
+              "properties": {
+                "type": {
+                  "const": "custom",
+                  "$comment": "Margo also defines compose and helm; the engine supports custom only (capabilities: supportedDeploymentTypes). compose is EV-27 (additive)."
+                },
+                "components": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": {
+                    "$ref": "#/$defs/Component"
+                  },
+                  "$comment": "The engine reads components[0] only; a second component would be ignored silently, so v1alpha1 forbids it."
+                }
+              }
+            },
+            "parameters": {
+              "$ref": "#/$defs/Parameters"
+            }
+          }
+        },
+        "x-flex-driver": {
+          "$ref": "#/$defs/DriverProfile"
+        },
+        "x-flex-safetyClass": {
+          "$ref": "#/$defs/SafetyClass",
+          "description": "Default none. Must equal the safetyClass in the signed release descriptor (else 'safety class mismatch'); safety-relevant needs a two-person approval in the release signature (CP-4) and implies the FE-S6 interlock."
+        },
+        "x-flex-activation": {
+          "$ref": "#/$defs/Activation"
+        },
+        "x-flex-dependsOn": {
+          "$ref": "#/$defs/DependsOn"
+        }
+      }
+    }
+  }
+}

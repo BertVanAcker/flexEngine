@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/onboarding.v1alpha1.schema.json",
+  "title": "CP-2 Onboarding v1alpha1",
+  "description": "POST /api/v1/onboarding (unsigned; the one-time token authorises it). Request = $defs/OnboardingRequest, 201 response = $defs/OnboardingResponse. The engine (Engine.onboard) refuses a response whose cloudPublicKey differs from its provisioned trust anchor (cfg cloudPublicKey) and then stays un-onboarded.",
+  "$comment": "Both objects closed except that the response may carry more keys in later v1alpha1 revisions (additive); the engine reads only cloudPublicKey.",
+  "$defs": {
+    "Ed25519PublicKey": {"type": "string", "pattern": "^[A-Za-z0-9+/]{43}=$", "description": "base64 of the raw 32-byte Ed25519 public key."},
+    "OnboardingRequest": {
+      "type": "object", "additionalProperties": false, "required": ["deviceId", "publicKey", "token"],
+      "properties": {
+        "deviceId": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"},
+        "publicKey": {"$ref": "#/$defs/Ed25519PublicKey", "description": "Device key (generated on first start, dataDir/device.key, 0600)."},
+        "token": {"type": "string", "minLength": 1, "description": "One-time token issued by POST /api/v1/admin/onboarding-tokens for exactly this deviceId."}
+      }
+    },
+    "OnboardingResponse": {
+      "type": "object", "required": ["deviceId", "cloudPublicKey"],
+      "properties": {
+        "deviceId": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"},
+        "cloudPublicKey": {"$ref": "#/$defs/Ed25519PublicKey", "description": "Must equal the device's provisioned cloudPublicKey."}
+      }
+    }
+  }
+}

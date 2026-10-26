@@ -1,0 +1,11 @@
+{
+ "dep": "servo",
+ "deviceTime": 1792140133.4104338,
+ "digest": "sha256:0102233f91fab3f36561e08fdbb87338e230b2b564bfa6de0095ac220a7a9c1f",
+ "keptPrevious": true,
+ "manifestVersion": 11,
+ "reason": "artefact rejected: release not signed by a trusted key (no signature)",
+ "seq": 16,
+ "state": "Failed",
+ "version": "6.0.2-nosig"
+}

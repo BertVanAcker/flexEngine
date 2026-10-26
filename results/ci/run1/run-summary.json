@@ -1,0 +1,214 @@
+{
+  "commit": "fc081c7",
+  "green": true,
+  "layers": {
+    "unit": {
+      "errors": 0,
+      "failures": 0,
+      "passed": 2846,
+      "skipped": 2,
+      "tests": 2848,
+      "seconds": 330.0,
+      "exit": 0,
+      "finished": "2026-10-18T05:08:32Z",
+      "junit": "junit-unit-macos-14-py3.13.xml, junit-unit-ubuntu-24.04-py3.11.xml, junit-unit-ubuntu-24.04-py3.12.xml, junit-unit-ubuntu-24.04-py3.13.xml",
+      "jobs": {
+        "unit-macos-14-py3.13": {
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "finished": "2026-10-18T05:08:20Z",
+          "junit": "junit-unit-macos-14-py3.13.xml",
+          "passed": 710,
+          "seconds": 82.0,
+          "skipped": 2,
+          "tests": 712
+        },
+        "unit-ubuntu-24.04-py3.11": {
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "finished": "2026-10-18T05:08:32Z",
+          "junit": "junit-unit-ubuntu-24.04-py3.11.xml",
+          "passed": 712,
+          "seconds": 89.0,
+          "skipped": 0,
+          "tests": 712
+        },
+        "unit-ubuntu-24.04-py3.12": {
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "finished": "2026-10-18T05:08:13Z",
+          "junit": "junit-unit-ubuntu-24.04-py3.12.xml",
+          "passed": 712,
+          "seconds": 83.0,
+          "skipped": 0,
+          "tests": 712
+        },
+        "unit-ubuntu-24.04-py3.13": {
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "finished": "2026-10-18T05:08:04Z",
+          "junit": "junit-unit-ubuntu-24.04-py3.13.xml",
+          "passed": 712,
+          "seconds": 76.0,
+          "skipped": 0,
+          "tests": 712
+        }
+      }
+    },
+    "api": {
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "finished": "2026-10-18T05:07:10Z",
+      "junit": "junit-api.xml",
+      "passed": 218,
+      "seconds": 21.0,
+      "skipped": 2,
+      "tests": 220
+    },
+    "contract": {
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "finished": "2026-10-18T05:11:08Z",
+      "junit": "junit-contract.xml",
+      "passed": 311,
+      "seconds": 256.0,
+      "skipped": 255,
+      "tests": 566
+    },
+    "contract-nightly": {
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "finished": "2026-10-18T05:21:51Z",
+      "junit": "junit-contract-nightly.xml",
+      "passed": 189,
+      "seconds": 687.0,
+      "skipped": 27,
+      "tests": 216
+    },
+    "integration": {
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "finished": "2026-10-18T05:21:08Z",
+      "junit": "junit-integration.xml",
+      "passed": 99,
+      "seconds": 666.0,
+      "skipped": 8,
+      "tests": 107
+    },
+    "integration-fast": {
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "finished": "2026-10-18T05:13:16Z",
+      "junit": "junit-integration-fast.xml",
+      "passed": 65,
+      "seconds": 295.0,
+      "skipped": 5,
+      "tests": 70
+    },
+    "packaging": {
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "finished": "2026-10-18T05:09:36Z",
+      "junit": "junit-packaging.xml",
+      "passed": 44,
+      "seconds": 138.0,
+      "skipped": 1,
+      "tests": 45
+    },
+    "property": {
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "finished": "2026-10-18T05:08:26Z",
+      "junit": "junit-property.xml",
+      "passed": 16,
+      "seconds": 97.0,
+      "skipped": 6,
+      "tests": 22
+    },
+    "property-nightly": {
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "finished": "2026-10-18T05:13:10Z",
+      "junit": "junit-property-nightly.xml",
+      "passed": 6,
+      "seconds": 363.0,
+      "skipped": 0,
+      "tests": 6
+    },
+    "security": {
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "finished": "2026-10-18T05:07:04Z",
+      "junit": "junit-security.xml",
+      "passed": 81,
+      "seconds": 19.0,
+      "skipped": 0,
+      "tests": 81
+    }
+  },
+  "githubRuns": {
+    "push": 39099405959,
+    "nightly": 39099409684
+  },
+  "githubRunUrls": {
+    "push": "https://github.com/BertVanAcker/modular-interoperable-framework/actions/runs/39099405959",
+    "nightly": "https://github.com/BertVanAcker/modular-interoperable-framework/actions/runs/39099409684"
+  },
+  "artifacts": {
+    "unit-ubuntu-24.04-py3.11": [
+      "junit-unit-ubuntu-24.04-py3.11.xml"
+    ],
+    "unit-ubuntu-24.04-py3.12": [
+      "junit-unit-ubuntu-24.04-py3.12.xml"
+    ],
+    "unit-ubuntu-24.04-py3.13": [
+      "junit-unit-ubuntu-24.04-py3.13.xml"
+    ],
+    "unit-macos-14-py3.13": [
+      "junit-unit-macos-14-py3.13.xml"
+    ],
+    "contract": [
+      "junit-contract.xml"
+    ],
+    "api": [
+      "junit-api.xml"
+    ],
+    "security": [
+      "junit-security.xml"
+    ],
+    "property": [
+      "junit-property.xml"
+    ],
+    "integration-fast": [
+      "junit-integration-fast.xml"
+    ],
+    "flexmodel": [
+      "junit-flexmodel.xml"
+    ],
+    "nightly-contract-nightly": [
+      "junit-contract-nightly.xml"
+    ],
+    "nightly-property-nightly": [
+      "junit-property-nightly.xml"
+    ],
+    "nightly-integration": [
+      "junit-integration.xml"
+    ],
+    "nightly-packaging": [
+      "junit-packaging.xml"
+    ]
+  }
+}

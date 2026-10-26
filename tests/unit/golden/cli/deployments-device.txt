@@ -1,0 +1,2 @@
+DEVICE          DEPLOYMENT  DRIVER      STATE    VERSION  HEALTH  PREVIOUS  REASON
+panda.portenta  servo       mcu-module  Pending  2.0.0    -       -         held: PLC not verified: plc:cx-bridge [FE-GATE-003]

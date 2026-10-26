@@ -1,0 +1,12 @@
+{
+ "dep": "servo",
+ "deviceTime": 1792140890.4611518,
+ "digest": "sha256:21fb3a24fe1a2eaaa3ab7d6909ab31295223d573c73d3efe7a5c1c2fc6a422b3",
+ "keptPrevious": true,
+ "manifestVersion": 2,
+ "reason": "artefact rejected: module built for armv7m/hard-float, panda.portenta is armv7m/soft-float",
+ "seq": 5,
+ "stage": "preflight",
+ "state": "Failed",
+ "version": "2.0.1"
+}

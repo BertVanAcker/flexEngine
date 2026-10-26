@@ -1,0 +1,105 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "deployments": [
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "gw1.mcu0",
+    "id": "servo",
+    "name": "servo",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "servo_drive",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "servo_drive",
+       "properties": {
+        "digest": "sha256:217b8bf5c6ec06ea0b7e96830ecfc7ce54e5603df3288cc42fdcde9791bb0729",
+        "repository": "oci://127.0.0.1:33999/flexnodes/servo_drive",
+        "revision": "2.0.0",
+        "size": 994
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {
+     "_interfaceHash": "FLEX01_51f4685e4a6d7746d491fd96d6ad0640659eefe764101d80e74614ead5a1b7b4",
+     "close_mm": 20,
+     "open_mm": 80
+    }
+   },
+   "x-flex-driver": "mcu-module",
+   "x-flex-safetyClass": "none"
+  },
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "gw1.mcu0",
+    "id": "gripper",
+    "name": "gripper",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "gripper_station",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "gripper_station",
+       "properties": {
+        "digest": "sha256:0eac9369461388b9e6a9a2b39802e5f2c95dd70d83b3a3e954ef0552d271ae71",
+        "repository": "oci://127.0.0.1:33999/flexnodes/gripper_station",
+        "revision": "1.0.0",
+        "size": 1000
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {
+     "_interfaceHash": "FLEX01_e70b874bb936360f699d0a7371cac4e142e5b855fde1b8ceee24f4eb03f42e08",
+     "max_force_n": 30
+    }
+   },
+   "x-flex-driver": "mcu-module",
+   "x-flex-safetyClass": "none"
+  },
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "gw1.mcu0",
+    "id": "base-image",
+    "name": "base-image",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "flexmcu_base",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "flexmcu_base",
+       "properties": {
+        "digest": "sha256:fe5623a53e0dd6ecc6ee2f579535a2e62c6e8ee46e399131b5fe6e42b93171a2",
+        "repository": "oci://127.0.0.1:33999/flexnodes/flexmcu_base",
+        "revision": "1.1.0",
+        "size": 853
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {}
+   },
+   "x-flex-driver": "mcu-firmware",
+   "x-flex-safetyClass": "none"
+  }
+ ],
+ "deviceId": "gw1.mcu0",
+ "kind": "DesiredState",
+ "manifestVersion": 21
+}

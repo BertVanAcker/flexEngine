@@ -1,0 +1,90 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "composite": [
+  {
+   "instance": "interlock",
+   "interfaceHash": "FLEX01_8fed4aaa168b0c829209e17d4ed2495ce46d88638dbbf419ccc5fdfae804ea44",
+   "module": "cell_interlock"
+  },
+  {
+   "instance": "safety",
+   "interfaceHash": "FLEX01_64f2d43dbe73a2d01c93c87325d62132f7122a4a3495a8d5de84b9b856db3c3c",
+   "module": "safety_gateway"
+  }
+ ],
+ "deployment": {
+  "domain": "panda/cx",
+  "name": "d_pick_lab"
+ },
+ "health": {
+  "periodSeconds": 0.5,
+  "successThreshold": 1,
+  "timeoutSeconds": 10,
+  "type": "plc-hash"
+ },
+ "interfaceHash": "FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72",
+ "kind": "FlexNodeDescriptor",
+ "language": "st",
+ "module": "pick_cell_bridge",
+ "moduleVersion": "0.1.0",
+ "plc": {
+  "download": false,
+  "note": "loaded once by hand (XAE 4024); flexEngine only verifies the hash (decision 2026-10-16)",
+  "runtime": "twincat-win",
+  "verify": {
+   "amsPort": 851,
+   "bridge": "pick_cell_bridge",
+   "carriers": [
+    "twincat-ads"
+   ],
+   "hello": {
+    "channel": null,
+    "name": "Hello",
+    "read": [
+     {
+      "name": "ret",
+      "off": 0,
+      "size": 2,
+      "type": "E_FxbStatus"
+     },
+     {
+      "name": "aRtHash",
+      "off": 2,
+      "size": 32,
+      "type": "ARRAY[0..31] OF BYTE"
+     },
+     {
+      "name": "nRtEpoch",
+      "off": 34,
+      "size": 4,
+      "type": "UDINT"
+     }
+    ],
+    "symbol": "MAIN.fbBridge#Hello",
+    "write": [
+     {
+      "name": "aGpHash",
+      "off": 0,
+      "size": 32,
+      "type": "ARRAY[0..31] OF BYTE"
+     },
+     {
+      "name": "nGpEpoch",
+      "off": 32,
+      "size": 4,
+      "type": "UDINT"
+     }
+    ]
+   },
+   "instance": "MAIN.fbBridge",
+   "via": "ads"
+  }
+ },
+ "profiles": [
+  "plc-verify"
+ ],
+ "releaseVersion": "1.0.0",
+ "restartPolicy": {},
+ "safetyClass": "safety-relevant",
+ "safetyClassSource": "model (flex safety; max over the rt instances)"
+}

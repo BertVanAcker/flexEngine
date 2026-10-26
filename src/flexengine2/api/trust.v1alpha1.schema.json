@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/trust.v1alpha1.schema.json",
+  "title": "CP-4 Trust objects v1alpha1",
+  "description": "Signed objects and trust anchors the engine verifies (identity/crypto.py, artefacts/store.py, core/reconciler.py). See flexengine/api/trust.v1alpha1.md for the byte-level rules and api/vectors/ for signed test vectors.",
+  "$defs": {
+    "B64": {"type": "string", "pattern": "^[A-Za-z0-9+/]*={0,2}$"},
+    "Ed25519PublicKey": {"type": "string", "pattern": "^[A-Za-z0-9+/]{43}=$", "description": "base64 of the raw 32-byte Ed25519 public key."},
+    "Ed25519Signature": {"type": "string", "pattern": "^[A-Za-z0-9+/]{86}==$", "description": "base64 of the raw 64-byte Ed25519 signature."},
+    "KeyId": {"type": "string", "pattern": "^ed25519:[0-9a-f]{16}$", "description": "'ed25519:' + first 16 hex chars of sha256(raw public key) (crypto.key_id)."},
+    "SignatureEnvelope": {
+      "type": "object", "additionalProperties": false, "required": ["payload", "signature", "keyid"],
+      "description": "Layer blob (mediaType application/vnd.flex.signature.v1+json) of a release signature manifest. signature = Ed25519 over the exact bytes base64-decoded from payload.",
+      "properties": {
+        "payload": {"$ref": "#/$defs/B64", "description": "base64 of the canonical-JSON SignedPayload."},
+        "signature": {"$ref": "#/$defs/Ed25519Signature"},
+        "keyid": {"$ref": "#/$defs/KeyId", "description": "Selects the trusted release key; an unknown keyid = 'untrusted key'."}
+      }
+    },
+    "SafetyApproval": {
+      "type": "object", "additionalProperties": false, "required": ["approved", "approvers"],
+      "description": "Approval proof for safety-relevant releases. The engine installs a safety-relevant deployment only if approved is true and approvers has >= 2 distinct entries.",
+      "properties": {
+        "approved": {"type": "boolean"},
+        "approvers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "role": {"type": "string", "description": "Role of the approvers (e.g. safety-engineer); informational on the device."}
+      }
+    },
+    "SignedPayload": {
+      "type": "object", "additionalProperties": false, "required": ["critical", "optional"],
+      "description": "cosign 'simple signing'-shaped payload. The engine requires critical.image.manifest-digest == the release digest named in the desired state and critical.identity.repository == the repository path.",
+      "properties": {
+        "critical": {
+          "type": "object", "additionalProperties": false, "required": ["type", "identity", "image"],
+          "properties": {
+            "type": {"const": "flex release signature v1"},
+            "identity": {"type": "object", "additionalProperties": false, "required": ["repository"], "properties": {"repository": {"type": "string", "minLength": 1}}},
+            "image": {"type": "object", "additionalProperties": false, "required": ["manifest-digest"], "properties": {"manifest-digest": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/Digest"}}}
+          }
+        },
+        "optional": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "version": {"type": "string"},
+            "signedAt": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"},
+            "safetyApproval": {"$ref": "#/$defs/SafetyApproval"}
+          }
+        }
+      }
+    },
+    "RequestSignatureHeaders": {
+      "type": "object", "required": ["X-Flex-Device", "X-Flex-Date", "X-Flex-Nonce", "X-Flex-Signature"],
+      "description": "Headers of a signed device request (crypto.sign_request).",
+      "properties": {
+        "X-Flex-Device": {"$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"},
+        "X-Flex-Date": {"type": "string", "pattern": "^[0-9]{13}$", "description": "Unix milliseconds; the cloud accepts +-300 s."},
+        "X-Flex-Nonce": {"type": "string", "pattern": "^[0-9a-f]{24}$", "description": "12 random bytes, hex; the cloud keeps a bounded replay cache."},
+        "X-Flex-Signature": {"$ref": "#/$defs/Ed25519Signature"}
+      }
+    },
+    "TrustAnchors": {
+      "type": "object",
+      "description": "Trust-anchor keys of one device engine's effective configuration (the dict core.reconciler.Engine and cloud.client read; where they sit in the config file is the EV-04 config schema's business).",
+      "required": ["cloudPublicKey", "releasePublicKeys"],
+      "properties": {
+        "cloudPublicKey": {"$ref": "#/$defs/Ed25519PublicKey", "description": "Verifies X-Flex-Manifest-Signature / desired.sig; must equal the onboarding response's cloudPublicKey."},
+        "releasePublicKeys": {"type": "array", "items": {"$ref": "#/$defs/Ed25519PublicKey"}, "description": "Trusted release signers (selected by keyid)."},
+        "caFile": {"type": "string", "minLength": 1, "description": "Pinned CA (PEM) for https apiUrl; https without it is refused unless allowSystemTrust."},
+        "tlsServerName": {"type": "string", "minLength": 1, "description": "Hostname to verify instead of the apiUrl host."},
+        "allowSystemTrust": {"type": "boolean", "default": false}
+      }
+    }
+  }
+}

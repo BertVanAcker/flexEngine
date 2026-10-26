@@ -1,0 +1,37 @@
+{
+ "annotations": {
+  "dev.flex.interfaceHash": "FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72",
+  "dev.flex.safetyClass": "safety-relevant",
+  "org.opencontainers.image.title": "pick_cell_bridge",
+  "org.opencontainers.image.version": "1.0.0"
+ },
+ "artifactType": "application/vnd.flex.node.v1+json",
+ "config": {
+  "digest": "sha256:1fe2c618e2be8d11891403ce0e1be09bcf48909c195110db4a8161558f97b837",
+  "mediaType": "application/vnd.flex.node.descriptor.v1+json",
+  "size": 1477
+ },
+ "layers": [
+  {
+   "annotations": {
+    "dev.flex.ifaceHash": "FLEX01_28ebc981b006b003f74eebf40e4feef77cc4c71201fbcdd1f65232fd4789fb72",
+    "dev.flex.platform": "plc:twincat-win",
+    "dev.flex.profile": "plc-verify",
+    "dev.flex.verify": "ads"
+   },
+   "digest": "sha256:ced0252cb411ae7c452c338ca0a0608c3fceabfc6d022d7045baf5b454ad9a00",
+   "mediaType": "application/vnd.flex.payload.plc-artefact.v1.tar+gzip",
+   "size": 21784
+  },
+  {
+   "annotations": {
+    "dev.flex.role": "sbom"
+   },
+   "digest": "sha256:acdca9ce7656ee4b61428049597a93a57480605585552a5986be5ef847cd2251",
+   "mediaType": "application/spdx+json",
+   "size": 732
+  }
+ ],
+ "mediaType": "application/vnd.oci.image.manifest.v1+json",
+ "schemaVersion": 2
+}

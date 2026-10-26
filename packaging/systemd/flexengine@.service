@@ -1,0 +1,66 @@
+# flexEngineV2, extra instance with its own config + data (dev/test; EV-08). Instance %i:
+#   config /etc/flexengine/%i.yaml   data /var/lib/flexengine-%i (its dataDir)   runtime /run/flexengine-%i
+#   sudo cp /etc/flexengine/engine.yaml /etc/flexengine/sil.yaml && sudoedit /etc/flexengine/sil.yaml
+#     (set dataDir: /var/lib/flexengine-sil and local.socket: /run/flexengine-sil/api.sock)
+#   sudo systemctl start flexengine@sil
+# The production instance is flexengine.service; both share the venv @PREFIX@ and the flex user.
+# Everything else (groups drop-in, hardening notes) as in flexengine.service; drop-ins: flexengine@.service.d/.
+[Unit]
+Description=flexEngineV2 deployment engine (instance %i)
+Documentation=file://@PREFIX@/share/doc/flexengine/README.md
+Wants=network-online.target
+After=network-online.target time-sync.target docker.service podman.socket rauc.service
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=notify
+NotifyAccess=main
+WatchdogSec=30
+TimeoutStartSec=120
+# SIGTERM: stop polling, let a running apply/gate finish (grace 30 s in the engine), write state, exit
+TimeoutStopSec=45
+Restart=on-failure
+RestartSec=2
+User=flex
+Group=flex
+UMask=0027
+ExecStart=@PREFIX@/bin/flexengine run --config /etc/flexengine/%i.yaml
+Environment=PYTHONUNBUFFERED=1 HOME=/var/lib/flexengine-%i DOCKER_CONFIG=/var/lib/flexengine-%i/.docker
+WorkingDirectory=/var/lib/flexengine-%i
+ConfigurationDirectory=flexengine
+ConfigurationDirectoryMode=0750
+StateDirectory=flexengine-%i
+StateDirectoryMode=0700
+RuntimeDirectory=flexengine-%i
+RuntimeDirectoryMode=0750
+#SupplementaryGroups=dialout docker      (written by install.sh as a drop-in, see the header)
+
+# ---- hardening (systemd-analyze security flexengine) ----
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/flexengine-%i
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+CapabilityBoundingSet=
+AmbientCapabilities=
+# Not set on purpose:
+#   PrivateDevices=yes      would hide /dev/ttyACM* (MCU serial); use DeviceAllow= in a drop-in once the tty is fixed
+#   MemoryDenyWriteExecute  cffi callbacks (cryptography/pyads) may need W+X pages
+#   PrivateNetwork/IPAddressDeny   the engine polls flexCloud and talks ADS/Modbus to the PLCs
+#   SystemCallFilter=@system-service   to be added after a soak with the docker CLI + pyads (beta)
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,38 @@
+{
+ "annotations": {
+  "dev.flex.interfaceHash": "FLEX01_5af1c06aad3ed99f69f7795d4ffd44be58fd20d5e5aae57d49cf742df8e75698",
+  "dev.flex.safetyClass": "safety-relevant",
+  "org.opencontainers.image.title": "perception_guard",
+  "org.opencontainers.image.version": "1.0.0"
+ },
+ "artifactType": "application/vnd.flex.node.v1+json",
+ "config": {
+  "digest": "sha256:1e9f0907bf6051c13b93e6b01699fdeccc067c90d15319d9f823cbffb8fc194d",
+  "mediaType": "application/vnd.flex.node.descriptor.v1+json",
+  "size": 1739
+ },
+ "layers": [
+  {
+   "annotations": {
+    "dev.flex.imageDigest": "sha256:3a8e578cdd5497de03ca2d7f8f8f3e9c7f6fd6c5a2cc09486535ec98b200a7d1",
+    "dev.flex.imageRef": "docker.io/flexnode/perception_guard@sha256:3a8e578cdd5497de03ca2d7f8f8f3e9c7f6fd6c5a2cc09486535ec98b200a7d1",
+    "dev.flex.imageTag": "flexnode/perception_guard:1.0.0",
+    "dev.flex.platform": "linux/amd64",
+    "dev.flex.profile": "container"
+   },
+   "digest": "sha256:6c8ba67e65de667bb9dca5719451f02203c90bc5a58c1b8311038dc6188523c8",
+   "mediaType": "application/vnd.flex.payload.image.docker-archive.v1.tar",
+   "size": 3650560
+  },
+  {
+   "annotations": {
+    "dev.flex.role": "sbom"
+   },
+   "digest": "sha256:cfa2407dc704bf94349baedcab76474dc55642d5f52246261c2e54169087b2c8",
+   "mediaType": "application/spdx+json",
+   "size": 732
+  }
+ ],
+ "mediaType": "application/vnd.oci.image.manifest.v1+json",
+ "schemaVersion": 2
+}

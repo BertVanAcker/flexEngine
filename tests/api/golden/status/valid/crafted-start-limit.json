@@ -1,0 +1,9 @@
+{
+ "dep": "logger",
+ "deviceTime": 1792195202.0,
+ "manifestVersion": 8,
+ "reason": "supervisor: start-limit-hit",
+ "restarts": null,
+ "seq": 44,
+ "state": "Failed"
+}

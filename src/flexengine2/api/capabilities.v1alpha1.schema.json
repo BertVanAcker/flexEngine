@@ -1,0 +1,908 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/capabilities.v1alpha1.schema.json",
+  "title": "CP-2 DeviceCapabilities v1alpha1",
+  "description": "Body of PUT /api/v1/devices/{deviceId}/capabilities, sent once after onboarding (core/reconciler.py Engine.capabilities()). Margo DeviceCapabilities shape (properties.*) plus the flex-owned x-flex block. flexCloud uses x-flex.drivers.<profile>.exclusive/maxDeployments for plan-time placement.",
+  "$comment": "Margo-owned objects accept unknown non-x- keys; the x-flex block and the driver fragments are closed (a new fragment field is an additive schema change). Each driver fragment's profile equals its key (const per fragment). Semantic rule (cloud side): properties.id equals the deviceId of the request path.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "properties",
+    "x-flex"
+  ],
+  "propertyNames": {
+    "anyOf": [
+      {
+        "not": {
+          "pattern": "^x-"
+        }
+      },
+      {
+        "const": "x-flex"
+      }
+    ]
+  },
+  "properties": {
+    "apiVersion": {
+      "const": "device.margo.org/v1alpha1"
+    },
+    "kind": {
+      "const": "DeviceCapabilities"
+    },
+    "properties": {
+      "type": "object",
+      "required": [
+        "id",
+        "roles",
+        "resources",
+        "supportedDeploymentTypes"
+      ],
+      "propertyNames": {
+        "not": {
+          "pattern": "^x-"
+        }
+      },
+      "properties": {
+        "id": {
+          "$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"
+        },
+        "vendor": {
+          "type": "string"
+        },
+        "modelNumber": {
+          "type": "string"
+        },
+        "serialNumber": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "enum": [
+              "standalone-device",
+              "gateway",
+              "child-device"
+            ]
+          }
+        },
+        "resources": {
+          "type": "object",
+          "required": [
+            "cpu"
+          ],
+          "properties": {
+            "cpu": {
+              "type": "object",
+              "required": [
+                "architecture"
+              ],
+              "properties": {
+                "cores": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "description": "os.cpu_count(); null when unknown."
+                },
+                "architecture": {
+                  "type": "string"
+                }
+              }
+            },
+            "memory": {
+              "type": "string",
+              "pattern": "^[0-9]+Mi$"
+            }
+          }
+        },
+        "peripherals": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "interfaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "ethernet",
+                  "uart"
+                ]
+              },
+              "protocol": {
+                "enum": [
+                  "smp"
+                ]
+              }
+            }
+          }
+        },
+        "otelCollector": {
+          "type": "boolean"
+        },
+        "supportedRuntimes": {
+          "type": "array",
+          "items": {
+            "const": "oci"
+          },
+          "uniqueItems": true
+        },
+        "supportedDeploymentTypes": {
+          "type": "array",
+          "items": {
+            "const": "custom"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "x-flex": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "drivers",
+        "safeStateSignals",
+        "engine"
+      ],
+      "properties": {
+        "drivers": {
+          "type": "object",
+          "description": "One fragment per installed driver profile (Driver.capabilities()).",
+          "propertyNames": {
+            "$ref": "desired-state.v1alpha1.schema.json#/$defs/DriverProfile"
+          },
+          "properties": {
+            "container": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/ContainerCli"
+                },
+                {
+                  "$ref": "#/$defs/ContainerAnkaios"
+                }
+              ]
+            },
+            "native": {
+              "$ref": "#/$defs/Native"
+            },
+            "applab": {
+              "$ref": "#/$defs/Applab"
+            },
+            "mcu-module": {
+              "$ref": "#/$defs/McuModule"
+            },
+            "mcu-firmware": {
+              "$ref": "#/$defs/McuFirmware"
+            },
+            "plc-verify": {
+              "$ref": "#/$defs/PlcVerify"
+            },
+            "os-rauc": {
+              "$ref": "#/$defs/OsRauc"
+            },
+            "arduino-ota": {
+              "$ref": "#/$defs/ArduinoOta"
+            }
+          }
+        },
+        "safeStateSignals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          },
+          "description": "Signal names the safe-state provider offers (activation requires)."
+        },
+        "engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "impl",
+            "version",
+            "spi"
+          ],
+          "properties": {
+            "impl": {
+              "const": "flexengine2"
+            },
+            "version": {
+              "type": "string",
+              "description": "flexengine2.__version__ (PEP 440)."
+            },
+            "spi": {
+              "type": "string",
+              "pattern": "^1\\.[0-9]+$",
+              "description": "Driver SPI version (CP-5)."
+            },
+            "onDevice": {
+              "type": "string",
+              "description": "child-device: what runs on the child itself."
+            }
+          }
+        },
+        "parent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deviceId",
+            "mode"
+          ],
+          "properties": {
+            "deviceId": {
+              "$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"
+            },
+            "mode": {
+              "const": "see-thru"
+            }
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "deviceId",
+              "mode",
+              "kind"
+            ],
+            "properties": {
+              "deviceId": {
+                "$ref": "desired-state.v1alpha1.schema.json#/$defs/DeviceId"
+              },
+              "mode": {
+                "const": "see-thru"
+              },
+              "link": {
+                "type": "string"
+              },
+              "kind": {
+                "const": "mcu"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "properties": {
+            "properties": {
+              "roles": {
+                "contains": {
+                  "const": "child-device"
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "x-flex": {
+            "required": [
+              "parent"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "ContainerCli": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "container"
+        },
+        "driver": {
+          "enum": [
+            "docker",
+            "podman"
+          ]
+        },
+        "runtimeVersion": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "EV-40: Driver.platform() of the container runtime, {dev.flex.arch} (normalised uname -m, e.g. x86_64, aarch64); the engine picks the image layer of a multi-CPU release that fits it. Omitted when the runtime does not report its architecture."
+        },
+        "healthTypes": {
+          "type": "array",
+          "items": {
+            "enum": ["http", "exec", "process"]
+          },
+          "description": "EV-39: the health probe types this driver runs (descriptor health.type)."
+        },
+        "runOptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "EV-41: the descriptor runOptions keys this driver understands (each value still needs the device's allowedRunOptions)."
+        },
+        "supportedRuntimes": {
+          "type": "array",
+          "items": {
+            "const": "oci"
+          }
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "ContainerAnkaios": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "container"
+        },
+        "driver": {
+          "const": "ankaios"
+        },
+        "executor": {
+          "type": "string"
+        },
+        "ankaiosAgents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "platform": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "EV-40: Driver.platform() of the container runtime, {dev.flex.arch} (normalised uname -m, e.g. x86_64, aarch64); the engine picks the image layer of a multi-CPU release that fits it. Omitted when the runtime does not report its architecture."
+        },
+        "healthTypes": {
+          "type": "array",
+          "items": {
+            "enum": ["http", "exec", "process"]
+          },
+          "description": "EV-39: the health probe types this driver runs (descriptor health.type)."
+        },
+        "supportedRuntimes": {
+          "type": "array",
+          "items": {
+            "const": "oci"
+          }
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "Native": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "native"
+        },
+        "driver": {
+          "type": "string"
+        },
+        "executor": {
+          "type": "string"
+        },
+        "python": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "EV-37: Driver.platform() of the payload interpreter, {dev.flex.arch, dev.flex.pyabi} (e.g. x86_64, cp312); the engine picks the native layer whose annotations fit it. Omitted when the interpreter cannot be run."
+        },
+        "payloadPython": {
+          "type": "string",
+          "description": "EV-36: the interpreter payload venvs are created with (drivers.native.python; default the engine's)."
+        },
+        "systemd": {
+          "type": "string",
+          "description": "driver systemd (EV-19): the service manager's version (systemctl show -p Version); omitted when it does not answer."
+        },
+        "scope": {
+          "enum": ["system", "user"],
+          "description": "driver systemd: which service manager owns the units."
+        },
+        "unitDir": {
+          "type": "string",
+          "description": "driver systemd: where the engine writes its unit files."
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "Applab": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver",
+        "exclusive",
+        "maxDeployments"
+      ],
+      "properties": {
+        "profile": {
+          "const": "applab"
+        },
+        "driver": {
+          "const": "arduino-app-cli"
+        },
+        "board": {
+          "type": "string"
+        },
+        "cli": {
+          "type": "object",
+          "description": "`arduino-app-cli version --format json`, or {error} when the CLI failed."
+        },
+        "maxRunningApps": {
+          "const": 1,
+          "description": "Deprecated P4 alias of maxDeployments (fakecloud still reads it)."
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "health": {
+          "type": "string"
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "McuModule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "mcu-module"
+        },
+        "driver": {
+          "const": "mcumgr-llext"
+        },
+        "transport": {
+          "type": "string"
+        },
+        "moduleAbi": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "arch": {
+          "enum": [
+            "armv7m",
+            "armv8m.main"
+          ]
+        },
+        "floatAbi": {
+          "enum": [
+            "soft",
+            "hard"
+          ]
+        },
+        "caps": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "pwm",
+              "localbus",
+              "heap",
+              "fpu",
+              "zenoh"
+            ]
+          }
+        },
+        "sockets": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "slotBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "llextHeapBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "McuFirmware": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver"
+      ],
+      "properties": {
+        "profile": {
+          "const": "mcu-firmware"
+        },
+        "driver": {
+          "const": "mcumgr-mcuboot"
+        },
+        "bootloader": {
+          "type": "string"
+        },
+        "baseImage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirmed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "board": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "PlcVerify": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver",
+        "download",
+        "plcs"
+      ],
+      "properties": {
+        "profile": {
+          "const": "plc-verify"
+        },
+        "driver": {
+          "const": "plc-verify"
+        },
+        "download": {
+          "const": false
+        },
+        "plcs": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "ads",
+              "modbus",
+              "shm"
+            ]
+          },
+          "description": "PLC target -> verify transport."
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "OsRauc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver",
+        "exclusive",
+        "maxDeployments"
+      ],
+      "description": "os-rauc driver (EV-17): one OS image per device (exclusive). Executor facts come from `rauc status --detailed --output-format=json`; they are omitted when rauc is unreachable.",
+      "properties": {
+        "profile": {
+          "const": "os-rauc"
+        },
+        "driver": {
+          "const": "rauc"
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "const": 1
+        },
+        "compatible": {
+          "type": "string",
+          "description": "RAUC compatible of this device (bundles must match)."
+        },
+        "booted": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Booted slot name (e.g. rootfs.0)."
+        },
+        "bootPrimary": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Slot the next boot takes (rauc boot_primary)."
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "bootname": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "class": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "bootStatus": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Bundle version RAUC recorded for the slot."
+              }
+            }
+          }
+        },
+        "sharedDataPath": {
+          "type": "string",
+          "description": "The data partition both slots mount (driver config)."
+        },
+        "dataDirOnSharedPartition": {
+          "type": "boolean",
+          "description": "false: the engine data dir is not under sharedDataPath; every os-rauc deployment is refused at preflight."
+        },
+        "available": {
+          "type": "boolean",
+          "description": "false: the executor cannot be used at all right now (CLI binary missing or not runnable); absent = available. The fragment then carries only profile/driver/static fields."
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the executor exists but did not answer when this fragment was built (daemon down, MCU unreachable); executor facts (versions, ABI, arch, sockets ...) are then omitted, never guessed. Absent = reachable."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Reason when available or reachable is false."
+        }
+      }
+    },
+    "ArduinoOta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "driver",
+        "exclusive",
+        "maxDeployments"
+      ],
+      "description": "arduino-ota driver (EV-38): flexNode-arduino boards updated over the Portenta OTA path; one firmware per board (exclusive, maxDeployments = number of configured boards). Board facts come from the nodes' flexCloud keys; a board whose Redis is unreachable says reachable: false.",
+      "properties": {
+        "profile": {
+          "const": "arduino-ota"
+        },
+        "driver": {
+          "const": "portenta-ota"
+        },
+        "exclusive": {
+          "const": true
+        },
+        "maxDeployments": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "signedCommands": {
+          "type": "boolean",
+          "description": "true: OTA_UPDATE commands are HMAC-SHA256 signed with the node key (flexCommunicator command format)."
+        },
+        "commit": {
+          "type": "boolean",
+          "description": "false: no confirm step on the board (the Portenta bootloader has none); rollback re-serves the previous image."
+        },
+        "serveUrl": {
+          "type": "string",
+          "description": "Base URL the boards download images from (present once the server runs)."
+        },
+        "boards": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "fqbn": {"type": ["string", "null"]},
+              "node": {"type": ["string", "null"], "description": "flexCloud application id of the node."},
+              "reachable": {"type": "boolean"},
+              "version": {"type": ["string", "null"], "description": "The node's version key."},
+              "status": {"type": ["string", "null"], "description": "The node's status key."},
+              "online": {"type": "boolean", "description": "The node's heartbeat key exists."},
+              "detail": {"type": "string"}
+            }
+          }
+        },
+        "reachable": {
+          "type": "boolean",
+          "description": "false: the fragment could not be built (detail)."
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

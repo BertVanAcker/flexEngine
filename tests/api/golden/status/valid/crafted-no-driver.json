@@ -1,0 +1,9 @@
+{
+ "dep": "panel",
+ "deviceTime": 1792195202.0,
+ "manifestVersion": 1,
+ "reason": "no driver for applab",
+ "seq": 1,
+ "state": "Failed",
+ "version": "1.0.0"
+}

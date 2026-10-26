@@ -1,0 +1,16 @@
+{
+ "dep": "base-image",
+ "detectSeconds": 8.396,
+ "deviceTime": 1792140185.3009608,
+ "digest": "sha256:179b3f2028ff2291dc255bb141c0888ed809f74f62f890df0c37a580031f7ed8",
+ "failFast": false,
+ "failure": "timeout after 8 s",
+ "manifestVersion": 20,
+ "reason": "health check failed",
+ "rollbackHealthy": true,
+ "rolledBackTo": "1.1.0",
+ "seq": 29,
+ "state": "Failed",
+ "totalSeconds": 28.336,
+ "version": "1.2.0"
+}

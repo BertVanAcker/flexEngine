@@ -1,0 +1,103 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "deployments": [
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda",
+    "id": "cx-bridge",
+    "name": "cx-bridge",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "pick_cell_bridge",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "pick_cell_bridge",
+       "properties": {
+        "digest": "sha256:242f994d6aa817173e07e03d46e58f3eb5a8e4bfea0137044756380ca56e332c",
+        "repository": "oci://127.0.0.1:33991/flexnodes/pick_cell_bridge",
+        "revision": "1.1.1",
+        "size": 1096
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {}
+   },
+   "x-flex-driver": "plc-verify",
+   "x-flex-safetyClass": "safety-relevant"
+  },
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda",
+    "id": "opta-stack",
+    "name": "opta-stack",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "stack_light",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "stack_light",
+       "properties": {
+        "digest": "sha256:4500c221ee70967ddce8e87c573a049fa07b80e203f5432cbb9df5ec3fc5faf7",
+        "repository": "oci://127.0.0.1:33991/flexnodes/stack_light",
+        "revision": "1.0.0",
+        "size": 1084
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {}
+   },
+   "x-flex-driver": "plc-verify",
+   "x-flex-safetyClass": "none"
+  },
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {
+    "deviceId": "panda",
+    "id": "cell",
+    "name": "cell",
+    "namespace": "default"
+   },
+   "spec": {
+    "applicationId": "cell_controller",
+    "deploymentProfile": {
+     "components": [
+      {
+       "name": "cell_controller",
+       "properties": {
+        "digest": "sha256:228d755ad8a46d26607ed05e9f82502640f416876fd0e416476b2b913a7e4588",
+        "repository": "oci://127.0.0.1:33991/flexnodes/cell_controller",
+        "revision": "1.1.0",
+        "size": 956
+       }
+      }
+     ],
+     "type": "custom"
+    },
+    "parameters": {}
+   },
+   "x-flex-activation": {
+    "requires": [
+     "plc:cx-bridge@FLEX01_f4574d6f05c5ad86322215f088f9b59b72d02b12a3768f24cdf5976313e360a6"
+    ]
+   },
+   "x-flex-driver": "native",
+   "x-flex-safetyClass": "none"
+  }
+ ],
+ "deviceId": "panda",
+ "kind": "DesiredState",
+ "manifestVersion": 3
+}

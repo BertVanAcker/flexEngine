@@ -1,0 +1,18 @@
+{
+ "correlationId": "95b466173639f98f7f4a0c5f33b0f992",
+ "dep": "servo",
+ "detectSeconds": 4.282,
+ "deviceTime": 1792131037.6776884,
+ "digest": "sha256:36afe05522a49bbfde991c1ac611b2eb6ec3e7a250f6a85f539963242a6ef287",
+ "failFast": false,
+ "failure": "timeout after 4 s",
+ "manifestVersion": 3,
+ "reason": "health check failed",
+ "rollbackHealthy": true,
+ "rolledBackTo": "2.1.0",
+ "seq": 10,
+ "state": "Failed",
+ "totalSeconds": 7.954,
+ "traceparent": "00-95b466173639f98f7f4a0c5f33b0f992-9b258eb06bee5e6c-01",
+ "version": "2.2.0"
+}

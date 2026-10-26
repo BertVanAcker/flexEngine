@@ -1,0 +1,17 @@
+{
+ "dep": "servo",
+ "deviceTime": 1792140870.7910016,
+ "digest": "sha256:15ce7875e1e7371700e636f6f4acdafe531c2bcde4463bb46b7942721c74acde",
+ "fromVersion": null,
+ "manifestVersion": 1,
+ "plan": [
+  "preflight: signature, ABI, float ABI/arch, capabilities, interface hash, imports",
+  "SMP upload servo_drive 2.0.0 (5980 B) to the inactive slot of a socket on panda.portenta",
+  "activate (test): verify on device, llext_load, make-before-break switch",
+  "health gate: heartbeat advancing (2 probes)",
+  "confirm (commit) or revert to the previous slot without re-upload"
+ ],
+ "seq": 1,
+ "state": "Installing",
+ "version": "2.0.0"
+}

@@ -1,0 +1,79 @@
+# flexEngineV2 on-device deployment engine (EV-08). Installed by flexengine/packaging/install.sh, which replaces
+# @PREFIX@ (default /opt/flexengine, the venv). Config: /etc/flexengine/engine.yaml; data: /var/lib/flexengine.
+#
+# Local additions go in a drop-in, never in this file (install.sh rewrites it on upgrade):
+#   /etc/systemd/system/flexengine.service.d/*.conf      e.g. Environment=FLEX_OTEL=1
+# install.sh writes 10-groups.conf there with SupplementaryGroups= for the groups that exist on the host:
+#   dialout   MCU over serial (mcu.smp.tty, /dev/ttyACM*; the Portenta / UNO Q MCU link)
+#   docker    container driver with runtime: docker (/run/docker.sock is root:docker 0660). docker-group membership is
+#             root-equivalent: it is the trade-off of the docker runtime; prefer podman/quadlet where possible.
+#   (podman)  rootful podman needs root; rootless podman needs a user session (loginctl enable-linger flex,
+#             XDG_RUNTIME_DIR=/run/user/<uid>) and subuid/subgid ranges for flex -- run rootless via quadlet instead.
+#   (RAUC)    os-rauc talks to rauc.service (package rauc-service) over the system D-Bus and reboots with
+#             `systemctl reboot`: install packaging/polkit/50-flexengine-rauc.rules (reboot for user flex) and,
+#             optionally, packaging/dbus/flexengine-rauc.conf (RAUC calls only for root + group flex). The
+#             StateDirectory (dataDir) must be on the data partition both slots mount (packaging/README.md).
+#   (native)  the native systemd driver (drivers.native: {runtime: systemd}) needs `systemctl` on the system bus:
+#             packaging/polkit/50-flexengine-systemd.rules (group flex, flex-*.service units) and
+#             unitDir: /var/lib/flexengine/units (this unit's ProtectSystem=strict); see packaging/README.md.
+[Unit]
+Description=flexEngineV2 on-device deployment engine
+Documentation=file://@PREFIX@/share/doc/flexengine/README.md
+Wants=network-online.target
+After=network-online.target time-sync.target docker.service podman.socket rauc.service
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=notify
+NotifyAccess=main
+WatchdogSec=30
+TimeoutStartSec=120
+# SIGTERM: stop polling, let a running apply/gate finish (grace 30 s in the engine), write state, exit
+TimeoutStopSec=45
+Restart=on-failure
+RestartSec=2
+User=flex
+Group=flex
+UMask=0027
+ExecStart=@PREFIX@/bin/flexengine run --config /etc/flexengine/engine.yaml
+Environment=PYTHONUNBUFFERED=1 HOME=/var/lib/flexengine DOCKER_CONFIG=/var/lib/flexengine/.docker
+WorkingDirectory=/var/lib/flexengine
+# /etc/flexengine (root:flex 0750, config is read-only for the engine), /var/lib/flexengine (flex 0700, dataDir --
+# on RAUC hosts this must be the shared data partition), /run/flexengine (api.sock, group flex)
+ConfigurationDirectory=flexengine
+ConfigurationDirectoryMode=0750
+StateDirectory=flexengine
+StateDirectoryMode=0700
+RuntimeDirectory=flexengine
+RuntimeDirectoryMode=0750
+#SupplementaryGroups=dialout docker      (written by install.sh as a drop-in, see the header)
+
+# ---- hardening (systemd-analyze security flexengine) ----
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/flexengine /etc/flexengine/tokens
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+CapabilityBoundingSet=
+AmbientCapabilities=
+# Not set on purpose:
+#   PrivateDevices=yes      would hide /dev/ttyACM* (MCU serial); use DeviceAllow= in a drop-in once the tty is fixed
+#   MemoryDenyWriteExecute  cffi callbacks (cryptography/pyads) may need W+X pages
+#   PrivateNetwork/IPAddressDeny   the engine polls flexCloud and talks ADS/Modbus to the PLCs
+#   SystemCallFilter=@system-service   to be added after a soak with the docker CLI + pyads (beta)
+
+[Install]
+WantedBy=multi-user.target

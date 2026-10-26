@@ -1,0 +1,139 @@
+{
+ "baseline": "sil-gaps-x5 (docs/probes/d1-gaps-report.md \u00a74)",
+ "rule": "each M <= max(baseline max x 1.25, target); binary M met in every run",
+ "runs": [
+  "sil-v2-try1-01"
+ ],
+ "checks": [
+  {
+   "id": "M1",
+   "label": "worst approve -> all Installed (s)",
+   "baseline": {
+    "min": 28.6,
+    "median": 29.2,
+    "max": 32.3
+   },
+   "target": 120.0,
+   "bound": 120.0,
+   "values": [
+    18.794
+   ],
+   "max": 18.794,
+   "status": "pass"
+  },
+  {
+   "id": "M2-mcu",
+   "label": "MCU fault visible -> previous healthy (s)",
+   "baseline": {
+    "min": 0.95,
+    "median": 1.0,
+    "max": 1.18
+   },
+   "target": 6.0,
+   "bound": 6.0,
+   "values": [
+    1.369
+   ],
+   "max": 1.369,
+   "status": "pass"
+  },
+  {
+   "id": "M2-container",
+   "label": "container crash loop -> previous healthy (s)",
+   "baseline": {
+    "min": 11.7,
+    "median": 11.9,
+    "max": 12.6
+   },
+   "target": 15.0,
+   "bound": 15.75,
+   "values": [
+    null
+   ],
+   "max": null,
+   "status": "missing"
+  },
+  {
+   "id": "M4b",
+   "label": "door -> cell holds (s)",
+   "baseline": {
+    "min": 0.04,
+    "median": 0.04,
+    "max": 0.06
+   },
+   "target": null,
+   "bound": 0.075,
+   "values": [
+    0.04
+   ],
+   "max": 0.04,
+   "status": "pass"
+  },
+  {
+   "id": "M13",
+   "label": "link return -> in sync (s)",
+   "baseline": {
+    "min": 0.57,
+    "median": 1.97,
+    "max": 2.27
+   },
+   "target": 10.0,
+   "bound": 10.0,
+   "values": [
+    0.453
+   ],
+   "max": 0.453,
+   "status": "pass"
+  },
+  {
+   "id": "M13-dup",
+   "label": "duplicate applies after the link cut",
+   "bound": 0,
+   "values": [
+    0
+   ],
+   "status": "pass"
+  },
+  {
+   "id": "M6",
+   "label": "binary (met in every run)",
+   "values": [
+    "met"
+   ],
+   "status": "pass"
+  },
+  {
+   "id": "M7",
+   "label": "binary (met in every run)",
+   "values": [
+    "met"
+   ],
+   "status": "pass"
+  },
+  {
+   "id": "M8",
+   "label": "binary (met in every run)",
+   "values": [
+    "met"
+   ],
+   "status": "pass"
+  },
+  {
+   "id": "M10",
+   "label": "binary (met in every run)",
+   "values": [
+    "met"
+   ],
+   "status": "pass"
+  },
+  {
+   "id": "M11",
+   "label": "binary (met in every run)",
+   "values": [
+    "not-measured"
+   ],
+   "status": "missing"
+  }
+ ],
+ "result": "partial"
+}

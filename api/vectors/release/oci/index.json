@@ -1,0 +1,105 @@
+{
+  "manifests": [
+    {
+      "annotations": {
+        "org.opencontainers.image.ref.name": "flexnodes/vec_native:1.0.0"
+      },
+      "artifactType": "application/vnd.flex.node.v1+json",
+      "digest": "sha256:90c94f4c59d1ca5c1bfe7b23a36752336265c40e61418cfacaaa01ed3e5db466",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 949
+    },
+    {
+      "annotations": {
+        "dev.flex.subject": "sha256:90c94f4c59d1ca5c1bfe7b23a36752336265c40e61418cfacaaa01ed3e5db466"
+      },
+      "artifactType": "application/vnd.flex.signature.v1+json",
+      "digest": "sha256:51f800b09fc16a98ca90359ab908ad5c234e2b196393638ae639e35e46f57d81",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 606
+    },
+    {
+      "annotations": {
+        "org.opencontainers.image.ref.name": "flexnodes/vec_unsigned:1.0.0"
+      },
+      "artifactType": "application/vnd.flex.node.v1+json",
+      "digest": "sha256:3dcacdf39b9037f55eff8b1a73d078220f7300a693f242fa7219ad32d4855301",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 951
+    },
+    {
+      "annotations": {
+        "org.opencontainers.image.ref.name": "flexnodes/vec_rogue:1.0.0"
+      },
+      "artifactType": "application/vnd.flex.node.v1+json",
+      "digest": "sha256:e0fa68c912b16d34b39c1c9f9e1fb5aff24e9ad75cd305505d269826efcfddc8",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 948
+    },
+    {
+      "annotations": {
+        "dev.flex.subject": "sha256:e0fa68c912b16d34b39c1c9f9e1fb5aff24e9ad75cd305505d269826efcfddc8"
+      },
+      "artifactType": "application/vnd.flex.signature.v1+json",
+      "digest": "sha256:8dee9915a5b872da0e97e3758fb1dd123bd35dbef244d638a80e953421e54266",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 606
+    },
+    {
+      "annotations": {
+        "org.opencontainers.image.ref.name": "flexnodes/vec_badsig:1.0.0"
+      },
+      "artifactType": "application/vnd.flex.node.v1+json",
+      "digest": "sha256:54d6d264fe21266cc037350ddd7f0279962e7d1f4eff0fd57da224fa814735b2",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 949
+    },
+    {
+      "annotations": {
+        "dev.flex.subject": "sha256:54d6d264fe21266cc037350ddd7f0279962e7d1f4eff0fd57da224fa814735b2"
+      },
+      "artifactType": "application/vnd.flex.signature.v1+json",
+      "digest": "sha256:75a53120b592e589048fc47f168fd8eee74e9dce3b84d356b3dcbbedb36ef59b",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 606
+    },
+    {
+      "annotations": {
+        "org.opencontainers.image.ref.name": "flexnodes/vec_safety:1.0.0"
+      },
+      "artifactType": "application/vnd.flex.node.v1+json",
+      "digest": "sha256:64ef6f194369739b68f7c20ce3ab817a836835e8c246e358b5ba95e18a30ea11",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 960
+    },
+    {
+      "annotations": {
+        "dev.flex.subject": "sha256:64ef6f194369739b68f7c20ce3ab817a836835e8c246e358b5ba95e18a30ea11"
+      },
+      "artifactType": "application/vnd.flex.signature.v1+json",
+      "digest": "sha256:5388782b515c2e92dbea42470d6341ae31a1e2a5eda936da9f5b693c11d2603a",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 606
+    },
+    {
+      "annotations": {
+        "org.opencontainers.image.ref.name": "flexnodes/vec_safety:1.0.1"
+      },
+      "artifactType": "application/vnd.flex.node.v1+json",
+      "digest": "sha256:89c1fc75be2f1e7f4f1d2073ee736df40fdb91e0c7916a4172a9288b097f01ff",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 960
+    },
+    {
+      "annotations": {
+        "dev.flex.subject": "sha256:89c1fc75be2f1e7f4f1d2073ee736df40fdb91e0c7916a4172a9288b097f01ff"
+      },
+      "artifactType": "application/vnd.flex.signature.v1+json",
+      "digest": "sha256:a0423fcd0c6cfe7b60af5ab25af6fa69da0ce5f32c67cfad30a71630db3dd07f",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "size": 606
+    }
+  ],
+  "mediaType": "application/vnd.oci.image.index.v1+json",
+  "schemaVersion": 2
+}

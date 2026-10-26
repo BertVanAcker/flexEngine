@@ -1,0 +1,236 @@
+{
+  "runbook": "EV-HW-01",
+  "title": "Install and enrol flexEngineV2 on the LattePanda",
+  "file": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/runbooks/EV-HW-01_install_enrol.yaml",
+  "started": "2026-10-17T18:16:58",
+  "finished": "2026-10-17T18:17:31",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest",
+    "flexengine": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine",
+    "repo": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "project_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks",
+    "results_dir": "/home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/hwtest-results/20261017-181658_EV-HW-01",
+    "local_ip": "192.0.2.2",
+    "python": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "lp_sh": "sh -c",
+    "install": "bash /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/packaging/install.sh --root /tmp/rb-01-d75et34q/root --wheel /tmp/rb-01-d75et34q/dist/flexengine_v2-2.0.0a1-py3-none-any.whl --wheelhouse /home/user/modular-interoperable-framework/flexengine/dist/wheelhouse --device-id rb-panda --extras mcu,plc --python /usr/bin/python3",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-01-d75et34q/root/etc/flexengine/engine.yaml PYTHONPATH= /tmp/rb-01-d75et34q/root/opt/flexengine/bin/flexengine",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-01-d75et34q/root/etc/flexengine/engine.yaml PYTHONPATH= /tmp/rb-01-d75et34q/root/opt/flexengine/bin/flexengine enroll",
+    "fe_host": "local",
+    "fe_config": "/tmp/rb-01-d75et34q/root/etc/flexengine/engine.yaml",
+    "fe_api": "http://127.0.0.1:49089",
+    "fe_api_token_file": "/tmp/rb-01-d75et34q/secrets/fe-api.token",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "42881",
+    "cloud_url": "http://127.0.0.1:38891",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-01-d75et34q/secrets/admin.token",
+    "catalog": "/tmp/rb-01-d75et34q/catalog.yaml",
+    "desk": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/deskctl.py --cloud http://127.0.0.1:38891 --ca '' --admin-token-file /tmp/rb-01-d75et34q/secrets/admin.token --catalog /tmp/rb-01-d75et34q/catalog.yaml",
+    "journal_source": "file:/tmp/rb-01-d75et34q/lp/engine.log",
+    "svc": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-01-d75et34q svc",
+    "gp": "rb-panda",
+    "usb_dir": "/tmp/rb-01-d75et34q/usb",
+    "token_path": "(hidden)",
+    "lp_sudo": "",
+    "suite": "cd /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine && /home/user/modular-interoperable-framework/flexengine/.venv/bin/python -m pytest -q -p no:cacheprovider --basetemp /tmp/rb-01-d75et34q/pt tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_local_api.py",
+    "sim": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-01-d75et34q",
+    "cloud_layout": "/tmp/rb-01-d75et34q/cloud/oci",
+    "lab_ca": "/tmp/rb-01-d75et34q/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-01-d75et34q/pki/rogue-ca.crt",
+    "lp_up_port": "49089",
+    "dry_run": "1",
+    "uplink_down": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-01-d75et34q uplink down",
+    "uplink_up": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-01-d75et34q uplink up",
+    "power_cut": "/home/user/modular-interoperable-framework/flexengine/.venv/bin/python /home/user/modular-interoperable-framework/.claude/worktrees/runbooks/flexengine/hwtest/simdesk.py ctl --dir /tmp/rb-01-d75et34q power-cycle --down 3",
+    "sim_dir": "/tmp/rb-01-d75et34q"
+  },
+  "project_commit": "52e7172-dirty",
+  "runner_commit": "52e7172-dirty",
+  "summary": {
+    "PASS": 24,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:42881 reachable"
+    },
+    {
+      "id": "install",
+      "title": "packaging/install.sh (venv, user, dirs, unit; config written once)",
+      "status": "PASS",
+      "detail": "exit 0, matched 'changes: 11'"
+    },
+    {
+      "id": "version",
+      "title": "Installed flexengine answers",
+      "status": "PASS",
+      "detail": "exit 0, matched '2.0.0'"
+    },
+    {
+      "id": "configure",
+      "title": "Configure engine.yaml",
+      "status": "PASS",
+      "detail": "dry run: simulated (wrote /tmp/rb-01-d75et34q/root/etc/flexengine/engine.yaml (cloud via TLS 37773, local.tcp 127.0.0.1:49089)), done"
+    },
+    {
+      "id": "config-check",
+      "title": "`flexengine config check` (schema, keys, paths)",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "token",
+      "title": "One-time onboarding token from flexCloud (this PC)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "enroll",
+      "title": "`flexengine enroll --token-file -` on the LattePanda",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "config-resolve",
+      "title": "`config check --resolve` (key files and the token file readable)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "journal-mark",
+      "title": "Journal mark before the start",
+      "status": "PASS",
+      "detail": "mark start at byte 0 of /tmp/rb-01-d75et34q/lp/engine.log"
+    },
+    {
+      "id": "start",
+      "title": "Enable and start flexengine.service",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "onboarded-log",
+      "title": "Journal: onboarded",
+      "status": "PASS",
+      "detail": "1 line(s) matching {'event': 'onboarded', 'device': 'rb-panda'}: {\"ts\":\"2026-10-17T18:17:05.537Z\",\"level\":\"info\",\"device\":\"rb-panda\",\"event\":\"onboarded\",\"msg\":\"onboarded\"}"
+    },
+    {
+      "id": "status-onboarded",
+      "title": "`flexengine status`: onboarded and online",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "token-deleted",
+      "title": "Onboarding token used once and deleted by the engine",
+      "status": "PASS",
+      "detail": "exit 0, matched 'token gone'"
+    },
+    {
+      "id": "capabilities-api",
+      "title": "Capabilities from the local API",
+      "status": "PASS",
+      "detail": "GET http://127.0.0.1:49089/v1/capabilities/rb-panda -> 200, 1 field(s) match"
+    },
+    {
+      "id": "capabilities-cloud",
+      "title": "flexCloud received the capabilities",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "doctor",
+      "title": "`flexengine doctor` on the box",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "first-release",
+      "title": "A first native release runs (publish + deploy)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "first-installed",
+      "title": "dl 1.0.0 Installed and healthy",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "suite",
+      "title": "V2 test suite on the LattePanda",
+      "status": "PASS",
+      "detail": "exit 0, matched '462 passed'"
+    },
+    {
+      "id": "reinstall",
+      "title": "install.sh again changes nothing (idempotent)",
+      "status": "PASS",
+      "detail": "exit 0, matched 'changes: 0'"
+    },
+    {
+      "id": "config-kept",
+      "title": "engine.yaml kept (never overwritten) and still valid",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "still-running",
+      "title": "Service still active, deployment still Installed",
+      "status": "PASS",
+      "detail": "rb-panda/dl: Installed 1.0.0, health healthy"
+    },
+    {
+      "id": "cleanup",
+      "title": "Remove the first release",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "removed",
+      "title": "dl removed",
+      "status": "PASS",
+      "detail": "rb-panda/dl: absent "
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

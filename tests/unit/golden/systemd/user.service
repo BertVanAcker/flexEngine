@@ -1,0 +1,32 @@
+# Managed by flexEngineV2 (native driver: systemd). Do not edit: the engine rewrites it on every apply.
+[Unit]
+Description=flex cell_controller 1.2.0 (panda/d-pick-cell)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=6
+X-Flex-Device=panda
+X-Flex-Deployment=d-pick-cell
+X-Flex-Module=cell_controller
+X-Flex-Version=1.2.0
+X-Flex-Digest=sha256:abababababababababababababababababababababababababababababababab
+X-Flex-Port=41234
+
+[Service]
+Type=exec
+WorkingDirectory=/var/lib/flexengine/native/d_pick_cell_821e4230/abababababababab
+ExecStart="/usr/bin/python3" "app.py"
+Environment="FLEX_UNIT=panda/d-pick-cell"
+Environment="FLEX_HEALTH_PORT=41234"
+Environment="FLEX_DATA_DIR=/var/lib/flexengine/native/d_pick_cell_821e4230/data"
+Environment="PYTHONDONTWRITEBYTECODE=1"
+Environment="PYTHONUNBUFFERED=1"
+Environment="FLEX_PARAM_MODE=fast"
+Environment="FLEX_PARAM_RATE=10"
+Restart=no
+RestartSec=500ms
+TimeoutStopSec=10
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,643 @@
+[
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-driver": "fake"
+  },
+  "delete": [],
+  "error": "$.deployments[0].x-flex-driver: 'fake' is not one of"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-foo": 1
+  },
+  "delete": [],
+  "error": "'x-flex-foo'"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/extra": 1
+  },
+  "delete": [],
+  "error": "Additional properties are not allowed ('extra'"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/manifestVersion": -1
+  },
+  "delete": [],
+  "error": "$.manifestVersion"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/spec/deploymentProfile/components/0/properties/digest": "sha256:abc"
+  },
+  "delete": [],
+  "error": "properties.digest"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/spec/deploymentProfile/components/1": {
+    "properties": {
+     "repository": "oci://h/r",
+     "revision": "1",
+     "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   }
+  },
+  "delete": [],
+  "error": "is too long"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/spec/parameters/nested": {
+    "a": 1
+   }
+  },
+  "delete": [],
+  "error": "$.deployments[0].spec.parameters.nested"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/spec/parameters/_secret": "x"
+  },
+  "delete": [],
+  "error": "'_secret' does not match"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-activation/requires/0": "plc:cx-bridge@FLEX01_abc"
+  },
+  "delete": [],
+  "error": "x-flex-activation.requires[0]"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-activation/window": {
+    "start": "24:00",
+    "end": "04:00"
+   }
+  },
+  "delete": [],
+  "error": "window.start"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-activation/window": {
+    "start": "22:00"
+   }
+  },
+  "delete": [],
+  "error": "'end' is a required property"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-activation/delay": 5
+  },
+  "delete": [],
+  "error": "Additional properties are not allowed ('delay'"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/spec/deploymentProfile/components/0/properties/repository": "flexnodes/vec_native"
+  },
+  "delete": [],
+  "error": "properties.repository"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/spec/deploymentProfile/type": "helm"
+  },
+  "delete": [],
+  "error": "deploymentProfile.type"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/metadata/id": "native app"
+  },
+  "delete": [],
+  "error": "metadata.id"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deviceId": "panda/portenta"
+  },
+  "delete": [],
+  "error": "$.deviceId"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/kind": "Desired"
+  },
+  "delete": [],
+  "error": "$.kind"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-safetyClass": "high"
+  },
+  "delete": [],
+  "error": "x-flex-safetyClass"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {},
+  "delete": [
+   "/deployments/0/x-flex-driver"
+  ],
+  "error": "'x-flex-driver' is a required property"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/spec/x-margo-ext": 1
+  },
+  "delete": [],
+  "error": "'x-margo-ext'"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/1/metadata/id": "native-app"
+  },
+  "delete": [],
+  "error": "duplicate deployment id 'native-app'"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/1/metadata/deviceId": "other"
+  },
+  "delete": [],
+  "error": "differs from deviceId 'vec-dev'"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "safety-app",
+     "condition": "running"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "$.deployments[0].x-flex-dependsOn[0].condition"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "safety-app",
+     "after": 1
+    }
+   ]
+  },
+  "delete": [],
+  "error": "$.deployments[0].x-flex-dependsOn[0]"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "nowhere"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "unknown deployment 'nowhere' (not in this desired state)"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "native-app"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "'native-app' depends on itself"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "safety-app"
+    },
+    {
+     "deployment": "safety-app",
+     "condition": "started"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "duplicate dependency 'safety-app'"
+ },
+ {
+  "schema": "desired-state",
+  "base": "vectors:manifest/desired.json",
+  "set": {
+   "/deployments/0/x-flex-dependsOn": [
+    {
+     "deployment": "safety-app"
+    }
+   ],
+   "/deployments/1/x-flex-dependsOn": [
+    {
+     "deployment": "native-app"
+    }
+   ]
+  },
+  "delete": [],
+  "error": "dependency cycle native-app -> safety-app -> native-app"
+ },
+ {
+  "schema": "status",
+  "base": "golden:status/valid/crafted-removing.json",
+  "set": {
+   "/state": "Running"
+  },
+  "delete": [],
+  "error": "$.state"
+ },
+ {
+  "schema": "status",
+  "base": "golden:status/valid/crafted-removing.json",
+  "set": {
+   "/state": "Failed"
+  },
+  "delete": [],
+  "error": "'reason' is a required property"
+ },
+ {
+  "schema": "status",
+  "base": "golden:status/valid/crafted-removing.json",
+  "set": {
+   "/foo": 1
+  },
+  "delete": [],
+  "error": "Additional properties are not allowed ('foo'"
+ },
+ {
+  "schema": "status",
+  "base": "golden:status/valid/crafted-removing.json",
+  "set": {
+   "/traceparent": "01-abc"
+  },
+  "delete": [],
+  "error": "$.traceparent"
+ },
+ {
+  "schema": "status",
+  "base": "golden:status/valid/crafted-removing.json",
+  "set": {
+   "/seq": 0
+  },
+  "delete": [],
+  "error": "$.seq"
+ },
+ {
+  "schema": "status",
+  "base": "golden:status/valid/crafted-removing.json",
+  "set": {
+   "/state": "Installing",
+   "/digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "delete": [],
+  "error": "'plan' is a required property"
+ },
+ {
+  "schema": "status",
+  "base": "golden:status/valid/crafted-removing.json",
+  "set": {
+   "/rolledBackTo": "1.0.0"
+  },
+  "delete": [],
+  "error": "'Failed' was expected"
+ },
+ {
+  "schema": "status",
+  "base": "golden:status/valid/crafted-removing.json",
+  "set": {
+   "/health": "degraded"
+  },
+  "delete": [],
+  "error": "$.health"
+ },
+ {
+  "schema": "status",
+  "base": "golden:status/valid/crafted-removing.json",
+  "set": {},
+  "delete": [
+   "/manifestVersion"
+  ],
+  "error": "'manifestVersion' is a required property"
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/valid/rec-panda.portenta-child-device-mcu-firmware-mcu-module.json",
+  "set": {
+   "/x-flex/engine/spi": [
+    "preflight",
+    "commit"
+   ]
+  },
+  "delete": [],
+  "error": "$.x-flex.engine.spi"
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/valid/rec-panda.portenta-child-device-mcu-firmware-mcu-module.json",
+  "set": {
+   "/x-flex/drivers/fake": {
+    "profile": "fake",
+    "driver": "fake"
+   }
+  },
+  "delete": [],
+  "error": "'fake' is not one of"
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/valid/rec-panda.portenta-child-device-mcu-firmware-mcu-module.json",
+  "set": {},
+  "delete": [
+   "/x-flex/parent"
+  ],
+  "error": "'parent' is a required property"
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/valid/rec-panda.portenta-child-device-mcu-firmware-mcu-module.json",
+  "set": {
+   "/x-flex/drivers/mcu-module/moduleAbi": "None.None"
+  },
+  "delete": [],
+  "error": "moduleAbi"
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/valid/rec-panda.portenta-child-device-mcu-firmware-mcu-module.json",
+  "set": {
+   "/x-flex/drivers/mcu-module/profile": "mcu-firmware"
+  },
+  "delete": [],
+  "error": "$.x-flex.drivers.mcu-module.profile"
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/valid/rec-panda.portenta-child-device-mcu-firmware-mcu-module.json",
+  "set": {
+   "/x-flex/drivers/mcu-module/ram": 1
+  },
+  "delete": [],
+  "error": "Additional properties are not allowed ('ram'"
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/valid/rec-panda.portenta-child-device-mcu-firmware-mcu-module.json",
+  "set": {
+   "/properties/roles/0": "edge"
+  },
+  "delete": [],
+  "error": "$.properties.roles[0]"
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/valid/rec-panda.portenta-child-device-mcu-firmware-mcu-module.json",
+  "set": {
+   "/x-flex-extra": 1
+  },
+  "delete": [],
+  "error": "'x-flex-extra'"
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/legacy-prototype.json",
+  "set": {},
+  "delete": [],
+  "error": "$.x-flex.engine.impl: 'flexengine2' was expected",
+  "baseInvalid": true
+ },
+ {
+  "schema": "capabilities",
+  "base": "golden:capabilities/valid/rec-panda-gateway-native-plc-verify.json",
+  "set": {
+   "/x-flex/drivers/plc-verify/download": true
+  },
+  "delete": [],
+  "error": "download"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-servo_drive-2.0.0.json",
+  "set": {
+   "/x-flex-foo": 1
+  },
+  "delete": [],
+  "error": "'x-flex-foo'"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-servo_drive-2.0.0.json",
+  "set": {
+   "/health/successThreshold": 0
+  },
+  "delete": [],
+  "error": "$.health.successThreshold"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-servo_drive-2.0.0.json",
+  "set": {
+   "/health/initialDelaySeconds": 1
+  },
+  "delete": [],
+  "error": "Additional properties are not allowed ('initialDelaySeconds'"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-servo_drive-2.0.0.json",
+  "set": {
+   "/health/port": "8080"
+  },
+  "delete": [],
+  "error": "$.health.port"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-servo_drive-2.0.0.json",
+  "set": {
+   "/restartPolicy/policy": "unless-stopped"
+  },
+  "delete": [],
+  "error": "$.restartPolicy.policy"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-servo_drive-2.0.0.json",
+  "set": {
+   "/runOptions": {
+    "privileged": true
+   }
+  },
+  "delete": [],
+  "error": "Additional properties are not allowed ('privileged'"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-servo_drive-2.0.0.json",
+  "set": {
+   "/profiles/0": "kubernetes"
+  },
+  "delete": [],
+  "error": "$.profiles[0]"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-servo_drive-2.0.0.json",
+  "set": {
+   "/safetyClass": "SIL2"
+  },
+  "delete": [],
+  "error": "$.safetyClass"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-servo_drive-2.0.0.json",
+  "set": {
+   "/x-flex-mcu/cortex-m3/arch": "riscv"
+  },
+  "delete": [],
+  "error": "x-flex-mcu"
+ },
+ {
+  "schema": "descriptor",
+  "base": "golden:descriptor/valid/rec-pick_cell_bridge-1.0.0.json",
+  "set": {
+   "/plc/download": true
+  },
+  "delete": [],
+  "error": "$.plc.download"
+ },
+ {
+  "schema": "onboarding#OnboardingRequest",
+  "base": "golden:onboarding/OnboardingRequest/request.json",
+  "set": {
+   "/publicKey": "abc"
+  },
+  "delete": [],
+  "error": "$.publicKey"
+ },
+ {
+  "schema": "onboarding#OnboardingRequest",
+  "base": "golden:onboarding/OnboardingRequest/request.json",
+  "set": {
+   "/role": "x"
+  },
+  "delete": [],
+  "error": "Additional properties are not allowed ('role'"
+ },
+ {
+  "schema": "onboarding#OnboardingResponse",
+  "base": "golden:onboarding/OnboardingResponse/response.json",
+  "set": {},
+  "delete": [
+   "/cloudPublicKey"
+  ],
+  "error": "'cloudPublicKey' is a required property"
+ },
+ {
+  "schema": "oci-profile#ReleaseManifest",
+  "base": "golden:oci-profile/ReleaseManifest/rec-cell_controller-1.0.0.json",
+  "set": {
+   "/config/mediaType": "application/json"
+  },
+  "delete": [],
+  "error": "$.config.mediaType"
+ },
+ {
+  "schema": "oci-profile#ReleaseManifest",
+  "base": "golden:oci-profile/ReleaseManifest/rec-perception_guard-1.0.0.json",
+  "set": {},
+  "delete": [
+   "/layers/0/annotations/dev.flex.imageRef"
+  ],
+  "error": "'dev.flex.imageRef' is a required property"
+ },
+ {
+  "schema": "oci-profile#ReleaseManifest",
+  "base": "golden:oci-profile/ReleaseManifest/rec-cell_controller-1.0.0.json",
+  "set": {
+   "/layers/0/annotations/dev.flex.foo": "x"
+  },
+  "delete": [],
+  "error": "dev.flex.foo"
+ },
+ {
+  "schema": "trust#TrustAnchors",
+  "base": "golden:trust/TrustAnchors/engine-cfg.json",
+  "set": {
+   "/releasePublicKeys/0": "not-a-key"
+  },
+  "delete": [],
+  "error": "releasePublicKeys[0]"
+ },
+ {
+  "schema": "cli-status",
+  "base": "golden:cli-status/valid/example.json",
+  "set": {},
+  "delete": [
+   "/devices/0/outboxLength"
+  ],
+  "error": "'outboxLength' is a required property"
+ }
+]

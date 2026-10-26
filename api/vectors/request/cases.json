@@ -1,0 +1,61 @@
+{
+ "cases": [
+  {
+   "body": "",
+   "expect": "accept",
+   "headers": {
+    "X-Flex-Date": "1792195200000",
+    "X-Flex-Device": "vec-dev",
+    "X-Flex-Nonce": "000102030405060708090a0b",
+    "X-Flex-Signature": "llp3UdrQe+WrJYjUoJ7LMpYdUq2Yamtz8TDr/vep8vtJ1mMQTGyAA/0fUpVJVjXz0A4ZrQAPlU03qt54wmbECg=="
+   },
+   "method": "GET",
+   "name": "good-get",
+   "path": "/api/v1/devices/vec-dev/deployments",
+   "stringToSign": "GET\n/api/v1/devices/vec-dev/deployments\n1792195200000\n000102030405060708090a0b\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "body": "{\"dep\":\"native-app\",\"deviceTime\":1792195200.0,\"manifestVersion\":3,\"reason\":\"awaiting safe state: machine_parked\",\"seq\":1,\"state\":\"Pending\",\"version\":\"1.0.0\"}",
+   "expect": "accept",
+   "headers": {
+    "X-Flex-Date": "1792195200000",
+    "X-Flex-Device": "vec-dev",
+    "X-Flex-Nonce": "000102030405060708090a0b",
+    "X-Flex-Signature": "gedMUpdVGtE7moQ4ESsJ3R96YBNTq772zdE8GsPISG0a7SI0pYn6FloZZLpcYYqOsfQw9myMuseos55jwWP5Bg=="
+   },
+   "method": "POST",
+   "name": "good-post",
+   "path": "/api/v1/devices/vec-dev/deployments/native-app/status",
+   "stringToSign": "POST\n/api/v1/devices/vec-dev/deployments/native-app/status\n1792195200000\n000102030405060708090a0b\n479964a017d185b23e2ccd287699e33d03ad0c229b8615bf97383891ae06910e"
+  },
+  {
+   "body": "{\"dep\":\"native-app\",\"deviceTime\":1792195200.0,\"manifestVersion\":3,\"reason\":\"awaiting safe state: machine_parked\",\"seq\":2,\"state\":\"Pending\",\"version\":\"1.0.0\"}",
+   "expect": "reject",
+   "headers": {
+    "X-Flex-Date": "1792195200000",
+    "X-Flex-Device": "vec-dev",
+    "X-Flex-Nonce": "000102030405060708090a0b",
+    "X-Flex-Signature": "gedMUpdVGtE7moQ4ESsJ3R96YBNTq772zdE8GsPISG0a7SI0pYn6FloZZLpcYYqOsfQw9myMuseos55jwWP5Bg=="
+   },
+   "method": "POST",
+   "name": "tampered-body",
+   "path": "/api/v1/devices/vec-dev/deployments/native-app/status",
+   "stringToSign": "POST\n/api/v1/devices/vec-dev/deployments/native-app/status\n1792195200000\n000102030405060708090a0b\n78d68600a0de49ec51e2c3b798cf15fb1f2ec14a2fed850f4cd167179704d7f4"
+  },
+  {
+   "body": "",
+   "expect": "reject",
+   "headers": {
+    "X-Flex-Date": "1792195200000",
+    "X-Flex-Device": "vec-dev",
+    "X-Flex-Nonce": "000102030405060708090a0b",
+    "X-Flex-Signature": "OfL2Uz4p8vvye2r/hjvZRWGzV+MrZC9Us16kP1CTiimnBUFDv69zlRux6FGRUyk3l0mtkzQfaaipQvq/UOMPAA=="
+   },
+   "method": "GET",
+   "name": "wrong-key",
+   "path": "/api/v1/devices/vec-dev/deployments",
+   "stringToSign": "GET\n/api/v1/devices/vec-dev/deployments\n1792195200000\n000102030405060708090a0b\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+ ],
+ "devicePublicKey": "ADD1JLePUCRk2ru8J4dSMKCidT9DvaRQ7FJhEREkYjg="
+}

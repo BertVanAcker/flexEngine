@@ -1,0 +1,10 @@
+{
+ "dep": "servo",
+ "deviceTime": 1792140891.0764122,
+ "digest": "sha256:15ce7875e1e7371700e636f6f4acdafe531c2bcde4463bb46b7942721c74acde",
+ "health": "healthy",
+ "manifestVersion": 3,
+ "seq": 6,
+ "state": "Installed",
+ "version": "2.0.0"
+}

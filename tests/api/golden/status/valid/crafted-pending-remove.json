@@ -1,0 +1,9 @@
+{
+ "dep": "guard",
+ "deviceTime": 1792195201.0,
+ "manifestVersion": 8,
+ "operation": "remove",
+ "reason": "awaiting safe state: machine_parked",
+ "seq": 43,
+ "state": "Pending"
+}

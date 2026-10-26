@@ -1,0 +1,17 @@
+{
+ "correlationId": "5e5f256237fbee5038923ce95cc810d1",
+ "dep": "cx-bridge",
+ "deviceTime": 1792130920.916878,
+ "digest": "sha256:c9af288328e3d3eef605e377177cdc93e4f04bc330a4363d2f70cda05a3c1220",
+ "fromVersion": null,
+ "manifestVersion": 1,
+ "plan": [
+  "no download: the panda/cx program was provisioned by hand",
+  "verify over ads: running interface hash == FLEX01_28ebc981b006b003f…",
+  "Installed only when equal; otherwise Failed and the GP releases that need it stay held"
+ ],
+ "seq": 1,
+ "state": "Installing",
+ "traceparent": "00-5e5f256237fbee5038923ce95cc810d1-1ce93ccc7270802e-01",
+ "version": "1.0.0"
+}

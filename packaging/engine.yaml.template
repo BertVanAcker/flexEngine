@@ -1,0 +1,33 @@
+# /etc/flexengine/engine.yaml -- flexEngineV2 host config (written once by packaging/install.sh; never overwritten).
+# Form of demo/edge/edge.example.yaml (the keys flexengine2.host.load_config reads today). Environment
+# variables are expanded ($ + {NAME}), also inside comments: an unset one makes the config invalid.
+# Check after editing: /opt/flexengine/bin/flexengine config check /etc/flexengine/engine.yaml --resolve
+# (schema: flexengine2/config/schema.json). As installed it fails on purpose until cloudPublicKey is set.
+# TODO(config schema): move to the plan §3.6 form (apiVersion, identity, local, observability, safeState) once the
+# schema accepts it; tests/packaging/test_pkg_install.py validates this template with `config check`.
+cloud:
+  apiUrl: https://lattepanda.lab:8700                 # flexCloud southbound API (P2)
+  # cloudPublicKey: <b64>                             # REQUIRED: Ed25519 trust anchor for desired-state signatures
+  releaseKeyFiles: []                                 # or releasePublicKeys: [<b64>] -- release signing key(s)
+  pollInterval: 1.0
+  backoff: [0.25, 4.0]
+  httpTimeout: 5
+dataDir: /var/lib/flexengine                          # per device: <dataDir>/<deviceId>/{state.json,actions.jsonl,...}
+devices:
+  - deviceId: @DEVICE_ID@                             # this host (install.sh: --device-id, default the hostname)
+    role: standalone-device                           # gateway when MCU children are listed with parent: <this id>
+    onboardingTokenFile: /etc/flexengine/tokens/@DEVICE_ID@   # one-time token (flex:flex 0600; deleted after onboarding)
+    safeStateFile: /var/lib/flexengine/safe-state.json        # {"machine_parked": true, "operator_confirmed": true}
+    drivers:
+      container: {runtime: docker}                    # podman | docker; the flex user needs the docker group
+      # plc-verify:
+      #   plcs:
+      #     panda/cx: {via: ads, amsNetId: <cx>, ip: <cx-ip>, amsPort: 851, localNetId: <lp>}
+      #     opta: {via: modbus, host: <opta-ip>, port: 502}
+  # - deviceId: @DEVICE_ID@.portenta                  # see-thru MCU child over SMP (extra [mcu])
+  #   parent: @DEVICE_ID@
+  #   modelDevice: portenta
+  #   onboardingTokenFile: /etc/flexengine/tokens/@DEVICE_ID@.portenta
+  #   mcu:
+  #     smp: {host: 127.0.0.1, port: 5555}            # socat/flex-smp-bridge in alpha; tty: in a later release
+  #     modulePublicKey: <hex>
