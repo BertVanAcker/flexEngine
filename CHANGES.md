@@ -43,3 +43,22 @@ is a new version.
 - The test suite runs without the framework: the framework files it reads are vendored in `tests/vectors/framework/`;
   `flexengine2.testing` ships probe P2's stand-in apps as package data, so its release builders work from a wheel.
 - The distribution is `flexEngine` (was `flexengine-v2` in the framework); wheel and bundles are `flexengine-<ver>-…`.
+
+### FE-4: Push, Build, Run, Stop (additions within v1alpha1)
+
+- Run state per deployment (`x-flex-runState: staged | running | stopped`, default running): staged installs without
+  starting, stopped stops and keeps the release, the health gate runs on every start; new status states `Staged` and
+  `Stopped`; starts follow `x-flex-dependsOn`, stops go in reverse.
+- Runtime per deployment (`x-flex-runtime`); `engine.yaml` lists further runtimes per profile
+  (`drivers.container.runtimes`, `drivers.native.runtimes`); the device reports `x-flex.runtimes` and refuses a runtime
+  it does not allow (FE-DS-008).
+- Container runtime `compose` (`runtime: compose`, x-flex-runtime `docker-compose`): a compose project per
+  deployment with `docker compose` or `podman compose`, images from the signed payload only, health gate per service,
+  roll back as one unit, host access refused unless `composeAllowHostAccess`.
+- On-device build (`x-flex-build: {id}`, descriptor `build`) for container (docker, podman, compose) and native
+  (process, systemd): once per build id, with `BuildStarted` / `BuildProgress` / `BuildLog` / `BuildSucceeded` /
+  `BuildFailed` device events and reason codes FE-BLD-001…004.
+- Retry: the same deployments in a newer `manifestVersion` try a failed release again.
+- Capabilities `x-flex.features` (`runState`, `runtime`, `build`, `retry`); a key whose feature the device does not
+  report is refused as a whole (FE-DS-007), a staged/stopped run state on a driver without it too (FE-DS-009).
+- Driver SPI 1.0, additive: optional `stage`, `start`, `stop`, `build`, attribute `runtime`, `Workload.build`.

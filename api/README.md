@@ -47,7 +47,8 @@ Driver authors: [../docs/spi-guide.md](../docs/spi-guide.md).
 - **Unknown keys.** Flex-owned objects (DesiredState, `x-flex-activation`, the `x-flex` capabilities block, driver
   fragments, status records, health/restart/runOptions) are closed. Margo-owned objects accept unknown Margo keys
   (ignored) but reject every unregistered `x-` key. Registered: `x-flex-driver`, `x-flex-safetyClass`,
-  `x-flex-activation`, `x-flex-dependsOn` (ApplicationDeployment), `x-flex` (DeviceCapabilities), `x-flex-mcu` (release descriptor).
+  `x-flex-activation`, `x-flex-dependsOn`, `x-flex-runState`, `x-flex-runtime`, `x-flex-build` (ApplicationDeployment),
+  `x-flex` (DeviceCapabilities), `x-flex-mcu` (release descriptor).
 - Rules JSON Schema cannot express are checked by `contracts.validate` (desired state: unique deployment ids,
   `metadata.deviceId` = `deviceId`; `x-flex-dependsOn` names other deployments of the document, once each, without
   cycles) [V].
@@ -136,3 +137,21 @@ cd flexengine
   reachable, version, status, online}`, `serveUrl`, `signedCommands`, `commit: false`); reason codes
   FE-AOTA-PRE-001…005, FE-AOTA-IMG-001…005, FE-AOTA-KEY-001, FE-AOTA-001…019; CP-6 §5 (board protocol: signed
   `OTA_UPDATE` over MQTT, `ota` / `heartbeat` keys, proposed upstream in `proposals/flexnode-arduino-remote-ota/`).
+- **2026-10-26, FE-4 run state, runtime per deployment, compose, build step** (the four buttons of flexDeploy: Push,
+  Build, Run, Stop). CP-1 ApplicationDeployment keys `x-flex-runState` (`$defs/RunState`: staged | running | stopped,
+  absent = running), `x-flex-runtime` (`$defs/Runtime`, its profile in `$defs/RuntimeProfiles`, checked by
+  `flexengine2.contracts`: FE-DS-005) and `x-flex-build` (`$defs/Build`: `{id}`); descriptor key `build` (command,
+  output, dockerfile, timeoutSeconds). CP-2: status states `Staged`, `Stopped`; DeviceEvent types `BuildStarted`,
+  `BuildProgress` (`progress`), `BuildLog` (`line`), `BuildSucceeded` (`resultDigest`), `BuildFailed` (`reason`,
+  `reasonCode`), each with `deployment` and `buildId` (the fields `reason`, `documentDigest` and
+  `acceptedManifestVersion` stay required for `DesiredStateRefused`); capabilities `x-flex.features` (`runState`,
+  `runtime`, `build`, `retry`) and `x-flex.runtimes`, container fragment driver `compose`. CP-3 payload media types
+  `application/vnd.flex.payload.compose.v1.tar+gzip` and `application/vnd.flex.payload.source.v1.tar+gzip`. Reason
+  codes FE-DS-007…009 (a key whose feature the device does not report, a runtime it does not allow, a run state its
+  driver cannot carry: refused as a whole), FE-REC-011/012 (start failed), FE-BLD-001…004 (build failed, timed out,
+  no source payload, no build step for the profile) with details FE-BLD-010…019, FE-CMP-* (compose), FE-CTR-015,
+  FE-NAT-002, FE-SYD-013. CP-5 (additive in 1.0): optional `stage`, `start`, `stop`, `build` and the attribute
+  `runtime`; `Workload.build`. Retry: a newer `manifestVersion` whose deployments equal those of the manifest a
+  release failed under installs (or starts, or builds) that release again; any other change keeps the verdict.
+  Southbound plan items `runState`, `runtime`, `build` (reference cloud: served only to a device that reports the
+  feature / runtime).
