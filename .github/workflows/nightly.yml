@@ -1,0 +1,77 @@
+# flexEngine 2 nightly tier (engine plan §7.6): driver contract on real executors (docker, podman, real systemd and
+# rauc in containers), property tests with the nightly budget (>= 200 schedules), the full integration suite and
+# packaging (clean Ubuntu 24.04 containers with systemd). Nightly and on demand.
+# Cases whose executor is missing skip themselves with a reason. The QEMU MCU (probe P3), App Lab (probe P4) and
+# demo/edge cases need the framework (marker `framework`, or a module-level skip); the framework's CI runs them.
+name: nightly
+on:
+  schedule:
+    - cron: "43 1 * * *"
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: runs-on label (ubuntu-24.04 or flex-sil)
+        default: ubuntu-24.04
+permissions:
+  contents: read
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+env:
+  PYTHON: ${{ github.workspace }}/.venv/bin/python
+  FLEX_RESULTS_DIR: ${{ github.workspace }}/results/latest
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+jobs:
+  nightly:
+    name: ${{ matrix.layer }}
+    runs-on: ${{ github.event.inputs.runner || 'ubuntu-24.04' }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        layer: [contract-nightly, property-nightly, integration, packaging]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - name: system packages (podman)
+        if: matrix.layer == 'contract-nightly' || matrix.layer == 'integration'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q podman
+      - name: venv
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -e ".[dev,mcu,applab,plc,otel,relay]" openapi-spec-validator
+      - name: alpine:3.20 (base of the container test images; the tests never pull, they skip without it)
+        if: matrix.layer == 'contract-nightly' || matrix.layer == 'integration'
+        run: docker pull -q alpine:3.20
+      - run: ./run_tests.sh ${{ matrix.layer }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-${{ matrix.layer }}
+          path: results/latest/
+
+  full-coverage:
+    name: coverage, layers 1-6 complete
+    runs-on: ${{ github.event.inputs.runner || 'ubuntu-24.04' }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - name: venv
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -e ".[dev,mcu,applab,plc,otel,relay]" openapi-spec-validator
+      - name: alpine:3.20 (base of the container test images; the tests never pull, they skip without it)
+        run: docker pull -q alpine:3.20
+      - run: ./run_tests.sh coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-coverage
+          path: |
+            results/latest/
+            tests/work/coverage/coverage.json

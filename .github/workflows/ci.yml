@@ -1,0 +1,138 @@
+# flexEngine 2: the push tier of the suite (engine plan §7.2, §7.6) on every PR and on master. Every job calls
+# ./run_tests.sh, so CI and the lab run the same commands. Results (JUnit XML, run-summary.json, coverage) are uploaded
+# as artifacts. No framework checkout: the cases that need the framework's probes, demo stacks or flexmodel skip with a
+# reason (marker `framework` / `flexmodel`); the framework's own CI runs them against this repository (FE-2).
+# Branch protection requires the one check `ci-ok`, which fails when any job before it failed or was cancelled.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  PYTHON: ${{ github.workspace }}/.venv/bin/python
+  FLEX_RESULTS_DIR: ${{ github.workspace }}/results/latest
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+jobs:
+  unit:
+    name: unit (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04]
+        python: ["3.11", "3.12", "3.13"]
+        include:
+          - os: macos-14
+            python: "3.13"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: venv
+        run: |
+          python -m venv .venv
+          if [ "$RUNNER_OS" = macOS ]; then extras="dev,mcu,applab,otel"; else extras="dev,mcu,applab,plc,otel,relay"; fi
+          .venv/bin/pip install -q -e ".[$extras]" openapi-spec-validator
+      - run: ./run_tests.sh unit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-${{ matrix.os }}-py${{ matrix.python }}
+          path: results/latest/
+
+  layers:
+    name: ${{ matrix.layer }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        layer: [contract, api, security, property, integration-fast]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: venv
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -e ".[dev,mcu,applab,plc,otel,relay]" openapi-spec-validator
+      - name: container runtimes
+        if: matrix.layer == 'integration-fast'
+        run: |
+          docker info --format 'docker {{.ServerVersion}}, storage {{.Driver}} {{.DriverStatus}}'
+          podman --version
+      - run: ./run_tests.sh ${{ matrix.layer }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.layer }}
+          path: results/latest/
+
+  coverage:
+    name: coverage gate (plan §7.3)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: venv
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -e ".[dev,mcu,applab,plc,otel,relay]" openapi-spec-validator
+      - name: layers 1-6 (push tier) under coverage.py; fails below the targets
+        run: ./run_tests.sh coverage
+        env:
+          FLEX_COVERAGE_LAYERS: unit contract api security property integration-fast
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: |
+            results/latest/
+            tests/work/coverage/coverage.json
+
+  build:
+    name: build (wheel + sdist, install smoke test)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - name: python -m build
+        run: python -m pip install -q build && python -m build
+      - name: the wheel installs into a clean venv and runs
+        run: |
+          python -m venv /tmp/smoke && /tmp/smoke/bin/pip install -q dist/*.whl
+          /tmp/smoke/bin/flexengine version
+          /tmp/smoke/bin/python -c "import flexengine2, sys; sys.exit(0 if 'site-packages' in flexengine2.__file__ else 1)"
+
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [unit, layers, coverage, build]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: every job passed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "a required job failed or was cancelled: ${{ join(needs.*.result, ', ') }}"
+          exit 1
+      - run: echo "all jobs passed"
