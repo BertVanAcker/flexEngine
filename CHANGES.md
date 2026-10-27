@@ -79,6 +79,7 @@ is a new version.
 - Release bundles: `release.yml` builds the offline bundles around the wheel it publishes to PyPI
   (`build-wheels.sh --wheel`, new `--bundle-only`) and attaches `SHA256SUMS`; a bundle unpacks into
   `flexengine-<ver>-linux_<arch>/`; `tests/packaging/test_pkg_bundle.py` installs from an unpacked bundle (dry run).
+- `docs/implementation.md`: how flexEngine 2.0 is built (for the portal's Docs).
 
 ### Contract changes since the freeze
 
