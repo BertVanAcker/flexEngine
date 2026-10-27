@@ -76,6 +76,9 @@ is a new version.
 - CI evidence: `nightly.yml` runs the push-tier core next to the nightly tier and merges every job into one run
   (`tools/run_summary.py merge`, artifact `full-run-<run id>`), the input of `tools/alpha_exit_check.py --runs`; the
   exit check also runs the freeze gate.
+- Release bundles: `release.yml` builds the offline bundles around the wheel it publishes to PyPI
+  (`build-wheels.sh --wheel`, new `--bundle-only`) and attaches `SHA256SUMS`; a bundle unpacks into
+  `flexengine-<ver>-linux_<arch>/`; `tests/packaging/test_pkg_bundle.py` installs from an unpacked bundle (dry run).
 
 ### Contract changes since the freeze
 

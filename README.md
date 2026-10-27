@@ -45,14 +45,16 @@ framework repository).
 
 ### LattePanda (Ubuntu 24.04, x86_64) — the lab device
 
-Build the bundle once on any Linux host with Docker, then install it offline on the LattePanda:
+Take the offline bundle of a release (GitHub release assets, with `SHA256SUMS`; or build it on any Linux host with
+Docker: `packaging/build-wheels.sh` → `dist/flexengine-<ver>-linux_x86_64.tar.gz`), then install it offline:
 
 ```bash
-packaging/build-wheels.sh                 # -> dist/flexengine-<ver>-linux_x86_64.tar.gz
-scp dist/flexengine-*-linux_x86_64.tar.gz lattepanda.lab:
+gh release download v2.0.0rc1 -R BertVanAcker/flexEngine -p 'flexengine-*-linux_x86_64.tar.gz' -p SHA256SUMS
+sha256sum -c --ignore-missing SHA256SUMS
+scp flexengine-*-linux_x86_64.tar.gz lattepanda.lab:
 
 # on the LattePanda
-tar xzf flexengine-*-linux_x86_64.tar.gz && cd flexengine-*/
+tar xzf flexengine-*-linux_x86_64.tar.gz && cd flexengine-*-linux_x86_64/
 sudo packaging/install.sh --extras mcu,plc,applab,otel --device-id panda --dry-run   # shows the plan
 sudo packaging/install.sh --extras mcu,plc,applab,otel --device-id panda
 /opt/flexengine/bin/flexengine version
