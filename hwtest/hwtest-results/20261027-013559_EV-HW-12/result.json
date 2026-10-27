@@ -2,8 +2,8 @@
   "runbook": "EV-HW-12",
   "title": "Four buttons on the LattePanda (Push, Run, Stop, Run one, Stop all; on-device build)",
   "file": "/home/user/flexengine-bench/hwtest/runbooks/EV-HW-12_four_buttons.yaml",
-  "started": "2026-10-27T00:14:23",
-  "finished": "2026-10-27T00:15:04",
+  "started": "2026-10-27T01:35:59",
+  "finished": "2026-10-27T01:36:40",
   "aborted": false,
   "operator": "dry-run",
   "vars": {
@@ -11,49 +11,49 @@
     "flexengine": "/home/user/flexengine-bench",
     "repo": "/home/user/modular-interoperable-framework",
     "project_dir": "/home/user/flexengine-bench",
-    "results_dir": "/home/user/flexengine-bench/hwtest/hwtest-results/20261027-001423_EV-HW-12",
+    "results_dir": "/home/user/flexengine-bench/hwtest/hwtest-results/20261027-013559_EV-HW-12",
     "local_ip": "192.0.2.2",
     "python": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python",
     "operator": "dry-run",
     "target": "sim",
     "lp": "local",
-    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-12-8qcal_qe/lp/engine.yaml /tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python -m flexengine2.local.cli",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-12-xdeq8l1a/lp/engine.yaml /tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python -m flexengine2.local.cli",
     "fe_host": "local",
-    "fe_api": "http://127.0.0.1:35199",
-    "fe_api_token_file": "/tmp/rb-12-8qcal_qe/secrets/fe-api.token",
-    "fe_data": "/tmp/rb-12-8qcal_qe/lp/data",
+    "fe_api": "http://127.0.0.1:59507",
+    "fe_api_token_file": "/tmp/rb-12-xdeq8l1a/secrets/fe-api.token",
+    "fe_data": "/tmp/rb-12-xdeq8l1a/lp/data",
     "fe_sudo": "",
-    "journal_source": "file:/tmp/rb-12-8qcal_qe/lp/engine.log",
+    "journal_source": "file:/tmp/rb-12-xdeq8l1a/lp/engine.log",
     "cloud_host": "127.0.0.1",
-    "cloud_port": "41461",
-    "cloud_url": "http://127.0.0.1:42635",
+    "cloud_port": "37331",
+    "cloud_url": "http://127.0.0.1:37209",
     "cloud_ca": "",
-    "admin_token_file": "/tmp/rb-12-8qcal_qe/secrets/admin.token",
-    "catalog": "/tmp/rb-12-8qcal_qe/catalog.yaml",
-    "desk": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/deskctl.py --cloud http://127.0.0.1:42635 --ca '' --admin-token-file /tmp/rb-12-8qcal_qe/secrets/admin.token --catalog /tmp/rb-12-8qcal_qe/catalog.yaml",
+    "admin_token_file": "/tmp/rb-12-xdeq8l1a/secrets/admin.token",
+    "catalog": "/tmp/rb-12-xdeq8l1a/catalog.yaml",
+    "desk": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/deskctl.py --cloud http://127.0.0.1:37209 --ca '' --admin-token-file /tmp/rb-12-xdeq8l1a/secrets/admin.token --catalog /tmp/rb-12-xdeq8l1a/catalog.yaml",
     "gp": "rb-panda",
-    "rt": "/tmp/rb-12-8qcal_qe/bin/docker",
-    "sysctl": "/tmp/rb-12-8qcal_qe/bin/systemctl",
-    "unit_dir": "/tmp/rb-12-8qcal_qe/fakert/units",
-    "safe_state_file": "/tmp/rb-12-8qcal_qe/lp/safe-state.json",
-    "cloud_layout": "/tmp/rb-12-8qcal_qe/cloud/oci",
-    "lab_ca": "/tmp/rb-12-8qcal_qe/pki/ca.crt",
-    "rogue_ca": "/tmp/rb-12-8qcal_qe/pki/rogue-ca.crt",
-    "fe_api_port": "35199",
-    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-12-8qcal_qe/lp/engine.yaml /tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python -m flexengine2.local.cli enroll",
-    "fe_config": "/tmp/rb-12-8qcal_qe/lp/engine.yaml",
-    "svc": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-8qcal_qe svc",
-    "sim": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-8qcal_qe",
+    "rt": "/tmp/rb-12-xdeq8l1a/bin/docker",
+    "sysctl": "/tmp/rb-12-xdeq8l1a/bin/systemctl",
+    "unit_dir": "/tmp/rb-12-xdeq8l1a/fakert/units",
+    "safe_state_file": "/tmp/rb-12-xdeq8l1a/lp/safe-state.json",
+    "cloud_layout": "/tmp/rb-12-xdeq8l1a/cloud/oci",
+    "lab_ca": "/tmp/rb-12-xdeq8l1a/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-12-xdeq8l1a/pki/rogue-ca.crt",
+    "fe_api_port": "59507",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-12-xdeq8l1a/lp/engine.yaml /tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python -m flexengine2.local.cli enroll",
+    "fe_config": "/tmp/rb-12-xdeq8l1a/lp/engine.yaml",
+    "svc": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a svc",
+    "sim": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a",
     "dry_run": "1",
     "lp_sh": "sh -c",
-    "uplink_down": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-8qcal_qe uplink down",
-    "uplink_up": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-8qcal_qe uplink up",
-    "power_cut": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-8qcal_qe power-cycle --down 3",
-    "sim_dir": "/tmp/rb-12-8qcal_qe",
-    "run_all_s": "2.305"
+    "uplink_down": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a uplink down",
+    "uplink_up": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a uplink up",
+    "power_cut": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a power-cycle --down 3",
+    "sim_dir": "/tmp/rb-12-xdeq8l1a",
+    "run_all_s": "2.027"
   },
-  "project_commit": "v0.6.0-95-gae54c3f-dirty",
-  "runner_commit": "v0.6.0-95-gae54c3f-dirty",
+  "project_commit": "v0.6.0-106-g96e2f48",
+  "runner_commit": "v0.6.0-106-g96e2f48",
   "summary": {
     "PASS": 51,
     "FAIL": 0,
@@ -64,7 +64,7 @@
       "id": "stack",
       "title": "flexCloud TLS port reachable",
       "status": "PASS",
-      "detail": "127.0.0.1:41461 reachable"
+      "detail": "127.0.0.1:37331 reachable"
     },
     {
       "id": "engine-up",
@@ -130,7 +130,7 @@
       "id": "mark-run",
       "title": "History mark before Run all",
       "status": "PASS",
-      "detail": "mark run at deviceTime 1793060065.772 (8 record(s) before it)"
+      "detail": "mark run at deviceTime 1793064965.257 (8 record(s) before it)"
     },
     {
       "id": "run-all",
@@ -148,7 +148,7 @@
       "id": "run-order",
       "title": "Started in dependency order: proc, sysd, ctr, cam",
       "status": "PASS",
-      "detail": "proc Installed 4.0.0 -> sysd Installed 4.0.0 -> ctr Installed 4.0.0 -> cam Installed 4.0.0; 2.31 s from the first to the last record"
+      "detail": "proc Installed 4.0.0 -> sysd Installed 4.0.0 -> ctr Installed 4.0.0 -> cam Installed 4.0.0; 2.03 s from the first to the last record"
     },
     {
       "id": "run-ctr",
@@ -166,7 +166,7 @@
       "id": "mark-stop",
       "title": "History mark before Stop all",
       "status": "PASS",
-      "detail": "mark stop at deviceTime 1793060070.356 (16 record(s) before it)"
+      "detail": "mark stop at deviceTime 1793064969.323 (16 record(s) before it)"
     },
     {
       "id": "stop-all",
@@ -184,7 +184,7 @@
       "id": "stop-order",
       "title": "Stopped in reverse order: cam, ctr, sysd, proc",
       "status": "PASS",
-      "detail": "cam Stopped 4.0.0 -> ctr Stopped 4.0.0 -> sysd Stopped 4.0.0 -> proc Stopped 4.0.0; 0.75 s from the first to the last record"
+      "detail": "cam Stopped 4.0.0 -> ctr Stopped 4.0.0 -> sysd Stopped 4.0.0 -> proc Stopped 4.0.0; 1.00 s from the first to the last record"
     },
     {
       "id": "kept-ctr",
@@ -274,7 +274,7 @@
       "id": "mark-build",
       "title": "Journal mark before the build",
       "status": "PASS",
-      "detail": "mark build at byte 5862 of /tmp/rb-12-8qcal_qe/lp/engine.log"
+      "detail": "mark build at byte 5862 of /tmp/rb-12-xdeq8l1a/lp/engine.log"
     },
     {
       "id": "build-push",
@@ -286,7 +286,7 @@
       "id": "build-ok",
       "title": "BuildStarted, BuildSucceeded for b-1 (engine log)",
       "status": "PASS",
-      "detail": "1 line(s) matching {'event': 'build.succeeded', 'dep': 'bld', 'buildId': 'b-1'}: {\"ts\":\"2026-10-27T00:14:58.029Z\",\"level\":\"info\",\"device\":\"rb-panda\",\"event\":\"build.succeeded\",\"dep\":\"bld\",\"msg\":\"BuildSucceeded bld b-1\",\"buildId\":\"b-1\"}"
+      "detail": "1 line(s) matching {'event': 'build.succeeded', 'dep': 'bld', 'buildId': 'b-1'}: {\"ts\":\"2026-10-27T01:36:34.915Z\",\"level\":\"info\",\"device\":\"rb-panda\",\"event\":\"build.succeeded\",\"dep\":\"bld\",\"msg\":\"BuildSucceeded bld b-1\",\"buildId\":\"b-1\"}"
     },
     {
       "id": "build-staged",
@@ -310,7 +310,7 @@
       "id": "mark-build-bad",
       "title": "Journal mark before the failing build",
       "status": "PASS",
-      "detail": "mark buildbad at byte 7746 of /tmp/rb-12-8qcal_qe/lp/engine.log"
+      "detail": "mark buildbad at byte 7746 of /tmp/rb-12-xdeq8l1a/lp/engine.log"
     },
     {
       "id": "build-bad",
@@ -322,7 +322,7 @@
       "id": "build-failed",
       "title": "BuildFailed for b-2 (engine log)",
       "status": "PASS",
-      "detail": "1 line(s) matching exited with status 2: {\"ts\":\"2026-10-27T00:15:01.788Z\",\"level\":\"warning\",\"device\":\"rb-panda\",\"event\":\"build.failed\",\"dep\":\"bld\",\"msg\":\"BuildFailed bld b-2: build failed: build command exited with status 2\",\"buildId\":\"b-2\"}"
+      "detail": "1 line(s) matching exited with status 2: {\"ts\":\"2026-10-27T01:36:37.853Z\",\"level\":\"warning\",\"device\":\"rb-panda\",\"event\":\"build.failed\",\"dep\":\"bld\",\"msg\":\"BuildFailed bld b-2: build failed: build command exited with status 2\",\"buildId\":\"b-2\"}"
     },
     {
       "id": "build-failed-code",
