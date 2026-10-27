@@ -73,6 +73,9 @@ is a new version.
 - Freeze gate: the public surface (spec files and their structure, reason codes, CLI, engine configuration schema,
   test vectors) is recorded in `api/freeze/`; `tools/freeze.py check` (CI job `freeze`, required through `ci-ok`)
   fails on a removal or a change and lets an addition in only with a row in the table below.
+- CI evidence: `nightly.yml` runs the push-tier core next to the nightly tier and merges every job into one run
+  (`tools/run_summary.py merge`, artifact `full-run-<run id>`), the input of `tools/alpha_exit_check.py --runs`; the
+  exit check also runs the freeze gate.
 
 ### Contract changes since the freeze
 

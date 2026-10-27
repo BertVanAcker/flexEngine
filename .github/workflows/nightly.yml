@@ -3,6 +3,9 @@
 # packaging (clean Ubuntu 24.04 containers with systemd). Nightly and on demand.
 # Cases whose executor is missing skip themselves with a reason. The QEMU MCU (probe P3), App Lab (probe P4) and
 # demo/edge cases need the framework (marker `framework`, or a module-level skip); the framework's CI runs them.
+# Each run is one full run of the suite (push-tier core + nightly tier + coverage): job `full-run` merges the jobs'
+# results into one run-summary.json (artifact full-run-<run id>), the evidence tools/alpha_exit_check.py --runs reads
+# (three green full runs in a row on the release commit; dispatch the workflow three times on it).
 name: nightly
 on:
   schedule:
@@ -53,6 +56,25 @@ jobs:
           name: nightly-${{ matrix.layer }}
           path: results/latest/
 
+  push-layers:
+    name: unit contract api security
+    runs-on: ${{ github.event.inputs.runner || 'ubuntu-24.04' }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - name: venv
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -e ".[dev,mcu,applab,plc,otel,relay]" openapi-spec-validator
+      - run: ./run_tests.sh unit contract api security
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-push
+          path: results/latest/
+
   full-coverage:
     name: coverage, layers 1-6 complete
     runs-on: ${{ github.event.inputs.runner || 'ubuntu-24.04' }}
@@ -78,3 +100,32 @@ jobs:
           path: |
             results/latest/
             tests/work/coverage/coverage.json
+
+  full-run:
+    name: one full run (merged run summary)
+    if: always()
+    needs: [nightly, push-layers, full-coverage]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - uses: actions/download-artifact@v4
+        with: {path: jobs}
+      - name: merge the jobs' results (fails when a job left no results)
+        run: |
+          python tools/run_summary.py merge "full-run" jobs/nightly-push jobs/nightly-contract-nightly \
+            jobs/nightly-property-nightly jobs/nightly-integration jobs/nightly-packaging \
+            --meta "workflow=${{ github.workflow }}" --meta "runId=${{ github.run_id }}" \
+            --meta "runAttempt=${{ github.run_attempt }}" --meta "sha=${{ github.sha }}" \
+            --meta "url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -f jobs/nightly-coverage/results/latest/coverage-summary.json ]; then
+            cp jobs/nightly-coverage/results/latest/coverage-summary.json full-run/
+          elif [ -f jobs/nightly-coverage/coverage-summary.json ]; then
+            cp jobs/nightly-coverage/coverage-summary.json full-run/
+          fi
+          ls full-run
+      - uses: actions/upload-artifact@v4
+        with:
+          name: full-run-${{ github.run_id }}
+          path: full-run/
