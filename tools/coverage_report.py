@@ -14,9 +14,13 @@ the plan's core/health.py and artefacts/verify.py live inside these two modules)
 overall >= 85 % lines. Exit 1 when a target is missed (unless --no-gate).
 
 Without flexmodel (not on PyPI; the relay extra needs it, decision FE-D3) gateway/relay.py cannot run: it is left out
-of every group and listed under notMeasured. FLEX_COVERAGE_DEFER=<driver>[,<driver>...] reports a driver's miss under
-deferred instead of failing the gate: for a driver whose integration suite needs the framework (applab: probe P4's
-board simulator) when the run has no framework checkout; the framework's CI gates it with the full suite.
+of every group and listed under notMeasured. When flexmodel is importable the relay is measured and gated on its own
+(group relay, >= 80 % lines, the driver target: it is the MCU path's adapter). FLEX_COVERAGE_REQUIRE=relay makes a run
+in which the relay is not measured fail the gate instead of passing silently (the framework's CI, which installs
+flexmodel). FLEX_COVERAGE_DEFER=<driver>[,<driver>...] reports a driver's miss under deferred instead of failing the
+gate: for a driver whose integration suite needs the framework (applab: probe P4's board simulator) when the run has
+no framework checkout; the framework's CI gates it with the full suite (workflow flexengine-framework.yml, job
+coverage, which sets neither variable to defer).
 """
 
 from __future__ import annotations
@@ -43,8 +47,9 @@ DRIVERS = {
     "arduino-ota": ("drivers/arduino_ota.py", "drivers/arduino_wire.py"),
 }
 BRANCH = ("core/reconciler.py", "artefacts/store.py")
-TARGETS = {"core": 90.0, "drivers": 80.0, "overall": 85.0, "branch": 80.0}
+TARGETS = {"core": 90.0, "drivers": 80.0, "overall": 85.0, "branch": 80.0, "relay": 80.0}
 NEEDS_FLEXMODEL = ("gateway/relay.py",)
+RELAY = ("gateway/relay.py",)
 
 
 def rel(path: str) -> str | None:
@@ -68,10 +73,14 @@ def agg(files: dict, prefixes) -> dict:
             "files": sorted(names)}
 
 
-def summarise(cov: dict, defer: tuple[str, ...] = ()) -> dict:
+def flexmodel_importable() -> bool:
+    return importlib.util.find_spec("flexmodel") is not None
+
+
+def summarise(cov: dict, defer: tuple[str, ...] = (), require: tuple[str, ...] = ()) -> dict:
     files = {}
     not_measured = {}
-    skip = () if importlib.util.find_spec("flexmodel") else NEEDS_FLEXMODEL
+    skip = () if flexmodel_importable() else NEEDS_FLEXMODEL
     for path, d in cov["files"].items():
         r = rel(path)
         if r is None or r.startswith("testing/") or r.endswith("__init__.py") and d["summary"]["num_statements"] == 0:
@@ -88,6 +97,7 @@ def summarise(cov: dict, defer: tuple[str, ...] = ()) -> dict:
         "overall": agg(files, ("",)),
         "drivers": {k: agg(files, v) for k, v in DRIVERS.items()},
         "branch": {b: agg(files, (b,)) for b in BRANCH},
+        "relay": agg(files, RELAY),
         "perFile": {f: {"lines": round(100.0 * s["covered_lines"] / s["num_statements"], 1) if s["num_statements"] else None,
                         "missing": s["missing_lines"], "statements": s["num_statements"]}
                     for f, s in sorted(files.items())},
@@ -105,6 +115,11 @@ def summarise(cov: dict, defer: tuple[str, ...] = ()) -> dict:
     for b, v in out["branch"].items():
         if v["branches"] and (v["branch"] or 0) < TARGETS["branch"]:
             misses.append(f"branch {b} {v['branch']} % < {TARGETS['branch']} %")
+    relay = out["relay"]
+    if relay["statements"] and (relay["lines"] or 0) < TARGETS["relay"]:
+        misses.append(f"relay {relay['lines']} % < {TARGETS['relay']} %")
+    if "relay" in require and not relay["statements"]:
+        misses.append("relay not measured (FLEX_COVERAGE_REQUIRE=relay): " + not_measured.get(RELAY[0], "no data"))
     out["misses"] = misses
     out["deferred"] = deferred
     out["notMeasured"] = not_measured
@@ -121,6 +136,10 @@ def render(s: dict) -> str:
                      f"{v['branch'] if v['branch'] is not None else '-':>9} {v['statements']:>7}")
     for b, v in s["branch"].items():
         lines.append(f"branch {b:<17} {v['lines']:>8} {v['branch']:>9} {v['statements']:>7}")
+    if s["relay"]["statements"]:
+        v = s["relay"]
+        lines.append(f"{'relay':<24} {v['lines']:>8} {v['branch'] if v['branch'] is not None else '-':>9} "
+                     f"{v['statements']:>7}")
     for f, why in s.get("notMeasured", {}).items():
         lines.append(f"not measured: {f} ({why})")
     if s.get("deferred"):
@@ -129,14 +148,20 @@ def render(s: dict) -> str:
     return "\n".join(lines)
 
 
+def env_list(name: str) -> tuple[str, ...]:
+    return tuple(d.strip() for d in os.environ.get(name, "").split(",") if d.strip())
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("coverage_json")
     ap.add_argument("--out")
     ap.add_argument("--no-gate", action="store_true")
     a = ap.parse_args(argv)
-    defer = tuple(d.strip() for d in os.environ.get("FLEX_COVERAGE_DEFER", "").split(",") if d.strip())
-    s = summarise(json.loads(Path(a.coverage_json).read_text()), defer)
+    require = env_list("FLEX_COVERAGE_REQUIRE")
+    if set(require) - {"relay"}:
+        ap.error(f"FLEX_COVERAGE_REQUIRE: unknown {sorted(set(require) - {'relay'})} (known: relay)")
+    s = summarise(json.loads(Path(a.coverage_json).read_text()), env_list("FLEX_COVERAGE_DEFER"), require)
     if a.out:
         Path(a.out).write_text(json.dumps(s, indent=2) + "\n")
     print(render(s))
