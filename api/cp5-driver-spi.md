@@ -2,7 +2,9 @@
 
 **Normative text: the module docstring of [`src/flexengine2/drivers/base.py`](../src/flexengine2/drivers/base.py)**
 (`SPI_VERSION = "1.0"`, reported as `x-flex.engine.spi`). This sheet is the one-page summary; conformance suite:
-`tests/contract/test_spi.py` (EV-03). Where this sheet and `base.py` differ, `base.py` wins.
+`tests/contract/test_spi.py` (EV-03). Machine-readable: `src/flexengine2/api/driver-spi.v1.schema.json`
+(member table `x-flex-spi`, data `$defs`; `tests/api/test_driver_spi_contract.py` keeps it equal to `base.py`). Where
+this sheet and `base.py` differ, `base.py` wins.
 
 ## Shape
 

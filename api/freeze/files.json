@@ -1,0 +1,24 @@
+{
+ "gate": "FE-F1",
+ "name": "files",
+ "recorded": {
+  "date": "2026-10-27",
+  "why": "baseline of the 2.0.0 freeze"
+ },
+ "entries": {
+  "capabilities.v1alpha1.schema.json": "bef0ecba093b37d6f7bbb9ef751930d8f72c16279c6e4e9f425fc281b24ecfc0",
+  "cli-status.v1.schema.json": "f9b6e07386edcd2a1520c6a606172fa046f93a2db33f7c096be70e3bfa6f4455",
+  "descriptor.v1alpha1.schema.json": "c46ef9b9f806e01991c7ef4845a3ab34f07f7d5421938d3da762f08fd6be0a23",
+  "desired-state.v1alpha1.schema.json": "031a84538c113666536388e424ebec6e2f9e96a38a33fc5475dd01e1a6bcb7a0",
+  "device-event.v1alpha1.schema.json": "eccb55a80389a7cfec42c43685e8b6a6e389832a7c368219f64a1792fd987c99",
+  "driver-spi.v1.schema.json": "22a465229854845a6e7f07ca7494800021728ef2a710bb6b46f47bf7d1d0d286",
+  "local-api.v1.openapi.yaml": "41265b1a985f2ff0fe73037858b800e2ef5f01ed55fba535754bef67bdb4def7",
+  "oci-profile.v1alpha1.schema.json": "3602b258c4b31d138e711cf8304790160fcbf4ca23550a960bec692240fd29cc",
+  "onboarding.v1alpha1.schema.json": "9acb21645bc9e8f0e137f8ae43006bc1a9b08e689e12e6d8140778402561c0f7",
+  "openapi-southbound.yaml": "b2d541509f1198a818eed54e052a271109b27b975f6a9524711056a0930ca44a",
+  "reason-codes.v1alpha1.json": "f81caa40162f5fd524d03ae0b3ca4f8eeb1b68cf7cb5b0e3273084617fda299a",
+  "status.v1alpha1.schema.json": "d5a35662fc5c4f1836bd2cb302c599af5bd4703b42eca5b2d5427d13083502a7",
+  "telemetry.v1.schema.json": "7f7edcc8140bfcbc5b7eaa6c306591b83a52c3446c3b402c740fa64e395a8d89",
+  "trust.v1alpha1.schema.json": "3d4bde929495d5d5a6f67365ee04ed016c984e1e63c81caa6cbcbae2be06e16b"
+ }
+}

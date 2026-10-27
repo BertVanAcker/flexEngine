@@ -3,6 +3,11 @@
 #
 #   packaging/build-wheels.sh [--out dist] [--python PY] [--targets LIST] [--extras LIST]
 #                                        [--arm64-extras LIST] [--no-docker] [--no-bundle] [--clean]
+#                                        [--wheel FILE] [--bundle-only]
+#
+#   --wheel         use this engine wheel instead of building one (release.yml: the wheel that goes to PyPI, so the
+#                   bundle installs exactly the published build); copied into --out
+#   --bundle-only   no wheelhouse downloads: bundle the engine wheel and the wheelhouses already in --out
 #
 #   --targets       space/comma list of <arch>-<pyver> (default "x86_64-3.12 x86_64-3.13 aarch64-3.11 aarch64-3.13")
 #                   x86_64-3.12  = LattePanda 3 Delta (Ubuntu 24.04);  aarch64-3.11/3.13 = UNO Q Linux side
@@ -33,7 +38,7 @@ PY="${PYTHON:-}"
 TARGETS="x86_64-3.12 x86_64-3.13 aarch64-3.11 aarch64-3.13"
 EXTRAS="mcu,applab,plc,otel"
 ARM_EXTRAS="applab,otel"
-DOCKER=1; BUNDLE=1; CLEAN=0
+DOCKER=1; BUNDLE=1; CLEAN=0; GIVEN_WHEEL=""; BUNDLE_ONLY=0
 SDIST_ONLY=(crcmod pyads)
 LOCK="$HERE/requirements-lock.txt"
 while [[ $# -gt 0 ]]; do
@@ -46,7 +51,9 @@ while [[ $# -gt 0 ]]; do
     --no-docker) DOCKER=0; shift ;;
     --no-bundle) BUNDLE=0; shift ;;
     --clean) CLEAN=1; shift ;;
-    -h|--help) sed -n '2,31p' "$0"; exit 0 ;;
+    --wheel) GIVEN_WHEEL="$2"; shift 2 ;;
+    --bundle-only) BUNDLE_ONLY=1; shift ;;
+    -h|--help) sed -n '2,37p' "$0"; exit 0 ;;
     *) echo "unknown option $1" >&2; exit 2 ;;
   esac
 done
@@ -59,13 +66,25 @@ VER="$("$PY" -c 'import re,sys; print(re.search(r"__version__ = \"([^\"]+)\"", o
   "$PKG/src/flexengine2/__init__.py")"
 
 # ---- 1. the engine wheel ----------------------------------------------------------------------------------------------
-say "flexEngine $VER wheel"
-rm -f "$OUT"/flexengine-*.whl
-tmpb="$(mktemp -d)"; trap 'rm -rf "$tmpb"' EXIT
-cp -r "$PKG/pyproject.toml" "$PKG/README.md" "$PKG/src" "$tmpb/"   # clean tree: no build/ or egg-info in the checkout
-find "$tmpb/src" -name '__pycache__' -prune -exec rm -rf {} + ; find "$tmpb/src" -name '*.egg-info' -prune -exec rm -rf {} +
-"${PIP[@]}" wheel -q --no-deps -w "$OUT" "$tmpb"
-WHEEL="$(ls "$OUT"/flexengine-"$VER"-py3-none-any.whl)"
+if [[ -n "$GIVEN_WHEEL" ]]; then
+  [[ "$(basename "$GIVEN_WHEEL")" == "flexengine-$VER-py3-none-any.whl" ]] \
+    || { echo "--wheel $GIVEN_WHEEL is not flexengine-$VER-py3-none-any.whl (the checkout's version)" >&2; exit 2; }
+  say "flexEngine $VER wheel (given)"
+  if [[ "$(cd "$(dirname "$GIVEN_WHEEL")" && pwd)/$(basename "$GIVEN_WHEEL")" != "$OUT/$(basename "$GIVEN_WHEEL")" ]]; then
+    rm -f "$OUT"/flexengine-*.whl; cp "$GIVEN_WHEEL" "$OUT/"
+  fi
+elif [[ $BUNDLE_ONLY == 1 ]]; then
+  say "flexEngine $VER wheel (already in $OUT)"
+else
+  say "flexEngine $VER wheel"
+  rm -f "$OUT"/flexengine-*.whl
+  tmpb="$(mktemp -d)"; trap 'rm -rf "$tmpb"' EXIT
+  cp -r "$PKG/pyproject.toml" "$PKG/README.md" "$PKG/src" "$tmpb/"   # clean tree: no build/ or egg-info in the checkout
+  find "$tmpb/src" -name '__pycache__' -prune -exec rm -rf {} + ; find "$tmpb/src" -name '*.egg-info' -prune -exec rm -rf {} +
+  "${PIP[@]}" wheel -q --no-deps -w "$OUT" "$tmpb"
+fi
+WHEEL="$OUT/flexengine-$VER-py3-none-any.whl"
+[[ -f "$WHEEL" ]] || { echo "no engine wheel $WHEEL" >&2; exit 1; }
 echo "   $WHEEL"
 
 # ---- 2. wheelhouses ---------------------------------------------------------------------------------------------------
@@ -81,6 +100,7 @@ docker_can() {  # docker_can <arch>: can Docker run a linux/<arch> container her
   docker run --rm --network none --platform "$p" "python:$2" true >/dev/null 2>&1
 }
 for tgt in $TARGETS; do
+  [[ $BUNDLE_ONLY == 1 ]] && break
   arch="${tgt%-*}"; pyv="${tgt#*-}"; cp="cp${pyv/./}"
   ex="$EXTRAS"; [[ $arch == aarch64 ]] && ex="$ARM_EXTRAS"
   WH="$OUT/wheelhouse/linux_${arch}-${cp}"
@@ -130,13 +150,16 @@ done
 if [[ $BUNDLE == 1 ]]; then
   for arch in $(for t in $TARGETS; do echo "${t%-*}"; done | sort -u); do
     b="$OUT/flexengine-$VER-linux_$arch.tar.gz"
+    if [[ $BUNDLE_ONLY == 1 ]] && ! compgen -G "$OUT/wheelhouse/linux_${arch}-*" >/dev/null; then
+      echo "   no wheelhouse for $arch in $OUT/wheelhouse: no $arch bundle"; continue
+    fi
     say "bundle $b"
-    stage="$(mktemp -d)"; d="$stage/flexengine-$VER"
+    stage="$(mktemp -d)"; top="flexengine-$VER-linux_$arch"; d="$stage/$top"
     mkdir -p "$d/wheelhouse"
     cp -r "$HERE" "$d/packaging"; rm -rf "$d/packaging/__pycache__"
     cp "$WHEEL" "$d/"
     for w in "$OUT/wheelhouse/linux_${arch}-"*; do [[ -d "$w" ]] && cp -r "$w" "$d/wheelhouse/"; done
-    tar -C "$stage" -czf "$b" "flexengine-$VER"
+    tar -C "$stage" -czf "$b" "$top"
     rm -rf "$stage"
   done
 fi

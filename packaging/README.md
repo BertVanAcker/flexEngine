@@ -26,25 +26,38 @@ Layout on the target:
 
 ## LattePanda 3 Delta (Ubuntu 24.04, x86_64)
 
-On a build host (any Linux with Docker, network access once):
+Every release tag `v2.*` publishes the offline bundles with the GitHub release (`release.yml`, job `bundles`):
+`flexengine-<ver>-linux_x86_64.tar.gz` (LattePanda), `flexengine-<ver>-linux_aarch64.tar.gz` (UNO Q) and
+`SHA256SUMS`. The bundle's wheel is the one published to PyPI (`build-wheels.sh --wheel`). On a host with network
+access:
 
 ```bash
-packaging/build-wheels.sh                # -> dist/flexengine-2.0.0a1-linux_x86_64.tar.gz
-scp dist/flexengine-2.0.0a1-linux_x86_64.tar.gz lattepanda.lab:
+V=2.0.0rc1
+gh release download v$V -R BertVanAcker/flexEngine -p "flexengine-$V-linux_x86_64.tar.gz" -p SHA256SUMS
+grep "flexengine-$V-linux_x86_64.tar.gz" SHA256SUMS | sha256sum -c -
+scp "flexengine-$V-linux_x86_64.tar.gz" lattepanda.lab:
 ```
+
+Or build it yourself on any Linux host with Docker (network access once): `packaging/build-wheels.sh` writes
+`dist/flexengine-<ver>-linux_x86_64.tar.gz`.
 
 On the LattePanda (offline is fine; needs `python3` 3.12 and `python3.12-venv`, which install.sh apt-installs if
 missing):
 
 ```bash
-tar xzf flexengine-2.0.0a1-linux_x86_64.tar.gz && cd flexengine-2.0.0a1
+tar xzf flexengine-$V-linux_x86_64.tar.gz && cd flexengine-$V-linux_x86_64
 sudo packaging/install.sh --extras mcu,plc,applab,otel --dry-run     # the plan
 sudo packaging/install.sh --extras mcu,plc,applab,otel --device-id panda
-/opt/flexengine/bin/flexengine version                                 # 2.0.0a1
+/opt/flexengine/bin/flexengine version                                 # 2.0.0rc1
 sudo install -m 0600 -o flex -g flex /path/to/token /etc/flexengine/tokens/panda
 sudoedit /etc/flexengine/engine.yaml                                   # apiUrl, keys, drivers
 sudo systemctl enable --now flexengine && journalctl -u flexengine -f
 ```
+
+Bundle layout (top directory `flexengine-<ver>-linux_<arch>/`): `packaging/` (this directory), the engine wheel
+`flexengine-<ver>-py3-none-any.whl` and `wheelhouse/linux_<arch>-cp<XY>/` per target Python (x86_64: cp312, cp313;
+aarch64: cp311, cp313). `tests/packaging/test_pkg_bundle.py` builds a bundle with `build-wheels.sh --bundle-only`,
+unpacks it and checks that its `install.sh` picks that wheel and wheelhouse with no options.
 
 The bundle's `install.sh` finds the wheel and `wheelhouse/linux_x86_64-cp312` next to it. From a repo checkout:
 `sudo packaging/install.sh --wheel dist/flexengine-*.whl --wheelhouse dist/wheelhouse`,

@@ -14,7 +14,8 @@ pip install 'flexEngine<2'
 ```
 
 0.6.x fixes come from branch `v1.x` (tags `v0.6.*`). `pip install flexEngine` without a version installs 0.6.x until
-2.0.0 is final; after that it installs 2.x.
+2.0.0 is final (the release candidates `2.0.0rcN` are pre-releases: pip takes them only with `--pre` or an explicit
+version); after that it installs 2.x.
 
 ## Move a device to 2.0
 
@@ -23,8 +24,9 @@ pip install 'flexEngine<2'
 2. **Stop and remove v1.** `flexEngine stop <workspace>`, then remove the v1 venv (or `pip uninstall flexEngine`).
    2.0 is the same PyPI project, so installing it into the v1 venv replaces v1. The v1 workspace (`agent.py`,
    `configuration/`, `apps/`, `logs/`) is not read by 2.0; keep it only as a record.
-3. **Install 2.0.** On a lab device: the offline bundle and `sudo packaging/install.sh --device-id <id> --extras ...`
-   (README §1). For development: `pip install --pre 'flexEngine>=2.0.0a1'`. The CLI is `flexengine` (lowercase); v1's
+3. **Install 2.0.** On a lab device: the offline bundle of the GitHub release (`flexengine-<ver>-linux_<arch>.tar.gz`,
+   checked against `SHA256SUMS`), unpacked, and its `sudo packaging/install.sh --device-id <id> --extras ...`
+   (README §1). For development: `pip install --pre 'flexEngine>=2.0.0rc1'`. The CLI is `flexengine` (lowercase); v1's
    `flexEngine` command is gone.
 4. **Write `/etc/flexengine/engine.yaml`.** v1 settings map as follows:
 
@@ -51,3 +53,17 @@ pip install 'flexEngine<2'
 The v1 Python API (`flexEngine.supervisor`, `flexEngine.command`, ...) has no 2.0 equivalent. Integrations talk to
 the engine through its contracts instead: the southbound API for clouds, the local API (CP-7) and CLI on the device,
 the driver SPI (CP-5) for new runtimes ([docs/spi-guide.md](docs/spi-guide.md)).
+
+## From 2.0.0a1 to 2.0.0rc1 (and 2.0.0)
+
+Nothing to change: every contract change since 2.0.0a1 is an addition within its version (CHANGES.md, FE-4 and
+FE-3). Re-run the new bundle's `install.sh` with the same options; config, tokens and state are kept.
+
+- The offline bundle now unpacks into `flexengine-<ver>-linux_<arch>/` (was `flexengine-<ver>/`): adjust scripts that
+  `cd` into it.
+- Control planes: a device reports `x-flex.features` and `x-flex.runtimes` in its capabilities; serve
+  `x-flex-runState`, `x-flex-runtime` and `x-flex-build` only to a device that lists the feature (else the desired
+  state is refused as a whole, FE-DS-007).
+- Integrators can rely on the 2.0 surface: the specs in `flexengine2/api/` (now also `driver-spi.v1.schema.json` and
+  `telemetry.v1.schema.json`), the reason codes, the CLI and the `engine.yaml` schema are recorded by the freeze gate
+  (`api/freeze/`). A 2.x release only adds to them; a removal or a change comes with a new contract version.

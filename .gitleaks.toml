@@ -3,6 +3,6 @@
 useDefault = true
 
 [allowlist]
-description = "type names and the golden test fixtures' obvious test tokens"
+description = "type names, the golden test fixtures' obvious test tokens, the freeze baselines (sha256 digests of spec files)"
 regexes = ['''^Ed25519PrivateKey$''']
-paths = ['''^tests/api/golden/.*\.json$''']
+paths = ['''^tests/api/golden/.*\.json$''', '''^api/freeze/.*\.json$''']

@@ -1,26 +1,37 @@
 # CP-8 Telemetry, v1
 
-What the engine emits for observability today (`obs/instrument.py`, `obs/otel.py`, `core/reconciler.py`), so the
-collector, Jaeger and `flexobs.report` can rely on it. Additive only within v1. [V] = from the code (exercised by the
-demo/obs tests and SIL M8, not by `tests/api`); [I] = planned (EV-09).
+What the engine emits for observability (`obs/logging.py`, `obs/tracing.py`, `obs/otel.py`, `core/reconciler.py`), so
+the collector, Jaeger, `flexobs.report` and a control plane can rely on it. **Machine-readable spec:
+`src/flexengine2/api/telemetry.v1.schema.json`** (`contracts.validate("telemetry#LogRecord", rec)`; `$defs`
+`LogRecord`, `LogEvent`, `ActionRecord`, `SpanRecord`, `SpanName`, `SpanAttributes`, `Metrics`). Where this page and
+the schema differ, the schema wins. Additive only within v1: a new span, span attribute, log event, action kind or
+metric key; renaming or removing one, or changing its type, is v2.
+
+[V] = checked by `tests/api/test_telemetry_contract.py` (an engine run's log lines, action log, span file and metrics
+validate; every span name, log event and action the sources can emit is registered in the schema) or by
+`tests/unit/test_otel_builtin.py`.
 
 ## 1. Enabling
 
-`FLEX_OTEL=1` instruments every device engine of the host process (`host._otel_hook`); without it, or without the
-OTel packages (`pip install flexEngine[otel]`), nothing changes. Exporters: OTLP/HTTP when
-`OTEL_EXPORTER_OTLP_ENDPOINT` (or `…_TRACES_ENDPOINT`) is set; a JSON Lines file when `FLEX_OTEL_FILE` is set [V].
-Resource: `service.name = flex-engine-<deviceId>` (one tracer per device), `flex.demo = d1` [V].
+`FLEX_OTEL=1` or `otel.enabled: true` in `engine.yaml` instruments every device engine of the host process; without
+it, or without the OTel packages (`pip install flexEngine[otel]`), nothing changes and nothing from opentelemetry is
+imported. Exporters: OTLP/HTTP when `otel.endpoint` or `OTEL_EXPORTER_OTLP_ENDPOINT` (or `…_TRACES_ENDPOINT`) is
+set; a JSON Lines file when `otel.file` or `FLEX_OTEL_FILE` is set [V]. Resource: `service.name =
+flex-engine-<deviceId>` (one tracer per device) [V].
 
 ## 2. Spans
 
 | Span | Kind | Parent | Attributes |
 |---|---|---|---|
-| `engine.install <dep>` | INTERNAL | context of the `traceparent` header of the 200 desired-state answer for the current `manifestVersion` (none → new trace) | `flex.device`, `flex.deployment`, `flex.version`, `flex.driver`, `flex.manifest_version` |
-| `engine.health-gate` | INTERNAL | current span (install) | `flex.deployment`, `flex.healthy` (bool), `flex.gate_failure` (string, "" when healthy) |
-| `driver.apply`, `driver.remove` | CLIENT | current span; outside an install (removal, drift repair) the manifest-version context | `flex.driver` (profile key), `flex.profile`, `flex.seconds` |
+| `engine.install <dep>` | INTERNAL | the `traceparent` of the desired-state answer that carried the current `manifestVersion` (none → new trace) | `flex.device`, `flex.deployment`, `flex.version`, `flex.driver`, `flex.manifest_version` |
+| `engine.start <dep>` | INTERNAL | as install (FE-4: start of a staged or stopped deployment) | `flex.device`, `flex.deployment`, `flex.version`, `flex.driver` |
+| `engine.health-gate` | INTERNAL | current span | `flex.deployment`, `flex.rollback` (bool), `flex.healthy` (bool), `flex.gate_failure` ("" when healthy), `flex.seconds` |
+| `engine.rollback` | INTERNAL | current span (install) | `flex.deployment`, `flex.version` (rolled back to), `flex.failed_version` |
+| `engine.build` | INTERNAL | manifest-version context (FE-4) | `flex.deployment`, `flex.build` |
+| `driver.apply`, `driver.remove`, `driver.stage`, `driver.start`, `driver.stop` | CLIENT | current span; outside an install (removal, drift repair) the manifest-version context | `flex.driver` (profile key), `flex.profile`, `flex.deployment`, `flex.seconds` |
 
-Backend-side spans of the same trace (not the engine's): `flex.plan` root (`flex.plan_hash`, `flex.correlation_id`),
-`device.status` (backend ingest) [V, demo/obs].
+Every engine span also carries `flex.device`. The attribute set is closed (`SpanAttributes`) [V]. Backend-side spans
+of the same trace (not the engine's): `flex.plan` root (`flex.plan_hash`, `flex.correlation_id`), `device.status`.
 
 ## 3. Correlation
 
@@ -28,29 +39,34 @@ Backend-side spans of the same trace (not the engine's): `flex.plan` root (`flex
   `planHash hex[0:32]` (`otel.correlation_id`). Every component that knows the plan hash attaches to the same trace
   without a shared store [V].
 - **Propagation to the device**: W3C `traceparent` (`00-<32 hex>-<16 hex>-<2 hex>`) on the desired-state response;
-  the engine stores it per manifestVersion in `dataDir/otel-context.json` (`{"<mv>": "<traceparent>"}`), so a
-  crash-resume continues the trace [V]. The reference fake (`testing/fakecloud.py`) does not send it by itself;
-  the demo/obs backend instrumentation (`demo/obs/flexobs/instrument.py`) adds it for the plan that produced the
-  manifest version [V, demo/obs tests].
+  the engine keeps it per manifestVersion in `state.json` (`traceparents`), so a crash-resume continues the trace
+  [V]. The reference fake (`testing/fakecloud.py`) does not send it by itself.
 - **Into status reports**: every CP-2 record gets `traceparent` (current span, else the manifest-version context)
-  and `correlationId` (= its trace id) when instrumentation is on (schema fields of `status.v1alpha1`) [V].
+  and `correlationId` (= its trace id) when instrumentation is on (fields of `status.v1alpha1`) [V].
 
 ## 4. Logs and action log
 
-- Engine log: one line per event on stdout, `<ISO-8601 UTC ms>Z [<deviceId>] <message>` (plain text; journald adds
-  unit/time). Structured JSON logging with fields `ts, level, device, deployment, event, reasonCode, traceId` is
-  EV-05/EV-09 [I].
-- Action log `dataDir/actions.jsonl` (fsync per line; read by the SIL scenario and EV-13 oracles) [V]:
-  `{"t": unix s, "action": apply|adopt|commit|reject|remove|rollback|repair, "dep": id, "version"?, "digest"?,
-  "reason"? (reject), "failed"? (rollback: failed version), "why"? (remove after a failed first install)}`.
+- **Engine log** (`LogRecord`): one line per record on stdout (journald adds unit and time). `logFormat: json` (the
+  default) writes `{"ts", "level", "device", "event", "dep"?, "version"?, "msg", ...event-specific keys}`;
+  `logFormat: text` writes `<ISO-8601 UTC ms>Z [<deviceId>] <message>` (warnings and errors prefixed) for people,
+  with no contract beyond that. Event names: `LogEvent`, plus `action.<kind>` per action-log line, `build.<phase>`
+  (FE-4: started, progress, log, succeeded, failed) and, for stdlib records of the package, the logger name
+  (`flexengine2.cloud.client`) [V].
+- **Action log** `dataDir/actions.jsonl` (`ActionRecord`, fsync per line; read by the SIL scenario and the EV-13
+  oracles) [V]: `{"t": unix s, "action": apply|adopt|commit|reject|remove|rollback|rollback-resume|repair|retry|stage|
+  start|stop|build, "dep": id, "version"?, "digest"?, "reason"? (reject), "failed"? (rollback: failed version),
+  "why"? (remove after a failed first install), "build"? (build id)}`.
 
 ## 5. JSONL span file (`FLEX_OTEL_FILE`)
 
-One object per finished span: `service, name, traceId (32 hex), spanId (16 hex), parentSpanId|null, start, end (unix
-s), kind, status, attributes, links[] (trace ids)` [V].
+One object per finished span (`SpanRecord`): `service, name, traceId (32 hex), spanId (16 hex), parentSpanId|null,
+start, end (unix s), kind, status, attributes, links[] (trace ids)` [V].
 
 ## 6. Metrics
 
-None exported today. Status records carry timings (`applySeconds`, `healthGateSeconds`, `detectSeconds`,
-`totalSeconds`, `faultToHealthySeconds`). Planned (EV-09) [I]: `flexengine_reconcile_seconds`,
-`flexengine_outbox_length`, `flexengine_gate_seconds{result}`, `flexengine_downgrades_refused_total`.
+`Engine.metrics()` per device, served as `GET /v1/metrics` (`{deviceId: Metrics}`, CP-7) [V]: `ticks`, `startedAt`,
+`lastTickAt`, the duration summaries `reconcileSeconds`, `tickSeconds`, `gateSeconds` (`{last, max, avg, count}`),
+`outboxLength`, `outboxMax`, `outboxDropped`, `backpressure`, `errors` and `errorsByType` (counters), `lastError`,
+`manifestVersion`, `applied`. Status records carry the timings of one install (`applySeconds`,
+`healthGateSeconds`, `detectSeconds`, `totalSeconds`, `faultToHealthySeconds`, CP-2). No OTel metrics are exported in
+v1; adding them (e.g. `flexengine_reconcile_seconds`) is an additive change.

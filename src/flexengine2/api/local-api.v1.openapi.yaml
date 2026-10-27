@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: flexEngineV2 local API
   version: v1
-  summary: CP-7 local operator API (spec only; implemented by EV-07 in flexengine2/local/api.py)
+  summary: CP-7 local operator API (implemented in flexengine2/local/api.py, checked by tests/api/test_local_api_contract.py)
   description: |
     Transport: HTTP/1.1 over the Unix socket /run/flexengine/api.sock (mode 0660, group `flex`); every operation is
     allowed there. Optional read-only TCP bind (config `local.tcp`) for the desk runbooks: GET operations only, each
