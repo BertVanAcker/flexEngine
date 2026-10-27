@@ -171,3 +171,42 @@ def test_all_operations_covered():
     ops = {(m.upper(), p) for p, item in SPEC["paths"].items() for m in item if m in ("get", "post")}
     seen = {(m, p) for m, p, _ in SEEN}
     assert ops <= seen, f"operations never exercised: {sorted(ops - seen)}"
+
+
+def test_resources_and_workload_logs_over_the_tcp_bind(tmp_path, sock_dir):
+    """UM-4, as a monitor reads them: GET /v1/metrics carries `resources` and `deploymentResources` (telemetry v1
+    Metrics), GET /v1/logs the workloads' lines as source `workload` (WorkloadLogRecord), also followed."""
+    from flexengine2.local.api import EngineProvider, LocalApi
+    from flexengine2.testing.observe import ObservableFakeDriver
+
+    cfg, _ = write_config(tmp_path)
+    drv = ObservableFakeDriver()
+    eng = installed_engine(cfg, drv)
+    drv.set_resources("native-app", cpuPercent=3.5, memoryBytes=50 << 20, memoryLimitBytes=1 << 30, pids=2)
+    drv.write("native-app", "listening on 8080")
+    drv.write("native-app", "warning: slow disk", stream="stderr")
+    eng.observer.step()
+    tok = tmp_path / "token"
+    tok.write_text("tok\n")
+    os.chmod(tok, 0o600)
+    api = LocalApi(EngineProvider([eng], cfg), socket_path=None, tcp_bind="127.0.0.1:0", token_file=str(tok),
+                   log=lambda m: None).start()
+    try:
+        port = api.tcp_address[1]
+        st, data = tcp(port, "GET", "/v1/metrics")
+        assert st == 200
+        m = json.loads(data)[DEVICE]
+        contracts.validate("telemetry#Metrics", m)
+        assert m["deploymentResources"]["native-app"]["memoryBytes"] == 50 << 20
+        if os.path.exists("/proc/meminfo"):
+            assert m["resources"]["memory"]["totalBytes"] > 0
+        st, data = tcp(port, "GET", f"/v1/logs?device={DEVICE}&tail=50")
+        lines = [json.loads(x) for x in data.splitlines()]
+        assert {x["source"] for x in lines} <= {"actions", "log", "workload"}
+        wl = [x for x in lines if x["source"] == "workload"]
+        assert [(x["msg"], x.get("stream")) for x in wl] == [("listening on 8080", "stdout"),
+                                                             ("warning: slow disk", "stderr")]
+        for x in wl:
+            contracts.validate("telemetry#WorkloadLogRecord", x)
+    finally:
+        api.stop()

@@ -161,6 +161,9 @@ def format_log(rec: dict) -> str:
     if rec.get("source") == "actions" and "action" in rec:
         extra = " ".join(f"{k}={rec[k]}" for k in ("version", "digest", "reason", "failed", "why") if rec.get(k))
         msg = f"{rec['action']} {rec.get('dep', '')} {extra}".rstrip()
+    elif rec.get("source") == "workload":
+        stream = " (stderr)" if rec.get("stream") == "stderr" else ""
+        msg = f"{rec.get('dep', '?')}{stream}: {rec.get('msg', '')}"
     else:
         msg = rec.get("msg") or rec.get("message") or json.dumps({k: v for k, v in rec.items()
                                                                    if k not in ("t", "device", "source")})

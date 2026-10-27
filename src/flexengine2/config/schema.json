@@ -76,6 +76,31 @@
       "default": 500,
       "description": "Transitions kept per device in the local status history (`<device dataDir>/history.jsonl`, rotated to `history.jsonl.1`)."
     },
+    "observe": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Workload observation (UM-4), per device engine in its own thread, never in the reconcile loop: per-deployment resources (`deploymentResources` of GET /v1/metrics) and the workloads' stdout/stderr (GET /v1/logs, `source: workload`), from drivers that support them (docker, podman, compose, process, systemd). Device resources (`resources`) are read on demand and need no setting.",
+      "properties": {
+        "resourcesEverySeconds": {
+          "type": "number",
+          "minimum": 0,
+          "default": 10,
+          "description": "Seconds between two samples of the deployments' resources (one driver call per driver, e.g. one `docker stats`). 0 = off."
+        },
+        "workloadLogsEverySeconds": {
+          "type": "number",
+          "minimum": 0,
+          "default": 5,
+          "description": "Seconds between two collections of the workloads' stdout/stderr (at most 200 lines per deployment each). 0 = off."
+        },
+        "workloadLogMaxBytes": {
+          "type": "integer",
+          "minimum": 4096,
+          "default": 1048576,
+          "description": "Size at which `<device dataDir>/workload.jsonl` is rotated to `workload.jsonl.1` (disk use at most twice this)."
+        }
+      }
+    },
     "shutdownGrace": {
       "type": "number",
       "minimum": 0,

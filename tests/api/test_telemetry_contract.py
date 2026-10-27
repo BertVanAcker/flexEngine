@@ -162,3 +162,15 @@ def test_prose_spec_names_the_schema_and_every_span():
     assert "telemetry.v1.schema.json" in text
     for name in DEFS["SpanName"]["anyOf"][0]["enum"]:
         assert f"`{name}`" in text, name
+
+
+def test_prose_spec_names_the_resource_and_workload_keys():
+    """UM-4: telemetry.v1.md documents every key of DeviceResources, DeploymentResourcesSample and
+    WorkloadLogRecord."""
+    text = (SRC.parents[1] / "api" / "telemetry.v1.md").read_text()
+    for part in ("cpu", "memory", "storage"):
+        for key in DEFS["DeviceResources"]["properties"][part]["properties"]:
+            assert f"`{key}`" in text or f", {key}" in text or f"{key}`" in text, (part, key)
+    for key in [*DEFS["DeploymentResourcesSample"]["properties"], *DEFS["WorkloadLogRecord"]["properties"]]:
+        assert key in text, key
+    assert "temperatureCelsius" in text and "deploymentResources" in text

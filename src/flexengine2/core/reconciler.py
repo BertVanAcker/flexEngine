@@ -70,6 +70,8 @@ from flexengine2.core.state import StateCorrupt, StateError, StateTooNew  # noqa
 from flexengine2.obs import history as history_mod
 from flexengine2.obs import logging as flog
 from flexengine2.obs import tracing
+from flexengine2.obs.resources import HostSampler
+from flexengine2.obs.workloads import WorkloadObserver
 
 OUTBOX_MAX = 1000
 ERROR_BACKOFF = (1.0, 10.0)
@@ -165,6 +167,11 @@ class Engine:
         self.ticks = 0
         self._m = {"reconcileSeconds": _stat(), "tickSeconds": _stat(), "gateSeconds": _stat(), "outboxDropped": 0,
                    "errors": {}, "errorsByType": {}, "lastError": None, "lastTickAt": None, "startedAt": time.time()}
+        # UM-4: device resources (cheap /proc + statvfs reads, on demand from metrics()) and the workload observer
+        # (per-deployment resources and workload stdout/stderr through the drivers' optional SPI members, in its own
+        # thread: obs/workloads.py). A child device's resources are its MCU's, not this host's: none are reported.
+        self.host_resources = None if role == "child-device" else HostSampler(self.dir)
+        self.observer = WorkloadObserver(self, cfg.get("observe"))
 
     # ---- persistence / logging -------------------------------------------------------------
     def save(self):
@@ -1479,7 +1486,19 @@ class Engine:
                 "lastError": dict(m["lastError"]) if m["lastError"] else None,
                 "manifestVersion": self.state.get("manifestVersion"),
                 # dict.copy() is atomic under the GIL: safe while the worker thread changes `applied`
-                "applied": sorted((self.state.get("applied") or {}).copy())}
+                "applied": sorted((self.state.get("applied") or {}).copy()), **self._resource_metrics()}
+
+    def _resource_metrics(self) -> dict:
+        """UM-4, additive in telemetry v1: `resources` (DeviceResources) and `deploymentResources`
+        ({dep: DeploymentResources}), each only when there is something to report."""
+        out = {}
+        dev = self.host_resources.sample() if self.host_resources is not None else None
+        if dev:
+            out["resources"] = dev
+        deps = self.observer.resources()
+        if deps:
+            out["deploymentResources"] = deps
+        return out
 
     def run(self):
         """Single-device loop (testing.single): SIGTERM/SIGINT stop it, the state is saved on the way out."""
@@ -1488,6 +1507,7 @@ class Engine:
                 signal.signal(sig, lambda *a: self.request_stop())
         self.log(f"engine start: manifestVersion={self.state['manifestVersion']} applied={sorted(self.state['applied'])} "
                  f"journal={self.state.get('journal')}", event="engine.start")
+        self.observer.start()
         while not self._stop.is_set():
             self.run_pending()
             delay = self.tick()

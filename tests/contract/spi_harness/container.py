@@ -36,6 +36,8 @@ trap 'exit 0' TERM INT
 if [ "$READY" = "1" ]; then printf 'HTTP/1.0 200 OK\\r\\nContent-Length: 2\\r\\n\\r\\nok' > /r
 else printf 'HTTP/1.0 503 Service Unavailable\\r\\nContent-Length: 2\\r\\n\\r\\nno' > /r; fi
 ( while true; do nc -l -p 8080 < /r > /dev/null 2>&1; done ) &
+echo "listening on 8080"
+if [ "$READY" = "1" ]; then echo ready >&2; else echo "not ready" >&2; fi
 if [ -n "$EXIT_AFTER" ]; then sleep "$EXIT_AFTER"; exit 3; fi
 while true; do sleep 1 & wait $!; done
 """

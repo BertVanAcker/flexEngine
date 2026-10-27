@@ -32,6 +32,10 @@ Design (docs/flexengine-v2-plan.md §5 EV-19):
   needs unprivileged user namespaces).
 * **CLI only**: ``systemctl [--user] --no-pager show -p … | daemon-reload | enable | disable | restart | stop |
   reset-failed`` with timeouts; no D-Bus library needed.
+* **Observation (UM-4)**: ``resources()`` = ``systemctl show -p CPUUsageNSec,MemoryCurrent,MemoryMax,TasksCurrent``
+  of each active unit (the unit's control group: every process of the workload; CPU percent from two samples);
+  ``logs()`` = ``journalctl [--user] -u <unit> -o json -n <limit> [--after-cursor <c>]``, the journal's own cursor.
+  The journal does not tell stdout from stderr: the lines carry no ``stream``.
 """
 
 from __future__ import annotations
@@ -129,7 +133,7 @@ class SystemdDriver(Driver):
 
     def __init__(self, device_id: str, data_dir: Path, *, scope: str = "system", unit_dir: str | Path | None = None,
                  user: str | None = None, systemctl: str = "systemctl", python: str | None = None,
-                 timeout: float = 30.0, venv_timeout: float = 600.0):
+                 timeout: float = 30.0, venv_timeout: float = 600.0, journalctl: str = "journalctl"):
         if scope not in ("system", "user"):
             raise ValueError(f"scope must be system or user, got {scope!r}")
         self.device = device_id
@@ -147,6 +151,8 @@ class SystemdDriver(Driver):
                 unit_dir = os.path.join(cfg, "systemd", "user")
         self.unit_dir = Path(unit_dir)
         self.user = user
+        self.journalctl = journalctl
+        self._cpu_prev: dict[str, tuple[int, float]] = {}   # unit -> (CPUUsageNSec, monotonic) of the last sample
 
     # ---- names, files ---------------------------------------------------------------------------------------
     def unit(self, dep_id: str) -> str:
@@ -573,6 +579,80 @@ class SystemdDriver(Driver):
     def platform(self):
         """EV-37: {dev.flex.arch, dev.flex.pyabi} of the payload interpreter (layer selection)."""
         return pyenv.platform_of(pyenv.interpreter_info(self.python))
+
+    # ---- observation (UM-4) ----------------------------------------------------------------------------------
+    def resources(self, dep_ids):
+        """SPI: the units' control groups as systemd accounts them; never raises."""
+        import time as _time
+
+        out, seen = {}, set()
+        for dep in dep_ids:
+            unit = self.unit(dep)
+            try:
+                p = self._ctl("show", "-p", "ActiveState,CPUUsageNSec,MemoryCurrent,MemoryMax,TasksCurrent", unit,
+                              check=False, timeout=min(self.timeout, 10))
+            except DriverError:
+                continue
+            kv = dict(ln.split("=", 1) for ln in p.stdout.splitlines() if "=" in ln)
+            if p.returncode != 0 or kv.get("ActiveState") != "active":
+                continue
+            seen.add(unit)
+            num = {k: int(v) for k, v in kv.items() if v.isdigit()}
+            r = {}
+            if "CPUUsageNSec" in num:
+                now = _time.monotonic()
+                prev = self._cpu_prev.get(unit)
+                self._cpu_prev[unit] = (num["CPUUsageNSec"], now)
+                if prev and now > prev[1] and num["CPUUsageNSec"] >= prev[0]:
+                    r["cpuPercent"] = round((num["CPUUsageNSec"] - prev[0]) / 1e9 / (now - prev[1]) * 100.0, 2)
+            if "MemoryCurrent" in num and num["MemoryCurrent"] < 2 ** 63:   # [not set] / 2^64-1: no accounting
+                r["memoryBytes"] = num["MemoryCurrent"]
+                if 0 < num.get("MemoryMax", 0) < 2 ** 63:
+                    r["memoryLimitBytes"] = num["MemoryMax"]
+                    r["memoryPercent"] = round(100.0 * num["MemoryCurrent"] / num["MemoryMax"], 2)
+            if "TasksCurrent" in num and num["TasksCurrent"] < 2 ** 63:
+                r["pids"] = num["TasksCurrent"]
+            if r:
+                out[dep] = r
+        for u in [u for u in self._cpu_prev if u not in seen]:
+            del self._cpu_prev[u]
+        return out
+
+    def logs(self, dep_id, cursor, limit):
+        """SPI: the unit's journal after `cursor` (the journal's own cursor); never raises."""
+        cmd = [self.journalctl, *(["--user"] if self.scope == "user" else []), "--no-pager", "-o", "json",
+               "-u", self.unit(dep_id), "-n", str(max(1, int(limit)))] + (["--after-cursor", cursor] if cursor else [])
+        try:
+            p = subprocess.run(cmd, capture_output=True, text=True, timeout=min(self.timeout, 10),
+                               stdin=subprocess.DEVNULL)
+        except (OSError, subprocess.TimeoutExpired):
+            return {"lines": [], "cursor": cursor}
+        if p.returncode != 0:
+            return {"lines": [], "cursor": cursor}
+        lines, last = [], cursor
+        for ln in p.stdout.splitlines():
+            try:
+                e = json.loads(ln)
+            except ValueError:
+                continue
+            if not isinstance(e, dict):
+                continue
+            msg = e.get("MESSAGE")
+            if isinstance(msg, list):                       # non-UTF-8 message: journald sends its bytes
+                try:
+                    msg = bytes(msg).decode("utf-8", "replace")
+                except (TypeError, ValueError):
+                    msg = None
+            if isinstance(e.get("__CURSOR"), str):
+                last = e["__CURSOR"]
+            if not isinstance(msg, str):
+                continue
+            rec = {"msg": msg}
+            ts = str(e.get("__REALTIME_TIMESTAMP", ""))
+            if ts.isdigit():
+                rec["t"] = int(ts) / 1e6
+            lines.append(rec)
+        return {"lines": lines[-max(1, int(limit)):], "cursor": last}
 
     def capabilities(self):
         out = {"profile": self.profile, "driver": self.name, "executor": f"systemd ({self.scope} manager)",

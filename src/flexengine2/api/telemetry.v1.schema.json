@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://flex.dev/schemas/telemetry.v1.schema.json",
   "title": "CP-8 Telemetry v1",
-  "description": "Machine-readable part of CP-8: what the engine emits for observability. LogRecord = one line of the structured engine log (logFormat json), ActionRecord = one line of dataDir/actions.jsonl, SpanRecord = one line of the JSONL span file (FLEX_OTEL_FILE; the same names and attributes go to OTLP), Metrics = Engine.metrics() (GET /v1/metrics per device). Prose: api/telemetry.v1.md. tests/api/test_telemetry_contract.py validates what an engine run emits and checks that every span name, log event and action the sources can emit is registered here. Additive only within v1: a new span, attribute, log event, action or metric key.",
+  "description": "Machine-readable part of CP-8: what the engine emits for observability. LogRecord = one line of the structured engine log (logFormat json), ActionRecord = one line of dataDir/actions.jsonl, SpanRecord = one line of the JSONL span file (FLEX_OTEL_FILE; the same names and attributes go to OTLP), Metrics = Engine.metrics() (GET /v1/metrics per device; UM-4: resources, deploymentResources), WorkloadLogRecord = a workload line of GET /v1/logs (source workload). Prose: api/telemetry.v1.md. tests/api/test_telemetry_contract.py validates what an engine run emits and checks that every span name, log event and action the sources can emit is registered here. Additive only within v1: a new span, attribute, log event, action or metric key.",
   "$defs": {
     "LogLevel": {"enum": ["debug", "info", "warning", "error"]},
     "LogEvent": {
@@ -15,7 +15,7 @@
         "rollback.failed", "rollback.resumed", "journal.abandoned", "journal.dropped",
         "outbox.backpressure", "outbox.backpressure-end",
         "engine.start", "engine.stop", "engine.stop-timeout", "engine.error", "engine.crashed", "engine.save-failed",
-        "host.on-ready-failed"
+        "host.on-ready-failed", "observe.failed"
       ]
     },
     "LogRecord": {
@@ -144,7 +144,90 @@
           }
         },
         "manifestVersion": {"type": ["integer", "null"]},
-        "applied": {"type": "array", "items": {"type": "string"}}
+        "applied": {"type": "array", "items": {"type": "string"}},
+        "resources": {"$ref": "#/$defs/DeviceResources"},
+        "deploymentResources": {
+          "type": "object",
+          "description": "UM-4: per deployment id, the last sample of the drivers that can measure their workloads (docker, podman, compose, process, systemd); deployments of other drivers are absent",
+          "additionalProperties": {"$ref": "#/$defs/DeploymentResourcesSample"}
+        }
+      }
+    },
+    "DeviceResources": {
+      "description": "UM-4: the host's resources as the engine sees them (obs/resources.py; absent on a child device). Every part optional: what the platform does not tell is left out.",
+      "type": "object",
+      "required": ["sampledAt"],
+      "additionalProperties": false,
+      "properties": {
+        "sampledAt": {"type": "number", "description": "unix seconds"},
+        "cpu": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "count": {"type": "integer", "minimum": 1},
+            "load1": {"type": "number", "minimum": 0},
+            "load5": {"type": "number", "minimum": 0},
+            "load15": {"type": "number", "minimum": 0},
+            "percent": {"type": "number", "minimum": 0, "maximum": 100, "description": "busy share of all CPUs since the previous sample (the first: since the engine started)"}
+          }
+        },
+        "memory": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "totalBytes": {"type": "integer", "minimum": 0},
+            "usedBytes": {"type": "integer", "minimum": 0, "description": "total minus MemAvailable"},
+            "availableBytes": {"type": "integer", "minimum": 0},
+            "percent": {"type": "number", "minimum": 0, "maximum": 100}
+          }
+        },
+        "storage": {
+          "type": "object",
+          "description": "the file system of the engine's data directory (the device's dataDir)",
+          "additionalProperties": false,
+          "properties": {
+            "path": {"type": "string"},
+            "totalBytes": {"type": "integer", "minimum": 0},
+            "usedBytes": {"type": "integer", "minimum": 0},
+            "freeBytes": {"type": "integer", "minimum": 0, "description": "available to the engine's user"},
+            "percent": {"type": "number", "minimum": 0, "maximum": 100, "description": "df's Use%: used of used + free"}
+          }
+        },
+        "temperatureCelsius": {"type": "number", "description": "the hottest CPU / SoC thermal zone, else the first zone"}
+      }
+    },
+    "DeploymentResourcesSample": {
+      "description": "UM-4: driver-spi DeploymentResources of one deployment, with when it was sampled and by which driver.",
+      "type": "object",
+      "required": ["sampledAt", "driver"],
+      "additionalProperties": false,
+      "properties": {
+        "sampledAt": {"type": "number"},
+        "driver": {"type": "string"},
+        "cpuPercent": {"type": "number", "minimum": 0, "description": "100 = one CPU fully busy"},
+        "memoryBytes": {"type": "integer", "minimum": 0},
+        "memoryLimitBytes": {"type": "integer", "minimum": 0},
+        "memoryPercent": {"type": "number", "minimum": 0},
+        "pids": {"type": "integer", "minimum": 0}
+      }
+    },
+    "WorkloadLogRecord": {
+      "description": "UM-4: one line a workload wrote, as GET /v1/logs serves it (source workload; stored in dataDir/workload.jsonl by the observer).",
+      "type": "object",
+      "required": ["t", "ts", "device", "source", "dep", "deployment", "level", "event", "msg"],
+      "properties": {
+        "t": {"type": "number", "description": "unix seconds the executor recorded, else when the engine collected it"},
+        "ts": {"type": "string"},
+        "device": {"type": "string"},
+        "source": {"const": "workload"},
+        "dep": {"type": "string"},
+        "deployment": {"type": "string"},
+        "stream": {"enum": ["stdout", "stderr"]},
+        "container": {"type": "string"},
+        "level": {"const": "info"},
+        "event": {"const": "workload"},
+        "msg": {"type": "string", "maxLength": 4096},
+        "truncated": {"const": true}
       }
     }
   }

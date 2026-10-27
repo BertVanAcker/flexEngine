@@ -436,3 +436,77 @@ def test_run_state_start_of_unknown_deployment(harness):
         pytest.skip(f"{type(d).__name__} has no run states")
     with pytest.raises(DriverError):
         d.start("never-deployed")
+
+
+# ---- UM-4: observation (resources, logs), optional part of the SPI ---------------------------------------------
+OBSERVE_DRIVERS = {CliContainerDriver, ComposeDriver, AnkaiosDriver, ProcessDriver, SystemdDriver}
+
+
+@pytest.mark.parametrize("cls", ALL_DRIVERS, ids=lambda c: c.__name__)
+def test_observation_support_is_declared_by_the_class(cls):
+    """supports(drv, "resources" | "logs") is a class property; the in-tree executors that can tell implement both."""
+    assert supports(cls, "resources") == (cls in OBSERVE_DRIVERS)
+    assert supports(cls, "logs") == (cls in OBSERVE_DRIVERS)
+
+
+def test_observe_resources(harness):
+    """resources() reports what a running workload uses, in the DeploymentResources shape, leaves unknown
+    deployments out, and never raises (also with the executor unreachable)."""
+    from flexengine2 import contracts
+
+    d = harness.new()
+    if not supports(d, "resources"):
+        pytest.skip(f"{type(d).__name__} has no resources() (UM-4: optional)")
+    wl = harness.workload("1.0.0")
+    install(harness, d, wl)
+    assert d.resources(["never-deployed"]) == {}
+    got = {}
+
+    def measured():
+        got.update(d.resources([wl.dep_id, "never-deployed"]))
+        return "memoryBytes" in got.get(wl.dep_id, {}) and "cpuPercent" in got.get(wl.dep_id, {})
+    assert wait_until(measured, 15, 0.3), got     # CPU percent: from the second sample on (process, systemd)
+    assert set(got) == {wl.dep_id}, got
+    r = got[wl.dep_id]
+    contracts.validate("driver-spi#DeploymentResources", r)
+    assert r["memoryBytes"] > 0 and r["cpuPercent"] >= 0, r
+    try:
+        with harness.unreachable() as dd:
+            assert dd.resources([wl.dep_id]) == {}
+    except NotImplementedError:
+        pass                                        # no way to make this executor unreachable
+
+
+def test_observe_logs(harness):
+    """logs() returns the workload's own output once: the cursor it hands back continues after what was read."""
+    from flexengine2 import contracts
+
+    d = harness.new()
+    if not supports(d, "logs"):
+        pytest.skip(f"{type(d).__name__} has no logs() (UM-4: optional)")
+    assert d.logs("never-deployed", None, 10)["lines"] == []
+    wl = harness.workload("1.0.0")
+    install(harness, d, wl)
+    seen: list[dict] = []
+    state = {"cursor": None}
+
+    def collected():
+        b = d.logs(wl.dep_id, state["cursor"], 50)
+        contracts.validate("driver-spi#WorkloadLogBatch", b)
+        state["cursor"] = b["cursor"]
+        seen.extend(b["lines"])
+        msgs = [x["msg"] for x in seen]
+        return any("listening on" in m for m in msgs) and any(m.strip() == "ready" for m in msgs)
+    assert wait_until(collected, 15, 0.3), seen
+    if any("stream" in x for x in seen):           # the journal does not tell the streams apart
+        assert {x["stream"] for x in seen if "listening on" in x["msg"]} == {"stdout"}, seen
+        assert {x["stream"] for x in seen if x["msg"].strip() == "ready"} == {"stderr"}, seen
+    again = d.logs(wl.dep_id, state["cursor"], 50)
+    assert not [x for x in again["lines"] if "listening on" in x["msg"]], f"collected twice: {again}"
+    tail = d.logs(wl.dep_id, None, 1)               # no cursor: the newest lines, at most `limit`
+    assert len(tail["lines"]) <= 1
+    try:
+        with harness.unreachable() as dd:
+            assert isinstance(dd.logs(wl.dep_id, state["cursor"], 10)["lines"], list)
+    except NotImplementedError:
+        pass

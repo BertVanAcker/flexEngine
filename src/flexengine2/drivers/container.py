@@ -25,6 +25,12 @@ refused), envFrom (EV-41: {NAME: {file: <name>}}: the value is read at apply fro
 runtime named volume `flex_<device>_<deployment>_<name>` labelled dev.flex.device / dev.flex.deployment /
 dev.flex.volume; never a bind mount). Volumes survive updates and rollbacks (apply replaces the container only) and
 are deleted with the deployment (remove).
+
+Observation (UM-4, optional SPI members, called from the engine's observer thread): resources = one
+`docker|podman stats --no-stream --format '{{json .}}'` over the running containers of the deployments (CPUPerc,
+MemUsage, MemPerc, PIDs; several containers per deployment are summed); logs = `logs --timestamps [--since <last>]
+--tail <limit>` per container of the deployment (at most OBS_MAX_CONTAINERS), stdout and stderr from the CLI's two
+pipes; the cursor is {container id: timestamp of its last line collected}.
 """
 
 from __future__ import annotations
@@ -43,6 +49,7 @@ from typing import NoReturn
 from flexengine2.drivers.base import (BuildRequest, BuildResult, Driver, DriverError, Observed, Workload, http_probe,
                                       wait_until)
 from flexengine2.identity.secrets import SecretPermissionError, looks_secret, read_secret_file
+from flexengine2.obs.resources import parse_percent, parse_size, rfc3339_ns
 
 
 def archive_image_ids(path: str | os.PathLike | None) -> list[str]:
@@ -95,6 +102,75 @@ def _json(cmd: list[str], out: str):
         return json.loads(out) if out.strip() else None
     except json.JSONDecodeError as e:
         raise DriverError(f"{' '.join(cmd[:4])}...: unreadable output ({e})") from e
+
+
+OBS_MAX_CONTAINERS = 8      # containers per deployment looked at by resources() / logs() (compose projects)
+OBS_TIMEOUT = 30.0
+
+
+def _stats_rows(out: str) -> list[dict]:
+    """`stats --format '{{json .}}'`: one object per line (docker, podman), or one JSON array (podman --format json)."""
+    s = out.strip()
+    if s.startswith("["):
+        try:
+            rows = json.loads(s)
+        except ValueError:
+            return []
+        return [r for r in rows if isinstance(r, dict)]
+    rows = []
+    for ln in s.splitlines():
+        try:
+            r = json.loads(ln)
+        except ValueError:
+            continue
+        if isinstance(r, dict):
+            rows.append(r)
+    return rows
+
+
+def _stat_of(row: dict) -> dict:
+    """One container's numbers from a docker / podman stats row."""
+    out = {}
+    cpu = parse_percent(row.get("CPUPerc", row.get("cpu_percent")))
+    if cpu is not None:
+        out["cpuPercent"] = cpu
+    usage = str(row.get("MemUsage", row.get("mem_usage", "")) or "")
+    used, _, limit = usage.partition("/")
+    u, lim = parse_size(used), parse_size(limit)
+    if u is not None:
+        out["memoryBytes"] = u
+    if lim:
+        out["memoryLimitBytes"] = lim
+    mp = parse_percent(row.get("MemPerc", row.get("mem_percent")))
+    if mp is not None:
+        out["memoryPercent"] = mp
+    try:
+        out["pids"] = int(str(row.get("PIDs", row.get("pids", ""))).strip())
+    except ValueError:
+        pass
+    return out
+
+
+def _same_container(row: dict, cid: str) -> bool:
+    rid = str(row.get("ID") or row.get("id") or "")
+    return bool(rid) and (rid.startswith(cid) or cid.startswith(rid)) or row.get("Container") == cid
+
+
+def sum_stats(parts: list[dict]) -> dict:
+    """The deployment's numbers from its containers' (sum; the limit is the largest, the percent recomputed)."""
+    if len(parts) == 1:
+        return dict(parts[0])
+    out: dict = {}
+    for k in ("cpuPercent", "memoryBytes", "pids"):
+        vals = [p[k] for p in parts if k in p]
+        if vals:
+            out[k] = round(sum(vals), 2) if k == "cpuPercent" else sum(vals)
+    limits = [p["memoryLimitBytes"] for p in parts if p.get("memoryLimitBytes")]
+    if limits:
+        out["memoryLimitBytes"] = max(limits)
+        if "memoryBytes" in out:
+            out["memoryPercent"] = round(100.0 * out["memoryBytes"] / max(limits), 2)
+    return out
 
 
 # what `docker|podman container inspect` says for a container that does not exist (anything else -- "Cannot
@@ -480,6 +556,89 @@ class CliContainerDriver(Driver):
         if p.returncode != 0:
             _fail(cmd, p)
         return p.stdout.split()
+
+    # ---- observation (UM-4) ----------------------------------------------------------------------------------
+    def _obs_filters(self, dep_id: str) -> list[str]:
+        """Labels of a deployment's containers (the compose driver: its project's)."""
+        return [f"dev.flex.device={self.device}", f"dev.flex.deployment={dep_id}"]
+
+    def _obs_ids(self, dep_id: str, running: bool) -> list[str]:
+        cmd = [self.rt, "ps", "-q"] + ([] if running else ["-a"])
+        for f in self._obs_filters(dep_id):
+            cmd += ["--filter", f"label={f}"]
+        p = _run(cmd, check=False, timeout=OBS_TIMEOUT)
+        if p.returncode != 0:
+            _fail(cmd, p)
+        return p.stdout.split()[:OBS_MAX_CONTAINERS]
+
+    def resources(self, dep_ids):
+        """SPI (UM-4): {dep: DeploymentResources} of the running containers; never raises."""
+        try:
+            ids = {d: self._obs_ids(d, running=True) for d in dep_ids}
+            every = sorted({i for v in ids.values() for i in v})
+            if not every:
+                return {}
+            cmd = [self.rt, "stats", "--no-stream", "--format", "{{json .}}", *every]
+            p = _run(cmd, check=False, timeout=OBS_TIMEOUT)
+        except DriverError:
+            return {}
+        if p.returncode != 0:
+            return {}
+        rows = _stats_rows(p.stdout)
+        out = {}
+        for dep, cids in ids.items():
+            parts = []
+            for cid in cids:
+                row = next((r for r in rows if _same_container(r, cid)), None)
+                if row is not None:
+                    parts.append(_stat_of(row))
+            if parts:
+                out[dep] = sum_stats(parts)
+        return out
+
+    def logs(self, dep_id, cursor, limit):
+        """SPI (UM-4): the containers' stdout/stderr after `cursor` ({container id: last timestamp}); never raises."""
+        try:
+            last = json.loads(cursor) if cursor else {}
+        except ValueError:
+            last = {}
+        last = last if isinstance(last, dict) else {}
+        try:
+            ids = self._obs_ids(dep_id, running=False)
+        except DriverError:
+            return {"lines": [], "cursor": cursor}
+        n = max(1, int(limit))
+        found, new = [], {}
+        for cid in ids:
+            since = last.get(cid) if isinstance(last.get(cid), str) else None
+            cmd = [self.rt, "logs", "--timestamps", "--tail", str(n)] + (["--since", since] if since else []) + [cid]
+            try:
+                p = _run(cmd, check=False, timeout=OBS_TIMEOUT)
+            except DriverError:
+                p = None
+            if since:
+                new[cid] = since
+            if p is None or p.returncode != 0:
+                continue
+            floor = rfc3339_ns(since) if since else None
+            for stream, text in (("stdout", p.stdout), ("stderr", p.stderr)):
+                for ln in (text or "").splitlines():
+                    ts, _, msg = ln.partition(" ")
+                    key = rfc3339_ns(ts)
+                    if key is None or (floor is not None and key <= floor):
+                        continue          # --since is inclusive: the last line collected comes again
+                    found.append((key, ts, stream, msg, cid))
+                    if key >= (rfc3339_ns(new.get(cid, "")) or (0, -1)):
+                        new[cid] = ts
+        found.sort(key=lambda x: x[0])
+        lines = []
+        for key, _ts, stream, msg, cid in found[-n:]:
+            ln = {"t": key[0] + key[1] / 1e9, "stream": stream, "msg": msg}
+            if len(ids) > 1:
+                ln["container"] = cid[:12]
+            lines.append(ln)
+        return {"lines": lines, "cursor": json.dumps(new, sort_keys=True) if new else cursor,
+                **({"dropped": len(found) - n} if len(found) > n else {})}
 
     @staticmethod
     def _unreachable(e: DriverError) -> Observed:

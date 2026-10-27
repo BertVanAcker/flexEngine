@@ -33,6 +33,8 @@ HTTPServer.allow_reuse_address = True
 srv = HTTPServer(("127.0.0.1", int(os.environ["FLEX_HEALTH_PORT"])), H)
 signal.signal(signal.SIGTERM, lambda *a: os._exit(0))
 threading.Thread(target=srv.serve_forever, daemon=True).start()
+print("listening on", os.environ["FLEX_HEALTH_PORT"], flush=True)
+print("ready" if REL["ready"] else "not ready", file=sys.stderr, flush=True)
 if REL.get("exit_after"):
     time.sleep(REL["exit_after"]); os._exit(REL.get("exit_code", 1))
 threading.Event().wait()

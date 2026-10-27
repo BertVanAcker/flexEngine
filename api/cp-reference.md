@@ -1111,6 +1111,44 @@ FE-4 driver output of build().
 
 Closed object: other keys are refused.
 
+<a id="driver-spi-deploymentresources"></a>
+#### `$defs/DeploymentResources` (object)
+
+UM-4 driver output of resources(): what one deployment's workload uses now (several containers or processes: their sum).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `cpuPercent` | number |  | CPU use since the previous sample, 100 = one CPU fully busy (above 100 on several CPUs) |
+| `memoryBytes` | integer |  | memory in use (container: the runtime's usage; process: resident set; systemd: MemoryCurrent of the unit) |
+| `memoryLimitBytes` | integer |  | the workload's memory limit (container runtimes: the host's memory when none is set) |
+| `memoryPercent` | number |  | memoryBytes of memoryLimitBytes |
+| `pids` | integer |  | processes / tasks of the workload |
+
+Closed object: other keys are refused.
+
+<a id="driver-spi-workloadlogline"></a>
+#### `$defs/WorkloadLogLine` (object)
+
+UM-4: one line the workload wrote.
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `msg` | string | ✔ | the line, without its line end |
+| `stream` | enum `stdout`, `stderr` |  | absent when the executor does not tell them apart (the journal) |
+| `t` | number |  | unix seconds the executor recorded; absent: the engine stamps the time it collected the line |
+| `container` | string |  | the container of a multi-container workload (compose) |
+
+<a id="driver-spi-workloadlogbatch"></a>
+#### `$defs/WorkloadLogBatch` (object)
+
+UM-4 driver output of logs(dep_id, cursor, limit): lines after the cursor, oldest first, at most limit (the newest when more wait), and the cursor to continue from (opaque to the engine, kept across restarts).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `lines` | array of [WorkloadLogLine](#driver-spi-workloadlogline) | ✔ |  |
+| `cursor` | string or null | ✔ |  |
+| `dropped` | integer |  | lines skipped because more than limit were waiting |
+
 <a id="driver-spi-capabilitiesfragment"></a>
 #### `$defs/CapabilitiesFragment` (object)
 
@@ -1143,11 +1181,13 @@ Normative text: the module docstring of `src/flexengine2/drivers/base.py`. Guide
 | `failed` | optional (default in base) | `failed(self, dep_id: 'str') -> 'str \| None'` |
 | `health` | required | `health(self, dep_id: 'str', probe: 'dict') -> 'bool'` |
 | `list` | required | `list(self) -> 'dict[str, Observed]'` |
+| `logs` | optional (default in base) | `logs(self, dep_id: 'str', cursor: 'str \| None', limit: 'int') -> 'dict'` |
 | `placement` | optional (default in base) | `placement(self) -> 'dict'` |
 | `plan` | required | `plan(self, current: 'Workload \| None', desired: 'Workload \| None') -> 'list[str]'` |
 | `platform` | optional (default in base) | `platform(self) -> 'dict \| None'` |
 | `preflight` | optional (default in base) | `preflight(self, release, dep: 'dict') -> 'str \| None'` |
 | `remove` | required | `remove(self, dep_id: 'str') -> 'None'` |
+| `resources` | optional (default in base) | `resources(self, dep_ids: 'list[str]') -> 'dict[str, dict]'` |
 | `stage` | optional (default in base) | `stage(self, current: 'Workload \| None', desired: 'Workload') -> 'None'` |
 | `start` | optional (default in base) | `start(self, dep_id: 'str') -> 'None'` |
 | `status` | required | `status(self, dep_id: 'str') -> 'Observed'` |
@@ -1160,6 +1200,7 @@ Normative text: the module docstring of `src/flexengine2/drivers/base.py`. Guide
 
 - Shape
 - How the reconciler calls it (`core/reconciler.py`)
+- Observation (UM-4)
 - Driver: os-rauc (EV-17, `drivers/os_rauc.py`)
 - Driver: arduino-ota (EV-38, `drivers/arduino_ota.py`)
 - In-tree drivers
@@ -1397,8 +1438,62 @@ Engine.metrics() of one device engine (GET /v1/metrics answers {deviceId: Metric
 | `lastError` | object or null | ✔ |  |
 | `manifestVersion` | integer or null | ✔ |  |
 | `applied` | array of string | ✔ |  |
+| `resources` | [DeviceResources](#telemetry-deviceresources) |  |  |
+| `deploymentResources` | map of [DeploymentResourcesSample](#telemetry-deploymentresourcessample) |  | UM-4: per deployment id, the last sample of the drivers that can measure their workloads (docker, podman, compose, process, systemd); deployments of other drivers are absent |
 
 Closed object: other keys are refused.
+
+<a id="telemetry-deviceresources"></a>
+#### `$defs/DeviceResources` (object)
+
+UM-4: the host's resources as the engine sees them (obs/resources.py; absent on a child device).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `sampledAt` | number | ✔ | unix seconds |
+| `cpu` | object |  |  |
+| `memory` | object |  |  |
+| `storage` | object |  | the file system of the engine's data directory (the device's dataDir) |
+| `temperatureCelsius` | number |  | the hottest CPU / SoC thermal zone, else the first zone |
+
+Closed object: other keys are refused.
+
+<a id="telemetry-deploymentresourcessample"></a>
+#### `$defs/DeploymentResourcesSample` (object)
+
+UM-4: driver-spi DeploymentResources of one deployment, with when it was sampled and by which driver.
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `sampledAt` | number | ✔ |  |
+| `driver` | string | ✔ |  |
+| `cpuPercent` | number |  | 100 = one CPU fully busy |
+| `memoryBytes` | integer |  |  |
+| `memoryLimitBytes` | integer |  |  |
+| `memoryPercent` | number |  |  |
+| `pids` | integer |  |  |
+
+Closed object: other keys are refused.
+
+<a id="telemetry-workloadlogrecord"></a>
+#### `$defs/WorkloadLogRecord` (object)
+
+UM-4: one line a workload wrote, as GET /v1/logs serves it (source workload; stored in dataDir/workload.jsonl by the observer).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `t` | number | ✔ | unix seconds the executor recorded, else when the engine collected it |
+| `ts` | string | ✔ |  |
+| `device` | string | ✔ |  |
+| `source` | `"workload"` | ✔ |  |
+| `dep` | string | ✔ |  |
+| `deployment` | string | ✔ |  |
+| `stream` | enum `stdout`, `stderr` |  |  |
+| `container` | string |  |  |
+| `level` | `"info"` | ✔ |  |
+| `event` | `"workload"` | ✔ |  |
+| `msg` | string | ✔ |  |
+| `truncated` | `true` |  |  |
 
 ### [telemetry.v1.md](telemetry.v1.md)
 

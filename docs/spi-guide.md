@@ -71,6 +71,8 @@ Required methods are abstract in `Driver`. Optional ones have safe defaults in t
 | `start(dep_id)` | no (FE-4) | start the staged / stopped workload; the engine runs the health gate after it; idempotent | `DriverError` (fail fast) |
 | `stop(dep_id)` | no (FE-4) | stop it and keep it installed for a fast `start`; no restart policy brings it back; unknown id: no-op | `DriverError` (deferred) |
 | `build(desired, request)` | no (FE-4) | build from `request.source_path` with the signed `request.spec`; report through `request.progress()` / `request.line()`; return a `BuildResult` | `DriverError` (FE-BLD-001), `BuildTimeout` (FE-BLD-002) |
+| `resources(dep_ids)` | no (UM-4) | `{dep: {cpuPercent?, memoryBytes?, memoryLimitBytes?, memoryPercent?, pids?}}` of the running workloads; leave out what you cannot measure | never raises (`{}`) |
+| `logs(dep_id, cursor, limit)` | no (UM-4) | the workload's stdout/stderr after your own `cursor`: `{lines: [{msg, stream?, t?}], cursor}`, at most `limit`, oldest first | never raises (`{"lines": [], "cursor": cursor}`) |
 
 ### Never raise
 
@@ -142,6 +144,15 @@ a deployment on the device (`x-flex-build`); key the files of a built workload b
 digest plus the build's result), so a rebuild of the same release is never mistaken for the old one. Set the class (or
 instance) attribute `runtime` to the `x-flex-runtime` value the driver serves. The conformance cases
 `test_run_state_*` run for every harness whose driver supports the run states.
+
+### Observation: resources and logs (UM-4)
+
+`resources` and `logs` (`supports(drv, "resources")`, `supports(drv, "logs")`) feed `deploymentResources` of
+`GET /v1/metrics` and the `source: workload` lines of `GET /v1/logs`. The engine calls them from its observer thread,
+possibly while another member runs on the engine's thread, so they only read (copy shared tables before iterating) and
+bound their own CLI calls with timeouts. The `cursor` of `logs` is yours: a timestamp, a journal cursor, file offsets;
+the engine stores it across restarts and hands it back, so a line is collected once. With `cursor=None` return the
+newest `limit` lines. The conformance cases `test_observe_*` run for every harness whose driver has them.
 
 ### Class attributes
 

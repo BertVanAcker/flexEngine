@@ -137,7 +137,12 @@ operations from the data directories when no engine runs. `flexengine status --j
 (journald), the action log `dataDir/actions.jsonl`, the local status history, OpenTelemetry spans
 (`engine.install <dep>`, `engine.health-gate`, `engine.rollback`, `engine.start <dep>`, `engine.build`,
 `driver.apply|remove|stage|start|stop`; OTLP or a JSONL file; one trace per plan, joined through the `traceparent`
-of the desired-state response) and `Engine.metrics()` (`GET /v1/metrics`).
+of the desired-state response) and `Engine.metrics()` (`GET /v1/metrics`). Since FE-5 (UM-4) the metrics carry the
+device's resources (`obs/resources.py`: CPU, memory, storage of the data volume, temperature, read on demand from
+`/proc`, `/sys` and `statvfs`) and the deployments' (`deploymentResources`), and `GET /v1/logs` the workloads' own
+stdout/stderr (`source: workload`). The per-deployment numbers and the workload lines come from the drivers' optional
+SPI members `resources` and `logs`, called by a per-device observer thread (`obs/workloads.py`), never by the
+reconcile loop, so a slow `docker stats` never delays a tick.
 
 ## 7. The connection points and the freeze
 
