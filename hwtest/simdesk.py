@@ -1110,8 +1110,10 @@ def _wheelhouse() -> Path:
 
 
 def profile_install(sim: Sim):
-    """EV-HW-01: a fresh 'LattePanda' (an empty --root), the real packaging/install.sh with the engine wheel built
-    from this checkout and the offline wheelhouse; the installed venv's `flexengine` is the service."""
+    """EV-HW-01: a fresh 'LattePanda' (an empty --root) and a release bundle made as release.yml makes it: the engine
+    wheel built from this checkout and the offline wheelhouse, packed by build-wheels.sh --bundle-only with its
+    SHA256SUMS, unpacked into the desk's home; the bundle's own install.sh installs it, and the installed venv's
+    `flexengine` is the service."""
     sim.start_cloud([UC1])
     root = sim.dir / "root"
     dist = sim.dir / "dist"
@@ -1120,13 +1122,36 @@ def profile_install(sim: Sim):
     wheels = sorted(dist.glob("flexengine-*-py3-none-any.whl"))
     if r.returncode != 0 or not wheels:
         raise RuntimeError(f"engine wheel build failed: {r.stderr[-1500:]}")
-    wh = _wheelhouse()
-    sums = dist / "SHA256SUMS"   # what release.yml uploads next to the bundle; here for the wheel it installs
-    sums.write_text(subprocess.run(["sha256sum", wheels[-1].name], cwd=dist, capture_output=True, text=True,
-                                   check=True).stdout)
-    install = (f"bash {shlex.quote(str(FLEXENGINE / 'packaging' / 'install.sh'))} --root {shlex.quote(str(root))} "
-               f"--wheel {shlex.quote(str(wheels[-1]))} --wheelhouse {shlex.quote(str(wh))} --device-id {GP} "
-               f"--extras mcu,plc --python /usr/bin/python3")
+    # the release bundle as release.yml makes it (FE-3: build-wheels.sh --wheel W --bundle-only), downloaded with its
+    # SHA256SUMS into the "home" of the simulated LattePanda and unpacked there; install.sh runs from the bundle
+    import platform
+    import tarfile
+
+    arch = {"arm64": "aarch64"}.get(platform.machine(), platform.machine())
+    pyv = subprocess.run(["/usr/bin/python3", "-c", "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')"],
+                         capture_output=True, text=True, check=True).stdout.strip()
+    whdir = dist / "wheelhouse" / f"linux_{arch}-cp{pyv.replace('.', '')}"
+    whdir.mkdir(parents=True, exist_ok=True)
+    src = _wheelhouse()
+    src = next((d for d in (src / whdir.name, src) if d.is_dir() and any(d.glob("*.whl"))), src)
+    for w in src.glob("*.whl"):
+        if not (whdir / w.name).exists():   # copies: a bundle carries files, not links out of it
+            shutil.copyfile(w, whdir / w.name)
+    r = subprocess.run(["bash", str(FLEXENGINE / "packaging" / "build-wheels.sh"), "--out", str(dist), "--wheel",
+                        str(wheels[-1]), "--bundle-only", "--targets", f"{arch}-{pyv}"],
+                       capture_output=True, text=True, timeout=600)
+    bundles = sorted(dist.glob(f"flexengine-*-linux_{arch}.tar.gz"))
+    if r.returncode != 0 or not bundles:
+        raise RuntimeError(f"build-wheels.sh --bundle-only failed: {(r.stdout + r.stderr)[-1500:]}")
+    home = sim.dir / "home"
+    home.mkdir(exist_ok=True)
+    for f in (bundles[-1], dist / "SHA256SUMS"):
+        shutil.copyfile(f, home / f.name)
+    with tarfile.open(home / bundles[-1].name) as tf:
+        tf.extractall(home, filter="data")
+    top = home / bundles[-1].name.removesuffix(".tar.gz")
+    install = (f"cd {shlex.quote(str(top))} && bash packaging/install.sh --root {shlex.quote(str(root))} "
+               f"--device-id {GP} --extras mcu,plc --python /usr/bin/python3")
     cfg_path = root / "etc" / "flexengine" / "engine.yaml"
     fe_bin = root / "opt" / "flexengine" / "bin" / "flexengine"
     sim.engine_cfg_path = cfg_path
@@ -1135,7 +1160,7 @@ def profile_install(sim: Sim):
     sim.write_catalog(lp_catalog(sim))
     fe = f"env FLEXENGINE_CONFIG={shlex.quote(str(cfg_path))} PYTHONPATH= {shlex.quote(str(fe_bin))}"
     sim.vars.update(token_path=str(root / "etc" / "flexengine" / "tokens" / GP), lp_sudo="")
-    sim.vars.update(bundle_check=f"cd {shlex.quote(str(dist))} && sha256sum -c SHA256SUMS")
+    sim.vars.update(bundle_check=f"cd {shlex.quote(str(home))} && sha256sum -c --ignore-missing SHA256SUMS")
     sim.vars.update(gp=GP, install=install, fe=fe, fe_enroll=f"{fe} enroll", fe_config=str(cfg_path),
                     fe_host="local", journal_source=f"file:{sim.lp / 'engine.log'}", usb_dir=str(sim.dir / "usb"),
                     suite=f"cd {shlex.quote(str(FLEXENGINE))} && {shlex.quote(sys.executable)} -m pytest -q "
