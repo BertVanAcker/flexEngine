@@ -34,7 +34,7 @@ offline bundle unpacks into `flexengine-<ver>-linux_<arch>/` (was `flexengine-<v
 | Installation | `pip install flexEngine` + `flexEngine init`, `scripts/install.sh` / `install.ps1` | `pip install flexEngine` (2.x) for development; on devices the offline bundle of the GitHub release with its `packaging/install.sh` (user `flex`, systemd unit, polkit rules) |
 | Observability | log file, remote log over Redis | structured JSON logs, status history, OpenTelemetry spans and metrics (`otel` extra) |
 | Python | ≥ 3.10 | ≥ 3.11 |
-| Platforms | Windows, macOS, Linux, Linux ARMv6 | Linux (x86_64, aarch64) for devices; macOS for development. No Windows, no ARMv6 |
+| Platforms | Windows, macOS, Linux, Linux ARMv6 | Linux (x86_64, aarch64) for devices; macOS for development and as a host test machine ([docs/macos.md](docs/macos.md)). No Windows yet ([docs/windows-plan.md](docs/windows-plan.md)), no ARMv6 |
 | Import name / CLI | `flexEngine` / `flexEngine` | `flexengine2` / `flexengine` (alias `flexengine2`) |
 | Dependencies | redis, requests, psutil, PyYAML | cryptography, PyYAML, jsonschema; extras `mcu`, `plc`, `applab`, `otel`, `relay` |
 
