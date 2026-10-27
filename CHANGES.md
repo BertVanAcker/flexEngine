@@ -102,6 +102,12 @@ Every addition the freeze gate sees, and every re-recorded baseline, has a row h
 |---|---|---|---|
 | 2026-10-27 | FE-F1…FE-F6 | all | baseline of the 2.0.0 freeze, recorded on `fe-3/freeze-gate` from master `a2c02eb` (FE-1 move, FE-4 run state) plus the CP-5 / CP-8 specs of FE-3: the connection-point set the tag `flexengine-cp-v1alpha1` freezes |
 
+### Coverage gate
+
+- `tools/coverage_report.py` gates the MCU relay (`gateway/relay.py`, group `relay`, ≥ 80 % lines) whenever flexmodel
+  is importable; `FLEX_COVERAGE_REQUIRE=relay` fails the gate when it is not measured. flexEngine's own CI is
+  unchanged (no flexmodel there); the framework's CI sets it (decision D-4).
+
 ### Desk runbooks
 
 - EV-HW-12 "Four buttons on the LattePanda": Push / Run all / Stop all / Run one / Stop one across the process,
