@@ -94,6 +94,17 @@ in "Contract changes since the freeze" below, a removal or a change fails CI.
 - `docs/implementation.md`: how flexEngine 2.0 is built (for the portal's Docs).
 - Version 2.0.0rc1.
 
+### Decisions
+
+Owner decisions on the 2.0.0 behaviour (2026-10-27); the code already behaves this way, this records them.
+
+| # | Decision | Where |
+|---|---|---|
+| D-1 | Retry: a failed release is tried again only when a newer `manifestVersion` carries the same deployments as the manifest it failed under. There is no `x-flex-retry` key; the control plane asks for a retry by publishing the same desired state once more | `core/reconciler.py` `_retry`, feature `retry` |
+| D-2 | "Run one": a dependency whose desired run state is `staged` or `stopped` does not hold its dependents (`x-flex-dependsOn`); they start without waiting for it | `core/reconciler.py` `_waiting_for` |
+| D-3 | Compose host access (privileged, cap_add, devices, host namespaces, host bind mounts, ...) is refused at preflight by default; `drivers.container.composeAllowHostAccess: true` in `engine.yaml` allows it | `drivers/compose.py` preflight, `config/schema.json` |
+| D-4 | Coverage: flexEngine's own coverage gate leaves the MCU relay (`gateway/relay.py`, needs flexmodel) out and defers applab (`FLEX_COVERAGE_DEFER=applab`, its integration suite needs probe P4's board simulator). Both are measured and gated in the framework's CI: [`flexengine-framework.yml`, job `coverage`](https://github.com/BertVanAcker/modular-interoperable-framework/blob/claude/awesome-ramanujan-tntcrz/.github/workflows/flexengine-framework.yml) runs `./run_tests.sh coverage` with `FLEX_REPO`, flexmodel, P4 and the P3 QEMU build (the relay's live path runs only in the MCU-over-QEMU edge case), without `FLEX_COVERAGE_DEFER` and with `FLEX_COVERAGE_REQUIRE=relay` | `tools/coverage_report.py`: relay target 80 % once measured, `FLEX_COVERAGE_REQUIRE=relay` |
+
 ### Contract changes since the freeze
 
 Every addition the freeze gate sees, and every re-recorded baseline, has a row here (api/freeze/README.md).
