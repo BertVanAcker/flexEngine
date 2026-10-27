@@ -1121,6 +1121,9 @@ def profile_install(sim: Sim):
     if r.returncode != 0 or not wheels:
         raise RuntimeError(f"engine wheel build failed: {r.stderr[-1500:]}")
     wh = _wheelhouse()
+    sums = dist / "SHA256SUMS"   # what release.yml uploads next to the bundle; here for the wheel it installs
+    sums.write_text(subprocess.run(["sha256sum", wheels[-1].name], cwd=dist, capture_output=True, text=True,
+                                   check=True).stdout)
     install = (f"bash {shlex.quote(str(FLEXENGINE / 'packaging' / 'install.sh'))} --root {shlex.quote(str(root))} "
                f"--wheel {shlex.quote(str(wheels[-1]))} --wheelhouse {shlex.quote(str(wh))} --device-id {GP} "
                f"--extras mcu,plc --python /usr/bin/python3")
@@ -1132,6 +1135,7 @@ def profile_install(sim: Sim):
     sim.write_catalog(lp_catalog(sim))
     fe = f"env FLEXENGINE_CONFIG={shlex.quote(str(cfg_path))} PYTHONPATH= {shlex.quote(str(fe_bin))}"
     sim.vars.update(token_path=str(root / "etc" / "flexengine" / "tokens" / GP), lp_sudo="")
+    sim.vars.update(bundle_check=f"cd {shlex.quote(str(dist))} && sha256sum -c SHA256SUMS")
     sim.vars.update(gp=GP, install=install, fe=fe, fe_enroll=f"{fe} enroll", fe_config=str(cfg_path),
                     fe_host="local", journal_source=f"file:{sim.lp / 'engine.log'}", usb_dir=str(sim.dir / "usb"),
                     suite=f"cd {shlex.quote(str(FLEXENGINE))} && {shlex.quote(sys.executable)} -m pytest -q "
