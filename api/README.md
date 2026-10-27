@@ -30,14 +30,20 @@ Driver authors: [../docs/spi-guide.md](../docs/spi-guide.md).
 | CP-2 | Status, capabilities, onboarding | `status.v1alpha1.schema.json`, `device-event.v1alpha1.schema.json`, `capabilities.v1alpha1.schema.json`, `onboarding.v1alpha1.schema.json`, `reason-codes.v1alpha1.json` | fakecloud (ingest) | `test_engine_contracts.py`, `test_reason_codes.py`, `test_refusals.py` [V] |
 | CP-3 | Artefact access (OCI subset), offline bundle | `oci-profile.v1alpha1.schema.json`, [bundle.v1alpha1.md](bundle.v1alpha1.md), `vectors/release`, `vectors/bundle` | fakecloud `/v2/…`, `/bundle` | `test_vectors.py` [V] |
 | CP-4 | Trust | [trust.v1alpha1.md](trust.v1alpha1.md), `trust.v1alpha1.schema.json`, `vectors/` | fakecloud signer, `testing/release.py` | `test_vectors.py` [V] |
-| CP-5 | Driver SPI v1 | [cp5-driver-spi.md](cp5-driver-spi.md) (frozen `drivers/base.py`) | fake executors | `tests/contract/` (EV-03, other package) |
+| CP-5 | Driver SPI v1 (SPI 1.0) | `driver-spi.v1.schema.json` (members in `x-flex-spi`, `Workload`, `Observed`, `SuperviseEvent`, `BuildRequest`, `BuildResult`), [cp5-driver-spi.md](cp5-driver-spi.md); normative text `drivers/base.py` | fake executors, `FakeDriver` | `test_driver_spi_contract.py` [V], `tests/contract/` (every in-tree driver) [V] |
 | CP-6 | Child-device interfaces | [cp6-children.md](cp6-children.md) | QEMU, fake CLI, pyads/pymodbus/shm stand-ins | driver suites (EV-03) |
-| CP-7 | Local API + CLI | `local-api.v1.openapi.yaml`, `cli-status.v1.schema.json` (spec only; EV-07 implements) | – | spec validity only [V] |
-| CP-8 | Telemetry | [telemetry.v1.md](telemetry.v1.md) | collector / JSONL exporter | – (EV-09) |
+| CP-7 | Local API + CLI | `local-api.v1.openapi.yaml`, `cli-status.v1.schema.json` | `local/api.py` (EV-07) | `test_local_api_contract.py` (every operation, both transports) [V] |
+| CP-8 | Telemetry | `telemetry.v1.schema.json` (`LogRecord`, `ActionRecord`, `SpanRecord`, `Metrics`), [telemetry.v1.md](telemetry.v1.md) | collector / JSONL exporter | `test_telemetry_contract.py` [V] |
 | all | Southbound OpenAPI | `openapi-southbound.yaml` (P2 0.1.0-p2 → `v1alpha1`, `$ref`s the schemas) | fakecloud | route ⊆ spec, P2 paths kept [V] |
 
 ## Versioning and compatibility
 
+- **Two version lines.** CP-1…CP-4 and CP-6 are `v1alpha1`; CP-5 (driver SPI 1.0), CP-7 (local API, CLI) and CP-8
+  (telemetry) are `v1`: they are the engine's own interfaces (drivers, operators, collectors) and were written as
+  `v1` (plan §5.0). Since FE-3 the three are versioned like the others: a machine-readable spec in the package with
+  the version in its file name and `$id` (`driver-spi.v1.schema.json`, `local-api.v1.openapi.yaml` +
+  `cli-status.v1.schema.json`, `telemetry.v1.schema.json`), golden examples in `tests/api/golden/`, a contract test,
+  a section in `cp-reference.md`, and the same rule: additive only within the version.
 - Version in the file name and `$id` (`…v1alpha1.schema.json`); the wire carries `apiVersion` where the document has one
   (`flex.dev/v1alpha1`, Margo's `application.margo.org/v1alpha1`, `device.margo.org/v1alpha1`).
 - **Within a version only additive changes**: a new optional field, a new enum value (e.g. driver profile `os-rauc`

@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/telemetry.v1.schema.json",
+  "title": "CP-8 Telemetry v1",
+  "description": "Machine-readable part of CP-8: what the engine emits for observability. LogRecord = one line of the structured engine log (logFormat json), ActionRecord = one line of dataDir/actions.jsonl, SpanRecord = one line of the JSONL span file (FLEX_OTEL_FILE; the same names and attributes go to OTLP), Metrics = Engine.metrics() (GET /v1/metrics per device). Prose: api/telemetry.v1.md. tests/api/test_telemetry_contract.py validates what an engine run emits and checks that every span name, log event and action the sources can emit is registered here. Additive only within v1: a new span, attribute, log event, action or metric key.",
+  "$defs": {
+    "LogLevel": {"enum": ["debug", "info", "warning", "error"]},
+    "LogEvent": {
+      "description": "Event names of engine log records. action.<ActionKind> and build.<phase> are listed by pattern in LogRecord.event; stdlib records of the flexengine2 package carry their logger name.",
+      "enum": [
+        "log", "local-api", "onboarded", "offline", "capabilities.sent",
+        "manifest.accepted", "manifest.refused", "manifest.unsupported", "state.refused",
+        "prepare.deferred", "supervision", "supervise.deferred", "bundle.imported",
+        "apply.failed", "stage.failed", "start.failed", "stop.failed", "commit.failed", "repair.failed",
+        "rollback.failed", "rollback.resumed", "journal.abandoned", "journal.dropped",
+        "outbox.backpressure", "outbox.backpressure-end",
+        "engine.start", "engine.stop", "engine.stop-timeout", "engine.error", "engine.crashed", "engine.save-failed",
+        "host.on-ready-failed"
+      ]
+    },
+    "LogRecord": {
+      "description": "One structured log line (obs/logging.py, logFormat json, the default). Keys after msg are event-specific (reasonCode, buildId, outboxLength, ...).",
+      "type": "object",
+      "required": ["ts", "level", "device", "event", "msg"],
+      "properties": {
+        "ts": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"},
+        "level": {"$ref": "#/$defs/LogLevel"},
+        "device": {"type": ["string", "null"]},
+        "event": {
+          "anyOf": [
+            {"$ref": "#/$defs/LogEvent"},
+            {"type": "string", "pattern": "^action\\.(apply|adopt|commit|reject|remove|rollback|rollback-resume|repair|retry|stage|start|stop|build)$"},
+            {"type": "string", "pattern": "^build\\.(started|progress|log|succeeded|failed)$"},
+            {"type": "string", "pattern": "^flexengine2(\\.[A-Za-z0-9_]+)*$"}
+          ]
+        },
+        "dep": {"type": "string"},
+        "version": {"type": "string"},
+        "msg": {"type": "string"}
+      }
+    },
+    "ActionKind": {"enum": ["apply", "adopt", "commit", "reject", "remove", "rollback", "rollback-resume", "repair", "retry", "stage", "start", "stop", "build"]},
+    "ActionRecord": {
+      "description": "One line of dataDir/actions.jsonl (fsync per line; read by the SIL scenario and the EV-13 oracles).",
+      "type": "object",
+      "required": ["t", "action", "dep"],
+      "properties": {
+        "t": {"type": "number", "description": "unix seconds"},
+        "action": {"$ref": "#/$defs/ActionKind"},
+        "dep": {"type": "string"},
+        "version": {"type": ["string", "null"]},
+        "digest": {"type": ["string", "null"]},
+        "reason": {"type": "string", "description": "reject"},
+        "failed": {"type": "string", "description": "rollback: the failed version"},
+        "why": {"type": "string", "description": "remove after a failed first install"},
+        "build": {"type": "string", "description": "build: the build id"}
+      }
+    },
+    "SpanName": {
+      "description": "Engine span names (one trace per plan). engine.install <dep> and engine.start <dep> carry the deployment id in the name.",
+      "anyOf": [
+        {"enum": ["engine.health-gate", "engine.rollback", "engine.build", "driver.apply", "driver.remove", "driver.stage", "driver.start", "driver.stop"]},
+        {"type": "string", "pattern": "^engine\\.(install|start) [A-Za-z0-9_.-]+$"},
+        {"enum": ["flex.plan", "device.status"], "description": "backend-side spans of the same trace (not the engine's)"}
+      ]
+    },
+    "SpanAttributes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "flex.device": {"type": "string"},
+        "flex.deployment": {"type": ["string", "null"]},
+        "flex.version": {"type": "string"},
+        "flex.driver": {"type": "string", "description": "the driver profile key"},
+        "flex.profile": {"type": "string"},
+        "flex.manifest_version": {"type": "integer"},
+        "flex.seconds": {"type": "number"},
+        "flex.healthy": {"type": "boolean"},
+        "flex.gate_failure": {"type": "string", "description": "empty when healthy"},
+        "flex.rollback": {"type": "boolean"},
+        "flex.failed_version": {"type": "string"},
+        "flex.build": {"type": "string"},
+        "flex.plan_hash": {"type": "string"},
+        "flex.correlation_id": {"type": "string"}
+      }
+    },
+    "SpanRecord": {
+      "description": "One finished span in the JSONL span file (FLEX_OTEL_FILE).",
+      "type": "object",
+      "required": ["service", "name", "traceId", "spanId", "parentSpanId", "start", "end", "kind", "status", "attributes", "links"],
+      "additionalProperties": false,
+      "properties": {
+        "service": {"type": "string", "pattern": "^flex-"},
+        "name": {"$ref": "#/$defs/SpanName"},
+        "traceId": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "spanId": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+        "parentSpanId": {"type": ["string", "null"], "pattern": "^[0-9a-f]{16}$"},
+        "start": {"type": "number"},
+        "end": {"type": "number"},
+        "kind": {"enum": ["INTERNAL", "CLIENT", "SERVER", "PRODUCER", "CONSUMER"]},
+        "status": {"enum": ["UNSET", "OK", "ERROR"]},
+        "attributes": {"$ref": "#/$defs/SpanAttributes"},
+        "links": {"type": "array", "items": {"type": "string", "pattern": "^[0-9a-f]{32}$"}}
+      }
+    },
+    "DurationSummary": {
+      "type": "object",
+      "required": ["last", "max", "avg", "count"],
+      "additionalProperties": false,
+      "properties": {
+        "last": {"type": ["number", "null"]},
+        "max": {"type": "number"},
+        "avg": {"type": ["number", "null"]},
+        "count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "Metrics": {
+      "description": "Engine.metrics() of one device engine (GET /v1/metrics answers {deviceId: Metrics}).",
+      "type": "object",
+      "required": ["device", "role", "ticks", "startedAt", "lastTickAt", "reconcileSeconds", "tickSeconds", "gateSeconds",
+                   "outboxLength", "outboxMax", "outboxDropped", "backpressure", "errors", "errorsByType", "lastError",
+                   "manifestVersion", "applied"],
+      "additionalProperties": false,
+      "properties": {
+        "device": {"type": "string"},
+        "role": {"type": ["string", "null"]},
+        "ticks": {"type": "integer", "minimum": 0},
+        "startedAt": {"type": "number"},
+        "lastTickAt": {"type": ["number", "null"]},
+        "reconcileSeconds": {"$ref": "#/$defs/DurationSummary"},
+        "tickSeconds": {"$ref": "#/$defs/DurationSummary"},
+        "gateSeconds": {"$ref": "#/$defs/DurationSummary"},
+        "outboxLength": {"type": "integer", "minimum": 0},
+        "outboxMax": {"type": ["integer", "null"]},
+        "outboxDropped": {"type": "integer", "minimum": 0},
+        "backpressure": {"type": "boolean"},
+        "errors": {"type": "object", "additionalProperties": {"type": "integer"}},
+        "errorsByType": {"type": "object", "additionalProperties": {"type": "integer"}},
+        "lastError": {
+          "type": ["object", "null"],
+          "properties": {
+            "t": {"type": "number"}, "phase": {"type": "string"}, "dep": {"type": ["string", "null"]},
+            "type": {"type": "string"}, "message": {"type": "string"}, "where": {"type": ["string", "null"]}
+          }
+        },
+        "manifestVersion": {"type": ["integer", "null"]},
+        "applied": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

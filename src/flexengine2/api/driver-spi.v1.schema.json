@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flex.dev/schemas/driver-spi.v1.schema.json",
+  "title": "CP-5 Driver SPI v1 (SPI 1.0)",
+  "description": "Machine-readable part of the driver SPI (connection point CP-5): the data a driver receives and returns ($defs) and its members (x-flex-spi). Normative text: the module docstring of flexengine2/drivers/base.py; prose summary: api/cp5-driver-spi.md. tests/api/test_driver_spi_contract.py checks that x-flex-spi equals the Driver class of base.py and that the dataclasses carry exactly these fields. Additive only within v1: a new optional member, a new optional field, a new supervise event; anything else is SPI 2.0.",
+  "x-flex-spi": {
+    "version": "1.0",
+    "reportedAs": "capabilities x-flex.engine.spi",
+    "attributes": {
+      "profile": {"default": "?", "description": "the workload profile this driver executes (CP-1 DriverProfile); a driver sets a real value, never '?'"},
+      "name": {"default": "?", "description": "the implementation (docker, podman, process, systemd, arduino-app-cli, ...); never '?'"},
+      "exclusive": {"default": false, "description": "the executor runs at most max_deployments deployments per device"},
+      "max_deployments": {"default": null, "description": "see exclusive; 1 when unset"},
+      "reboots_on_apply": {"default": false, "description": "apply/remove may reboot the device (os-rauc); additive in 1.0"},
+      "repairs_digest_drift": {"default": true, "description": "supervise re-applies a committed workload that runs another digest"},
+      "runtime": {"default": null, "description": "FE-4: the x-flex-runtime value this instance serves, None without runtimes"}
+    },
+    "required": {
+      "plan": "(self, current: Workload | None, desired: Workload | None) -> list[str]",
+      "apply": "(self, current: Workload | None, desired: Workload) -> None",
+      "remove": "(self, dep_id: str) -> None",
+      "status": "(self, dep_id: str) -> Observed",
+      "list": "(self) -> dict[str, Observed]",
+      "health": "(self, dep_id: str, probe: dict) -> bool"
+    },
+    "optional": {
+      "supervise": "(self) -> list[dict]",
+      "failed": "(self, dep_id: str) -> str | None",
+      "preflight": "(self, release, dep: dict) -> str | None",
+      "commit": "(self, dep_id: str) -> None",
+      "platform": "(self) -> dict | None",
+      "stage": "(self, current: Workload | None, desired: Workload) -> None",
+      "start": "(self, dep_id: str) -> None",
+      "stop": "(self, dep_id: str) -> None",
+      "build": "(self, desired: Workload, request: BuildRequest) -> BuildResult",
+      "capabilities": "(self) -> dict",
+      "placement": "(self) -> dict"
+    },
+    "byName": {
+      "failure_detail": "(self, dep_id, healthy_at) -> dict",
+      "verified": "(self, dep_id, want) -> bool"
+    },
+    "errors": {
+      "DriverError": "the only exception apply, remove, stage, start, stop, commit and build raise",
+      "BuildTimeout": "a DriverError: the build ran longer than its timeout (FE-BLD-002)"
+    },
+    "features": {
+      "runState": ["stage", "start", "stop"],
+      "build": ["build"]
+    }
+  },
+  "$defs": {
+    "Workload": {
+      "description": "Driver input: the verified, executor-ready description of one release revision, built by the reconciler from CP-1 and the verified release (CP-3/CP-4). Persisted in state.json (journal) as this object (Workload.to_dict).",
+      "type": "object",
+      "required": ["dep_id", "module", "version", "digest", "payload_path", "payload_annotations"],
+      "additionalProperties": false,
+      "properties": {
+        "dep_id": {"type": "string", "minLength": 1, "description": "deployment id (CP-1 metadata.id)"},
+        "module": {"type": "string", "description": "CP-1 spec.applicationId"},
+        "version": {"type": "string", "description": "release revision"},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "release manifest digest: the identity of what runs"},
+        "payload_path": {"type": "string", "description": "verified payload in the engine's content-addressed store"},
+        "payload_annotations": {"type": "object", "additionalProperties": {"type": "string"}, "description": "annotations of the payload layer (CP-3)"},
+        "parameters": {"type": "object", "description": "CP-1 spec.parameters"},
+        "health": {"type": "object", "description": "the signed descriptor's health probe (CP-1 descriptor)"},
+        "restart": {"type": "object", "description": "the signed descriptor's restart policy"},
+        "run_options": {"type": "object", "description": "the signed descriptor's runOptions"},
+        "build": {
+          "type": "object",
+          "description": "FE-4: the on-device build of this workload, {} when it was not built on the device",
+          "additionalProperties": false,
+          "properties": {
+            "id": {"type": "string", "description": "x-flex-build.id"},
+            "resultDigest": {"type": "string", "description": "what the build produced (BuildResult.digest)"}
+          }
+        }
+      }
+    },
+    "Observed": {
+      "description": "Driver output of status() and list(): what the executor runs for one deployment.",
+      "type": "object",
+      "required": ["present"],
+      "additionalProperties": false,
+      "properties": {
+        "present": {"type": "boolean", "description": "False only for an unknown deployment, never for an unreachable executor"},
+        "running": {"type": "boolean"},
+        "digest": {"type": ["string", "null"]},
+        "version": {"type": ["string", "null"]},
+        "restarts": {"type": "integer", "minimum": 0},
+        "detail": {"type": "string"}
+      }
+    },
+    "SuperviseEvent": {
+      "description": "One element of supervise(): local supervision the driver did this tick. Driver-specific extra keys (result, status, slot, version) are allowed.",
+      "type": "object",
+      "required": ["dep", "event"],
+      "properties": {
+        "dep": {"type": "string"},
+        "event": {"enum": ["restarted", "start-limit-hit", "exited", "boot-confirmed"]},
+        "restarts": {"type": "integer", "minimum": 0},
+        "willRestartAt": {"type": ["number", "null"], "description": "unix seconds of the next start (exited)"}
+      }
+    },
+    "BuildRequest": {
+      "description": "FE-4 driver input of build(): one on-device build (the callable emit is not part of the data).",
+      "type": "object",
+      "required": ["id", "source_path", "spec", "work_dir"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "x-flex-build.id"},
+        "source_path": {"type": "string", "description": "verified source payload (tar.gz) in the engine's store"},
+        "spec": {"type": "object", "description": "the signed descriptor's build (command, output, dockerfile, timeoutSeconds)"},
+        "work_dir": {"type": "string", "description": "a directory of this build the driver may use"},
+        "timeout": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "BuildResult": {
+      "description": "FE-4 driver output of build().",
+      "type": "object",
+      "required": ["digest"],
+      "additionalProperties": false,
+      "properties": {
+        "digest": {"type": "string", "minLength": 1, "description": "resultDigest: what the build produced (image id, sha256 of the payload)"},
+        "payload_path": {"type": "string"},
+        "payload_annotations": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    },
+    "CapabilitiesFragment": {
+      "description": "Driver output of capabilities(): always profile and driver; an exclusive driver adds the placement fragment. The full per-profile fragments are CP-2 (capabilities.v1alpha1 $defs).",
+      "type": "object",
+      "required": ["profile", "driver"],
+      "properties": {
+        "profile": {"type": "string"},
+        "driver": {"type": "string"},
+        "exclusive": {"const": true},
+        "maxDeployments": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

@@ -62,3 +62,11 @@ is a new version.
 - Capabilities `x-flex.features` (`runState`, `runtime`, `build`, `retry`); a key whose feature the device does not
   report is refused as a whole (FE-DS-007), a staged/stopped run state on a driver without it too (FE-DS-009).
 - Driver SPI 1.0, additive: optional `stage`, `start`, `stop`, `build`, attribute `runtime`, `Workload.build`.
+
+### FE-3: the 2.0.0 gate
+
+- CP-5, CP-7 and CP-8 are versioned like the other connection points: machine-readable specs in the package
+  (`driver-spi.v1.schema.json` with the SPI member table and the `Workload` / `Observed` / `SuperviseEvent` /
+  `BuildRequest` / `BuildResult` data, `telemetry.v1.schema.json` with `LogRecord` / `ActionRecord` / `SpanRecord` /
+  `Metrics`), golden examples, contract tests and `cp-reference.md` sections; `telemetry.v1.md` describes what the
+  engine emits today (JSON logs, FE-4 spans `engine.start`, `engine.build`, `driver.stage|start|stop`, metrics).

@@ -14,10 +14,10 @@ Regenerate after changing a spec: `python api/tools/gen_cp_reference.py` (`tests
 | [CP-2](#cp-2) | Status, capabilities, onboarding | `v1alpha1` | `status.v1alpha1.schema.json`, `device-event.v1alpha1.schema.json`, `capabilities.v1alpha1.schema.json`, `onboarding.v1alpha1.schema.json`, `reason-codes.v1alpha1.json` | – |
 | [CP-3](#cp-3) | Artefact access (OCI subset) and offline bundle | `v1alpha1` | `oci-profile.v1alpha1.schema.json` | [bundle.v1alpha1.md](bundle.v1alpha1.md) |
 | [CP-4](#cp-4) | Trust | `v1alpha1` | `trust.v1alpha1.schema.json` | [trust.v1alpha1.md](trust.v1alpha1.md) |
-| [CP-5](#cp-5) | Driver SPI v1 | `v1` | – | [cp5-driver-spi.md](cp5-driver-spi.md) |
+| [CP-5](#cp-5) | Driver SPI v1 | `v1` | `driver-spi.v1.schema.json` | [cp5-driver-spi.md](cp5-driver-spi.md) |
 | [CP-6](#cp-6) | Child-device interfaces | `v1alpha1` | – | [cp6-children.md](cp6-children.md) |
 | [CP-7](#cp-7) | Local API and CLI | `v1` | `local-api.v1.openapi.yaml`, `cli-status.v1.schema.json` | – |
-| [CP-8](#cp-8) | Telemetry | `v1` | – | [telemetry.v1.md](telemetry.v1.md) |
+| [CP-8](#cp-8) | Telemetry | `v1` | `telemetry.v1.schema.json` | [telemetry.v1.md](telemetry.v1.md) |
 | [all](#southbound-api) | Southbound HTTP API (flexCloud ⇄ engine) | `v1alpha1` | `openapi-southbound.yaml` | – |
 
 <a id="cp-1"></a>
@@ -1026,6 +1026,103 @@ Trust-anchor keys of one device engine's effective configuration (the dict core.
 <a id="cp-5"></a>
 ## CP-5 Driver SPI v1
 
+### `driver-spi.v1.schema.json`
+
+- `$id`: `https://flex.dev/schemas/driver-spi.v1.schema.json`
+- Title: CP-5 Driver SPI v1 (SPI 1.0)
+- Version: `v1`
+
+Machine-readable part of the driver SPI (connection point CP-5): the data a driver receives and returns ($defs) and its members (x-flex-spi).
+
+<a id="driver-spi-workload"></a>
+#### `$defs/Workload` (object)
+
+Driver input: the verified, executor-ready description of one release revision, built by the reconciler from CP-1 and the verified release (CP-3/CP-4).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `dep_id` | string | ✔ | deployment id (CP-1 metadata.id) |
+| `module` | string | ✔ | CP-1 spec.applicationId |
+| `version` | string | ✔ | release revision |
+| `digest` | string | ✔ | release manifest digest: the identity of what runs |
+| `payload_path` | string | ✔ | verified payload in the engine's content-addressed store |
+| `payload_annotations` | map of string | ✔ | annotations of the payload layer (CP-3) |
+| `parameters` | object |  | CP-1 spec.parameters |
+| `health` | object |  | the signed descriptor's health probe (CP-1 descriptor) |
+| `restart` | object |  | the signed descriptor's restart policy |
+| `run_options` | object |  | the signed descriptor's runOptions |
+| `build` | object |  | FE-4: the on-device build of this workload, {} when it was not built on the device |
+
+Closed object: other keys are refused.
+
+<a id="driver-spi-observed"></a>
+#### `$defs/Observed` (object)
+
+Driver output of status() and list(): what the executor runs for one deployment.
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `present` | boolean | ✔ | False only for an unknown deployment, never for an unreachable executor |
+| `running` | boolean |  |  |
+| `digest` | string or null |  |  |
+| `version` | string or null |  |  |
+| `restarts` | integer |  |  |
+| `detail` | string |  |  |
+
+Closed object: other keys are refused.
+
+<a id="driver-spi-superviseevent"></a>
+#### `$defs/SuperviseEvent` (object)
+
+One element of supervise(): local supervision the driver did this tick.
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `dep` | string | ✔ |  |
+| `event` | enum `restarted`, `start-limit-hit`, `exited`, `boot-confirmed` | ✔ |  |
+| `restarts` | integer |  |  |
+| `willRestartAt` | number or null |  | unix seconds of the next start (exited) |
+
+<a id="driver-spi-buildrequest"></a>
+#### `$defs/BuildRequest` (object)
+
+FE-4 driver input of build(): one on-device build (the callable emit is not part of the data).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `id` | string | ✔ | x-flex-build.id |
+| `source_path` | string | ✔ | verified source payload (tar.gz) in the engine's store |
+| `spec` | object | ✔ | the signed descriptor's build (command, output, dockerfile, timeoutSeconds) |
+| `work_dir` | string | ✔ | a directory of this build the driver may use |
+| `timeout` | number |  |  |
+
+Closed object: other keys are refused.
+
+<a id="driver-spi-buildresult"></a>
+#### `$defs/BuildResult` (object)
+
+FE-4 driver output of build().
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `digest` | string | ✔ | resultDigest: what the build produced (image id, sha256 of the payload) |
+| `payload_path` | string |  |  |
+| `payload_annotations` | map of string |  |  |
+
+Closed object: other keys are refused.
+
+<a id="driver-spi-capabilitiesfragment"></a>
+#### `$defs/CapabilitiesFragment` (object)
+
+Driver output of capabilities(): always profile and driver; an exclusive driver adds the placement fragment.
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `profile` | string | ✔ |  |
+| `driver` | string | ✔ |  |
+| `exclusive` | `true` |  |  |
+| `maxDeployments` | integer |  |  |
+
 ### `drivers/base.py` (SPI `1.0`)
 
 Normative text: the module docstring of `src/flexengine2/drivers/base.py`. Guide for driver authors: [../docs/spi-guide.md](../docs/spi-guide.md).
@@ -1038,6 +1135,7 @@ Normative text: the module docstring of `src/flexengine2/drivers/base.py`. Guide
 | `max_deployments` | class attribute | `None` |
 | `reboots_on_apply` | class attribute | `False` |
 | `repairs_digest_drift` | class attribute | `True` |
+| `runtime` | class attribute | `None` |
 | `apply` | required | `apply(self, current: 'Workload \| None', desired: 'Workload') -> 'None'` |
 | `build` | optional (default in base) | `build(self, desired: 'Workload', request: 'BuildRequest') -> 'BuildResult'` |
 | `capabilities` | optional (default in base) | `capabilities(self) -> 'dict'` |
@@ -1163,6 +1261,144 @@ Closed object: other keys are refused.
 
 <a id="cp-8"></a>
 ## CP-8 Telemetry
+
+### `telemetry.v1.schema.json`
+
+- `$id`: `https://flex.dev/schemas/telemetry.v1.schema.json`
+- Title: CP-8 Telemetry v1
+- Version: `v1`
+
+Machine-readable part of CP-8: what the engine emits for observability.
+
+<a id="telemetry-loglevel"></a>
+#### `$defs/LogLevel` (enum `debug`, `info`, `warning`, `error`)
+
+<a id="telemetry-logevent"></a>
+#### `$defs/LogEvent` (enum `log`, `local-api`, `onboarded`, `offline`, `capabilities.sent`, `manifest.accepted`, `manifest.refused`, `manifest.unsupported`, `state.refused`, `prepare.deferred` …)
+
+Event names of engine log records. action.<ActionKind> and build.<phase> are listed by pattern in LogRecord.event; stdlib records of the flexengine2 package carry their logger name.
+
+<a id="telemetry-logrecord"></a>
+#### `$defs/LogRecord` (object)
+
+One structured log line (obs/logging.py, logFormat json, the default).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `ts` | string | ✔ |  |
+| `level` | [LogLevel](#telemetry-loglevel) | ✔ |  |
+| `device` | string or null | ✔ |  |
+| `event` | [LogEvent](#telemetry-logevent) or string or string or string | ✔ |  |
+| `dep` | string |  |  |
+| `version` | string |  |  |
+| `msg` | string | ✔ |  |
+
+<a id="telemetry-actionkind"></a>
+#### `$defs/ActionKind` (enum `apply`, `adopt`, `commit`, `reject`, `remove`, `rollback`, `rollback-resume`, `repair`, `retry`, `stage` …)
+
+<a id="telemetry-actionrecord"></a>
+#### `$defs/ActionRecord` (object)
+
+One line of dataDir/actions.jsonl (fsync per line; read by the SIL scenario and the EV-13 oracles).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `t` | number | ✔ | unix seconds |
+| `action` | [ActionKind](#telemetry-actionkind) | ✔ |  |
+| `dep` | string | ✔ |  |
+| `version` | string or null |  |  |
+| `digest` | string or null |  |  |
+| `reason` | string |  | reject |
+| `failed` | string |  | rollback: the failed version |
+| `why` | string |  | remove after a failed first install |
+| `build` | string |  | build: the build id |
+
+<a id="telemetry-spanname"></a>
+#### `$defs/SpanName` (enum `engine.health-gate`, `engine.rollback`, `engine.build`, `driver.apply`, `driver.remove`, `driver.stage`, `driver.start`, `driver.stop` or string or enum `flex.plan`, `device.status`)
+
+Engine span names (one trace per plan). engine.install <dep> and engine.start <dep> carry the deployment id in the name.
+
+<a id="telemetry-spanattributes"></a>
+#### `$defs/SpanAttributes` (object)
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `flex.device` | string |  |  |
+| `flex.deployment` | string or null |  |  |
+| `flex.version` | string |  |  |
+| `flex.driver` | string |  | the driver profile key |
+| `flex.profile` | string |  |  |
+| `flex.manifest_version` | integer |  |  |
+| `flex.seconds` | number |  |  |
+| `flex.healthy` | boolean |  |  |
+| `flex.gate_failure` | string |  | empty when healthy |
+| `flex.rollback` | boolean |  |  |
+| `flex.failed_version` | string |  |  |
+| `flex.build` | string |  |  |
+| `flex.plan_hash` | string |  |  |
+| `flex.correlation_id` | string |  |  |
+
+Closed object: other keys are refused.
+
+<a id="telemetry-spanrecord"></a>
+#### `$defs/SpanRecord` (object)
+
+One finished span in the JSONL span file (FLEX_OTEL_FILE).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `service` | string | ✔ |  |
+| `name` | [SpanName](#telemetry-spanname) | ✔ |  |
+| `traceId` | string | ✔ |  |
+| `spanId` | string | ✔ |  |
+| `parentSpanId` | string or null | ✔ |  |
+| `start` | number | ✔ |  |
+| `end` | number | ✔ |  |
+| `kind` | enum `INTERNAL`, `CLIENT`, `SERVER`, `PRODUCER`, `CONSUMER` | ✔ |  |
+| `status` | enum `UNSET`, `OK`, `ERROR` | ✔ |  |
+| `attributes` | [SpanAttributes](#telemetry-spanattributes) | ✔ |  |
+| `links` | array of string | ✔ |  |
+
+Closed object: other keys are refused.
+
+<a id="telemetry-durationsummary"></a>
+#### `$defs/DurationSummary` (object)
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `last` | number or null | ✔ |  |
+| `max` | number | ✔ |  |
+| `avg` | number or null | ✔ |  |
+| `count` | integer | ✔ |  |
+
+Closed object: other keys are refused.
+
+<a id="telemetry-metrics"></a>
+#### `$defs/Metrics` (object)
+
+Engine.metrics() of one device engine (GET /v1/metrics answers {deviceId: Metrics}).
+
+| Field | Type | Req. | Description |
+|---|---|---|---|
+| `device` | string | ✔ |  |
+| `role` | string or null | ✔ |  |
+| `ticks` | integer | ✔ |  |
+| `startedAt` | number | ✔ |  |
+| `lastTickAt` | number or null | ✔ |  |
+| `reconcileSeconds` | [DurationSummary](#telemetry-durationsummary) | ✔ |  |
+| `tickSeconds` | [DurationSummary](#telemetry-durationsummary) | ✔ |  |
+| `gateSeconds` | [DurationSummary](#telemetry-durationsummary) | ✔ |  |
+| `outboxLength` | integer | ✔ |  |
+| `outboxMax` | integer or null | ✔ |  |
+| `outboxDropped` | integer | ✔ |  |
+| `backpressure` | boolean | ✔ |  |
+| `errors` | map of integer | ✔ |  |
+| `errorsByType` | map of integer | ✔ |  |
+| `lastError` | object or null | ✔ |  |
+| `manifestVersion` | integer or null | ✔ |  |
+| `applied` | array of string | ✔ |  |
+
+Closed object: other keys are refused.
 
 ### [telemetry.v1.md](telemetry.v1.md)
 
