@@ -23,7 +23,7 @@ the flex* stack. Operator guide: `README.md`; contracts: `api/`; what changed fr
   P2's stand-in apps in `src/flexengine2/testing/apps/` (`tests/vectors/framework/SOURCES.json` names origin and
   commit); refresh them with `tools/vendor_framework.py --framework <checkout> --update`, never by hand. Cases that need the framework's code are marked `framework` / `flexmodel` (or skip at
   module level) and run with `FLEX_REPO=<checkout> FLEXMODEL_SRC=<checkout>/flexmodel/src ./run_tests.sh ...`.
-- Hardware: desk runbooks in `hwtest/` (EV-HW-01…11); dry-run new or changed runbooks against the simulated desk
+- Hardware: desk runbooks in `hwtest/` (EV-HW-01…12); dry-run new or changed runbooks against the simulated desk
   (`hwtest/dryrun.py`) before handing them to the lab owner.
 
 ## Contracts

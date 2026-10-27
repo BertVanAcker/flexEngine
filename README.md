@@ -241,7 +241,7 @@ the health probe, restart policy and run options; the cloud cannot widen them. D
   tar.gz with a compose file and the images it runs as `images/*.tar`; the project starts with `--pull never`, so only
   the signed images run. Health gate: every service runs and every service healthcheck reports healthy; a service
   that exits for good fails the gate at once; a rollback brings the previous project back as one unit. Host access in
-  the compose file (privileged, devices, host network, bind mounts, ...) is refused unless
+  the compose file (privileged, devices, host network, bind mounts, ...) is refused by default, unless
   `composeAllowHostAccess: true`.
 
 ### Several runtimes per profile, run state, build on the device (FE-4)
@@ -254,13 +254,15 @@ the health probe, restart policy and run options; the cloud cannot widen them. D
 - **Run state** (`x-flex-runState`): `staged` installs a release without starting it (Push), `stopped` stops it and
   keeps it installed (Stop), `running` (default) starts it. The health gate runs on every start; starts follow
   `x-flex-dependsOn`, stops go in reverse. Status `Staged` / `Stopped`. A start that fails rolls back to the previous
-  release, or stops the release again (`start failed`, FE-REC-011, or `health check failed`).
+  release, or stops the release again (`start failed`, FE-REC-011, or `health check failed`). A dependency whose
+  desired run state is staged or stopped does not hold its dependents ("Run one" starts one deployment of a stack).
 - **Build on the device** (`x-flex-build: {id}`): the release carries a source payload and its descriptor a `build`
   spec; the engine builds once per id before staging or starting (native: the build command, container: `docker|podman
   build`, compose: `compose build`) and sends `BuildStarted`, `BuildProgress`, `BuildLog`, `BuildSucceeded` /
   `BuildFailed` (FE-BLD-001…004) as device events. A failed build keeps the previous state.
-- **Retry**: a release that failed is tried again when the control plane publishes the same deployments in a newer
-  `manifestVersion`.
+- **Retry**: a release that failed is tried again only when the control plane publishes a newer `manifestVersion`
+  with the same deployments as the manifest it failed under; any other change keeps the verdict. There is no retry
+  key.
 - The engine reports what it honours as `x-flex.features` (`runState`, `runtime`, `build`, `retry`) and refuses a key
   whose feature it does not report (FE-DS-007), so a control plane serves the keys only where they work.
 

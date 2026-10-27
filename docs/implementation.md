@@ -73,10 +73,11 @@ are desired-state keys, not commands:
 | `x-flex-runState: staged \| running \| stopped` | staged installs without starting; stopped stops and keeps the release; a change to running is a start (dependencies first, activation gate, health gate; a failed start rolls back or stops again) |
 | `x-flex-runtime` | which runtime of the profile runs it (`docker`, `podman`, `docker-compose`, `systemd`, `process`, ...); the device reports what it allows in `x-flex.runtimes` |
 | `x-flex-build: {id}` | build on the device from the release's signed source payload with the descriptor's `build` step, once per build id; `BuildStarted` / `BuildProgress` / `BuildLog` / `BuildSucceeded` / `BuildFailed` events |
-| retry | the same deployments in a newer `manifestVersion` try a release that failed again |
+| retry (no key) | a failed release is tried again only when a newer `manifestVersion` carries the same deployments as the manifest it failed under; any other change keeps the verdict. There is no `x-flex-retry` key (decision D-1 in CHANGES.md) |
 
 The device lists which of these it honours in `x-flex.features`; a control plane serves a key only to a device that
-reports its feature.
+reports its feature. A dependency whose desired run state is staged or stopped does not hold its dependents: they
+start without it ("Run one", decision D-2).
 
 ## 3. Drivers and the SPI (CP-5)
 
@@ -91,7 +92,7 @@ passes the shared conformance suite `tests/contract/`.
 
 | Profile | Drivers | Executor |
 |---|---|---|
-| `container` | docker, podman, compose, ankaios | container CLI, labels, digest-pinned images loaded from the signed payload |
+| `container` | docker, podman, compose, ankaios | container CLI, labels, digest-pinned images loaded from the signed payload; host access in a compose file is refused unless `drivers.container.composeAllowHostAccess` (decision D-3) |
 | `native` | systemd, process | a systemd unit per deployment (or a supervised process); Python payloads with their own wheels |
 | `os-rauc` | rauc | whole-OS A/B update, health-gated `mark-good`, rollback across the reboot |
 | `arduino-ota` | arduino-ota | flexNode-arduino boards over signed `OTA_UPDATE` (MQTT) |
@@ -196,17 +197,21 @@ installs offline and idempotently (user `flex`, `/etc/flexengine`, `/var/lib/fle
 
 | Tier | Layers | Where |
 |---|---|---|
-| push (every PR) | `unit`, `contract` (SPI conformance on fake executors), `api` (schemas, golden examples, vectors, reference fakes, CP-5/7/8 contract tests, freeze gate), `security`, `property` (push budget), `integration-fast` | `ci.yml`, with the coverage gate (core ≥ 90 %, drivers ≥ 80 %, overall ≥ 85 %), a wheel build and the freeze job; required check `ci-ok` |
+| push (every PR) | `unit`, `contract` (SPI conformance on fake executors), `api` (schemas, golden examples, vectors, reference fakes, CP-5/7/8 contract tests, freeze gate), `security`, `property` (push budget), `integration-fast` | `ci.yml`, with the coverage gate (core ≥ 90 %, drivers ≥ 80 %, overall ≥ 85 %; applab deferred, the relay not measured: decision D-4), a wheel build and the freeze job; required check `ci-ok` |
 | nightly | `contract-nightly` (real docker, podman, systemd, rauc), `property-nightly` (≥ 200 schedules), `integration` (everything, docker-backed cases), `packaging` (clean Ubuntu 24.04 containers with systemd) | `nightly.yml`, plus the push-tier core and full coverage; job `full-run` merges one run into `run-summary.json` |
 | release | all of the above | `release.yml` on a `v2.*` tag, then PyPI and the GitHub release |
 
-No framework checkout is needed: the framework files the tests read are vendored (`tests/vectors/framework/`). The
-alpha exit check (`tools/alpha_exit_check.py`) reads three merged nightly runs (`--runs`).
+No framework checkout is needed: the framework files the tests read are vendored (`tests/vectors/framework/`). What
+only the framework can exercise is measured there: the framework's CI (`flexengine-framework.yml`, job `coverage`)
+runs `./run_tests.sh coverage` with `FLEX_REPO`, flexmodel, probe P4's board simulator and the P3 QEMU build (the
+relay's live path runs only in the MCU-over-QEMU edge case), gates applab at 80 % without `FLEX_COVERAGE_DEFER` and
+the MCU relay (`gateway/relay.py`, 80 %) with `FLEX_COVERAGE_REQUIRE=relay`. The alpha exit check (`tools/alpha_exit_check.py`) reads three merged nightly runs (`--runs`).
 
 ## 11. Hardware runbooks
 
-The desk procedures on the lab hardware are YAML runbooks in `hwtest/runbooks/` (EV-HW-01…11), run with
+The desk procedures on the lab hardware are YAML runbooks in `hwtest/runbooks/` (EV-HW-01…12), run with
 flexNode-arduino's runner and GUI and dry-run against a simulated desk (`hwtest/dryrun.py`) before they go to the lab:
 EV-HW-01 install and enrol (LattePanda, from the offline bundle), 02 containers, 03 offline and bundle, 04 Portenta
 modules, 05 MCU base image, 06 UNO Q App Lab, 07 plc-verify, 08 security, 09 crash and power cut, 10 observability,
-11 RAUC A/B. 2.0.0 is final when the LattePanda runs the published 2.0.0rc bundle and passes EV-HW-01.
+11 RAUC A/B, 12 the four buttons (Push, Run, Stop, Run one, Stop all; on-device build). 2.0.0 is final when the
+LattePanda runs the published 2.0.0rc bundle and passes EV-HW-01.
