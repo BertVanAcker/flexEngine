@@ -34,6 +34,13 @@ releases:
   dl_unsigned: {module: detection_logger, version: 3.0.0, driver: native, build: {kind: native, sign: false}}
   dl_rogue: {module: detection_logger, version: 3.1.0, driver: native, build: {kind: native, key: rogue}}
   dl_tamper: {module: detection_logger, version: 3.2.0, driver: native, build: {kind: native}}
+  # ---- EV-HW-12: the four buttons (FE-4); the same names are built for fake runtimes by simdesk.py (profile fe4) --
+  fb_nat: {module: detection_logger, version: 4.0.0, driver: native, build: {kind: native}}
+  fb_gate: {module: detection_logger, version: 4.1.0, driver: native, build: {kind: native, failHealth: true}}
+  fb_src: {module: detection_logger, version: 4.2.0, driver: native, build: {kind: native-source}}
+  fb_src_bad: {module: detection_logger, version: 4.3.0, driver: native, build: {kind: native-source, fail: true}}
+  fb_ctr: {module: perception_guard, version: 4.0.0, driver: container, build: {kind: container, approvers: [alice, bob]}}
+  fb_compose: {module: gige_camera, version: 4.0.0, driver: container, build: {kind: compose, approvers: [alice, bob]}}
   # ---- EV-HW-04 / 05: Portenta H7 M7 (cortex-m7-hard layer) ---------------------------------------------------------
   servo_2:
     module: servo_drive

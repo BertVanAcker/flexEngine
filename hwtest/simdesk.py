@@ -17,7 +17,10 @@ What a profile starts (every part a real process or the reference stand-in of th
              mcu (QEMU mps2/an385 MCUboot + base image as the Portenta, relay with a Zenoh endpoint),
              applab (P4 board simulator + fake arduino-app-cli, remote mode over a fake ssh),
              plc (pyads `Hello` + pymodbus stand-ins of the CX and the Opta), rauc (fake rauc + boot simulator,
-             the machine reboots by itself when the driver asks)
+             the machine reboots by itself when the driver asks),
+             fe4 (EV-HW-12: one device with the runtimes process + systemd (native) and docker + docker-compose
+             (container); systemd, docker and compose are the contract suite's fake CLIs (tests/contract/
+             spi_harness/fakes) on the engine's PATH, the model is the vendored UC1, no framework checkout needed)
 
 ctl commands (the runbook's `svc`, `sim` and `uplink_*` variables point here in a dry run):
   svc start|stop|restart|kill [-s SIG]|is-active flexengine     systemctl stand-in for the engine
@@ -1170,7 +1173,95 @@ def profile_install(sim: Sim):
     sim.vars.update(fe_api=f"http://127.0.0.1:{sim.api_port}", fe_api_token_file=str(tok), lp_up_port=str(sim.api_port))
 
 
-PROFILES = {"lp": profile_lp, "mcu": profile_mcu, "applab": profile_applab, "plc": profile_plc,
+FAKES = FLEXENGINE / "tests" / "contract" / "spi_harness" / "fakes"
+UC1_VENDORED = FLEXENGINE / "tests" / "vectors" / "framework" / "models" / "uc1"
+
+
+def fake_runtime_bin(sim: Sim) -> Path:
+    """docker (fakeoci, `docker compose ...` -> fakecompose) and systemctl (fakesystemctl) for the engine and the
+    runbook's host checks; the shims carry their state directories, so every caller sees the same fake runtime."""
+    bindir, state = sim.dir / "bin", sim.dir / "fakert"
+    bindir.mkdir(exist_ok=True)
+    env = {"FAKE_OCI_STATE": state / "oci", "FAKE_OCI_NAME": "docker", "FAKE_SYSTEMD_STATE": state / "systemd",
+           "FAKE_SYSTEMD_UNITDIR": state / "units"}
+    exports = "".join(f"export {k}={shlex.quote(str(v))}\n" for k, v in env.items())
+    py = shlex.quote(sim.py)
+    shims = {
+        "docker": (f'if [ "$1" = compose ]; then shift; exec {py} {shlex.quote(str(FAKES / "fakecompose.py"))} "$@"; fi\n'
+                   f'exec {py} {shlex.quote(str(FAKES / "fakeoci.py"))} "$@"\n'),
+        "systemctl": f'exec {py} {shlex.quote(str(FAKES / "fakesystemctl.py"))} "$@"\n',
+    }
+    for name, body in shims.items():
+        f = bindir / name
+        f.write_text("#!/bin/sh\n" + exports + body)
+        f.chmod(0o755)
+    for d in ("oci", "systemd", "units"):
+        (state / d).mkdir(parents=True, exist_ok=True)
+    return bindir
+
+
+def fe4_catalog(ports: dict) -> dict:
+    """The EV-HW-12 release names of catalogs/lab-d2.yaml, built for the fake runtimes."""
+    two = ["alice", "bob"]
+    rel = {
+        "fb_ctr": {"module": "perception_guard", "version": "4.0.0", "driver": "container",
+                   "build": {"kind": "fake-container", "port": ports["ctr"], "approvers": two}},
+        "fb_compose": {"module": "gige_camera", "version": "4.0.0", "driver": "container",
+                       "build": {"kind": "fake-compose", "port": ports["cam"], "approvers": two}},
+        "fb_nat": {"module": "detection_logger", "version": "4.0.0", "driver": "native", "build": {"kind": "native"}},
+        "fb_gate": {"module": "detection_logger", "version": "4.1.0", "driver": "native",
+                    "build": {"kind": "native", "failHealth": True}},
+        "fb_src": {"module": "detection_logger", "version": "4.2.0", "driver": "native",
+                   "build": {"kind": "native-source"}},
+        "fb_src_bad": {"module": "detection_logger", "version": "4.3.0", "driver": "native",
+                       "build": {"kind": "native-source", "fail": True}},
+    }
+    return {"model": str(UC1_VENDORED), "runtime": "docker", "releases": rel}
+
+
+def profile_fe4(sim: Sim):
+    sim.start_cloud([UC1_VENDORED])
+    bindir = fake_runtime_bin(sim)
+    tok = sim.lp / "tokens"
+    tok.mkdir(exist_ok=True)
+    (tok / GP).write_text(sim.token(GP) + "\n")
+    (tok / GP).chmod(0o600)
+    units = sim.dir / "fakert" / "units"
+    safe = sim.lp / "safe-state.json"   # the containers' modules are safety-relevant: machine parked
+    safe.write_text(json.dumps({"machine_parked": True, "operator_confirmed": True}))
+    sim.devices_cfg = [{"deviceId": GP, "role": "standalone-device", "onboardingTokenFile": str(tok / GP),
+                        "safeStateFile": str(safe),
+                        "drivers": {"container": {"runtime": "docker", "runtimes": ["compose"]},
+                                    "native": {"runtime": "systemd", "runtimes": ["process"],
+                                               "unitDir": str(units)}}}]
+    sim.write_engine_config(sim.engine_config())
+    sim.engine_env_extra = {"PATH": f"{bindir}{os.pathsep}{os.environ.get('PATH', '')}"}
+    sim.write_catalog(fe4_catalog({"ctr": free_port(), "cam": free_port()}))
+    sim.vars.update(gp=GP, rt=str(bindir / "docker"), sysctl=str(bindir / "systemctl"), safe_state_file=str(safe),
+                    unit_dir=str(units), fe_data=str(sim.lp / "data"), fe_sudo="")
+
+    def stop_fakes():   # runs after the engine stopped (closers run in reverse): the fake runtimes' workloads
+        dk, sc = str(bindir / "docker"), str(bindir / "systemctl")
+        ids = subprocess.run([dk, "ps", "-a", "-q"], capture_output=True, text=True).stdout.split()
+        if ids:
+            subprocess.run([dk, "rm", "-f", *ids], capture_output=True)
+        for unit in sorted(units.glob("*.service")):
+            subprocess.run([sc, "stop", unit.name], capture_output=True)
+        for f in (sim.lp / "data").rglob("units.json"):   # process runtime children (own sessions)
+            try:
+                for u in json.loads(f.read_text()).values():
+                    if isinstance(u, dict) and u.get("pid"):
+                        try:
+                            os.killpg(int(u["pid"]), signal.SIGKILL)
+                        except (ProcessLookupError, PermissionError, ValueError):
+                            pass
+            except (OSError, ValueError):
+                pass
+    sim.closers.append(stop_fakes)
+    sim.start_engine([GP])
+
+
+PROFILES = {"lp": profile_lp, "fe4": profile_fe4, "mcu": profile_mcu, "applab": profile_applab, "plc": profile_plc,
             "rauc": profile_rauc, "install": profile_install}
 
 
