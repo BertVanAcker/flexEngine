@@ -1,5 +1,7 @@
 # flexEngine 2 release (engine plan §7.6). On a tag v2.*: the push and nightly tiers and the coverage gate, then the
-# sdist + wheel to PyPI (project flexEngine) and, with the offline wheelhouse bundles, to the GitHub release.
+# sdist + wheel to PyPI (project flexEngine) and, with the offline wheelhouse bundles (built around that same wheel)
+# and their SHA256SUMS, to the GitHub release. A tag with a, b or rc (v2.0.0rc1) is a pre-release on both: PyPI
+# marks it by its version (pip needs --pre), the GitHub release gets --prerelease.
 # The file name (release.yml) and the environment (pypi) are what PyPI's trusted publisher for flexEngine is
 # registered with; keep both. 0.6.x releases come from branch v1.x, whose own release.yml runs on its v0.* tags.
 name: Release
@@ -79,7 +81,7 @@ jobs:
 
   bundles:
     name: offline wheelhouse bundles
-    needs: suite
+    needs: [suite, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -87,11 +89,20 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - uses: docker/setup-qemu-action@v3
-      - run: packaging/build-wheels.sh
+      - uses: actions/download-artifact@v4
+        with: {name: dist, path: pypi-dist/}
+      - name: bundles around the wheel that goes to PyPI (LattePanda x86_64, UNO Q aarch64) + SHA256SUMS
+        run: |
+          shopt -s failglob
+          packaging/build-wheels.sh --wheel pypi-dist/flexengine-*-py3-none-any.whl
         env:
           PYTHON: python3
       - uses: actions/upload-artifact@v4
-        with: {name: bundles, path: "dist/*.tar.gz"}
+        with:
+          name: bundles
+          path: |
+            dist/*.tar.gz
+            dist/SHA256SUMS
 
   publish-pypi:
     name: Publish to PyPI
@@ -129,4 +140,4 @@ jobs:
           case "$GITHUB_REF_NAME" in *a*|*b*|*rc*) pre="--prerelease" ;; esac
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
             || gh release create "$GITHUB_REF_NAME" $pre --verify-tag --title "flexEngine $GITHUB_REF_NAME" --generate-notes
-          gh release upload "$GITHUB_REF_NAME" dist/* bundles/*.tar.gz --clobber
+          gh release upload "$GITHUB_REF_NAME" dist/* bundles/*.tar.gz bundles/SHA256SUMS --clobber

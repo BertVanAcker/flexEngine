@@ -1,0 +1,573 @@
+{
+ "gate": "FE-F4",
+ "name": "cli",
+ "recorded": {
+  "date": "2026-10-27",
+  "why": "baseline of the 2.0.0 freeze"
+ },
+ "entries": {
+  "flexengine/commands/bundle/commands/import/options/--config/action": "StoreAction",
+  "flexengine/commands/bundle/commands/import/options/--config/default": null,
+  "flexengine/commands/bundle/commands/import/options/--config/dest": "config",
+  "flexengine/commands/bundle/commands/import/options/--config/flags": [
+   "--config"
+  ],
+  "flexengine/commands/bundle/commands/import/options/--config/nargs": null,
+  "flexengine/commands/bundle/commands/import/options/--config/required": false,
+  "flexengine/commands/bundle/commands/import/options/--config/type": null,
+  "flexengine/commands/bundle/commands/import/options/--device/action": "StoreAction",
+  "flexengine/commands/bundle/commands/import/options/--device/default": null,
+  "flexengine/commands/bundle/commands/import/options/--device/dest": "device",
+  "flexengine/commands/bundle/commands/import/options/--device/flags": [
+   "--device"
+  ],
+  "flexengine/commands/bundle/commands/import/options/--device/nargs": null,
+  "flexengine/commands/bundle/commands/import/options/--device/required": false,
+  "flexengine/commands/bundle/commands/import/options/--device/type": null,
+  "flexengine/commands/bundle/commands/import/options/--json/action": "StoreTrueAction",
+  "flexengine/commands/bundle/commands/import/options/--json/default": false,
+  "flexengine/commands/bundle/commands/import/options/--json/dest": "json",
+  "flexengine/commands/bundle/commands/import/options/--json/flags": [
+   "--json"
+  ],
+  "flexengine/commands/bundle/commands/import/options/--json/nargs": 0,
+  "flexengine/commands/bundle/commands/import/options/--json/required": false,
+  "flexengine/commands/bundle/commands/import/options/--json/type": null,
+  "flexengine/commands/bundle/commands/import/options/--offline/action": "StoreTrueAction",
+  "flexengine/commands/bundle/commands/import/options/--offline/default": false,
+  "flexengine/commands/bundle/commands/import/options/--offline/dest": "offline",
+  "flexengine/commands/bundle/commands/import/options/--offline/flags": [
+   "--offline"
+  ],
+  "flexengine/commands/bundle/commands/import/options/--offline/nargs": 0,
+  "flexengine/commands/bundle/commands/import/options/--offline/required": false,
+  "flexengine/commands/bundle/commands/import/options/--offline/type": null,
+  "flexengine/commands/bundle/commands/import/options/--socket/action": "StoreAction",
+  "flexengine/commands/bundle/commands/import/options/--socket/default": null,
+  "flexengine/commands/bundle/commands/import/options/--socket/dest": "socket",
+  "flexengine/commands/bundle/commands/import/options/--socket/flags": [
+   "--socket"
+  ],
+  "flexengine/commands/bundle/commands/import/options/--socket/nargs": null,
+  "flexengine/commands/bundle/commands/import/options/--socket/required": false,
+  "flexengine/commands/bundle/commands/import/options/--socket/type": null,
+  "flexengine/commands/bundle/commands/import/positionals/file/action": "StoreAction",
+  "flexengine/commands/bundle/commands/import/positionals/file/default": null,
+  "flexengine/commands/bundle/commands/import/positionals/file/dest": "file",
+  "flexengine/commands/bundle/commands/import/positionals/file/nargs": null,
+  "flexengine/commands/bundle/commands/import/positionals/file/type": null,
+  "flexengine/commands/bundle/commands/import/prog": "bundle import",
+  "flexengine/commands/bundle/prog": "bundle",
+  "flexengine/commands/bundle/subcommand-required": true,
+  "flexengine/commands/config/commands/check/options/--json/action": "StoreTrueAction",
+  "flexengine/commands/config/commands/check/options/--json/default": false,
+  "flexengine/commands/config/commands/check/options/--json/dest": "json",
+  "flexengine/commands/config/commands/check/options/--json/flags": [
+   "--json"
+  ],
+  "flexengine/commands/config/commands/check/options/--json/nargs": 0,
+  "flexengine/commands/config/commands/check/options/--json/required": false,
+  "flexengine/commands/config/commands/check/options/--json/type": null,
+  "flexengine/commands/config/commands/check/options/--resolve/action": "StoreTrueAction",
+  "flexengine/commands/config/commands/check/options/--resolve/default": false,
+  "flexengine/commands/config/commands/check/options/--resolve/dest": "resolve",
+  "flexengine/commands/config/commands/check/options/--resolve/flags": [
+   "--resolve"
+  ],
+  "flexengine/commands/config/commands/check/options/--resolve/nargs": 0,
+  "flexengine/commands/config/commands/check/options/--resolve/required": false,
+  "flexengine/commands/config/commands/check/options/--resolve/type": null,
+  "flexengine/commands/config/commands/check/positionals/file/action": "StoreAction",
+  "flexengine/commands/config/commands/check/positionals/file/default": null,
+  "flexengine/commands/config/commands/check/positionals/file/dest": "file",
+  "flexengine/commands/config/commands/check/positionals/file/nargs": null,
+  "flexengine/commands/config/commands/check/positionals/file/type": null,
+  "flexengine/commands/config/commands/check/prog": "config check",
+  "flexengine/commands/config/prog": "config",
+  "flexengine/commands/config/subcommand-required": true,
+  "flexengine/commands/deployments/options/--config/action": "StoreAction",
+  "flexengine/commands/deployments/options/--config/default": null,
+  "flexengine/commands/deployments/options/--config/dest": "config",
+  "flexengine/commands/deployments/options/--config/flags": [
+   "--config"
+  ],
+  "flexengine/commands/deployments/options/--config/nargs": null,
+  "flexengine/commands/deployments/options/--config/required": false,
+  "flexengine/commands/deployments/options/--config/type": null,
+  "flexengine/commands/deployments/options/--device/action": "StoreAction",
+  "flexengine/commands/deployments/options/--device/default": null,
+  "flexengine/commands/deployments/options/--device/dest": "device",
+  "flexengine/commands/deployments/options/--device/flags": [
+   "--device"
+  ],
+  "flexengine/commands/deployments/options/--device/nargs": null,
+  "flexengine/commands/deployments/options/--device/required": false,
+  "flexengine/commands/deployments/options/--device/type": null,
+  "flexengine/commands/deployments/options/--json/action": "StoreTrueAction",
+  "flexengine/commands/deployments/options/--json/default": false,
+  "flexengine/commands/deployments/options/--json/dest": "json",
+  "flexengine/commands/deployments/options/--json/flags": [
+   "--json"
+  ],
+  "flexengine/commands/deployments/options/--json/nargs": 0,
+  "flexengine/commands/deployments/options/--json/required": false,
+  "flexengine/commands/deployments/options/--json/type": null,
+  "flexengine/commands/deployments/options/--offline/action": "StoreTrueAction",
+  "flexengine/commands/deployments/options/--offline/default": false,
+  "flexengine/commands/deployments/options/--offline/dest": "offline",
+  "flexengine/commands/deployments/options/--offline/flags": [
+   "--offline"
+  ],
+  "flexengine/commands/deployments/options/--offline/nargs": 0,
+  "flexengine/commands/deployments/options/--offline/required": false,
+  "flexengine/commands/deployments/options/--offline/type": null,
+  "flexengine/commands/deployments/options/--socket/action": "StoreAction",
+  "flexengine/commands/deployments/options/--socket/default": null,
+  "flexengine/commands/deployments/options/--socket/dest": "socket",
+  "flexengine/commands/deployments/options/--socket/flags": [
+   "--socket"
+  ],
+  "flexengine/commands/deployments/options/--socket/nargs": null,
+  "flexengine/commands/deployments/options/--socket/required": false,
+  "flexengine/commands/deployments/options/--socket/type": null,
+  "flexengine/commands/deployments/positionals/deployment/action": "StoreAction",
+  "flexengine/commands/deployments/positionals/deployment/default": null,
+  "flexengine/commands/deployments/positionals/deployment/dest": "deployment",
+  "flexengine/commands/deployments/positionals/deployment/nargs": "?",
+  "flexengine/commands/deployments/positionals/deployment/type": null,
+  "flexengine/commands/deployments/prog": "deployments",
+  "flexengine/commands/doctor/options/--config/action": "StoreAction",
+  "flexengine/commands/doctor/options/--config/default": null,
+  "flexengine/commands/doctor/options/--config/dest": "config",
+  "flexengine/commands/doctor/options/--config/flags": [
+   "--config"
+  ],
+  "flexengine/commands/doctor/options/--config/nargs": null,
+  "flexengine/commands/doctor/options/--config/required": false,
+  "flexengine/commands/doctor/options/--config/type": null,
+  "flexengine/commands/doctor/options/--json/action": "StoreTrueAction",
+  "flexengine/commands/doctor/options/--json/default": false,
+  "flexengine/commands/doctor/options/--json/dest": "json",
+  "flexengine/commands/doctor/options/--json/flags": [
+   "--json"
+  ],
+  "flexengine/commands/doctor/options/--json/nargs": 0,
+  "flexengine/commands/doctor/options/--json/required": false,
+  "flexengine/commands/doctor/options/--json/type": null,
+  "flexengine/commands/doctor/options/--repair/action": "StoreTrueAction",
+  "flexengine/commands/doctor/options/--repair/default": false,
+  "flexengine/commands/doctor/options/--repair/dest": "repair",
+  "flexengine/commands/doctor/options/--repair/flags": [
+   "--repair"
+  ],
+  "flexengine/commands/doctor/options/--repair/nargs": 0,
+  "flexengine/commands/doctor/options/--repair/required": false,
+  "flexengine/commands/doctor/options/--repair/type": null,
+  "flexengine/commands/doctor/options/--socket/action": "StoreAction",
+  "flexengine/commands/doctor/options/--socket/default": null,
+  "flexengine/commands/doctor/options/--socket/dest": "socket",
+  "flexengine/commands/doctor/options/--socket/flags": [
+   "--socket"
+  ],
+  "flexengine/commands/doctor/options/--socket/nargs": null,
+  "flexengine/commands/doctor/options/--socket/required": false,
+  "flexengine/commands/doctor/options/--socket/type": null,
+  "flexengine/commands/doctor/options/--timeout/action": "StoreAction",
+  "flexengine/commands/doctor/options/--timeout/default": 3.0,
+  "flexengine/commands/doctor/options/--timeout/dest": "timeout",
+  "flexengine/commands/doctor/options/--timeout/flags": [
+   "--timeout"
+  ],
+  "flexengine/commands/doctor/options/--timeout/nargs": null,
+  "flexengine/commands/doctor/options/--timeout/required": false,
+  "flexengine/commands/doctor/options/--timeout/type": "float",
+  "flexengine/commands/doctor/options/--yes/action": "StoreTrueAction",
+  "flexengine/commands/doctor/options/--yes/default": false,
+  "flexengine/commands/doctor/options/--yes/dest": "yes",
+  "flexengine/commands/doctor/options/--yes/flags": [
+   "--yes"
+  ],
+  "flexengine/commands/doctor/options/--yes/nargs": 0,
+  "flexengine/commands/doctor/options/--yes/required": false,
+  "flexengine/commands/doctor/options/--yes/type": null,
+  "flexengine/commands/doctor/prog": "doctor",
+  "flexengine/commands/enroll/options/--config/action": "StoreAction",
+  "flexengine/commands/enroll/options/--config/default": null,
+  "flexengine/commands/enroll/options/--config/dest": "config",
+  "flexengine/commands/enroll/options/--config/flags": [
+   "--config"
+  ],
+  "flexengine/commands/enroll/options/--config/nargs": null,
+  "flexengine/commands/enroll/options/--config/required": false,
+  "flexengine/commands/enroll/options/--config/type": null,
+  "flexengine/commands/enroll/options/--device/action": "StoreAction",
+  "flexengine/commands/enroll/options/--device/default": null,
+  "flexengine/commands/enroll/options/--device/dest": "device",
+  "flexengine/commands/enroll/options/--device/flags": [
+   "--device"
+  ],
+  "flexengine/commands/enroll/options/--device/nargs": null,
+  "flexengine/commands/enroll/options/--device/required": false,
+  "flexengine/commands/enroll/options/--device/type": null,
+  "flexengine/commands/enroll/options/--owner/action": "StoreAction",
+  "flexengine/commands/enroll/options/--owner/default": null,
+  "flexengine/commands/enroll/options/--owner/dest": "owner",
+  "flexengine/commands/enroll/options/--owner/flags": [
+   "--owner"
+  ],
+  "flexengine/commands/enroll/options/--owner/nargs": null,
+  "flexengine/commands/enroll/options/--owner/required": false,
+  "flexengine/commands/enroll/options/--owner/type": null,
+  "flexengine/commands/enroll/options/--token-file/action": "StoreAction",
+  "flexengine/commands/enroll/options/--token-file/default": null,
+  "flexengine/commands/enroll/options/--token-file/dest": "token_file",
+  "flexengine/commands/enroll/options/--token-file/flags": [
+   "--token-file"
+  ],
+  "flexengine/commands/enroll/options/--token-file/nargs": null,
+  "flexengine/commands/enroll/options/--token-file/required": true,
+  "flexengine/commands/enroll/options/--token-file/type": null,
+  "flexengine/commands/enroll/prog": "enroll",
+  "flexengine/commands/history/options/--config/action": "StoreAction",
+  "flexengine/commands/history/options/--config/default": null,
+  "flexengine/commands/history/options/--config/dest": "config",
+  "flexengine/commands/history/options/--config/flags": [
+   "--config"
+  ],
+  "flexengine/commands/history/options/--config/nargs": null,
+  "flexengine/commands/history/options/--config/required": false,
+  "flexengine/commands/history/options/--config/type": null,
+  "flexengine/commands/history/options/--device/action": "StoreAction",
+  "flexengine/commands/history/options/--device/default": null,
+  "flexengine/commands/history/options/--device/dest": "device",
+  "flexengine/commands/history/options/--device/flags": [
+   "--device"
+  ],
+  "flexengine/commands/history/options/--device/nargs": null,
+  "flexengine/commands/history/options/--device/required": false,
+  "flexengine/commands/history/options/--device/type": null,
+  "flexengine/commands/history/options/--json/action": "StoreTrueAction",
+  "flexengine/commands/history/options/--json/default": false,
+  "flexengine/commands/history/options/--json/dest": "json",
+  "flexengine/commands/history/options/--json/flags": [
+   "--json"
+  ],
+  "flexengine/commands/history/options/--json/nargs": 0,
+  "flexengine/commands/history/options/--json/required": false,
+  "flexengine/commands/history/options/--json/type": null,
+  "flexengine/commands/history/options/--offline/action": "StoreTrueAction",
+  "flexengine/commands/history/options/--offline/default": false,
+  "flexengine/commands/history/options/--offline/dest": "offline",
+  "flexengine/commands/history/options/--offline/flags": [
+   "--offline"
+  ],
+  "flexengine/commands/history/options/--offline/nargs": 0,
+  "flexengine/commands/history/options/--offline/required": false,
+  "flexengine/commands/history/options/--offline/type": null,
+  "flexengine/commands/history/options/--since/action": "StoreAction",
+  "flexengine/commands/history/options/--since/default": null,
+  "flexengine/commands/history/options/--since/dest": "since",
+  "flexengine/commands/history/options/--since/flags": [
+   "--since"
+  ],
+  "flexengine/commands/history/options/--since/nargs": null,
+  "flexengine/commands/history/options/--since/required": false,
+  "flexengine/commands/history/options/--since/type": null,
+  "flexengine/commands/history/options/--socket/action": "StoreAction",
+  "flexengine/commands/history/options/--socket/default": null,
+  "flexengine/commands/history/options/--socket/dest": "socket",
+  "flexengine/commands/history/options/--socket/flags": [
+   "--socket"
+  ],
+  "flexengine/commands/history/options/--socket/nargs": null,
+  "flexengine/commands/history/options/--socket/required": false,
+  "flexengine/commands/history/options/--socket/type": null,
+  "flexengine/commands/history/prog": "history",
+  "flexengine/commands/logs/options/--config/action": "StoreAction",
+  "flexengine/commands/logs/options/--config/default": null,
+  "flexengine/commands/logs/options/--config/dest": "config",
+  "flexengine/commands/logs/options/--config/flags": [
+   "--config"
+  ],
+  "flexengine/commands/logs/options/--config/nargs": null,
+  "flexengine/commands/logs/options/--config/required": false,
+  "flexengine/commands/logs/options/--config/type": null,
+  "flexengine/commands/logs/options/--device/action": "StoreAction",
+  "flexengine/commands/logs/options/--device/default": null,
+  "flexengine/commands/logs/options/--device/dest": "device",
+  "flexengine/commands/logs/options/--device/flags": [
+   "--device"
+  ],
+  "flexengine/commands/logs/options/--device/nargs": null,
+  "flexengine/commands/logs/options/--device/required": false,
+  "flexengine/commands/logs/options/--device/type": null,
+  "flexengine/commands/logs/options/--follow/action": "StoreTrueAction",
+  "flexengine/commands/logs/options/--follow/default": false,
+  "flexengine/commands/logs/options/--follow/dest": "follow",
+  "flexengine/commands/logs/options/--follow/flags": [
+   "--follow",
+   "-f"
+  ],
+  "flexengine/commands/logs/options/--follow/nargs": 0,
+  "flexengine/commands/logs/options/--follow/required": false,
+  "flexengine/commands/logs/options/--follow/type": null,
+  "flexengine/commands/logs/options/--json/action": "StoreTrueAction",
+  "flexengine/commands/logs/options/--json/default": false,
+  "flexengine/commands/logs/options/--json/dest": "json",
+  "flexengine/commands/logs/options/--json/flags": [
+   "--json"
+  ],
+  "flexengine/commands/logs/options/--json/nargs": 0,
+  "flexengine/commands/logs/options/--json/required": false,
+  "flexengine/commands/logs/options/--json/type": null,
+  "flexengine/commands/logs/options/--lines/action": "StoreAction",
+  "flexengine/commands/logs/options/--lines/default": 200,
+  "flexengine/commands/logs/options/--lines/dest": "lines",
+  "flexengine/commands/logs/options/--lines/flags": [
+   "--lines",
+   "-n"
+  ],
+  "flexengine/commands/logs/options/--lines/nargs": null,
+  "flexengine/commands/logs/options/--lines/required": false,
+  "flexengine/commands/logs/options/--lines/type": "int",
+  "flexengine/commands/logs/options/--offline/action": "StoreTrueAction",
+  "flexengine/commands/logs/options/--offline/default": false,
+  "flexengine/commands/logs/options/--offline/dest": "offline",
+  "flexengine/commands/logs/options/--offline/flags": [
+   "--offline"
+  ],
+  "flexengine/commands/logs/options/--offline/nargs": 0,
+  "flexengine/commands/logs/options/--offline/required": false,
+  "flexengine/commands/logs/options/--offline/type": null,
+  "flexengine/commands/logs/options/--socket/action": "StoreAction",
+  "flexengine/commands/logs/options/--socket/default": null,
+  "flexengine/commands/logs/options/--socket/dest": "socket",
+  "flexengine/commands/logs/options/--socket/flags": [
+   "--socket"
+  ],
+  "flexengine/commands/logs/options/--socket/nargs": null,
+  "flexengine/commands/logs/options/--socket/required": false,
+  "flexengine/commands/logs/options/--socket/type": null,
+  "flexengine/commands/logs/prog": "logs",
+  "flexengine/commands/plc-read/options/--conn/action": "StoreAction",
+  "flexengine/commands/plc-read/options/--conn/default": null,
+  "flexengine/commands/plc-read/options/--conn/dest": "conn",
+  "flexengine/commands/plc-read/options/--conn/flags": [
+   "--conn"
+  ],
+  "flexengine/commands/plc-read/options/--conn/nargs": null,
+  "flexengine/commands/plc-read/options/--conn/required": true,
+  "flexengine/commands/plc-read/options/--conn/type": null,
+  "flexengine/commands/plc-read/options/--spec/action": "StoreAction",
+  "flexengine/commands/plc-read/options/--spec/default": null,
+  "flexengine/commands/plc-read/options/--spec/dest": "spec",
+  "flexengine/commands/plc-read/options/--spec/flags": [
+   "--spec"
+  ],
+  "flexengine/commands/plc-read/options/--spec/nargs": null,
+  "flexengine/commands/plc-read/options/--spec/required": false,
+  "flexengine/commands/plc-read/options/--spec/type": null,
+  "flexengine/commands/plc-read/options/--via/action": "StoreAction",
+  "flexengine/commands/plc-read/options/--via/choices": [
+   "ads",
+   "modbus",
+   "shm"
+  ],
+  "flexengine/commands/plc-read/options/--via/default": null,
+  "flexengine/commands/plc-read/options/--via/dest": "via",
+  "flexengine/commands/plc-read/options/--via/flags": [
+   "--via"
+  ],
+  "flexengine/commands/plc-read/options/--via/nargs": null,
+  "flexengine/commands/plc-read/options/--via/required": true,
+  "flexengine/commands/plc-read/options/--via/type": null,
+  "flexengine/commands/plc-read/prog": "plc-read",
+  "flexengine/commands/relay-inject/options/--deployment/action": "StoreAction",
+  "flexengine/commands/relay-inject/options/--deployment/default": "d_pick_lab",
+  "flexengine/commands/relay-inject/options/--deployment/dest": "deployment",
+  "flexengine/commands/relay-inject/options/--deployment/flags": [
+   "--deployment"
+  ],
+  "flexengine/commands/relay-inject/options/--deployment/nargs": null,
+  "flexengine/commands/relay-inject/options/--deployment/required": false,
+  "flexengine/commands/relay-inject/options/--deployment/type": null,
+  "flexengine/commands/relay-inject/options/--device/action": "StoreAction",
+  "flexengine/commands/relay-inject/options/--device/default": "portenta",
+  "flexengine/commands/relay-inject/options/--device/dest": "device",
+  "flexengine/commands/relay-inject/options/--device/flags": [
+   "--device"
+  ],
+  "flexengine/commands/relay-inject/options/--device/nargs": null,
+  "flexengine/commands/relay-inject/options/--device/required": false,
+  "flexengine/commands/relay-inject/options/--device/type": null,
+  "flexengine/commands/relay-inject/options/--instance/action": "StoreAction",
+  "flexengine/commands/relay-inject/options/--instance/default": null,
+  "flexengine/commands/relay-inject/options/--instance/dest": "instance",
+  "flexengine/commands/relay-inject/options/--instance/flags": [
+   "--instance"
+  ],
+  "flexengine/commands/relay-inject/options/--instance/nargs": null,
+  "flexengine/commands/relay-inject/options/--instance/required": true,
+  "flexengine/commands/relay-inject/options/--instance/type": null,
+  "flexengine/commands/relay-inject/options/--json/action": "StoreAction",
+  "flexengine/commands/relay-inject/options/--json/default": null,
+  "flexengine/commands/relay-inject/options/--json/dest": "json",
+  "flexengine/commands/relay-inject/options/--json/flags": [
+   "--json"
+  ],
+  "flexengine/commands/relay-inject/options/--json/nargs": null,
+  "flexengine/commands/relay-inject/options/--json/required": true,
+  "flexengine/commands/relay-inject/options/--json/type": null,
+  "flexengine/commands/relay-inject/options/--model/action": "StoreAction",
+  "flexengine/commands/relay-inject/options/--model/default": null,
+  "flexengine/commands/relay-inject/options/--model/dest": "model",
+  "flexengine/commands/relay-inject/options/--model/flags": [
+   "--model"
+  ],
+  "flexengine/commands/relay-inject/options/--model/nargs": null,
+  "flexengine/commands/relay-inject/options/--model/required": true,
+  "flexengine/commands/relay-inject/options/--model/type": null,
+  "flexengine/commands/relay-inject/options/--port/action": "StoreAction",
+  "flexengine/commands/relay-inject/options/--port/default": null,
+  "flexengine/commands/relay-inject/options/--port/dest": "port",
+  "flexengine/commands/relay-inject/options/--port/flags": [
+   "--port"
+  ],
+  "flexengine/commands/relay-inject/options/--port/nargs": null,
+  "flexengine/commands/relay-inject/options/--port/required": true,
+  "flexengine/commands/relay-inject/options/--port/type": null,
+  "flexengine/commands/relay-inject/options/--smp/action": "StoreAction",
+  "flexengine/commands/relay-inject/options/--smp/default": null,
+  "flexengine/commands/relay-inject/options/--smp/dest": "smp",
+  "flexengine/commands/relay-inject/options/--smp/flags": [
+   "--smp"
+  ],
+  "flexengine/commands/relay-inject/options/--smp/nargs": null,
+  "flexengine/commands/relay-inject/options/--smp/required": true,
+  "flexengine/commands/relay-inject/options/--smp/type": null,
+  "flexengine/commands/relay-inject/options/--work/action": "StoreAction",
+  "flexengine/commands/relay-inject/options/--work/default": null,
+  "flexengine/commands/relay-inject/options/--work/dest": "work",
+  "flexengine/commands/relay-inject/options/--work/flags": [
+   "--work"
+  ],
+  "flexengine/commands/relay-inject/options/--work/nargs": null,
+  "flexengine/commands/relay-inject/options/--work/required": true,
+  "flexengine/commands/relay-inject/options/--work/type": null,
+  "flexengine/commands/relay-inject/prog": "relay-inject",
+  "flexengine/commands/relay-status/options/--deployment/action": "StoreAction",
+  "flexengine/commands/relay-status/options/--deployment/default": "d_pick_lab",
+  "flexengine/commands/relay-status/options/--deployment/dest": "deployment",
+  "flexengine/commands/relay-status/options/--deployment/flags": [
+   "--deployment"
+  ],
+  "flexengine/commands/relay-status/options/--deployment/nargs": null,
+  "flexengine/commands/relay-status/options/--deployment/required": false,
+  "flexengine/commands/relay-status/options/--deployment/type": null,
+  "flexengine/commands/relay-status/options/--device/action": "StoreAction",
+  "flexengine/commands/relay-status/options/--device/default": "portenta",
+  "flexengine/commands/relay-status/options/--device/dest": "device",
+  "flexengine/commands/relay-status/options/--device/flags": [
+   "--device"
+  ],
+  "flexengine/commands/relay-status/options/--device/nargs": null,
+  "flexengine/commands/relay-status/options/--device/required": false,
+  "flexengine/commands/relay-status/options/--device/type": null,
+  "flexengine/commands/relay-status/options/--model/action": "StoreAction",
+  "flexengine/commands/relay-status/options/--model/default": null,
+  "flexengine/commands/relay-status/options/--model/dest": "model",
+  "flexengine/commands/relay-status/options/--model/flags": [
+   "--model"
+  ],
+  "flexengine/commands/relay-status/options/--model/nargs": null,
+  "flexengine/commands/relay-status/options/--model/required": true,
+  "flexengine/commands/relay-status/options/--model/type": null,
+  "flexengine/commands/relay-status/options/--smp/action": "StoreAction",
+  "flexengine/commands/relay-status/options/--smp/default": null,
+  "flexengine/commands/relay-status/options/--smp/dest": "smp",
+  "flexengine/commands/relay-status/options/--smp/flags": [
+   "--smp"
+  ],
+  "flexengine/commands/relay-status/options/--smp/nargs": null,
+  "flexengine/commands/relay-status/options/--smp/required": true,
+  "flexengine/commands/relay-status/options/--smp/type": null,
+  "flexengine/commands/relay-status/options/--work/action": "StoreAction",
+  "flexengine/commands/relay-status/options/--work/default": null,
+  "flexengine/commands/relay-status/options/--work/dest": "work",
+  "flexengine/commands/relay-status/options/--work/flags": [
+   "--work"
+  ],
+  "flexengine/commands/relay-status/options/--work/nargs": null,
+  "flexengine/commands/relay-status/options/--work/required": true,
+  "flexengine/commands/relay-status/options/--work/type": null,
+  "flexengine/commands/relay-status/prog": "relay-status",
+  "flexengine/commands/run/options/--config/action": "StoreAction",
+  "flexengine/commands/run/options/--config/default": null,
+  "flexengine/commands/run/options/--config/dest": "config",
+  "flexengine/commands/run/options/--config/flags": [
+   "--config"
+  ],
+  "flexengine/commands/run/options/--config/nargs": null,
+  "flexengine/commands/run/options/--config/required": true,
+  "flexengine/commands/run/options/--config/type": null,
+  "flexengine/commands/run/options/--no-api/action": "StoreTrueAction",
+  "flexengine/commands/run/options/--no-api/default": false,
+  "flexengine/commands/run/options/--no-api/dest": "no_api",
+  "flexengine/commands/run/options/--no-api/flags": [
+   "--no-api"
+  ],
+  "flexengine/commands/run/options/--no-api/nargs": 0,
+  "flexengine/commands/run/options/--no-api/required": false,
+  "flexengine/commands/run/options/--no-api/type": null,
+  "flexengine/commands/run/options/--ticks/action": "StoreAction",
+  "flexengine/commands/run/options/--ticks/default": 0,
+  "flexengine/commands/run/options/--ticks/dest": "ticks",
+  "flexengine/commands/run/options/--ticks/flags": [
+   "--ticks"
+  ],
+  "flexengine/commands/run/options/--ticks/nargs": null,
+  "flexengine/commands/run/options/--ticks/required": false,
+  "flexengine/commands/run/options/--ticks/type": "int",
+  "flexengine/commands/run/prog": "run",
+  "flexengine/commands/status/options/--config/action": "StoreAction",
+  "flexengine/commands/status/options/--config/default": null,
+  "flexengine/commands/status/options/--config/dest": "config",
+  "flexengine/commands/status/options/--config/flags": [
+   "--config"
+  ],
+  "flexengine/commands/status/options/--config/nargs": null,
+  "flexengine/commands/status/options/--config/required": false,
+  "flexengine/commands/status/options/--config/type": null,
+  "flexengine/commands/status/options/--json/action": "StoreTrueAction",
+  "flexengine/commands/status/options/--json/default": false,
+  "flexengine/commands/status/options/--json/dest": "json",
+  "flexengine/commands/status/options/--json/flags": [
+   "--json"
+  ],
+  "flexengine/commands/status/options/--json/nargs": 0,
+  "flexengine/commands/status/options/--json/required": false,
+  "flexengine/commands/status/options/--json/type": null,
+  "flexengine/commands/status/options/--offline/action": "StoreTrueAction",
+  "flexengine/commands/status/options/--offline/default": false,
+  "flexengine/commands/status/options/--offline/dest": "offline",
+  "flexengine/commands/status/options/--offline/flags": [
+   "--offline"
+  ],
+  "flexengine/commands/status/options/--offline/nargs": 0,
+  "flexengine/commands/status/options/--offline/required": false,
+  "flexengine/commands/status/options/--offline/type": null,
+  "flexengine/commands/status/options/--socket/action": "StoreAction",
+  "flexengine/commands/status/options/--socket/default": null,
+  "flexengine/commands/status/options/--socket/dest": "socket",
+  "flexengine/commands/status/options/--socket/flags": [
+   "--socket"
+  ],
+  "flexengine/commands/status/options/--socket/nargs": null,
+  "flexengine/commands/status/options/--socket/required": false,
+  "flexengine/commands/status/options/--socket/type": null,
+  "flexengine/commands/status/prog": "status",
+  "flexengine/commands/version/prog": "version",
+  "flexengine/prog": "flexengine",
+  "flexengine/subcommand-required": true
+ }
+}

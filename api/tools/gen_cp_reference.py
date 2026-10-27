@@ -34,10 +34,10 @@ CPS = [
     ("CP-3", "Artefact access (OCI subset) and offline bundle", ["oci-profile.v1alpha1.schema.json"],
      ["bundle.v1alpha1.md"]),
     ("CP-4", "Trust", ["trust.v1alpha1.schema.json"], ["trust.v1alpha1.md"]),
-    ("CP-5", "Driver SPI v1", [], ["cp5-driver-spi.md"]),
+    ("CP-5", "Driver SPI v1", ["driver-spi.v1.schema.json"], ["cp5-driver-spi.md"]),
     ("CP-6", "Child-device interfaces", [], ["cp6-children.md"]),
     ("CP-7", "Local API and CLI", ["local-api.v1.openapi.yaml", "cli-status.v1.schema.json"], []),
-    ("CP-8", "Telemetry", [], ["telemetry.v1.md"]),
+    ("CP-8", "Telemetry", ["telemetry.v1.schema.json"], ["telemetry.v1.md"]),
 ]
 SOUTHBOUND = "openapi-southbound.yaml"
 VERSION_RE = re.compile(r"\.(v\d+(?:alpha\d+|beta\d+)?)\.")
@@ -184,7 +184,7 @@ def spi_section() -> list[str]:
            "[../docs/spi-guide.md](../docs/spi-guide.md).", "",
            "| Member | Kind | Signature / default |", "|---|---|---|"]
     abstract = set(getattr(Driver, "__abstractmethods__", ()))
-    for name in ("profile", "name", "exclusive", "max_deployments", "reboots_on_apply", "repairs_digest_drift"):
+    for name in ("profile", "name", "exclusive", "max_deployments", "reboots_on_apply", "repairs_digest_drift", "runtime"):
         out.append(f"| `{name}` | class attribute | `{getattr(Driver, name)!r}` |")
     for name, fn in inspect.getmembers(Driver, inspect.isfunction):
         if name.startswith("_"):

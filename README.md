@@ -11,14 +11,16 @@ points (`v1alpha1`) and a driver SPI. What changed and what v1 users must do: [C
 [MIGRATION.md](MIGRATION.md). 0.6.x stays maintained on branch [`v1.x`](https://github.com/BertVanAcker/flexEngine/tree/v1.x).
 
 PyPI project `flexEngine` (2.x), import name `flexengine2`, CLI `flexengine`. Python ≥ 3.11. Apache-2.0.
-Status: 2.0.0a1 (alpha; connection points frozen at `v1alpha1`). The engine plan and the decisions behind it are
-in the framework repository (`modular-interoperable-framework`, `docs/flexengine-v2-plan.md`).
+Status: 2.0.0rc1 (release candidate; the public surface is frozen: connection points `v1alpha1`, driver SPI, local
+API and telemetry `v1`, recorded by the freeze gate in [`api/freeze/`](api/freeze/README.md)). How the engine is
+built: [docs/implementation.md](docs/implementation.md). The engine plan and the decisions behind it are in the
+framework repository (`modular-interoperable-framework`, `docs/flexengine-v2-plan.md`).
 
 ## Install
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install --pre 'flexEngine[mcu,plc,applab,otel]>=2.0.0a1'   # pick the extras the device needs
+.venv/bin/pip install --pre 'flexEngine[mcu,plc,applab,otel]>=2.0.0rc1'  # pick the extras the device needs
 .venv/bin/flexengine version
 ```
 
@@ -45,14 +47,16 @@ framework repository).
 
 ### LattePanda (Ubuntu 24.04, x86_64) — the lab device
 
-Build the bundle once on any Linux host with Docker, then install it offline on the LattePanda:
+Take the offline bundle of a release (GitHub release assets, with `SHA256SUMS`; or build it on any Linux host with
+Docker: `packaging/build-wheels.sh` → `dist/flexengine-<ver>-linux_x86_64.tar.gz`), then install it offline:
 
 ```bash
-packaging/build-wheels.sh                 # -> dist/flexengine-<ver>-linux_x86_64.tar.gz
-scp dist/flexengine-*-linux_x86_64.tar.gz lattepanda.lab:
+gh release download v2.0.0rc1 -R BertVanAcker/flexEngine -p 'flexengine-*-linux_x86_64.tar.gz' -p SHA256SUMS
+sha256sum -c --ignore-missing SHA256SUMS
+scp flexengine-*-linux_x86_64.tar.gz lattepanda.lab:
 
 # on the LattePanda
-tar xzf flexengine-*-linux_x86_64.tar.gz && cd flexengine-*/
+tar xzf flexengine-*-linux_x86_64.tar.gz && cd flexengine-*-linux_x86_64/
 sudo packaging/install.sh --extras mcu,plc,applab,otel --device-id panda --dry-run   # shows the plan
 sudo packaging/install.sh --extras mcu,plc,applab,otel --device-id panda
 /opt/flexengine/bin/flexengine version
@@ -386,8 +390,12 @@ One command runs the suite (plan §7):
 ```
 
 JUnit XML and `run-summary.json` go to `results/latest/` (`FLEX_RESULTS_DIR` to change). CI runs the same layers:
-`.github/workflows/ci.yml` (push tier + coverage gate + build, aggregated in the required check `ci-ok`),
-`nightly.yml` and `release.yml`.
+`.github/workflows/ci.yml` (push tier + coverage gate + build + freeze gate, aggregated in the required check
+`ci-ok`), `nightly.yml` (one merged full run per workflow run, artifact `full-run-<run id>`) and `release.yml`.
+
+The public surface is frozen for 2.x: `python tools/freeze.py check` compares the specs, reason codes, CLI,
+`engine.yaml` schema and vectors with the baseline in `api/freeze/`. An addition needs a row in the contract-change
+table of CHANGES.md; how to read a failure and how to re-record: [api/freeze/README.md](api/freeze/README.md).
 
 The suite needs no framework checkout. The few framework files it reads are vendored in `tests/vectors/framework/`
 and `src/flexengine2/testing/apps/` (origin and commit in `tests/vectors/framework/SOURCES.json`;

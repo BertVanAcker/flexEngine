@@ -457,6 +457,11 @@ def item7(no_run: bool) -> dict:
         checks.append((f"{cp}: frozen at {want}", tags == [want],
                        want if tags == [want] else f"tagged {', '.join(tags) or 'nothing'}, not {want}"))
     checks.append(("api/cp-reference.md up to date", gen.main(["--check"]) == 0, "gen_cp_reference.py --check"))
+    fr = subprocess.run([sys.executable, str(FE / "tools" / "freeze.py"), "check", "-q"], cwd=FE, capture_output=True,
+                        text=True, timeout=300)
+    checks.append(("freeze gate green (tools/freeze.py check: CP specs, reason codes, CLI, config, vectors)",
+                   fr.returncode == 0, (fr.stdout.strip().splitlines() or ["no output"])[-1][:300]
+                   if fr.returncode else "baseline api/freeze/ matches the tree"))
     tags = git("tag", "-l", CP_TAG)
     checks.append((f"git tag {CP_TAG} freezing the CP set", bool(tags), tags or f"no {CP_TAG} tag in the repository"))
     if no_run:
@@ -507,8 +512,11 @@ def item7(no_run: bool) -> dict:
     ok = all(c[1] for c in checks)
     return {"item": 7, "title": "Connection points frozen", "status": "PASS" if ok else "FAIL", "checks": checks,
             "proposals": proposals,
-            "notes": ["CP-5 is versioned as SPI 1.0 (frozen in drivers/base.py); CP-7 and CP-8 were named v1 when they "
-                      "were written. Whether they count as frozen for the alpha is a decision, not a check."]}
+            "notes": ["CP-5 (SPI 1.0), CP-7 and CP-8 stay v1 (CLAUDE.md, api/README.md) and are versioned like the "
+                      "others since FE-3: driver-spi.v1.schema.json, local-api.v1.openapi.yaml + cli-status.v1, "
+                      "telemetry.v1.schema.json, each with golden examples, a contract test and its freeze baseline.",
+                      f"The tag {CP_TAG} is set by the owner on the commit that carries the freeze baseline "
+                      "(api/freeze/); the check passes once it exists."]}
 
 
 # ---- report ------------------------------------------------------------------------------------------------------
