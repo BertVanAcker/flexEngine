@@ -9,7 +9,14 @@
       wait-device DEVICE [--capabilities]     until the device is onboarded (and sent its capabilities)
       publish NAME...                         build the catalog's releases and upload them
       deploy DEVICE [DEP=NAME ...] [--keep] [--remove DEP] [--expect 201] [--approver dave]
-                                              plan -> second-person approve (when the plan needs it) -> apply
+             [--state DEP=S] [--state-all S] [--runtime DEP=RT] [--build DEP=ID] [--after DEP=A[,B]]
+                                              plan -> second-person approve (when the plan needs it) -> apply;
+                                              FE-4 plan-item keys: run state S (staged | running | stopped),
+                                              x-flex-runtime RT (process, systemd, docker, docker-compose, ...),
+                                              on-device build id, x-flex-dependsOn (the deployments started first)
+      state DEVICE S [DEP ...]                the four buttons (FE-4): the current desired state again with run
+                                              state S for the named deployments (all when none is named): Push =
+                                              staged, Run all / Run one = running, Stop all / Stop one = stopped
       converged DEVICE                        {converged, desired: {dep: version}, actual: {dep: state version}}
       bundle DEVICE --out FILE                export the device's signed offline bundle
       tamper NAME --layout DIR                flip one payload byte of a published release in an OCI layout (the
@@ -31,7 +38,9 @@ The catalog (YAML) names the releases a runbook uses, how to build them and how 
       gw_app:  {module: uc3_greenhouse, version: 1.0.0, driver: applab}        # no build: published elsewhere
 
 Build kinds: container | native (testing.release.make_release: stand-in apps, failHealth, sign, key, approvers,
-runOptions, runtime, image), flex-release (flexmodel `flex release` targets), mcu-flxm {flxm, genMeta}, mcu-firmware
+runOptions, runtime, image), compose {failHealth} and native-source {fail} (FE-4, fe4rel.py: a compose project of the
+stand-in image, a source payload built on the device), fake-container / fake-compose {port, failHealth} (simulated
+desk only: images of the contract suite's fake runtime), flex-release (flexmodel `flex release` targets), mcu-flxm {flxm, genMeta}, mcu-firmware
 {image}, os-rauc {bundle | fake: {bootable, healthy}}. Relative paths are relative to the catalog file; `${NAME}`
 is taken from the environment. Prints JSON; exit 0 = done (deploy: the plan status was the expected one).
 """
@@ -188,6 +197,24 @@ def build_release(cat: Catalog, cloud: Cloud, name: str) -> dict:
                                 runtime=b.get("runtime") or cat.doc.get("runtime", "docker"),
                                 run_options=b.get("runOptions"), image=b.get("image"),
                                 native_dir=cat.p(b["nativeDir"]) if b.get("nativeDir") else None)
+        elif kind in ("compose", "native-source", "fake-container", "fake-compose"):
+            import fe4rel
+
+            model = cat.p(b.get("model") or cat.doc["model"])
+            appr = b.get("approvers")
+            approval = {"approved": True, "approvers": appr, "role": "safety-engineer"} if appr else None
+            common = {"model": model, "module": module, "version": version, "approval": approval}
+            if kind == "compose":
+                info = fe4rel.compose_release(lay, key, cat.work, fail_health=bool(b.get("failHealth")),
+                                              runtime=b.get("runtime") or cat.doc.get("runtime", "docker"), **common)
+            elif kind == "native-source":
+                info = fe4rel.source_release(lay, key, fail=bool(b.get("fail")), **common)
+            elif kind == "fake-container":
+                info = fe4rel.fake_container_release(lay, key, port=int(b["port"]),
+                                                     fail_health=bool(b.get("failHealth")), **common)
+            else:
+                info = fe4rel.fake_compose_release(lay, key, port=int(b["port"]),
+                                                   fail_health=bool(b.get("failHealth")), **common)
         elif kind == "mcu-flxm":
             from flexengine2.testing.mcu_lab import gen_meta, make_module_release
 
@@ -299,31 +326,117 @@ def wait_device(cloud: Cloud, dev: str, timeout: float, capabilities: bool = Fal
     raise DeskError(f"{dev}: not onboarded{' with capabilities' if capabilities else ''} within {timeout} s ({last})")
 
 
+RUN_STATES = ("staged", "running", "stopped")
+
+
+def current_items(cloud: Cloud, dev: str) -> list[dict]:
+    """The device's desired state as plan items (with the FE-4 keys it carries), to plan it again."""
+    s, b = cloud.call("GET", f"/api/v1/admin/devices/{dev}")
+    if s != 200:
+        raise DeskError(f"device {dev}: HTTP {s} {b}")
+    items = []
+    for d in (b.get("desired") or {}).get("deployments", []):
+        props = d["spec"]["deploymentProfile"]["components"][0]["properties"]
+        it = {"id": d["metadata"]["id"], "module": d["spec"]["applicationId"], "version": props["revision"],
+              "driver": d["x-flex-driver"]}
+        if d["spec"].get("parameters"):
+            it["parameters"] = d["spec"]["parameters"]
+        if d.get("x-flex-activation"):
+            it["activation"] = d["x-flex-activation"]
+        if d.get("x-flex-dependsOn"):
+            it["dependsOn"] = d["x-flex-dependsOn"]
+        if d.get("x-flex-safetyClass", "none") != "none":
+            it["safetyClass"] = d["x-flex-safetyClass"]
+        if d.get("x-flex-runState"):
+            it["runState"] = d["x-flex-runState"]
+        if d.get("x-flex-runtime"):
+            it["runtime"] = d["x-flex-runtime"]
+        if d.get("x-flex-build"):
+            it["build"] = d["x-flex-build"]
+        items.append(it)
+    return items
+
+
+def _kv(opts: list[str], what: str) -> dict:
+    out = {}
+    for o in opts or []:
+        if "=" not in o:
+            raise DeskError(f"--{what}: {o!r} is not DEP=VALUE")
+        k, v = o.split("=", 1)
+        out[k] = v
+    return out
+
+
+def fe4_keys(items: list[dict], state: list[str] | None = None, state_all: str | None = None,
+             runtime: list[str] | None = None, build: list[str] | None = None,
+             after: list[str] | None = None) -> list[dict]:
+    """Set the FE-4 plan-item keys: runState (running = no key, the default), runtime, build id, dependsOn."""
+    states, runtimes, builds, deps = _kv(state, "state"), _kv(runtime, "runtime"), _kv(build, "build"), _kv(after, "after")
+    ids = {i["id"] for i in items}
+    for what, m in (("state", states), ("runtime", runtimes), ("build", builds), ("after", deps)):
+        unknown = sorted(set(m) - ids)
+        if unknown:
+            raise DeskError(f"--{what}: no deployment {', '.join(unknown)} in the plan (deployments: {sorted(ids)})")
+    for s in [*states.values(), *([state_all] if state_all else [])]:
+        if s not in RUN_STATES:
+            raise DeskError(f"run state {s!r}: one of {', '.join(RUN_STATES)}")
+    for it in items:
+        s = states.get(it["id"], state_all)
+        if s:
+            it.pop("runState", None)
+            if s != "running":
+                it["runState"] = s
+        if it["id"] in runtimes:
+            it["runtime"] = runtimes[it["id"]]
+        if it["id"] in builds:
+            it["build"] = {"id": builds[it["id"]]}
+        if it["id"] in deps:
+            it["dependsOn"] = [{"deployment": a} for a in deps[it["id"]].split(",") if a]
+    return items
+
+
 def deploy(cat: Catalog, cloud: Cloud, dev: str, pairs: list[str], keep: bool, remove: list[str], expect: int,
-           approver: str, wait: float) -> dict:
+           approver: str, wait: float, fe4: dict | None = None) -> dict:
     wait_device(cloud, dev, wait)
     items = []
     if keep or remove:
-        s, b = cloud.call("GET", f"/api/v1/admin/devices/{dev}")
-        for d in (b.get("desired") or {}).get("deployments", []):
-            props = d["spec"]["deploymentProfile"]["components"][0]["properties"]
-            it = {"id": d["metadata"]["id"], "module": d["spec"]["applicationId"], "version": props["revision"],
-                  "driver": d["x-flex-driver"]}
-            if d["spec"].get("parameters"):
-                it["parameters"] = d["spec"]["parameters"]
-            if d.get("x-flex-activation"):
-                it["activation"] = d["x-flex-activation"]
-            if d.get("x-flex-dependsOn"):
-                it["dependsOn"] = d["x-flex-dependsOn"]
-            if d.get("x-flex-safetyClass", "none") != "none":
-                it["safetyClass"] = d["x-flex-safetyClass"]
-            if it["id"] not in remove:
-                items.append(it)
+        items = [it for it in current_items(cloud, dev) if it["id"] not in remove]
     for pair in pairs:
         if "=" not in pair:
             raise DeskError(f"deploy: {pair!r} is not DEP=RELEASE")
         dep, name = pair.split("=", 1)
-        items = [i for i in items if i["id"] != dep] + [deploy_item(cat, dep, name)]
+        old = next((i for i in items if i["id"] == dep), {})
+        new = deploy_item(cat, dep, name)
+        for k in ("runtime", "dependsOn"):   # a new release of a kept deployment keeps how and after what it runs
+            if k in old and k not in new:
+                new[k] = old[k]
+        items = [i for i in items if i["id"] != dep] + [new]
+    ids = {i["id"] for i in items}
+    for it in items:   # a removed deployment is no longer something to start after
+        if it.get("dependsOn"):
+            it["dependsOn"] = [d for d in it["dependsOn"] if d.get("deployment") in ids]
+            if not it["dependsOn"]:
+                del it["dependsOn"]
+    items = fe4_keys(items, **(fe4 or {}))
+    return plan_apply(cloud, dev, items, expect, approver)
+
+
+def set_state(cloud: Cloud, dev: str, state: str, deps: list[str], approver: str, wait: float) -> dict:
+    """Push / Run / Stop (all or the named deployments): the desired state again with another run state."""
+    wait_device(cloud, dev, wait)
+    items = current_items(cloud, dev)
+    if not items:
+        raise DeskError(f"{dev}: nothing deployed")
+    if deps:
+        items = fe4_keys(items, state=[f"{d}={state}" for d in deps])
+    else:
+        items = fe4_keys(items, state_all=state)
+    out = plan_apply(cloud, dev, items, 201, approver)
+    out["runState"] = {i["id"]: i.get("runState", "running") for i in items}
+    return out
+
+
+def plan_apply(cloud: Cloud, dev: str, items: list[dict], expect: int, approver: str) -> dict:
     s, plan = cloud.call("POST", "/api/v1/admin/plans", {"deviceId": dev, "deployments": items})
     if s != 201:
         if s == expect:
@@ -408,6 +521,18 @@ def main(argv=None) -> int:
     p.add_argument("--expect", type=int, default=201, help="expected plan status (e.g. 422 for a refused plan)")
     p.add_argument("--approver", default="dave", help="second person for a plan that needs approval")
     p.add_argument("--wait", type=float, default=60, help="seconds to wait for the device to be onboarded")
+    p.add_argument("--state", action="append", default=[], metavar="DEP=S", help="run state of one deployment")
+    p.add_argument("--state-all", choices=RUN_STATES, help="run state of every deployment of the plan")
+    p.add_argument("--runtime", action="append", default=[], metavar="DEP=RT", help="x-flex-runtime of a deployment")
+    p.add_argument("--build", action="append", default=[], metavar="DEP=ID", help="on-device build id")
+    p.add_argument("--after", action="append", default=[], metavar="DEP=A[,B]",
+                   help="x-flex-dependsOn: the deployments DEP starts after")
+    p = sub.add_parser("state")
+    p.add_argument("device")
+    p.add_argument("run_state", choices=RUN_STATES)
+    p.add_argument("deps", nargs="*", metavar="DEP", help="deployments (default: all)")
+    p.add_argument("--approver", default="dave")
+    p.add_argument("--wait", type=float, default=60)
     p = sub.add_parser("converged")
     p.add_argument("device")
     p = sub.add_parser("bundle")
@@ -453,7 +578,11 @@ def main(argv=None) -> int:
         elif a.verb == "publish":
             doc = {"published": [build_release(cat, cloud, n) for n in a.names]}
         elif a.verb == "deploy":
-            doc = deploy(cat, cloud, a.device, a.pairs, a.keep, a.remove, a.expect, a.approver, a.wait)
+            fe4 = {"state": a.state, "state_all": a.state_all, "runtime": a.runtime, "build": a.build,
+                   "after": a.after}
+            doc = deploy(cat, cloud, a.device, a.pairs, a.keep, a.remove, a.expect, a.approver, a.wait, fe4)
+        elif a.verb == "state":
+            doc = set_state(cloud, a.device, a.run_state, a.deps, a.approver, a.wait)
         elif a.verb == "converged":
             doc = converged(cloud, a.device)
         elif a.verb == "bundle":
