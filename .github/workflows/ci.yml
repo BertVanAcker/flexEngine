@@ -126,10 +126,25 @@ jobs:
           /tmp/smoke/bin/flexengine version
           /tmp/smoke/bin/python -c "import flexengine2, sys; sys.exit(0 if 'site-packages' in flexengine2.__file__ else 1)"
 
+  freeze:
+    name: freeze gate (FE-3)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - name: venv
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -e .
+      - name: the public surface only grows (CP specs, reason codes, CLI, config schema, vectors; api/freeze/)
+        run: .venv/bin/python tools/freeze.py check
+
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [unit, layers, coverage, build]
+    needs: [unit, layers, coverage, build, freeze]
     runs-on: ubuntu-24.04
     steps:
       - name: every job passed

@@ -32,7 +32,7 @@ Driver authors: [../docs/spi-guide.md](../docs/spi-guide.md).
 | CP-4 | Trust | [trust.v1alpha1.md](trust.v1alpha1.md), `trust.v1alpha1.schema.json`, `vectors/` | fakecloud signer, `testing/release.py` | `test_vectors.py` [V] |
 | CP-5 | Driver SPI v1 (SPI 1.0) | `driver-spi.v1.schema.json` (members in `x-flex-spi`, `Workload`, `Observed`, `SuperviseEvent`, `BuildRequest`, `BuildResult`), [cp5-driver-spi.md](cp5-driver-spi.md); normative text `drivers/base.py` | fake executors, `FakeDriver` | `test_driver_spi_contract.py` [V], `tests/contract/` (every in-tree driver) [V] |
 | CP-6 | Child-device interfaces | [cp6-children.md](cp6-children.md) | QEMU, fake CLI, pyads/pymodbus/shm stand-ins | driver suites (EV-03) |
-| CP-7 | Local API + CLI | `local-api.v1.openapi.yaml`, `cli-status.v1.schema.json` | `local/api.py` (EV-07) | `test_local_api_contract.py` (every operation, both transports) [V] |
+| CP-7 | Local API + CLI | `local-api.v1.openapi.yaml`, `cli-status.v1.schema.json`; commands and options of the CLI recorded by the freeze gate (`freeze/cli.json`) | `local/api.py` (EV-07) | `test_local_api_contract.py` (every operation, both transports) [V] |
 | CP-8 | Telemetry | `telemetry.v1.schema.json` (`LogRecord`, `ActionRecord`, `SpanRecord`, `Metrics`), [telemetry.v1.md](telemetry.v1.md) | collector / JSONL exporter | `test_telemetry_contract.py` [V] |
 | all | Southbound OpenAPI | `openapi-southbound.yaml` (P2 0.1.0-p2 → `v1alpha1`, `$ref`s the schemas) | fakecloud | route ⊆ spec, P2 paths kept [V] |
 
@@ -44,6 +44,10 @@ Driver authors: [../docs/spi-guide.md](../docs/spi-guide.md).
   the version in its file name and `$id` (`driver-spi.v1.schema.json`, `local-api.v1.openapi.yaml` +
   `cli-status.v1.schema.json`, `telemetry.v1.schema.json`), golden examples in `tests/api/golden/`, a contract test,
   a section in `cp-reference.md`, and the same rule: additive only within the version.
+- **Freeze gate (FE-3).** The public surface is recorded in [`freeze/`](freeze/README.md) (every spec file, the
+  reason codes, the CLI, the engine configuration schema, the vectors); `tools/freeze.py check` (CI job `freeze`, and
+  `tests/api/test_freeze.py`) fails on a removal or a change and lets an addition in only with a row in
+  `CHANGES.md`. The tag `flexengine-cp-v1alpha1` marks the commit whose baseline froze the connection-point set.
 - Version in the file name and `$id` (`…v1alpha1.schema.json`); the wire carries `apiVersion` where the document has one
   (`flex.dev/v1alpha1`, Margo's `application.margo.org/v1alpha1`, `device.margo.org/v1alpha1`).
 - **Within a version only additive changes**: a new optional field, a new enum value (e.g. driver profile `os-rauc`

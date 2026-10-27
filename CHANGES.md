@@ -70,3 +70,14 @@ is a new version.
   `BuildRequest` / `BuildResult` data, `telemetry.v1.schema.json` with `LogRecord` / `ActionRecord` / `SpanRecord` /
   `Metrics`), golden examples, contract tests and `cp-reference.md` sections; `telemetry.v1.md` describes what the
   engine emits today (JSON logs, FE-4 spans `engine.start`, `engine.build`, `driver.stage|start|stop`, metrics).
+- Freeze gate: the public surface (spec files and their structure, reason codes, CLI, engine configuration schema,
+  test vectors) is recorded in `api/freeze/`; `tools/freeze.py check` (CI job `freeze`, required through `ci-ok`)
+  fails on a removal or a change and lets an addition in only with a row in the table below.
+
+### Contract changes since the freeze
+
+Every addition the freeze gate sees, and every re-recorded baseline, has a row here (api/freeze/README.md).
+
+| Date | Gate | Entries | Why |
+|---|---|---|---|
+| 2026-10-27 | FE-F1…FE-F6 | all | baseline of the 2.0.0 freeze, recorded on `fe-3/freeze-gate` from master `a2c02eb` (FE-1 move, FE-4 run state) plus the CP-5 / CP-8 specs of FE-3: the connection-point set the tag `flexengine-cp-v1alpha1` freezes |
