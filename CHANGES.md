@@ -34,7 +34,7 @@ offline bundle unpacks into `flexengine-<ver>-linux_<arch>/` (was `flexengine-<v
 | Installation | `pip install flexEngine` + `flexEngine init`, `scripts/install.sh` / `install.ps1` | `pip install flexEngine` (2.x) for development; on devices the offline bundle of the GitHub release with its `packaging/install.sh` (user `flex`, systemd unit, polkit rules) |
 | Observability | log file, remote log over Redis | structured JSON logs, status history, OpenTelemetry spans and metrics (`otel` extra) |
 | Python | ≥ 3.10 | ≥ 3.11 |
-| Platforms | Windows, macOS, Linux, Linux ARMv6 | Linux (x86_64, aarch64) for devices; macOS for development. No Windows, no ARMv6 |
+| Platforms | Windows, macOS, Linux, Linux ARMv6 | Linux (x86_64, aarch64) for devices; macOS for development and as a host test machine ([docs/macos.md](docs/macos.md)). No Windows yet ([docs/windows-plan.md](docs/windows-plan.md)), no ARMv6 |
 | Import name / CLI | `flexEngine` / `flexEngine` | `flexengine2` / `flexengine` (alias `flexengine2`) |
 | Dependencies | redis, requests, psutil, PyYAML | cryptography, PyYAML, jsonschema; extras `mcu`, `plc`, `applab`, `otel`, `relay` |
 
@@ -101,6 +101,16 @@ Every addition the freeze gate sees, and every re-recorded baseline, has a row h
 | Date | Gate | Entries | Why |
 |---|---|---|---|
 | 2026-10-27 | FE-F1…FE-F6 | all | baseline of the 2.0.0 freeze, recorded on `fe-3/freeze-gate` from master `a2c02eb` (FE-1 move, FE-4 run state) plus the CP-5 / CP-8 specs of FE-3: the connection-point set the tag `flexengine-cp-v1alpha1` freezes |
+
+### macOS host test machine, Windows plan
+
+- `docs/macos.md`: a Mac (Apple Silicon or Intel) as a host test machine: install from PyPI or a checkout, three
+  checked `engine.yaml` setups (host only; host + MCU child over a socat-bridged USB-UART; host + MCU + the Zenoh
+  relay with `flexmodel`), a launchd agent, a smoke test against the flexCloud stub, and what does not work on a Mac
+  (systemd, os-rauc, ADS, the container `http` health type on Docker Desktop). `tests/unit/test_docs_macos.py` runs
+  the examples through `config check` and parses the launchd plist. No code or contract change.
+- `docs/windows-plan.md`: what stops the engine on Windows today (measured on 2.0.0rc1) and the phases W0 to W6 to
+  make it a host test machine there. Windows is still unsupported.
 
 ### Desk runbooks
 

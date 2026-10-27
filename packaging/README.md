@@ -151,7 +151,8 @@ python3 -m venv .venv
 .venv/bin/flexengine run --config my-engine.yaml       # dataDir: a local directory, foreground
 ```
 
-No `flex` user, no systemd; `sdnotify` is a no-op without `$NOTIFY_SOCKET`. For a staged copy of the Linux layout
+No `flex` user, no systemd; `sdnotify` is a no-op without `$NOTIFY_SOCKET`. The full Mac setup (a host test machine
+with or without an MCU child and the relay, a launchd agent, what works on macOS): [docs/macos.md](../docs/macos.md). For a staged copy of the Linux layout
 (e.g. to inspect what install.sh writes): `packaging/install.sh --no-service --root /tmp/fe --from-source flexengine`
 (install.sh needs bash; macOS's bash 3.2 is enough).
 

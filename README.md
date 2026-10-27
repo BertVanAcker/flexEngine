@@ -34,6 +34,8 @@ framework repository).
 | You want to | Read |
 |---|---|
 | install it on the LattePanda, UNO Q or a Mac | [§1](#1-install) and [packaging/README.md](packaging/README.md) |
+| run a Mac as a host test machine, with or without an MCU child and the relay | [docs/macos.md](docs/macos.md) |
+| run it on Windows | not supported yet; the plan: [docs/windows-plan.md](docs/windows-plan.md) |
 | write `engine.yaml` | [§2](#2-configure-engineyaml) and [docs/config-reference.md](docs/config-reference.md) (every key) |
 | know what each driver needs | [§5](#5-driver-profiles) |
 | fix a failed deployment | [§8](#8-troubleshooting-by-reason-code) |
@@ -75,6 +77,9 @@ python3 -m venv .venv
 .venv/bin/pip install -e '.[dev]'      # add ,mcu,plc,applab,otel as needed
 .venv/bin/flexengine run --config my-engine.yaml
 ```
+
+A Mac as a host test machine (config, MCU child over a USB-UART, the relay, a launchd agent, a smoke test against the
+flexCloud stub): [docs/macos.md](docs/macos.md). Windows is not supported yet ([docs/windows-plan.md](docs/windows-plan.md)).
 
 Extras: `mcu` (SMP to MCUs), `plc` (ADS, Modbus), `applab` (App Lab RPC), `otel` (OpenTelemetry), `relay` (MCU ⇄
 Zenoh relay; also needs the framework's `flexmodel`, not on PyPI), `dev` (tests).
