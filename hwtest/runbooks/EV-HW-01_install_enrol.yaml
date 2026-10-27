@@ -32,7 +32,7 @@ vars:
   usb_dir: {default: "~/flexhwtest-usb", prompt: "scratch directory on this PC (onboarding token file)"}
   token_path: {default: "/etc/flexengine/tokens/${gp}", prompt: "onboardingTokenFile of the device (engine.yaml)"}
   lp_sudo: {default: sudo, prompt: "sudo on the LattePanda (empty when already root)"}
-  suite: {default: "cd /opt/flex/modular-interoperable-framework/flexengine && ../.venv/bin/python -m pytest -q -p no:cacheprovider tests/unit", prompt: "V2 test suite on the LattePanda (unit layer)"}
+  suite: {default: "cd /opt/flex/flexEngine && .venv/bin/python -m pytest -q -p no:cacheprovider tests/unit", prompt: "flexEngine test suite on the LattePanda (unit layer; a flexEngine checkout with its .venv)"}
   sim: {default: "true", prompt: "simulation hook (dry run only)"}
 setup:
   - "LattePanda: Ubuntu 24.04, the offline bundle flexengine-<ver>-linux_x86_64.tar.gz (build-wheels.sh) unpacked in ~ of ${lp}, sudo for ${lp}"

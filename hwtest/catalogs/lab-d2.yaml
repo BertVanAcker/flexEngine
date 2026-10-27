@@ -1,9 +1,10 @@
 # Release catalog of the D2 Tier-1 desk (deskctl.py --catalog): every release name the EV-HW runbooks deploy, how
 # deskctl builds and publishes it, and how it is deployed. Paths are relative to this file; `~` is the runner's home.
-# The framework paths assume a modular-interoperable-framework checkout next to this repository.
+# The container / native stand-in releases use the UC1 model vendored in this repository (tests/vectors/framework);
+# only the MCU and PLC releases still need a modular-interoperable-framework checkout next to this repository.
 # RECORD = fill in on the bench (the values below follow demo/lab/inventory.example.yaml and the D2 runbooks).
 # The dry runs do not use this file: simdesk.py writes the same names for the simulated desk.
-model: ../../../modular-interoperable-framework/examples/models/uc1                      # container/native stand-in releases (perception_guard, ...)
+model: ../../tests/vectors/framework/models/uc1        # container/native stand-in releases (perception_guard, ...)
 releaseKey: ~/.flexhwtest/release-ed25519.key          # RECORD: copy of the lab release key (/var/lib/flex/keys/...)
 keys:
   rogue: ~/.flexhwtest/rogue-ed25519.key               # created when missing: a key no device trusts (EV-HW-08)

@@ -7,5 +7,5 @@ redis
 paho-mqtt
 # flex step types: smp_probe (SMP), zenoh_expect, ads_probe, modbus_expect (same pins as flexengine's extras)
 -e .[mcu,plc,relay]
-# deskctl.py: release builds (flex release) and CDR decoding of the relay's samples
--e ./flexmodel
+# deskctl.py's flex-release builds (EV-HW-04/05/07) and the CDR decoding of zenoh_expect also need flexmodel, which is
+# not on PyPI and lives in the framework: pip install -e <modular-interoperable-framework>/flexmodel
