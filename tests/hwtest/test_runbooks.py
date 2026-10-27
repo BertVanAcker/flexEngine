@@ -16,11 +16,12 @@ import gui
 import run
 
 RUNBOOKS = run.all_runbooks()
+VALUE_OPTS = {"--state", "--runtime", "--build", "--after", "--remove", "--expect", "--approver", "--wait", "--state-all"}
 IDS = [p.name.split("_")[0] for p in RUNBOOKS]
 
 
-def test_the_eleven_runbooks_of_plan_8_3():
-    assert IDS == [f"EV-HW-{i:02d}" for i in range(1, 12)]
+def test_the_runbooks_of_plan_8_3_and_fe_4():
+    assert IDS == [f"EV-HW-{i:02d}" for i in range(1, 13)]   # EV-HW-12: the four buttons (FE-4)
     assert sorted(dryrun.SIM) == IDS
 
 
@@ -66,10 +67,13 @@ def test_lab_catalog_has_every_release():
     for p in RUNBOOKS:
         text = p.read_text()
         for m in re.finditer(r"\$\{desk\} (publish|deploy)([^\"&|]*)", text):
-            for tok in m.group(2).split():
-                if m.group(1) == "publish" and not tok.startswith("-"):
+            toks = m.group(2).split()
+            for i, tok in enumerate(toks):
+                if tok.startswith("-") or (i and toks[i - 1] in VALUE_OPTS):   # --runtime dep=process is no release
+                    continue
+                if m.group(1) == "publish":
                     used.add(tok)
-                elif "=" in tok and not tok.startswith("-"):
+                elif "=" in tok:
                     used.add(tok.split("=", 1)[1])
     used.discard("")
     missing = sorted(u for u in used if u not in cat["releases"])

@@ -44,6 +44,7 @@ SIM = {
     "EV-HW-09": ("lp", ["stack", "publish"]),
     "EV-HW-10": ("lp", ["stack", "publish"]),
     "EV-HW-11": ("rauc", ["stack", "publish"]),
+    "EV-HW-12": ("fe4", ["stack", "publish"]),
 }
 
 

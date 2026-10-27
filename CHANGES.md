@@ -62,3 +62,14 @@ is a new version.
 - Capabilities `x-flex.features` (`runState`, `runtime`, `build`, `retry`); a key whose feature the device does not
   report is refused as a whole (FE-DS-007), a staged/stopped run state on a driver without it too (FE-DS-009).
 - Driver SPI 1.0, additive: optional `stage`, `start`, `stop`, `build`, attribute `runtime`, `Workload.build`.
+
+### Desk runbooks
+
+- EV-HW-12 "Four buttons on the LattePanda": Push / Run all / Stop all / Run one / Stop one across the process,
+  systemd, docker and docker compose runtimes, the health gate only on start, releases kept installed when stopped,
+  and one on-device build that succeeds and one that fails with FE-BLD-001; dry run against the new simulated desk
+  profile `fe4`. `deskctl.py` plans the FE-4 keys (`deploy --state / --state-all / --runtime / --build / --after`,
+  `--keep` carries them, verb `state` for the buttons) and builds `compose` and `native-source` releases.
+- The desk defaults no longer point at a framework checkout: EV-HW-01's `suite` and EV-HW-08's `tamper` run from a
+  flexEngine checkout (`/opt/flex/flexEngine`), the lab catalog uses the vendored UC1 model, and
+  `hwtest/requirements.txt` no longer names `./flexmodel`.

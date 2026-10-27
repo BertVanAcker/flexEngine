@@ -1,0 +1,255 @@
+id: EV-HW-12
+title: Four buttons on the LattePanda (Push, Run, Stop, Run one, Stop all; on-device build)
+description: >
+  FE-4 on the LattePanda: one device with four runtimes (process and systemd for native, docker and docker compose
+  for containers). Push stages all four deployments without starting them and without a health gate; Run all starts
+  them in x-flex-dependsOn order (proc, sysd, ctr, cam) with the health gate on each start; Stop all stops them in
+  reverse order and keeps every release installed (container, compose project and unit file stay); Run one and Stop
+  one move a single deployment. A release that fails its health check stages fine and fails only when it starts
+  (FE-REC-004, stopped again, not rolled back). One on-device build from a signed source payload succeeds and runs;
+  a second fails with FE-BLD-001 and the built release keeps running. Every press is a plan the desk applies (deskctl
+  `deploy` / `state`), the way a control plane drives the buttons: desired states only, no commands.
+vars:
+  operator: {default: "", prompt: "your name"}
+  target: {default: desk, prompt: "desk (real hardware) or sim"}
+  lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
+  fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
+  fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
+  fe_api: {default: "http://lattepanda.lab:8781", prompt: "engine read-only API (local.tcp bind)"}
+  fe_api_token_file: {default: "~/.flexhwtest/fe-api.token", prompt: "bearer token file of the read-only API (DA-7: one per desk)"}
+  fe_data: {default: /var/lib/flexengine, prompt: "engine dataDir on the LattePanda (engine.yaml)"}
+  fe_sudo: {default: "sudo -u flex", prompt: "how this runner reads the engine's dataDir on the LattePanda"}
+  journal_source: {default: journal, prompt: "engine log source: journal (journalctl -u flexengine) or file:<path>"}
+  cloud_host: {default: "lattepanda.lab", prompt: "flexCloud host (TLS port the engine uses)"}
+  cloud_port: {default: "9700", prompt: "flexCloud TLS port"}
+  cloud_url: {default: "https://lattepanda.lab:9700", prompt: "flexCloud admin API base URL"}
+  cloud_ca: {default: "~/.flexhwtest/lab-ca.crt", prompt: "lab CA (DATA/stack/tls/ca.crt of the LattePanda)"}
+  admin_token_file: {default: "~/.flexhwtest/admin.token", prompt: "flexCloud admin token file"}
+  catalog: {default: "${hwtest}/catalogs/lab-d2.yaml", prompt: "release catalog (deskctl)"}
+  desk: {default: "${python} ${hwtest}/deskctl.py --cloud ${cloud_url} --ca '${cloud_ca}' --admin-token-file ${admin_token_file} --catalog ${catalog}", prompt: "desk control command"}
+  gp: {default: panda, prompt: "engine device id of the LattePanda"}
+  rt: {default: docker, prompt: "docker CLI on the LattePanda (read-only checks)"}
+  sysctl: {default: systemctl, prompt: "systemctl on the LattePanda (read-only checks)"}
+  unit_dir: {default: /var/lib/flexengine/units, prompt: "drivers.native.unitDir of the device (engine.yaml)"}
+  safe_state_file: {default: /var/lib/flexengine/safe-state.json, prompt: "safeStateFile of the device (engine.yaml)"}
+setup:
+  - "LattePanda: flexEngine 2 with FE-4 installed and enrolled (EV-HW-01), local.tcp bind = ${fe_api}"
+  - "engine.yaml of ${gp}: drivers.container {runtime: docker, runtimes: [compose]} and drivers.native {runtime: systemd, runtimes: [process], unitDir: ${unit_dir}}; safeStateFile = ${safe_state_file}"
+  - "docker compose v2 on the LattePanda (`docker compose version`); the containers' modules are safety-relevant: ${safe_state_file} says machine_parked and operator_confirmed (EV-HW-02 safe-state-on)"
+  - "This PC: venv with hwtest/requirements.txt and Docker (deskctl builds the container and compose images here), the lab CA in ${cloud_ca}, the admin token in ${admin_token_file}, ssh key login to ${lp}"
+  - "No other deployment on ${gp} (they are replaced)"
+steps:
+  - id: stack
+    title: flexCloud TLS port reachable
+    check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: engine-up
+    title: "${gp} onboarded and online"
+    fe_status_expect: {device: "${gp}", device_fields: {onboarded: true, online: true}, timeout: 60}
+  - id: capabilities
+    title: "${gp} reports the FE-4 feature runState and four runtimes"
+    cmd_json_expect:
+      cmd: "${desk} device ${gp}"
+      timeout: 60
+      match: {/device/capabilities/x-flex/features: {contains: runState}, /device/capabilities/x-flex/runtimes: {len: 4}}
+  - id: capabilities-compose
+    title: "Feature build; runtime docker-compose allowed"
+    cmd_json_expect:
+      cmd: "${desk} device ${gp}"
+      match: {/device/capabilities/x-flex/features: {contains: build}, /device/capabilities/x-flex/runtimes: {contains: docker-compose}}
+  - id: capabilities-native
+    title: "Runtimes process and systemd allowed"
+    cmd_json_expect:
+      cmd: "${desk} device ${gp}"
+      match: {"/device/capabilities/x-flex/runtimes": {where: {"": {in: [process, systemd]}}, count: 2}}
+  - id: publish
+    title: "Publish the releases: 4.0.0 native, container and compose; 4.1.0 failing its health check; 4.2.0 / 4.3.0 source (one fails to build)"
+    cmd_json_expect: {cmd: "${desk} publish fb_nat fb_ctr fb_compose fb_gate fb_src fb_src_bad", match: {"/published": {len: 6}}, cmd_timeout: 1800}
+  # ---- Push ---------------------------------------------------------------------------------------------------
+  - id: push
+    title: "Push: stage proc (process), sysd (systemd), ctr (docker), cam (docker compose); start order proc, sysd, ctr, cam"
+    run: {cmd: "${desk} deploy ${gp} proc=fb_nat sysd=fb_nat ctr=fb_ctr cam=fb_compose --runtime proc=process --runtime sysd=systemd --runtime ctr=docker --runtime cam=docker-compose --after sysd=proc --after ctr=sysd --after cam=ctr --state-all staged"}
+  - id: push-staged
+    title: "All four Staged, no health gate ran"
+    cmd_json_expect:
+      cmd: "${desk} device ${gp}"
+      timeout: 300
+      match:
+        /status/proc/state: Staged
+        /status/sysd/state: Staged
+        /status/ctr/state: Staged
+        /status/cam/state: Staged
+        /status/proc/healthGateSeconds: {exists: false}
+        /status/sysd/healthGateSeconds: {exists: false}
+        /status/ctr/healthGateSeconds: {exists: false}
+        /status/cam/healthGateSeconds: {exists: false}
+  - id: push-ctr-idle
+    title: "ctr: container created, not running"
+    cmd_json_expect: {host: "${lp}", cmd: "${rt} container inspect flex_${gp}_ctr", match: {/0/State/Running: false, /0/Config/Labels/dev.flex.version: "4.0.0"}}
+  - id: push-cam-idle
+    title: "cam: compose service container created, not running"
+    cmd_json_expect: {host: "${lp}", cmd: "${rt} container inspect flex_${gp}_cam-app-1", match: {/0/State/Running: false}}
+  - id: push-unit-idle
+    title: "sysd: unit file written, unit not active"
+    ssh_run: {host: "${lp}", cmd: "u=$(cd ${unit_dir} && ls flex-*-sysd.service) && ${sysctl} show -p ActiveState,LoadState $u", match: "ActiveState=inactive"}
+  # ---- Run all ------------------------------------------------------------------------------------------------
+  - id: mark-run
+    title: History mark before Run all
+    fe_history_mark: {name: run, device: "${gp}"}
+  - id: run-all
+    title: "Run all"
+    cmd_json_expect: {cmd: "${desk} state ${gp} running", match: {/status: 201}}
+  - id: run-all-installed
+    title: "All four Installed and healthy, each through its health gate"
+    cmd_json_expect:
+      cmd: "${desk} device ${gp}"
+      timeout: 300
+      match:
+        /status/proc/state: Installed
+        /status/sysd/state: Installed
+        /status/ctr/state: Installed
+        /status/cam/state: Installed
+        /status/cam/health: healthy
+        /status/proc/healthGateSeconds: {exists: true}
+        /status/sysd/healthGateSeconds: {exists: true}
+        /status/ctr/healthGateSeconds: {exists: true}
+        /status/cam/healthGateSeconds: {exists: true}
+  - id: run-order
+    title: "Started in dependency order: proc, sysd, ctr, cam"
+    fe_history_expect:
+      since: run
+      device: "${gp}"
+      match: [{dep: proc, state: Installed}, {dep: sysd, state: Installed}, {dep: ctr, state: Installed}, {dep: cam, state: Installed}]
+      max_duration: 240
+      save_duration: run_all_s
+  - id: run-ctr
+    title: "ctr: container runs 4.0.0"
+    cmd_json_expect: {host: "${lp}", cmd: "${rt} container inspect flex_${gp}_ctr", match: {/0/State/Running: true, /0/Config/Labels/dev.flex.version: "4.0.0"}}
+  - id: run-unit
+    title: "sysd: unit active"
+    ssh_run: {host: "${lp}", cmd: "u=$(cd ${unit_dir} && ls flex-*-sysd.service) && ${sysctl} show -p ActiveState $u", match: "ActiveState=active"}
+  # ---- Stop all -----------------------------------------------------------------------------------------------
+  - id: mark-stop
+    title: History mark before Stop all
+    fe_history_mark: {name: stop, device: "${gp}"}
+  - id: stop-all
+    title: "Stop all"
+    cmd_json_expect: {cmd: "${desk} state ${gp} stopped", match: {/status: 201}}
+  - id: stop-all-stopped
+    title: "All four Stopped, still 4.0.0"
+    cmd_json_expect:
+      cmd: "${desk} device ${gp}"
+      timeout: 300
+      match:
+        /status/proc/state: Stopped
+        /status/sysd/state: Stopped
+        /status/ctr/state: Stopped
+        /status/cam/state: Stopped
+        /status/proc/version: "4.0.0"
+        /status/cam/version: "4.0.0"
+  - id: stop-order
+    title: "Stopped in reverse order: cam, ctr, sysd, proc"
+    fe_history_expect:
+      since: stop
+      device: "${gp}"
+      match: [{dep: cam, state: Stopped}, {dep: ctr, state: Stopped}, {dep: sysd, state: Stopped}, {dep: proc, state: Stopped}]
+      max_duration: 240
+  - id: kept-ctr
+    title: "ctr: release kept installed (container there, stopped)"
+    cmd_json_expect: {host: "${lp}", cmd: "${rt} container inspect flex_${gp}_ctr", match: {/0/State/Running: false, /0/Config/Labels/dev.flex.version: "4.0.0"}}
+  - id: kept-cam
+    title: "cam: compose project kept (service container there, stopped)"
+    cmd_json_expect: {host: "${lp}", cmd: "${rt} container inspect flex_${gp}_cam-app-1", match: {/0/State/Running: false}}
+  - id: kept-unit
+    title: "sysd: unit file kept, unit inactive"
+    ssh_run: {host: "${lp}", cmd: "u=$(cd ${unit_dir} && ls flex-*-sysd.service) && ${sysctl} show -p ActiveState,LoadState $u", match: "ActiveState=inactive"}
+  - id: stays-stopped
+    title: "Nothing restarts on its own (10 s)"
+    wait: {seconds: 10, message: "restart policies must not bring a stopped deployment back"}
+  - id: still-stopped
+    title: "ctr still Stopped after 10 s"
+    fe_status_expect: {device: "${gp}", deployment: ctr, state: Stopped, version: 4.0.0, timeout: 5}
+  # ---- Run one / Stop one -------------------------------------------------------------------------------------
+  - id: run-one
+    title: "Run one: ctr"
+    cmd_json_expect: {cmd: "${desk} state ${gp} running ctr", match: {/runState/ctr: running, /runState/cam: stopped}}
+  - id: run-one-only
+    title: "ctr Installed and healthy, the other three stay Stopped"
+    cmd_json_expect:
+      cmd: "${desk} device ${gp}"
+      timeout: 180
+      match: {/status/ctr/state: Installed, /status/ctr/health: healthy, /status/proc/state: Stopped, /status/sysd/state: Stopped, /status/cam/state: Stopped}
+  - id: stop-one
+    title: "Stop one: ctr"
+    cmd_json_expect: {cmd: "${desk} state ${gp} stopped ctr", match: {/runState/ctr: stopped}}
+  - id: stop-one-stopped
+    title: "ctr Stopped again"
+    fe_status_expect: {device: "${gp}", deployment: ctr, state: Stopped, version: 4.0.0, timeout: 120}
+  # ---- the health gate runs on start only ---------------------------------------------------------------------
+  - id: gate-push
+    title: "Push 4.1.0 (fails its health check) as gate (process)"
+    run: {cmd: "${desk} deploy ${gp} gate=fb_gate --keep --runtime gate=process --state gate=staged"}
+  - id: gate-staged
+    title: "gate Staged: staging runs no health gate"
+    cmd_json_expect: {cmd: "${desk} device ${gp}", timeout: 120, match: {/status/gate/state: Staged, /status/gate/healthGateSeconds: {exists: false}}}
+  - id: gate-run
+    title: "Run one: gate"
+    cmd_json_expect: {cmd: "${desk} state ${gp} running gate", match: {/runState/gate: running}}
+  - id: gate-failed
+    title: "gate Failed at its health gate (FE-REC-004), stopped again, nothing to roll back to"
+    fe_status_expect: {device: "${gp}", deployment: gate, state: Failed, version: 4.1.0, fields: {reasonCode: FE-REC-004, rolledBackTo: {exists: false}}, timeout: 180}
+  - id: gate-others
+    title: "The other deployments are untouched (Stopped)"
+    cmd_json_expect: {cmd: "${desk} device ${gp}", match: {/status/proc/state: Stopped, /status/ctr/state: Stopped, /status/cam/state: Stopped}}
+  # ---- build on the device ------------------------------------------------------------------------------------
+  - id: mark-build
+    title: Journal mark before the build
+    journal_mark: {name: build, unit: flexengine, host: "${fe_host}"}
+  - id: build-push
+    title: "Push bld (systemd) with an on-device build b-1 of the 4.2.0 source; gate removed"
+    run: {cmd: "${desk} deploy ${gp} bld=fb_src --keep --remove gate --runtime bld=systemd --build bld=b-1 --state bld=staged"}
+  - id: build-ok
+    title: "BuildStarted, BuildSucceeded for b-1 (engine log)"
+    journal_expect: {since: build, fields: {event: build.succeeded, dep: bld, buildId: b-1}, timeout: 300}
+  - id: build-staged
+    title: "bld Staged with the built release"
+    fe_status_expect: {device: "${gp}", deployment: bld, state: Staged, version: 4.2.0, timeout: 120}
+  - id: build-run
+    title: "Run one: bld"
+    cmd_json_expect: {cmd: "${desk} state ${gp} running bld", match: {/runState/bld: running}}
+  - id: build-installed
+    title: "bld Installed and healthy (the built payload runs)"
+    fe_status_expect: {device: "${gp}", deployment: bld, state: Installed, version: 4.2.0, health: healthy, timeout: 180}
+  - id: mark-build-bad
+    title: Journal mark before the failing build
+    journal_mark: {name: buildbad, unit: flexengine, host: "${fe_host}"}
+  - id: build-bad
+    title: "Update bld to the 4.3.0 source with build b-2 (its build script exits 2)"
+    run: {cmd: "${desk} deploy ${gp} bld=fb_src_bad --keep --build bld=b-2"}
+  - id: build-failed
+    title: "BuildFailed for b-2 (engine log)"
+    journal_expect: {since: buildbad, fields: {event: build.failed, dep: bld, buildId: b-2}, pattern: "exited with status 2", timeout: 300}
+  - id: build-failed-code
+    title: "The device's BuildFailed record carries FE-BLD-001"
+    cmd_json_expect: {host: "${lp}", cmd: "${fe_sudo} grep -h '\"BuildFailed\"' ${fe_data}/${gp}/history.jsonl | tail -n 1", match: {/buildId: b-2, /reasonCode: FE-BLD-001}, timeout: 30}
+  - id: build-kept
+    title: "bld keeps running the 4.2.0 build (the control plane still sees Installed 4.2.0)"
+    cmd_json_expect: {cmd: "${desk} device ${gp}", match: {/status/bld/state: Installed, /status/bld/version: "4.2.0", /status/bld/health: healthy}}
+  - id: build-unit
+    title: "bld: unit still active"
+    ssh_run: {host: "${lp}", cmd: "u=$(cd ${unit_dir} && ls flex-*-bld.service) && ${sysctl} show -p ActiveState $u", match: "ActiveState=active"}
+  # ---- clean up -----------------------------------------------------------------------------------------------
+  - id: remove
+    title: Remove the deployments (empty desired state)
+    run: {cmd: "${desk} deploy ${gp}"}
+  - id: removed
+    title: "Every deployment Removed"
+    cmd_json_expect:
+      cmd: "${desk} device ${gp}"
+      timeout: 300
+      match: {/status/proc/state: Removed, /status/sysd/state: Removed, /status/ctr/state: Removed, /status/cam/state: Removed, /status/bld/state: Removed}
+  - id: no-container
+    title: "No flex container of ${gp} left (ctr, cam)"
+    ssh_run: {host: "${lp}", cmd: "(${rt} ps -a -q --filter label=dev.flex.device=${gp}; ${rt} ps -a -q --filter label=com.docker.compose.project=flex_${gp}_cam) | grep -c . || true", match: "^0\\s*$"}
+  - id: no-unit
+    title: "No unit file of sysd / bld left"
+    ssh_run: {host: "${lp}", cmd: "ls ${unit_dir} | grep -c -E 'flex-.*-(sysd|bld)\\.service' || true", match: "^0\\s*$"}

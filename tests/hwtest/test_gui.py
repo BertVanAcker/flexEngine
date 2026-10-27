@@ -66,11 +66,12 @@ def call(base, path, body=None):
 def test_catalog_lists_the_ev_hw_runbooks_with_boards(app):
     base, _, g = app
     rbs = {r["id"]: r for r in call(base, "/api/runbooks")}
-    for i in range(1, 12):
+    for i in range(1, 13):
         e = rbs[f"EV-HW-{i:02d}"]
         assert e["error"] is None, e["error"]
         assert e["goal"] and e["duration"]
     assert rbs["EV-HW-02"]["target"]["name"] == "LattePanda 3 Delta"
+    assert rbs["EV-HW-12"]["target"]["board"] == "lattepanda_3_delta"
     assert rbs["EV-HW-06"]["target"]["board"] == "uno_q"
     assert rbs["EV-HW-07"]["target"]["name"].startswith("Beckhoff CX")
     assert rbs["EV-HW-04"]["target"]["board"] == "portenta_h7"           # the GUI's own board image
