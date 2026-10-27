@@ -1,0 +1,400 @@
+{
+  "runbook": "EV-HW-12",
+  "title": "Four buttons on the LattePanda (Push, Run, Stop, Run one, Stop all; on-device build)",
+  "file": "/home/user/flexengine-bench/hwtest/runbooks/EV-HW-12_four_buttons.yaml",
+  "started": "2026-10-27T01:35:59",
+  "finished": "2026-10-27T01:36:40",
+  "aborted": false,
+  "operator": "dry-run",
+  "vars": {
+    "hwtest": "/home/user/flexengine-bench/hwtest",
+    "flexengine": "/home/user/flexengine-bench",
+    "repo": "/home/user/modular-interoperable-framework",
+    "project_dir": "/home/user/flexengine-bench",
+    "results_dir": "/home/user/flexengine-bench/hwtest/hwtest-results/20261027-013559_EV-HW-12",
+    "local_ip": "192.0.2.2",
+    "python": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python",
+    "operator": "dry-run",
+    "target": "sim",
+    "lp": "local",
+    "fe": "env FLEXENGINE_CONFIG=/tmp/rb-12-xdeq8l1a/lp/engine.yaml /tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python -m flexengine2.local.cli",
+    "fe_host": "local",
+    "fe_api": "http://127.0.0.1:59507",
+    "fe_api_token_file": "/tmp/rb-12-xdeq8l1a/secrets/fe-api.token",
+    "fe_data": "/tmp/rb-12-xdeq8l1a/lp/data",
+    "fe_sudo": "",
+    "journal_source": "file:/tmp/rb-12-xdeq8l1a/lp/engine.log",
+    "cloud_host": "127.0.0.1",
+    "cloud_port": "37331",
+    "cloud_url": "http://127.0.0.1:37209",
+    "cloud_ca": "",
+    "admin_token_file": "/tmp/rb-12-xdeq8l1a/secrets/admin.token",
+    "catalog": "/tmp/rb-12-xdeq8l1a/catalog.yaml",
+    "desk": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/deskctl.py --cloud http://127.0.0.1:37209 --ca '' --admin-token-file /tmp/rb-12-xdeq8l1a/secrets/admin.token --catalog /tmp/rb-12-xdeq8l1a/catalog.yaml",
+    "gp": "rb-panda",
+    "rt": "/tmp/rb-12-xdeq8l1a/bin/docker",
+    "sysctl": "/tmp/rb-12-xdeq8l1a/bin/systemctl",
+    "unit_dir": "/tmp/rb-12-xdeq8l1a/fakert/units",
+    "safe_state_file": "/tmp/rb-12-xdeq8l1a/lp/safe-state.json",
+    "cloud_layout": "/tmp/rb-12-xdeq8l1a/cloud/oci",
+    "lab_ca": "/tmp/rb-12-xdeq8l1a/pki/ca.crt",
+    "rogue_ca": "/tmp/rb-12-xdeq8l1a/pki/rogue-ca.crt",
+    "fe_api_port": "59507",
+    "fe_enroll": "env FLEXENGINE_CONFIG=/tmp/rb-12-xdeq8l1a/lp/engine.yaml /tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python -m flexengine2.local.cli enroll",
+    "fe_config": "/tmp/rb-12-xdeq8l1a/lp/engine.yaml",
+    "svc": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a svc",
+    "sim": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a",
+    "dry_run": "1",
+    "lp_sh": "sh -c",
+    "uplink_down": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a uplink down",
+    "uplink_up": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a uplink up",
+    "power_cut": "/tmp/claude-0/-home-user/86682e99-a3a9-5cb0-8965-3a04bdbf4e94/scratchpad/fe5venv/bin/python /home/user/flexengine-bench/hwtest/simdesk.py ctl --dir /tmp/rb-12-xdeq8l1a power-cycle --down 3",
+    "sim_dir": "/tmp/rb-12-xdeq8l1a",
+    "run_all_s": "2.027"
+  },
+  "project_commit": "v0.6.0-106-g96e2f48",
+  "runner_commit": "v0.6.0-106-g96e2f48",
+  "summary": {
+    "PASS": 51,
+    "FAIL": 0,
+    "SKIPPED": 0
+  },
+  "steps": [
+    {
+      "id": "stack",
+      "title": "flexCloud TLS port reachable",
+      "status": "PASS",
+      "detail": "127.0.0.1:37331 reachable"
+    },
+    {
+      "id": "engine-up",
+      "title": "${gp} onboarded and online",
+      "status": "PASS",
+      "detail": "rb-panda: manifestVersion 0, onboarded true"
+    },
+    {
+      "id": "capabilities",
+      "title": "${gp} reports the FE-4 feature runState and four runtimes",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "capabilities-compose",
+      "title": "Feature build; runtime docker-compose allowed",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "capabilities-native",
+      "title": "Runtimes process and systemd allowed",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "publish",
+      "title": "Publish the releases: 4.0.0 native, container and compose; 4.1.0 failing its health check; 4.2.0 / 4.3.0 source (one fails to build)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "push",
+      "title": "Push: stage proc (process), sysd (systemd), ctr (docker), cam (docker compose); start order proc, sysd, ctr, cam",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "push-staged",
+      "title": "All four Staged, no health gate ran",
+      "status": "PASS",
+      "detail": "exit 0, 8 field(s) match"
+    },
+    {
+      "id": "push-ctr-idle",
+      "title": "ctr: container created, not running",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "push-cam-idle",
+      "title": "cam: compose service container created, not running",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "push-unit-idle",
+      "title": "sysd: unit file written, unit not active",
+      "status": "PASS",
+      "detail": "exit 0, matched 'ActiveState=inactive'"
+    },
+    {
+      "id": "mark-run",
+      "title": "History mark before Run all",
+      "status": "PASS",
+      "detail": "mark run at deviceTime 1793064965.257 (8 record(s) before it)"
+    },
+    {
+      "id": "run-all",
+      "title": "Run all",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "run-all-installed",
+      "title": "All four Installed and healthy, each through its health gate",
+      "status": "PASS",
+      "detail": "exit 0, 9 field(s) match"
+    },
+    {
+      "id": "run-order",
+      "title": "Started in dependency order: proc, sysd, ctr, cam",
+      "status": "PASS",
+      "detail": "proc Installed 4.0.0 -> sysd Installed 4.0.0 -> ctr Installed 4.0.0 -> cam Installed 4.0.0; 2.03 s from the first to the last record"
+    },
+    {
+      "id": "run-ctr",
+      "title": "ctr: container runs 4.0.0",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "run-unit",
+      "title": "sysd: unit active",
+      "status": "PASS",
+      "detail": "exit 0, matched 'ActiveState=active'"
+    },
+    {
+      "id": "mark-stop",
+      "title": "History mark before Stop all",
+      "status": "PASS",
+      "detail": "mark stop at deviceTime 1793064969.323 (16 record(s) before it)"
+    },
+    {
+      "id": "stop-all",
+      "title": "Stop all",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "stop-all-stopped",
+      "title": "All four Stopped, still 4.0.0",
+      "status": "PASS",
+      "detail": "exit 0, 6 field(s) match"
+    },
+    {
+      "id": "stop-order",
+      "title": "Stopped in reverse order: cam, ctr, sysd, proc",
+      "status": "PASS",
+      "detail": "cam Stopped 4.0.0 -> ctr Stopped 4.0.0 -> sysd Stopped 4.0.0 -> proc Stopped 4.0.0; 1.00 s from the first to the last record"
+    },
+    {
+      "id": "kept-ctr",
+      "title": "ctr: release kept installed (container there, stopped)",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "kept-cam",
+      "title": "cam: compose project kept (service container there, stopped)",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "kept-unit",
+      "title": "sysd: unit file kept, unit inactive",
+      "status": "PASS",
+      "detail": "exit 0, matched 'ActiveState=inactive'"
+    },
+    {
+      "id": "stays-stopped",
+      "title": "Nothing restarts on its own (10 s)",
+      "status": "PASS",
+      "detail": "waited 10s"
+    },
+    {
+      "id": "still-stopped",
+      "title": "ctr still Stopped after 10 s",
+      "status": "PASS",
+      "detail": "rb-panda/ctr: Stopped 4.0.0"
+    },
+    {
+      "id": "run-one",
+      "title": "Run one: ctr",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "run-one-only",
+      "title": "ctr Installed and healthy, the other three stay Stopped",
+      "status": "PASS",
+      "detail": "exit 0, 5 field(s) match"
+    },
+    {
+      "id": "stop-one",
+      "title": "Stop one: ctr",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "stop-one-stopped",
+      "title": "ctr Stopped again",
+      "status": "PASS",
+      "detail": "rb-panda/ctr: Stopped 4.0.0"
+    },
+    {
+      "id": "gate-push",
+      "title": "Push 4.1.0 (fails its health check) as gate (process)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "gate-staged",
+      "title": "gate Staged: staging runs no health gate",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "gate-run",
+      "title": "Run one: gate",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "gate-failed",
+      "title": "gate Failed at its health gate (FE-REC-004), stopped again, nothing to roll back to",
+      "status": "PASS",
+      "detail": "rb-panda/gate: Failed 4.1.0, reasonCode FE-REC-004, failFast false"
+    },
+    {
+      "id": "gate-others",
+      "title": "The other deployments are untouched (Stopped)",
+      "status": "PASS",
+      "detail": "exit 0, 3 field(s) match"
+    },
+    {
+      "id": "mark-build",
+      "title": "Journal mark before the build",
+      "status": "PASS",
+      "detail": "mark build at byte 5862 of /tmp/rb-12-xdeq8l1a/lp/engine.log"
+    },
+    {
+      "id": "build-push",
+      "title": "Push bld (systemd) with an on-device build b-1 of the 4.2.0 source; gate removed",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "build-ok",
+      "title": "BuildStarted, BuildSucceeded for b-1 (engine log)",
+      "status": "PASS",
+      "detail": "1 line(s) matching {'event': 'build.succeeded', 'dep': 'bld', 'buildId': 'b-1'}: {\"ts\":\"2026-10-27T01:36:34.915Z\",\"level\":\"info\",\"device\":\"rb-panda\",\"event\":\"build.succeeded\",\"dep\":\"bld\",\"msg\":\"BuildSucceeded bld b-1\",\"buildId\":\"b-1\"}"
+    },
+    {
+      "id": "build-staged",
+      "title": "bld Staged with the built release",
+      "status": "PASS",
+      "detail": "rb-panda/bld: Staged 4.2.0"
+    },
+    {
+      "id": "build-run",
+      "title": "Run one: bld",
+      "status": "PASS",
+      "detail": "exit 0, 1 field(s) match"
+    },
+    {
+      "id": "build-installed",
+      "title": "bld Installed and healthy (the built payload runs)",
+      "status": "PASS",
+      "detail": "rb-panda/bld: Installed 4.2.0, health healthy"
+    },
+    {
+      "id": "mark-build-bad",
+      "title": "Journal mark before the failing build",
+      "status": "PASS",
+      "detail": "mark buildbad at byte 7746 of /tmp/rb-12-xdeq8l1a/lp/engine.log"
+    },
+    {
+      "id": "build-bad",
+      "title": "Update bld to the 4.3.0 source with build b-2 (its build script exits 2)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "build-failed",
+      "title": "BuildFailed for b-2 (engine log)",
+      "status": "PASS",
+      "detail": "1 line(s) matching exited with status 2: {\"ts\":\"2026-10-27T01:36:37.853Z\",\"level\":\"warning\",\"device\":\"rb-panda\",\"event\":\"build.failed\",\"dep\":\"bld\",\"msg\":\"BuildFailed bld b-2: build failed: build command exited with status 2\",\"buildId\":\"b-2\"}"
+    },
+    {
+      "id": "build-failed-code",
+      "title": "The device's BuildFailed record carries FE-BLD-001",
+      "status": "PASS",
+      "detail": "exit 0, 2 field(s) match"
+    },
+    {
+      "id": "build-kept",
+      "title": "bld keeps running the 4.2.0 build (the control plane still sees Installed 4.2.0)",
+      "status": "PASS",
+      "detail": "exit 0, 3 field(s) match"
+    },
+    {
+      "id": "build-unit",
+      "title": "bld: unit still active",
+      "status": "PASS",
+      "detail": "exit 0, matched 'ActiveState=active'"
+    },
+    {
+      "id": "remove",
+      "title": "Remove the deployments (empty desired state)",
+      "status": "PASS",
+      "detail": "exit 0"
+    },
+    {
+      "id": "removed",
+      "title": "Every deployment Removed",
+      "status": "PASS",
+      "detail": "exit 0, 5 field(s) match"
+    },
+    {
+      "id": "no-container",
+      "title": "No flex container of ${gp} left (ctr, cam)",
+      "status": "PASS",
+      "detail": "exit 0, matched '0\\n'"
+    },
+    {
+      "id": "no-unit",
+      "title": "No unit file of sysd / bld left",
+      "status": "PASS",
+      "detail": "exit 0, matched '0\\n'"
+    }
+  ],
+  "flexhwtest": {
+    "upstream": {
+      "runner": {
+        "commit": "684bc02d01c84b808deecbed1567451e013e3c44",
+        "ref": "porting-strategy"
+      },
+      "gui": {
+        "commit": "0bfb8c771bc4a8ae2c7119433a800d9b26359091",
+        "ref": "claude/runbook-execution-gui-n1awvw"
+      }
+    },
+    "repository": "https://github.com/BertVanAcker/flexnode-arduino",
+    "steps": [
+      "ads_probe",
+      "cmd_json_expect",
+      "fe_history_expect",
+      "fe_history_mark",
+      "fe_status_expect",
+      "http_expect",
+      "journal_expect",
+      "journal_mark",
+      "modbus_expect",
+      "power_cycle",
+      "smp_probe",
+      "ssh_run",
+      "zenoh_expect"
+    ],
+    "dry_run": true,
+    "target": "sim"
+  }
+}

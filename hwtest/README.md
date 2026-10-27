@@ -18,6 +18,7 @@ runbooks (`docs/lab/runbooks.json`) stay the record of acceptance: an acceptance
 | EV-HW-09 crash + power | LattePanda | `lp`: supervised engine (Restart=on-failure), power cut kills engine and workloads |
 | EV-HW-10 observability | LattePanda (+ Mac) | `lp`: Jaeger query API over the engine's span file |
 | EV-HW-11 RAUC A/B | LattePanda eMMC | `rauc`: fake `rauc` + boot simulator, the machine reboots when asked |
+| EV-HW-12 four buttons (FE-4) | LattePanda | `fe4`: one device with process + systemd and docker + docker compose; systemd, docker and compose are the contract suite's fake CLIs (`tests/contract/spi_harness/fakes`) on the engine's PATH, the vendored UC1 model (no framework checkout) |
 
 The flexNode-arduino boards' own remote-OTA runbooks (QC-04, QC-05) live upstream with the library
 (flexNode-arduino PR #16, `tests/hardware/runbooks/`); the engine side of them is the arduino-ota driver.
@@ -40,6 +41,20 @@ python3 -m venv .venv-hwtest && .venv-hwtest/bin/pip install -r hwtest/requireme
 .venv-hwtest/bin/python hwtest/gui.py                                   # http://127.0.0.1:8765
 .venv-hwtest/bin/python hwtest/dryrun.py --all                          # every runbook vs. simulation
 ```
+
+## EV-HW-12: the four buttons
+
+Push, Run all, Stop all, Run one, Stop one as the control plane drives them: each press is a plan with the FE-4 keys
+(`deskctl.py deploy ... --state-all staged --runtime DEP=RT --after DEP=A --build DEP=ID`, then `deskctl.py state
+DEVICE running|stopped [DEP ...]`, which plans the current desired state again with another run state). The releases
+are `fb_*` in `catalogs/lab-d2.yaml`: build kinds `compose` (the stand-in image in a compose project, built with
+Docker on the runner PC) and `native-source` (a source payload the engine builds on the device; `fail: true` exits 2,
+FE-BLD-001), next to the `container` / `native` kinds. The device needs `drivers.container: {runtime: docker,
+runtimes: [compose]}`, `drivers.native: {runtime: systemd, runtimes: [process], unitDir: ...}` and its safe state set
+(the container modules of UC1 are safety-relevant). Build events are device events, not deployment statuses, so the
+runbook reads them from the engine log (`build.started` / `build.succeeded` / `build.failed`) and the FE-BLD code from
+the device's `history.jsonl` (over ssh). In the dry run (`dryrun.py EV-HW-12`, ~80 s) the states, ordering, health
+gates and events are the engine's own; what only the LattePanda shows is dockerd, docker compose and systemd.
 
 ## Bench facts the runbook defaults use
 

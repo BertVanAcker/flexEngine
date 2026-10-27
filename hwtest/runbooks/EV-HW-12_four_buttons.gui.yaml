@@ -1,0 +1,20 @@
+# GUI metadata of EV-HW-12 (read by the runbook GUI: gui.py --scan hwtest); the runbook is EV-HW-12_four_buttons.yaml
+goal: The four buttons (FE-4) on one device with four runtimes - Push stages without a health gate, Run all starts in
+  dependency order through the gate, Stop all stops in reverse and keeps every release installed, Run one / Stop one,
+  a failing release fails only when started (FE-REC-004), and an on-device build succeeds and fails with FE-BLD-001.
+duration: ~20 min
+boards:
+- LattePanda 3 Delta
+tags:
+- flexengine-v2
+- fe-4
+- run-state
+- runtimes
+- docker
+- compose
+- systemd
+- build
+target:
+  board: lattepanda_3_delta
+  notes: Device panda with drivers.container {runtime docker, runtimes [compose]} and drivers.native {runtime systemd,
+    runtimes [process]}; safe state set (machine parked); docker compose v2; Docker on the runner PC for the image builds.

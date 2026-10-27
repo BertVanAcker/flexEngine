@@ -26,7 +26,7 @@ vars:
   gp: {default: panda, prompt: "engine device id of the LattePanda"}
   dep: {default: dl, prompt: "deployment id"}
   cloud_sh: {default: "${lp}", prompt: "host that holds the flexCloud stub's registry on disk"}
-  tamper: {default: "sudo /opt/flex/modular-interoperable-framework/.venv/bin/python /opt/flex/modular-interoperable-framework/flexengine/hwtest/deskctl.py tamper --layout /var/lib/flex/stack/p2/oci", prompt: "deskctl tamper on the stub host (--layout = the stub's OCI registry; RECORD the path)"}
+  tamper: {default: "sudo /opt/flex/flexEngine/.venv/bin/python /opt/flex/flexEngine/hwtest/deskctl.py tamper --layout /var/lib/flex/stack/p2/oci", prompt: "deskctl tamper on the stub host (--layout = the stub's OCI registry; RECORD the path)"}
   usb_dir: {default: "~/flexhwtest-usb", prompt: "directory on this PC for the old bundle"}
   lp_usb: {default: "/tmp", prompt: "where the old bundle is copied on the LattePanda"}
   lp_sh: {default: "ssh -o BatchMode=yes ${lp}", prompt: "shell on the LattePanda that reads stdin (sh -c = this host)"}

@@ -1,9 +1,10 @@
 # Release catalog of the D2 Tier-1 desk (deskctl.py --catalog): every release name the EV-HW runbooks deploy, how
 # deskctl builds and publishes it, and how it is deployed. Paths are relative to this file; `~` is the runner's home.
-# The framework paths assume a modular-interoperable-framework checkout next to this repository.
+# The container / native stand-in releases use the UC1 model vendored in this repository (tests/vectors/framework);
+# only the MCU and PLC releases still need a modular-interoperable-framework checkout next to this repository.
 # RECORD = fill in on the bench (the values below follow demo/lab/inventory.example.yaml and the D2 runbooks).
 # The dry runs do not use this file: simdesk.py writes the same names for the simulated desk.
-model: ../../../modular-interoperable-framework/examples/models/uc1                      # container/native stand-in releases (perception_guard, ...)
+model: ../../tests/vectors/framework/models/uc1        # container/native stand-in releases (perception_guard, ...)
 releaseKey: ~/.flexhwtest/release-ed25519.key          # RECORD: copy of the lab release key (/var/lib/flex/keys/...)
 keys:
   rogue: ~/.flexhwtest/rogue-ed25519.key               # created when missing: a key no device trusts (EV-HW-08)
@@ -33,6 +34,13 @@ releases:
   dl_unsigned: {module: detection_logger, version: 3.0.0, driver: native, build: {kind: native, sign: false}}
   dl_rogue: {module: detection_logger, version: 3.1.0, driver: native, build: {kind: native, key: rogue}}
   dl_tamper: {module: detection_logger, version: 3.2.0, driver: native, build: {kind: native}}
+  # ---- EV-HW-12: the four buttons (FE-4); the same names are built for fake runtimes by simdesk.py (profile fe4) --
+  fb_nat: {module: detection_logger, version: 4.0.0, driver: native, build: {kind: native}}
+  fb_gate: {module: detection_logger, version: 4.1.0, driver: native, build: {kind: native, failHealth: true}}
+  fb_src: {module: detection_logger, version: 4.2.0, driver: native, build: {kind: native-source}}
+  fb_src_bad: {module: detection_logger, version: 4.3.0, driver: native, build: {kind: native-source, fail: true}}
+  fb_ctr: {module: perception_guard, version: 4.0.0, driver: container, build: {kind: container, approvers: [alice, bob]}}
+  fb_compose: {module: gige_camera, version: 4.0.0, driver: container, build: {kind: compose, approvers: [alice, bob]}}
   # ---- EV-HW-04 / 05: Portenta H7 M7 (cortex-m7-hard layer) ---------------------------------------------------------
   servo_2:
     module: servo_drive

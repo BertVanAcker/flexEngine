@@ -101,3 +101,17 @@ Every addition the freeze gate sees, and every re-recorded baseline, has a row h
 | Date | Gate | Entries | Why |
 |---|---|---|---|
 | 2026-10-27 | FE-F1…FE-F6 | all | baseline of the 2.0.0 freeze, recorded on `fe-3/freeze-gate` from master `a2c02eb` (FE-1 move, FE-4 run state) plus the CP-5 / CP-8 specs of FE-3: the connection-point set the tag `flexengine-cp-v1alpha1` freezes |
+
+### Desk runbooks
+
+- EV-HW-12 "Four buttons on the LattePanda": Push / Run all / Stop all / Run one / Stop one across the process,
+  systemd, docker and docker compose runtimes, the health gate only on start, releases kept installed when stopped,
+  and one on-device build that succeeds and one that fails with FE-BLD-001; dry run against the new simulated desk
+  profile `fe4`. `deskctl.py` plans the FE-4 keys (`deploy --state / --state-all / --runtime / --build / --after`,
+  `--keep` carries them, verb `state` for the buttons) and builds `compose` and `native-source` releases.
+- EV-HW-01 installs the release bundle of the GitHub release (`fe_version`, default 2.0.0rc1), checked with
+  `sha256sum -c SHA256SUMS` first (new step `bundle-check`), and runs `suite` from a checkout at the release tag with a
+  dev venv (the bundle ships no tests).
+- The desk defaults no longer point at a framework checkout: EV-HW-08's `tamper` runs from a flexEngine checkout
+  (`/opt/flex/flexEngine`), the lab catalog uses the vendored UC1 model, and `hwtest/requirements.txt` no longer
+  names `./flexmodel`.

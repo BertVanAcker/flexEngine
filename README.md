@@ -426,4 +426,4 @@ framework checkout).
 | `packaging/` | installer, systemd units, wheel builds |
 | `tests/` | the suite; `tests/vectors/framework/` holds the vendored framework files |
 | `results/` | the alpha exit evidence; `results/latest/` (gitignored) is the per-run output |
-| `hwtest/` | desk runbooks EV-HW-01…11 for the lab devices |
+| `hwtest/` | desk runbooks EV-HW-01…12 for the lab devices |

@@ -12,7 +12,9 @@ vars:
   target: {default: desk, prompt: "desk (real hardware) or sim"}
   lp: {default: "lab@lattepanda.lab", prompt: "LattePanda ssh login (local = this runner runs on the LattePanda)"}
   lp_sh: {default: "ssh -o BatchMode=yes ${lp}", prompt: "shell on the LattePanda that reads stdin (sh -c = this host)"}
-  install: {default: "cd ~/flexengine-2.0.0a1-linux_x86_64 && sudo ./packaging/install.sh --device-id panda --extras mcu,plc,applab,otel", prompt: "install command on the LattePanda (offline bundle of build-wheels.sh)"}
+  fe_version: {default: 2.0.0rc1, prompt: "flexEngine release under test (the GitHub release tag without the v)"}
+  bundle_check: {default: "cd ~ && sha256sum -c --ignore-missing SHA256SUMS", prompt: "checksum check of the downloaded bundle on the LattePanda (SHA256SUMS of the GitHub release)"}
+  install: {default: "cd ~/flexengine-${fe_version}-linux_x86_64 && sudo ./packaging/install.sh --device-id panda --extras mcu,plc,applab,otel", prompt: "install command on the LattePanda (in the unpacked release bundle)"}
   fe: {default: "sudo -u flex /opt/flexengine/bin/flexengine", prompt: "flexengine CLI on the LattePanda"}
   fe_enroll: {default: "sudo /opt/flexengine/bin/flexengine enroll --owner flex", prompt: "flexengine enroll as root (writes the token file flex:flex 0600)"}
   fe_host: {default: "${lp}", prompt: "host the flexengine CLI runs on"}
@@ -32,10 +34,11 @@ vars:
   usb_dir: {default: "~/flexhwtest-usb", prompt: "scratch directory on this PC (onboarding token file)"}
   token_path: {default: "/etc/flexengine/tokens/${gp}", prompt: "onboardingTokenFile of the device (engine.yaml)"}
   lp_sudo: {default: sudo, prompt: "sudo on the LattePanda (empty when already root)"}
-  suite: {default: "cd /opt/flex/modular-interoperable-framework/flexengine && ../.venv/bin/python -m pytest -q -p no:cacheprovider tests/unit", prompt: "V2 test suite on the LattePanda (unit layer)"}
+  suite: {default: "cd ~/flexEngine-v${fe_version} && .venv/bin/python -m pytest -q -p no:cacheprovider tests/unit", prompt: "flexEngine test suite on the LattePanda (unit layer; a checkout at the release tag with a dev venv: the bundle ships no tests)"}
   sim: {default: "true", prompt: "simulation hook (dry run only)"}
 setup:
-  - "LattePanda: Ubuntu 24.04, the offline bundle flexengine-<ver>-linux_x86_64.tar.gz (build-wheels.sh) unpacked in ~ of ${lp}, sudo for ${lp}"
+  - "LattePanda: Ubuntu 24.04, sudo for ${lp}; in ~ of ${lp} the release bundle flexengine-${fe_version}-linux_x86_64.tar.gz and SHA256SUMS, both downloaded from the GitHub release v${fe_version} (assets, not a local build-wheels.sh); the step bundle-check verifies the bundle before it is unpacked (tar xzf ...)"
+  - "LattePanda, for the suite step: git clone --branch v${fe_version} https://github.com/BertVanAcker/flexEngine ~/flexEngine-v${fe_version}, then in it python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'"
   - "flexCloud stub (flex-stack) running; its cloud public key, the release public key and the lab CA at hand (stack.json, keys/, tls/ca.crt)"
   - "No older flex-edge.service running (D2-BRINGUP s2: lattepanda-install.sh installs V2 instead)"
   - "This PC: the admin token in ${admin_token_file}, the lab CA in ${cloud_ca}"
@@ -43,6 +46,9 @@ steps:
   - id: stack
     title: flexCloud TLS port reachable
     check_tcp: {host: "${cloud_host}", port: "${cloud_port}"}
+  - id: bundle-check
+    title: "The release bundle matches the release's SHA256SUMS"
+    ssh_run: {host: "${lp}", cmd: "${bundle_check}", match: ": OK$"}
   - id: install
     title: packaging/install.sh (venv, user, dirs, unit; config written once)
     ssh_run: {host: "${lp}", cmd: "${install}", match: "changes: \\d+", timeout: 900}
