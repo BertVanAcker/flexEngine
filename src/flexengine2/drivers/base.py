@@ -126,6 +126,28 @@ driver (FE-DS-009). ``supports(drv, "runState")`` tells.
     ``{"id", "resultDigest"}`` for a workload built on the device, else empty: a driver that keys its files by
     ``digest`` keys them by ``tree_key(workload)`` so a rebuild of the same release is not mistaken for the old one.
 
+Observation (UM-4, additive in 1.0: optional, a driver without them keeps working as before)
+-------------------------------------------------------------------------------------------
+Both are called by the engine's observer thread (``obs/workloads.py``), never by the reconcile loop, and possibly
+while another member runs on the engine's thread: they only read (the executor, the driver's files), never change
+what runs, and never raise. They may take a while (a CLI call), bounded by the driver's own timeouts; the engine
+calls them at most every ``observe.resourcesEverySeconds`` / ``observe.workloadLogsEverySeconds``.
+``supports(drv, "resources")`` / ``supports(drv, "logs")`` tell.
+
+``resources(dep_ids) -> {dep_id: DeploymentResources}``
+    What the workloads of these deployments use now (``driver-spi.v1`` ``$defs/DeploymentResources``):
+    ``cpuPercent`` (100 = one CPU fully busy, so above 100 on several CPUs), ``memoryBytes``, ``memoryLimitBytes``,
+    ``memoryPercent`` (of the limit, else of the device), ``pids``; every key optional, a deployment the driver
+    cannot measure (not running, unknown, executor unreachable) is left out. A workload of several containers or
+    processes reports their sum.
+``logs(dep_id, cursor, limit) -> WorkloadLogBatch``
+    The workload's own stdout/stderr written after ``cursor`` (``None``: the newest ``limit`` lines), oldest first,
+    at most ``limit`` lines (the newest ones when more are waiting): ``{"lines": [{"msg", "stream"?: stdout |
+    stderr, "t"?: unix s, "container"?}], "cursor": str | None, "dropped"?: n}``. ``cursor`` is opaque to the
+    engine: the driver's own position (a timestamp, a journal cursor, file offsets), handed back on the next call
+    and kept across engine restarts, so a line is collected once. Unknown deployment or unreachable executor:
+    ``{"lines": [], "cursor": cursor}``. Lines without ``t`` get the time they were collected.
+
 Errors
 ------
 ``DriverError`` is the only exception a driver raises across the SPI. It means "executor problem" (defer or roll
@@ -221,8 +243,10 @@ def tree_key(wl: Workload) -> str:
 
 
 def supports(drv, feature: str) -> bool:
-    """FE-4: does a driver implement an optional part of the SPI? runState: stage + start + stop; build: build."""
-    meths = {"runState": ("stage", "start", "stop"), "build": ("build",)}[feature]
+    """Does a driver implement an optional part of the SPI? FE-4 runState: stage + start + stop; build: build;
+    UM-4 resources: resources; logs: logs."""
+    meths = {"runState": ("stage", "start", "stop"), "build": ("build",), "resources": ("resources",),
+             "logs": ("logs",)}[feature]
     cls = drv if isinstance(drv, type) else type(drv)
     return all(getattr(cls, m, None) is not None and getattr(cls, m) is not getattr(Driver, m) for m in meths)
 
@@ -284,6 +308,13 @@ class Driver(ABC):
 
     def build(self, desired: Workload, request: BuildRequest) -> BuildResult:
         raise NotImplementedError("build: optional, see supports()")
+
+    # UM-4 (optional; see the module docstring): observation, from the engine's observer thread
+    def resources(self, dep_ids: list[str]) -> dict[str, dict]:
+        return {}
+
+    def logs(self, dep_id: str, cursor: str | None, limit: int) -> dict:
+        return {"lines": [], "cursor": cursor}
 
     def capabilities(self) -> dict:
         return {"profile": self.profile, "driver": self.name, **self.placement()}

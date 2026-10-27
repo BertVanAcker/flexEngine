@@ -181,4 +181,8 @@ flexEngineV2 engine configuration (`/etc/flexengine/engine.yaml`, JSON or YAML).
 | `otel.endpoint` | string |  |  | OTLP/HTTP collector base URL, e.g. `http://127.0.0.1:4318` (`/v1/traces` is appended). Unset = `$OTEL_EXPORTER_OTLP_ENDPOINT`, else no OTLP export. |
 | `otel.file` | string |  |  | Also write every finished span as one JSON line to this file. |
 | `historyMax` | integer | `500` |  | Transitions kept per device in the local status history (`<device dataDir>/history.jsonl`, rotated to `history.jsonl.1`). |
+| `observe` | object |  |  | Workload observation (UM-4), per device engine in its own thread, never in the reconcile loop: per-deployment resources (`deploymentResources` of GET /v1/metrics) and the workloads' stdout/stderr (GET /v1/logs, `source: workload`), from drivers that support them (docker, podman, compose, process, systemd). Device resources (`resources`) are read on demand and need no setting. |
+| `observe.resourcesEverySeconds` | number | `10` |  | Seconds between two samples of the deployments' resources (one driver call per driver, e.g. one `docker stats`). 0 = off. |
+| `observe.workloadLogsEverySeconds` | number | `5` |  | Seconds between two collections of the workloads' stdout/stderr (at most 200 lines per deployment each). 0 = off. |
+| `observe.workloadLogMaxBytes` | integer | `1048576` |  | Size at which `<device dataDir>/workload.jsonl` is rotated to `workload.jsonl.1` (disk use at most twice this). |
 | `shutdownGrace` | number | `30` |  | Seconds a running apply / health gate may take to finish after SIGTERM before the host exits anyway. |

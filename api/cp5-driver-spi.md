@@ -29,6 +29,8 @@ this sheet and `base.py` differ, `base.py` wins.
 | `stage(current, desired)` | optional (FE-4, with `start` + `stop` = run states) | install without starting: `status` present, not running; replaces what ran; idempotent; only `DriverError` |
 | `start(dep_id)` / `stop(dep_id)` | optional (FE-4) | start a staged/stopped workload (the engine gates it) / stop it and keep it installed (no restart policy brings it back); idempotent |
 | `build(desired, request) -> BuildResult` | optional (FE-4) | on-device build from `request.source_path` with the signed `request.spec`; `request.progress()` / `request.line()`; `DriverError` = FE-BLD-001, `BuildTimeout` = FE-BLD-002 |
+| `resources(dep_ids) -> {dep: DeploymentResources}` | optional (UM-4, `supports(drv, "resources")`) | what the deployments' workloads use now: `cpuPercent` (100 = one CPU), `memoryBytes`, `memoryLimitBytes`, `memoryPercent`, `pids`, all optional; unmeasurable deployments left out; read only, never raises; called from the observer thread, not the reconcile loop |
+| `logs(dep_id, cursor, limit) -> WorkloadLogBatch` | optional (UM-4, `supports(drv, "logs")`) | the workload's stdout/stderr after the opaque `cursor` (None: the newest `limit`), `{lines: [{msg, stream?, t?, container?}], cursor, dropped?}`; read only, never raises; same thread as `resources` |
 | `runtime` | class/instance attr (FE-4) | the `x-flex-runtime` value served (`docker`, `docker-compose`, `podman`, `ankaios`, `systemd`, `process`, `applab`, `mcu-module`), `None` otherwise |
 | `verified(dep_id, want)` | profile extension (plc-verify only) | used by the activation gate for `plc:<dep>[@hash]` requirements |
 
@@ -51,6 +53,17 @@ install   status(dep)  -- present+same digest+running: adopt, no apply
 remove    remove(dep) for deployments absent from the manifest (after the activation gate)
 supervise supervise() every tick; status(dep) for drift (absent -> apply(None, wl)); health(dep) every N ticks
 ```
+
+## Observation (UM-4)
+
+| Driver | `resources` | `logs` (cursor) |
+|---|---|---|
+| docker, podman | `stats --no-stream --format '{{json .}}'` over the deployments' running containers | `logs --timestamps --tail N [--since T]`, stdout / stderr from the CLI's pipes ({container: last timestamp}) |
+| ankaios | as podman, on the workload's podman container | as podman |
+| compose | as docker, summed over the project's containers (label `com.docker.compose.project`) | as docker, per container of the project (`container` set) |
+| process | `/proc/<pid>/stat` (CPU between two samples) and `statm` of the main process (Linux only) | new lines of `app.log` (stdout) and `app.stderr.log` (stderr) ({stream: [inode, offset]}; no `t`) |
+| systemd | `systemctl show -p CPUUsageNSec,MemoryCurrent,MemoryMax,TasksCurrent` (the unit's cgroup) | `journalctl -u <unit> -o json -n N [--after-cursor C]` (journal cursor; no `stream`) |
+| applab, mcu-*, plc-verify, os-rauc, arduino-ota | none | none |
 
 ## Driver: os-rauc (EV-17, `drivers/os_rauc.py`)
 

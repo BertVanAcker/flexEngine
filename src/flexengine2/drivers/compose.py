@@ -265,6 +265,10 @@ class ComposeDriver(CliContainerDriver):
             self._save(st)
         shutil.rmtree(self.dep_dir(dep_id), ignore_errors=True)
 
+    def _obs_filters(self, dep_id: str) -> list[str]:
+        """UM-4 observation: the containers of the deployment's project (compose labels them)."""
+        return [f"com.docker.compose.project={self.project(dep_id)}"]
+
     def _rows(self, dep_id: str, ent: dict) -> list[dict]:
         """Containers of the project (DriverError when compose cannot answer)."""
         cmd = (self._cmd(ent, "ps", "-a", "--format", "json") if Path(ent["file"]).exists()

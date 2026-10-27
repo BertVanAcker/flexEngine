@@ -2,7 +2,8 @@
 
 It implements the CLI surface `SystemdDriver` uses, with systemd's semantics for simple/exec services:
 
-    [--user] [--no-pager] show [-p A,B | --property=A] [--value] [unit]   no unit: manager (Version=)
+    [--user] [--no-pager] show [-p A,B | --property=A] [--value] [unit]   no unit: manager (Version=); UM-4:
+                                        CPUUsageNSec, MemoryCurrent, MemoryMax, TasksCurrent of the main process
     daemon-reload                       (re)load unit files from $FAKE_SYSTEMD_UNITDIR (+ linked paths)
     enable <unit|/abs/path> / disable <unit> / is-enabled <unit>
     start | restart | stop | reset-failed | is-active <unit>
@@ -293,6 +294,20 @@ def start(unit: str) -> None:
     fail(f"Job for {unit} timed out.")
 
 
+def _accounting(pid, active: str) -> dict:
+    """UM-4: CPUUsageNSec / MemoryCurrent / TasksCurrent of the main process (systemd: of the control group)."""
+    if active != "active" or not str(pid or "").isdigit() or not int(pid):
+        return {"CPUUsageNSec": "[not set]", "MemoryCurrent": "[not set]", "TasksCurrent": "[not set]",
+                "MemoryMax": "infinity"}
+    try:
+        f = Path(f"/proc/{pid}/stat").read_text().rsplit(") ", 1)[1].split()
+        ns = (int(f[11]) + int(f[12])) * 10**9 // os.sysconf("SC_CLK_TCK")
+        rss = int(Path(f"/proc/{pid}/statm").read_text().split()[1]) * os.sysconf("SC_PAGE_SIZE")
+    except (OSError, IndexError, ValueError):
+        return {}
+    return {"CPUUsageNSec": str(ns), "MemoryCurrent": str(rss), "TasksCurrent": "1", "MemoryMax": "infinity"}
+
+
 def show(unit: str | None, props: list[str], value: bool) -> None:
     if unit is None:
         vals = {"Version": "255-fake", "SystemState": "running"}
@@ -302,6 +317,7 @@ def show(unit: str | None, props: list[str], value: bool) -> None:
                                             "ExecMainStatus", "ExecMainExitTimestampMonotonic")}
         if vals["ActiveState"] in ("active", "activating") and not alive(st.get("monitorPid")):
             vals.update(ActiveState="failed", SubState="failed", Result="signal", MainPID=0)  # monitor died
+        vals.update(_accounting(vals.get("MainPID"), vals["ActiveState"]))
         vals["LoadState"] = "loaded" if unit in loaded() else "not-found"
         vals["Id"] = unit
         vals["UnitFileState"] = "enabled" if unit in _read(STATE / "enabled.json", []) else "disabled"

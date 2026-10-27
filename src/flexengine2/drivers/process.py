@@ -13,6 +13,9 @@ the process. The probe container has no systemd, so the driver plays systemd its
     (offline, hash-checked); its python runs app.py. unit.json's ExecStart is honoured ({python} = the payload
     interpreter; a relative program path is resolved in the payload tree, e.g. a Rust binary). platform() =
     {dev.flex.arch, dev.flex.pyabi}; health probe type "process" = the main process is alive
+  * UM-4 observation: resources() = CPU percent (utime + stime between two samples) and resident memory of each
+    unit's main process (/proc, Linux; nothing elsewhere); logs() = the new complete lines of app.log (stdout) and
+    app.stderr.log (stderr) in the unit's tree, cursor = {stream: [inode, offset]}, at most 64 KiB per stream a call
   * FE-4: stage (unpack + unit entry, not started), start, stop (the unit stays, wantRunning false: supervise leaves it
     alone) and build (drivers/buildstep.py native_build: build.command in the source tree -> payload)
 """
@@ -20,6 +23,7 @@ the process. The probe container has no systemd, so the driver plays systemd its
 from __future__ import annotations
 
 import io
+import json
 import os
 import shutil
 import signal
@@ -34,9 +38,12 @@ from flexengine2.util import atomic_write_bytes, atomic_write_json, fsync_dir, f
 from flexengine2.drivers.base import (BuildRequest, BuildResult, Driver, DriverError, Observed, Workload, http_probe,
                                       tree_key, wait_until)
 from flexengine2.drivers.native import pyenv
+from flexengine2.obs.resources import ProcCpu, proc_rss
 
 
-PROCFS = sys.platform.startswith("linux")   # /proc/<pid>/{stat,environ,cwd}; else `ps` (macOS, BSD)
+PROCFS = sys.platform.startswith("linux")
+OUT_LOG, ERR_LOG = "app.log", "app.stderr.log"    # the workload's stdout / stderr, in its unpacked tree
+LOG_READ_MAX = 64 * 1024                           # bytes per stream read by one logs() call   # /proc/<pid>/{stat,environ,cwd}; else `ps` (macOS, BSD)
 
 
 def proc_start(pid: int) -> str | None:
@@ -171,13 +178,15 @@ class ProcessDriver(Driver):
         u.update(pid=None, spawning=time.time())
         self._save()
         log = open(Path(u["dir"]) / "app.log", "ab")
+        err = open(Path(u["dir"]) / ERR_LOG, "ab")      # UM-4: stderr apart, so logs() can tell the streams
         env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "FLEX_UNIT": u["marker"],
                "FLEX_HEALTH_PORT": str(u["port"]), "PYTHONDONTWRITEBYTECODE": "1"}
         for k, v in sorted(u.get("parameters", {}).items()):
             env[f"FLEX_PARAM_{k.upper()}"] = str(v)
-        p = subprocess.Popen(u.get("argv") or [self.python, "app.py"], cwd=u["dir"], env=env, stdout=log, stderr=log,
+        p = subprocess.Popen(u.get("argv") or [self.python, "app.py"], cwd=u["dir"], env=env, stdout=log, stderr=err,
                              stdin=subprocess.DEVNULL, start_new_session=True)
         log.close()
+        err.close()
         u.pop("spawning", None)
         u.update(pid=p.pid, startedAt=time.time())
         u["startTime"] = proc_start(p.pid)       # fork time: the same before and after exec
@@ -394,6 +403,75 @@ class ProcessDriver(Driver):
                 events.append({"dep": dep_id, "event": "exited", "willRestartAt": u["nextStart"]})
             self._save()
         return events
+
+    # ---- observation (UM-4) ----------------------------------------------------------------------------------
+    def resources(self, dep_ids):
+        """SPI: the main process of each running unit (Linux /proc); never raises."""
+        if not PROCFS:
+            return {}
+        if not hasattr(self, "_cpu"):
+            self._cpu = ProcCpu()
+        units = dict(self.units)           # the engine thread may change the table meanwhile
+        out = {}
+        for dep in dep_ids:
+            u = units.get(dep) or {}
+            if not u.get("pid") or not self._alive(u):
+                continue
+            r = {}
+            pct = self._cpu.percent(f"{dep}:{u['pid']}", self._cpu.cpu_seconds(u["pid"]))
+            if pct is not None:
+                r["cpuPercent"] = pct
+            rss = proc_rss(u["pid"])
+            if rss is not None:
+                r["memoryBytes"] = rss
+            if r:
+                out[dep] = r
+        self._cpu.forget({f"{d}:{(units.get(d) or {}).get('pid')}" for d in dep_ids})
+        return out
+
+    def logs(self, dep_id, cursor, limit):
+        """SPI: new complete lines of the unit's stdout / stderr files; never raises."""
+        u = dict(self.units).get(dep_id)
+        try:
+            pos = json.loads(cursor) if cursor else {}
+        except ValueError:
+            pos = {}
+        pos = pos if isinstance(pos, dict) else {}
+        if not u or not u.get("dir"):
+            return {"lines": [], "cursor": cursor}
+        lines, new = [], {}
+        for stream, name in (("stdout", OUT_LOG), ("stderr", ERR_LOG)):
+            try:
+                with open(Path(u["dir"]) / name, "rb") as f:
+                    st = os.fstat(f.fileno())
+                    v = pos.get(stream)
+                    if (isinstance(v, list) and len(v) == 2 and v[0] == st.st_ino and isinstance(v[1], int)
+                            and 0 <= v[1] <= st.st_size):
+                        start, cut = v[1], False
+                    else:                                    # another file (new tree) or the first call: its tail
+                        start = max(0, st.st_size - LOG_READ_MAX)
+                        cut = start > 0
+                    f.seek(start)
+                    data = f.read(LOG_READ_MAX)
+            except OSError:
+                continue
+            skip = 0
+            if cut:                                          # the tail starts inside a line: drop that part
+                i = data.find(b"\n")
+                skip = i + 1 if i >= 0 else len(data)
+            body = data[skip:]
+            j = body.rfind(b"\n")
+            complete = body[:j + 1] if j >= 0 else b""
+            if not complete and len(data) == LOG_READ_MAX:   # one line longer than a read: take it as it is
+                complete = body
+            new[stream] = [st.st_ino, start + skip + len(complete)]
+            for ln in complete.decode("utf-8", "replace").splitlines():
+                lines.append({"stream": stream, "msg": ln})
+        n = max(1, int(limit))
+        out = {"lines": lines[-n:], "cursor": json.dumps(new, sort_keys=True) if new else cursor}
+        if len(lines) > n:
+            out["dropped"] = len(lines) - n
+        return out
 
     def platform(self):
         """EV-37: {dev.flex.arch, dev.flex.pyabi} of the payload interpreter (layer selection)."""

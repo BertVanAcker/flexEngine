@@ -182,7 +182,7 @@ All commands are clients of the local API. When the engine is not running they r
 | `flexengine status [--json]` | per device: accepted `manifestVersion`, online, outbox length, every deployment with state, version, health; `lastRefusal` when a desired state was refused |
 | `flexengine deployments [--device D] [dep]` | the deployments, or one in detail (plan, failure, `waitingFor`) |
 | `flexengine history [--since 2h] [--device D]` | status transitions (PREPARING, TESTING, COMMITTING, ...) from the local ring buffer |
-| `flexengine logs [-f] [--device D] [-n N]` | action log and engine log lines |
+| `flexengine logs [-f] [--device D] [-n N]` | action log and engine log lines, and the workloads' own stdout/stderr (docker, podman, compose, process, systemd; `observe` in `engine.yaml`) |
 | `flexengine doctor [--json]` | config, data dir and key permissions, `state.json`, local API, cloud reachability (TLS), each executor |
 | `flexengine doctor --repair --yes` | moves a corrupt `state.json` aside; the engine then starts fresh and gets the desired state again |
 | `flexengine bundle import <file> [--device D]` | imports a signed offline bundle (below) |

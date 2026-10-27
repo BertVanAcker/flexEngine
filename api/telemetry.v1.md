@@ -52,6 +52,14 @@ of the same trace (not the engine's): `flex.plan` root (`flex.plan_hash`, `flex.
   with no contract beyond that. Event names: `LogEvent`, plus `action.<kind>` per action-log line, `build.<phase>`
   (FE-4: started, progress, log, succeeded, failed) and, for stdlib records of the package, the logger name
   (`flexengine2.cloud.client`) [V].
+- **Workload log** (FE-5, UM-4; `WorkloadLogRecord`) [V]: what the workloads write to stdout/stderr, collected by the
+  observer thread through the drivers' optional SPI member `logs()` every `observe.workloadLogsEverySeconds` (5 s;
+  at most 200 lines per deployment a round, a line cut at 4096 characters with `truncated: true`) into
+  `dataDir/workload.jsonl` (rotated to `workload.jsonl.1` at `observe.workloadLogMaxBytes`, 1 MiB). `GET /v1/logs`
+  serves each line as `{"t", "ts", "device", "source": "workload", "dep", "deployment", "stream"?: stdout|stderr,
+  "container"?, "level": "info", "event": "workload", "msg"}`; `t` is the executor's time (docker, journald) or
+  when the engine collected the line (process driver). The drivers' cursors (`dataDir/workload-logs.json`) survive a
+  restart, so no line is served twice. The journal (systemd driver) does not tell stdout from stderr: no `stream`.
 - **Action log** `dataDir/actions.jsonl` (`ActionRecord`, fsync per line; read by the SIL scenario and the EV-13
   oracles) [V]: `{"t": unix s, "action": apply|adopt|commit|reject|remove|rollback|rollback-resume|repair|retry|stage|
   start|stop|build, "dep": id, "version"?, "digest"?, "reason"? (reject), "failed"? (rollback: failed version),
@@ -67,6 +75,22 @@ start, end (unix s), kind, status, attributes, links[] (trace ids)` [V].
 `Engine.metrics()` per device, served as `GET /v1/metrics` (`{deviceId: Metrics}`, CP-7) [V]: `ticks`, `startedAt`,
 `lastTickAt`, the duration summaries `reconcileSeconds`, `tickSeconds`, `gateSeconds` (`{last, max, avg, count}`),
 `outboxLength`, `outboxMax`, `outboxDropped`, `backpressure`, `errors` and `errorsByType` (counters), `lastError`,
-`manifestVersion`, `applied`. Status records carry the timings of one install (`applySeconds`,
+`manifestVersion`, `applied`.
+
+Resources (FE-5, UM-4; optional keys, each present only when there is something to report) [V]:
+
+| Key | Content | Source |
+|---|---|---|
+| `resources.sampledAt` | unix s of the sample | `obs/resources.py` `HostSampler`, on demand (at most one sample a second; no process is run) |
+| `resources.cpu` | `count`, `load1`, `load5`, `load15`, `percent` (0…100, busy share of all CPUs since the previous sample; the first: since the engine started) | `/proc/stat`, `/proc/loadavg` (`os.getloadavg()` without procfs) |
+| `resources.memory` | `totalBytes`, `usedBytes` (= total − MemAvailable), `availableBytes`, `percent` | `/proc/meminfo` |
+| `resources.storage` | `path` (the device's dataDir), `totalBytes`, `usedBytes`, `freeBytes` (available to the engine's user), `percent` (df's Use%: used of used + free) | `statvfs(dataDir)` |
+| `resources.temperatureCelsius` | the hottest CPU / SoC thermal zone, else the first zone | `/sys/class/thermal/thermal_zone*/{type,temp}` |
+| `deploymentResources.<dep>` | `sampledAt`, `driver`, `cpuPercent` (100 = one CPU), `memoryBytes`, `memoryLimitBytes`, `memoryPercent`, `pids` | the driver's optional SPI member `resources()` (CP-5), every `observe.resourcesEverySeconds` (10 s) in the observer thread |
+
+What a platform or driver does not tell is left out, never guessed (macOS: no CPU percent, no memory). A child
+device (MCU behind a gateway) reports no `resources`: the host's are not the MCU's. Drivers with `resources()`:
+docker, podman, ankaios (its podman containers), compose (sum over the project's containers), process (the main
+process, Linux), systemd (the unit's control group); the others report no `deploymentResources`. Status records carry the timings of one install (`applySeconds`,
 `healthGateSeconds`, `detectSeconds`, `totalSeconds`, `faultToHealthySeconds`, CP-2). No OTel metrics are exported in
 v1; adding them (e.g. `flexengine_reconcile_seconds`) is an additive change.

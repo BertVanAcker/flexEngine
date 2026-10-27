@@ -9,6 +9,9 @@ It implements exactly the CLI surface `CliContainerDriver` / `AnkaiosDriver` use
                                               HostConfig.PortBindings, Mounts, Config.Labels/Env,
                                               NetworkSettings.IPAddress = 127.0.0.1)
     exec <name|id> <cmd...>                   runs cmd on the host with the container's environment (EV-39)
+    stats --no-stream --format '{{json .}}' <ref...>   UM-4: CPUPerc, MemUsage, MemPerc, PIDs of the app process
+    logs [--timestamps] [--since T] [--tail N] <ref>   UM-4: what the app wrote (stdout to stdout, stderr to
+                                              stderr; the supervisor timestamps each line like dockerd)
     ps -a -q [--filter label=k=v ...]
     stop [-t N] <name>  /  rm -f <name>
     volume create [--label k=v ...] N / volume inspect N / volume ls -q [--filter label=k=v ...] / volume rm [-f] N
@@ -34,6 +37,7 @@ import os
 import signal
 import subprocess
 import sys
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -55,6 +59,11 @@ class H(BaseHTTPRequestHandler):
 HTTPServer.allow_reuse_address = True
 srv = HTTPServer(("127.0.0.1", cfg["port"]), H)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
+print(f"listening on {cfg['port']}", flush=True)
+print("ready" if cfg["ready"] else "not ready", file=sys.stderr, flush=True)
+for ln in (os.environ.get("FAKE_LOG_LINES") or "").split("|"):
+    if ln:
+        print(ln, flush=True)
 if cfg["exit_after"]:
     time.sleep(float(cfg["exit_after"])); os._exit(cfg["code"])
 threading.Event().wait()
@@ -306,6 +315,85 @@ def _spawn(cid: str):
     _write(d / "sup.json", {"pid": sup.pid})
 
 
+def _now_rfc3339() -> str:
+    ns = time.time_ns()
+    return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(ns // 10**9)) + f".{ns % 10**9:09d}Z"
+
+
+def _pump(pipe, path: Path):
+    """dockerd's log driver: every line the app writes, with the time it arrived."""
+    with open(path, "ab") as f:
+        for raw in iter(pipe.readline, b""):
+            f.write(_now_rfc3339().encode() + b" " + raw.rstrip(b"\n") + b"\n")
+            f.flush()
+
+
+def _ts_key(ts: str):
+    sec, _, frac = ts.rstrip("Z").partition(".")
+    return sec, frac.ljust(9, "0")
+
+
+def cmd_logs(a: list[str]):
+    since, tail, stamps, i = None, None, False, 0
+    while i < len(a) - 1:
+        if a[i] == "--since":
+            since, i = a[i + 1], i + 2
+        elif a[i] == "--tail":
+            tail, i = int(a[i + 1]), i + 2
+        elif a[i] in ("--timestamps", "-t"):
+            stamps, i = True, i + 1
+        else:
+            raise Fail(f"fakeoci: unsupported logs option {a[i]}", 125)
+    meta = _find(a[-1])
+    if meta is None:
+        raise Fail(f"Error: No such container: {a[-1]}")
+    d = STATE / "containers" / meta["Id"]
+    recs = []
+    for stream in ("stdout", "stderr"):
+        try:
+            text = (d / f"{stream}.log").read_text()
+        except OSError:
+            continue
+        for ln in text.splitlines():
+            ts, _, msg = ln.partition(" ")
+            if since is None or _ts_key(ts) >= _ts_key(since):     # docker: --since is inclusive
+                recs.append((_ts_key(ts), stream, ts, msg))
+    recs.sort()
+    if tail is not None:
+        recs = recs[-tail:] if tail > 0 else []
+    for _k, stream, ts, msg in recs:
+        print(f"{ts} {msg}" if stamps else msg, file=sys.stdout if stream == "stdout" else sys.stderr)
+
+
+def cmd_stats(a: list[str]):
+    refs = [x for i, x in enumerate(a) if not x.startswith("-") and a[i - 1] != "--format"]
+    total = 0
+    with open("/proc/meminfo") as f:
+        for ln in f:
+            if ln.startswith("MemTotal:"):
+                total = int(ln.split()[1]) * 1024
+    for ref in refs:
+        meta = _find(ref)
+        if meta is None:
+            raise Fail(f"Error response from daemon: No such container: {ref}")
+        run = _read(STATE / "containers" / meta["Id"] / "run.json", {})
+        pid = run.get("pid") if _inspect(meta)["State"]["Running"] else None
+        cpu, rss, pids = 0.0, 0, 0
+        if pid:
+            try:
+                f = Path(f"/proc/{pid}/stat").read_text().rsplit(") ", 1)[1].split()
+                secs = (int(f[11]) + int(f[12])) / os.sysconf("SC_CLK_TCK")
+                cpu = 100.0 * secs / max(0.01, time.time() - float(run.get("startedAt") or time.time()))
+                rss = int(Path(f"/proc/{pid}/statm").read_text().split()[1]) * os.sysconf("SC_PAGE_SIZE")
+                pids = 1
+            except (OSError, IndexError, ValueError):
+                pass
+        print(json.dumps({"ID": meta["Id"][:12], "Container": ref, "Name": meta["Name"], "CPUPerc": f"{cpu:.2f}%",
+                          "MemUsage": f"{rss / 1048576:.2f}MiB / {total / 1073741824:.2f}GiB",
+                          "MemPerc": f"{100.0 * rss / total if total else 0:.2f}%", "PIDs": str(pids),
+                          "NetIO": "0B / 0B", "BlockIO": "0B / 0B"}))
+
+
 def supervise(cid: str):
     """The runtime's restart policy for one container (runs detached, one per container)."""
     d = STATE / "containers" / cid
@@ -329,7 +417,9 @@ def supervise(cid: str):
         env[k] = v
     while True:
         child = subprocess.Popen([sys.executable, "-c", APP], env=env, stdin=subprocess.DEVNULL,
-                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        for pipe, name in ((child.stdout, "stdout.log"), (child.stderr, "stderr.log")):
+            threading.Thread(target=_pump, args=(pipe, d / name), daemon=True).start()
         _write(d / "run.json", {"status": "running", "pid": child.pid, "supervisor": os.getpid(),
                                 "restarts": restarts, "startedAt": time.time()})
         code = child.wait()
@@ -399,6 +489,10 @@ def main(argv: list[str]) -> int:
             print(ref)
         elif a[:1] == ["volume"]:
             cmd_volume(a[1:])
+        elif a[:1] == ["logs"]:
+            cmd_logs(a[1:])
+        elif a[:1] == ["stats"]:
+            cmd_stats(a[1:])
         elif a[:1] == ["exec"]:
             env, cmd = cmd_exec(a[1:])
             lk.close()

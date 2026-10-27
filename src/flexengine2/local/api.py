@@ -776,6 +776,8 @@ class LocalApi:
             files = list(extra(d["deviceId"], dd)) if callable(extra) else []
             files += [p for p in (dd / "engine.log", dd / "engine.jsonl", dd / "log.jsonl") if p not in files]
             out += [(d["deviceId"], "log", Path(p)) for p in files]
+            # UM-4: the workloads' own stdout/stderr, collected by the engine's observer (obs/workloads.py)
+            out.append((d["deviceId"], "workload", dd / "workload.jsonl"))
         return out
 
     @staticmethod
@@ -815,11 +817,18 @@ class LocalApi:
         except ValueError:
             raise ApiError(400, "bad request", "tail must be an integer") from None
         sources = self._log_sources(device)
-        lines, offsets = [], {}
+        lines, offsets, inodes = [], {}, {}
         for dev, src, p in sources:
+            if src == "workload":   # rotated (obs/workloads.py): the tail may start in the previous file
+                with contextlib.suppress(OSError), open(p.with_name(p.name + ".1"), "rb") as f:
+                    for raw in f.read().decode("utf-8", "replace").splitlines():
+                        rec = self._log_line(dev, src, raw)
+                        if rec:
+                            lines.append(rec)
             try:
                 with open(p, "rb") as f:
                     data = f.read()
+                    inodes[p] = os.fstat(f.fileno()).st_ino
             except OSError:
                 offsets[p] = 0
                 continue
@@ -842,9 +851,14 @@ class LocalApi:
                 out = []
                 for dev, src, p in sources:
                     try:
-                        size = os.path.getsize(p)
+                        st = os.stat(p)
                     except OSError:
                         continue
+                    size = st.st_size
+                    if st.st_ino != inodes.get(p):  # replaced (rotated to .1, workload.jsonl): read it from the start
+                        if p in inodes:
+                            offsets[p], pending[p] = 0, b""
+                        inodes[p] = st.st_ino
                     if size < offsets.get(p, 0):  # rotated / truncated
                         offsets[p] = 0
                     if size > offsets.get(p, 0):

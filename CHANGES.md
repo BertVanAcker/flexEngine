@@ -75,6 +75,30 @@ in "Contract changes since the freeze" below, a removal or a change fails CI.
   report is refused as a whole (FE-DS-007), a staged/stopped run state on a driver without it too (FE-DS-009).
 - Driver SPI 1.0, additive: optional `stage`, `start`, `stop`, `build`, attribute `runtime`, `Workload.build`.
 
+### FE-5: resource metrics and workload logs (UM-4, additions within v1)
+
+Requested by flexMonitor (UM-4) for a device's load and its workloads' output on the device page.
+
+- `GET /v1/metrics` (telemetry v1 `Metrics`) has two new optional keys: `resources`, the device's CPU (`count`,
+  `load1/5/15`, `percent`), memory (`totalBytes`, `usedBytes`, `availableBytes`, `percent`), storage of the data
+  directory's file system (`path`, `totalBytes`, `usedBytes`, `freeBytes`, `percent`) and `temperatureCelsius`, read
+  on demand from `/proc`, `/sys` and `statvfs` (no process, at most one sample a second; what a platform does not
+  tell is left out; none on a child device); and `deploymentResources` (`{dep: {sampledAt, driver, cpuPercent,
+  memoryBytes, memoryLimitBytes, memoryPercent, pids}}`) from the drivers that can measure their workloads: docker,
+  podman (and Ankaios' podman containers), compose, process, systemd.
+- `GET /v1/logs` serves the workloads' own stdout/stderr as `source: workload` (`dep`, `stream` stdout | stderr when
+  the executor tells, `msg`; telemetry v1 `WorkloadLogRecord`), with the same tail and follow; `flexengine logs`
+  shows them. They are collected into `<dataDir>/workload.jsonl` (rotated to `.1` at `observe.workloadLogMaxBytes`,
+  1 MiB) with the drivers' cursors in `workload-logs.json`, so a restart collects nothing twice.
+- A per-device observer thread does both, never the reconcile loop; `engine.yaml` `observe:
+  {resourcesEverySeconds: 10, workloadLogsEverySeconds: 5, workloadLogMaxBytes}` (0 = off).
+- Driver SPI 1.0, additive: optional `resources(dep_ids)` and `logs(dep_id, cursor, limit)` (features `resources`,
+  `logs`, `$defs` `DeploymentResources`, `WorkloadLogBatch`); a driver without them works as before. The process
+  driver writes the workload's stderr to `app.stderr.log` next to `app.log` (stdout), so the streams stay apart.
+- `flexengine2.testing.observe`: `ObservableFakeDriver` (set resources, write lines) and `fake_host` / `sampler_for`
+  (fixed device resources) for tests against a real engine and its local API.
+- Telemetry log event `observe.failed` (a driver's observation raised; logged once per driver and deployment).
+
 ### FE-3: the 2.0.0 gate (2.0.0rc1)
 
 - CP-5, CP-7 and CP-8 are versioned like the other connection points: machine-readable specs in the package
@@ -112,6 +136,7 @@ Every addition the freeze gate sees, and every re-recorded baseline, has a row h
 | Date | Gate | Entries | Why |
 |---|---|---|---|
 | 2026-10-27 | FE-F1…FE-F6 | all | baseline of the 2.0.0 freeze, recorded on `fe-3/freeze-gate` from master `a2c02eb` (FE-1 move, FE-4 run state) plus the CP-5 / CP-8 specs of FE-3: the connection-point set the tag `flexengine-cp-v1alpha1` freezes |
+| 2026-10-27 | FE-F2, FE-F5 | `telemetry.v1.schema.json:/$defs/Metrics/properties/resources`, `telemetry.v1.schema.json:/$defs/Metrics/properties/deploymentResources`, `telemetry.v1.schema.json:/$defs/DeviceResources`, `telemetry.v1.schema.json:/$defs/DeploymentResourcesSample`, `telemetry.v1.schema.json:/$defs/WorkloadLogRecord`, `telemetry.v1.schema.json:/$defs/LogEvent/enum=observe.failed`, `driver-spi.v1.schema.json:/x-flex-spi/optional/resources`, `driver-spi.v1.schema.json:/x-flex-spi/optional/logs`, `driver-spi.v1.schema.json:/x-flex-spi/features/resources`, `driver-spi.v1.schema.json:/x-flex-spi/features/logs`, `driver-spi.v1.schema.json:/$defs/DeploymentResources`, `driver-spi.v1.schema.json:/$defs/WorkloadLogBatch`, `driver-spi.v1.schema.json:/$defs/WorkloadLogLine`, `schema.json:/properties/observe` | FE-5 (UM-4): device and per-deployment resources in the metrics, workload stdout/stderr in the local API's logs, the optional SPI members behind them and the `observe` settings (additions only) |
 
 ### Coverage gate
 

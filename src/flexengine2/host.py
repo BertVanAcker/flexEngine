@@ -82,7 +82,7 @@ def load_config(path: str | Path) -> dict:
 CLOUD_KEYS = ("apiUrl", "cloudPublicKey", "releasePublicKeys", "pollInterval", "backoff", "httpTimeout",
               "healthEveryTicks", "safeStateFile", "caFile", "tlsServerName", "allowSystemTrust", "allowPlainHttp", "capsEveryTicks", "fixPermissions",
               "outboxMax")
-HOST_KEYS = ("historyMax",)  # top-level keys every device engine gets
+HOST_KEYS = ("historyMax", "observe")  # top-level keys every device engine gets
 
 
 def device_cfg(cfg: dict, dev: dict) -> dict:
@@ -305,6 +305,8 @@ class Host:
             e.worker = t
             self.threads[e.device] = t
             t.start()
+        for e in self.engines:     # UM-4: per-deployment resources and workload logs, off the reconcile loop
+            e.observer.start(self.stop_event)
         for i, r in enumerate(self.relays):
             t = threading.Thread(target=self._relay_worker, args=(r,), name=f"relay-{i}", daemon=True)
             self.relay_threads.append(t)

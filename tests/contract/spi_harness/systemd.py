@@ -92,6 +92,7 @@ class FakeSystemdHarness(_SystemdBase):
         self.bindir = self.tmp / "bin"
         shim(self.bindir, "systemctl", FAKES / "fakesystemctl.py",
              {"FAKE_SYSTEMD_STATE": self.state, "FAKE_SYSTEMD_UNITDIR": self.units})
+        shim(self.bindir, "journalctl", FAKES / "fakejournalctl.py", {"FAKE_SYSTEMD_STATE": self.state})
         self.path_prepend(self.bindir)
         self.n_extract = 0
         real = systemd_mod._extract

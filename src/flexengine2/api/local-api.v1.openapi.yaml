@@ -101,7 +101,7 @@ paths:
         - {name: follow, in: query, schema: {type: integer, enum: [0, 1]}, description: '1 = stream (chunked) until the client closes'}
         - {name: tail, in: query, schema: {type: integer, minimum: 0, default: 200}, description: 'last N lines before following'}
       responses:
-        '200': {description: 'structured log lines (JSON Lines, fields per telemetry.v1.md section 4): the action log (actions.jsonl, source `actions`) and the engine log file if any (source `log`); every line has `device` and `source`', content: {application/x-ndjson: {schema: {type: string}}}}
+        '200': {description: 'structured log lines (JSON Lines, fields per telemetry.v1.md section 4): the action log (actions.jsonl, source `actions`), the engine log file if any (source `log`) and (UM-4) the workloads'' own stdout/stderr as the engine collects them from drivers that support it (source `workload`, telemetry.v1 `WorkloadLogRecord`: dep, stream stdout|stderr when known, msg; dataDir/workload.jsonl, bounded and rotated); every line has `device` and `source`', content: {application/x-ndjson: {schema: {type: string}}}}
         '400': {$ref: '#/components/responses/BadRequest'}
         '401': {$ref: '#/components/responses/Unauthorized'}
         '404': {description: unknown device, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
@@ -119,7 +119,7 @@ paths:
       operationId: metrics
       summary: engine metrics per device (Engine.metrics(), EV-09)
       responses:
-        '200': {description: '{deviceId: metrics}', content: {application/json: {schema: {type: object}}}}
+        '200': {description: '{deviceId: metrics} (telemetry.v1 `Metrics`; UM-4 adds the optional `resources` (device CPU, memory, storage of the data volume, temperature) and `deploymentResources` ({dep: CPU, memory, pids}))', content: {application/json: {schema: {type: object}}}}
         '401': {$ref: '#/components/responses/Unauthorized'}
         '503': {$ref: '#/components/responses/Unavailable'}
   /v1/bundle:
