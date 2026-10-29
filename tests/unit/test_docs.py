@@ -11,7 +11,8 @@ import yaml
 from flexengine2.config import load as cl
 
 FE = Path(__file__).resolve().parents[2]
-DOCS = [FE / "README.md", FE / "docs" / "spi-guide.md", FE / "api" / "cp-reference.md"]
+DOCS = [FE / "README.md", FE / "docs" / "spi-guide.md", FE / "api" / "cp-reference.md",
+        FE / "docs" / "capture-release.md"]
 
 
 def _gh_anchor(heading: str) -> str:

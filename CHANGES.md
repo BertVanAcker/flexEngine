@@ -111,6 +111,12 @@ are the three small wishes of its request.
   informational, release-tool-owned object (conventional keys `cpu_cores`, `memory_mb`, `accelerator`) that the engine
   and every driver ignore: nothing is reserved, limited or refused for it. Still untyped, so every descriptor that
   was valid stays valid.
+- Worked example of a capture (data-collection) release: [docs/capture-release.md](docs/capture-release.md) and
+  `docs/examples/capture_release/` (native payload with a read-only config file, `http` health, restart policy
+  `always`, rotation and retention as deployment parameters, captures in `FLEX_DATA_DIR`), checked against the
+  contracts and run on an engine with the process driver by `tests/integration/examples/test_capture_release.py`.
+- `tools/native_release.py release --descriptor FILE` publishes a release with its own descriptor (health, restart
+  policy, parameters, resources) instead of the minimal one.
 
 ### FE-3: the 2.0.0 gate (2.0.0rc1)
 

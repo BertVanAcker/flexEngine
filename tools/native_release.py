@@ -12,6 +12,10 @@ and one signed release carrying several native layers.
     # one release, several layers (each PAYLOAD has its annotations next to it in PAYLOAD.json):
     native_release.py release --oci registry/ --key release.key --module flcrs_node --version 1.0.0 out/*.tar.gz
 
+    # a release with its own descriptor (docs/capture-release.md):
+    native_release.py release --oci registry/ --key release.key --module capture_logger --version 1.0.0 \
+        --descriptor docs/examples/capture_release/descriptor.json capture.tar.gz
+
 Every payload is written with a sidecar `<payload>.json` holding its layer annotations (dev.flex.profile, and
 dev.flex.arch / dev.flex.pyabi when the payload is CPU / Python specific). The device side is
 flexengine2/drivers/native/pyenv.py; the format is CP-3, api/bundle.v1alpha1.md §2.
@@ -81,7 +85,12 @@ def cmd_release(a) -> int:
         ann = json.loads(side.read_text()) if side.exists() else {"dev.flex.profile": "native"}
         layers.append((Path(p).read_bytes(), ann))
     key = crypto.load_private(a.key)
-    desc = nr.native_descriptor(a.module, a.version, language=a.language)
+    if a.descriptor:            # the release's own descriptor (health, restart policy, parameters, resources ...)
+        desc = json.loads(Path(a.descriptor).read_text())
+        desc.update(module=a.module, releaseVersion=a.version)
+        desc.setdefault("moduleVersion", a.version)
+    else:
+        desc = nr.native_descriptor(a.module, a.version, language=a.language)
     if a.health:
         desc["health"] = json.loads(a.health)
     info = nr.publish_native_release(Layout(a.oci), key, a.module, a.version, layers, descriptor=desc)
@@ -118,6 +127,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--version", required=True)
     p.add_argument("--language", default="python")
     p.add_argument("--health", help='descriptor health as JSON (default {"type": "process", ...})')
+    p.add_argument("--descriptor", help="descriptor JSON file to publish instead of the minimal one (module and "
+                                        "releaseVersion are set from --module / --version)")
     p.add_argument("payloads", nargs="+")
     p.set_defaults(fn=cmd_release)
     a = ap.parse_args(argv)

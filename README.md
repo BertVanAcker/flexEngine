@@ -40,6 +40,7 @@ framework repository).
 | know what each driver needs | [§5](#5-driver-profiles) |
 | fix a failed deployment | [§8](#8-troubleshooting-by-reason-code) |
 | write a driver | [docs/spi-guide.md](docs/spi-guide.md) |
+| package a workload (worked example: a data-collection release) | [docs/capture-release.md](docs/capture-release.md) |
 | integrate with the engine (cloud, release tools, children) | [api/README.md](api/README.md), [api/cp-reference.md](api/cp-reference.md) |
 | set up TLS and keys | [docs/security-alpha.md](docs/security-alpha.md) |
 | move v1 flexIA packages over | [docs/flexia-import.md](docs/flexia-import.md) and [MIGRATION.md](MIGRATION.md) |
@@ -275,6 +276,7 @@ the health probe, restart policy and run options; the cloud cannot widen them. D
 - Payload: a tar.gz with `app.py` or a `unit.json` (`ExecStart`). Health: `http` on `127.0.0.1:$FLEX_HEALTH_PORT`, or
   `process` (main process alive / unit active). Parameters arrive as `FLEX_PARAM_<NAME>`; the workload's writable
   directory as `FLEX_DATA_DIR` (`<dataDir>/native/<dep>/data`, kept across updates and rollbacks; both runtimes).
+  A worked example: [docs/capture-release.md](docs/capture-release.md).
 - **Own Python dependencies**: a payload with `requirements.lock` (every line pinned with `--hash`) and `wheels/`
   gets its own venv at unpack: offline, hash-checked, never the engine's venv. Build such payloads and multi-CPU
   releases with `tools/native_release.py` (`py-payload`, `flcrs`, `release`).
