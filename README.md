@@ -273,7 +273,8 @@ the health probe, restart policy and run options; the cloud cannot widen them. D
   manager): [packaging/README.md](packaging/README.md#native-workloads-on-systemd-driversnative-runtime-systemd-ev-19).
 - `runtime: process` runs the payload as a child process. For development and tests; not for production.
 - Payload: a tar.gz with `app.py` or a `unit.json` (`ExecStart`). Health: `http` on `127.0.0.1:$FLEX_HEALTH_PORT`, or
-  `process` (main process alive / unit active). Parameters arrive as `FLEX_PARAM_<NAME>`.
+  `process` (main process alive / unit active). Parameters arrive as `FLEX_PARAM_<NAME>`; the workload's writable
+  directory as `FLEX_DATA_DIR` (`<dataDir>/native/<dep>/data`, kept across updates and rollbacks; both runtimes).
 - **Own Python dependencies**: a payload with `requirements.lock` (every line pinned with `--hash`) and `wheels/`
   gets its own venv at unpack: offline, hash-checked, never the engine's venv. Build such payloads and multi-CPU
   releases with `tools/native_release.py` (`py-payload`, `flcrs`, `release`).

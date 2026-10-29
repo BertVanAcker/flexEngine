@@ -3,6 +3,10 @@
 On a target this driver would write a systemd/Quadlet unit (or a BlueChi unit) and let systemd own
 the process. The probe container has no systemd, so the driver plays systemd itself:
   * the release payload (tar.gz) is unpacked into <data>/native/<dep>/<digest>/ (read-only after unpack)
+  * the workload's writable directory is <data>/native/<dep>/data (FLEX_DATA_DIR, absolute, as the systemd driver
+    gives it): created at install, kept across updates and rollbacks (it is not a payload tree). remove() leaves it,
+    like the unpacked trees: the systemd driver serves the same <data>/native/<dep>/ directory, so a remove on this
+    driver (e.g. an abandoned install on the other runtime, FE-4) must not delete what a systemd unit writes
   * the process runs in its own session (it survives an engine crash, like a systemd unit)
   * a unit table (units.json, atomically written) holds pid, digest, port, restart counters
   * Restart=on-failure with RestartSec and StartLimitBurst, evaluated by supervise() every tick
@@ -99,6 +103,11 @@ class ProcessDriver(Driver):
     def marker(self, dep_id: str) -> str:
         return f"{self.device}/{dep_id}"
 
+    def data_dir(self, dep_id: str) -> Path:
+        """The workload's writable directory (FLEX_DATA_DIR), next to its payload trees; absolute, because the
+        workload runs with its unpacked tree as working directory."""
+        return Path(os.path.abspath(self.root / dep_id / "data"))
+
     def _alive(self, u: dict | None) -> bool:
         if not u or not u.get("pid"):
             return False
@@ -179,8 +188,10 @@ class ProcessDriver(Driver):
         self._save()
         log = open(Path(u["dir"]) / "app.log", "ab")
         err = open(Path(u["dir"]) / ERR_LOG, "ab")      # UM-4: stderr apart, so logs() can tell the streams
+        data = self.data_dir(dep_id)
+        data.mkdir(parents=True, exist_ok=True)
         env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "FLEX_UNIT": u["marker"],
-               "FLEX_HEALTH_PORT": str(u["port"]), "PYTHONDONTWRITEBYTECODE": "1"}
+               "FLEX_HEALTH_PORT": str(u["port"]), "FLEX_DATA_DIR": str(data), "PYTHONDONTWRITEBYTECODE": "1"}
         for k, v in sorted(u.get("parameters", {}).items()):
             env[f"FLEX_PARAM_{k.upper()}"] = str(v)
         p = subprocess.Popen(u.get("argv") or [self.python, "app.py"], cwd=u["dir"], env=env, stdout=log, stderr=err,
@@ -285,6 +296,7 @@ class ProcessDriver(Driver):
 
     def _install(self, desired: Workload, run: bool):
         d, argv = self._prepare(desired)
+        self.data_dir(desired.dep_id).mkdir(parents=True, exist_ok=True)
         old = self.units.get(desired.dep_id)
         self._stop(old)
         self.units[desired.dep_id] = {

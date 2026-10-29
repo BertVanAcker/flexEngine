@@ -159,6 +159,13 @@ Shared code: `drivers/native/pyenv.py`; producer side `flexengine2/testing/nativ
 The process driver now also honours `unit.json` `ExecStart` (a relative program path is resolved in the payload
 tree: Rust/C++ binaries); an unusable `unit.json` next to an `app.py` falls back to `app.py` as before.
 
+Workload environment, both native drivers: `FLEX_UNIT`, `FLEX_HEALTH_PORT`, `FLEX_DATA_DIR`, `FLEX_PARAM_<NAME>` and
+Python constants, never the engine's environment (the process driver adds `PATH`). `FLEX_DATA_DIR` is the workload's
+writable directory `<dataDir>/native/<dep>/data` (absolute; the payload tree is read-only): created at install, kept
+across updates and rollbacks. The systemd driver deletes it on `remove`; the process driver leaves it, like its
+unpacked trees, because both drivers serve the same directory (the process driver sets `FLEX_DATA_DIR` since 2.0.0rc1;
+before, a workload there had to fall back to a parameter).
+
 ### `native` / `systemd` (EV-19)
 
 - A deployment is the unit file `flex-<deviceId>-<depId>.service` (ids sanitised to `[A-Za-z0-9_.]`; a changed id

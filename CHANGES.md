@@ -99,6 +99,15 @@ Requested by flexMonitor (UM-4) for a device's load and its workloads' output on
   (fixed device resources) for tests against a real engine and its local API.
 - Telemetry log event `observe.failed` (a driver's observation raised; logged once per driver and deployment).
 
+### UE-C1: capture workloads (requested by flexClone)
+
+flexClone packages its read-only capture node as an ordinary native workload; nothing in the engine was missing, these
+are the three small wishes of its request.
+
+- The process driver sets `FLEX_DATA_DIR` for the workload, as the systemd driver does: `<dataDir>/native/<dep>/data`
+  (absolute), created at install, kept across updates and rollbacks; `remove` leaves it (both native drivers serve
+  that directory). A workload no longer needs a parameter or a path next to its payload to find where to write.
+
 ### FE-3: the 2.0.0 gate (2.0.0rc1)
 
 - CP-5, CP-7 and CP-8 are versioned like the other connection points: machine-readable specs in the package
