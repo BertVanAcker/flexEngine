@@ -99,6 +99,25 @@ Requested by flexMonitor (UM-4) for a device's load and its workloads' output on
   (fixed device resources) for tests against a real engine and its local API.
 - Telemetry log event `observe.failed` (a driver's observation raised; logged once per driver and deployment).
 
+### UE-C1: capture workloads (requested by flexClone)
+
+flexClone packages its read-only capture node as an ordinary native workload; nothing in the engine was missing, these
+are the three small wishes of its request.
+
+- The process driver sets `FLEX_DATA_DIR` for the workload, as the systemd driver does: `<dataDir>/native/<dep>/data`
+  (absolute), created at install, kept across updates and rollbacks; `remove` leaves it (both native drivers serve
+  that directory). A workload no longer needs a parameter or a path next to its payload to find where to write.
+- Release descriptor `resources` is documented (descriptor schema, `bundle.v1alpha1.md` §2, `cp-reference.md`): an
+  informational, release-tool-owned object (conventional keys `cpu_cores`, `memory_mb`, `accelerator`) that the engine
+  and every driver ignore: nothing is reserved, limited or refused for it. Still untyped, so every descriptor that
+  was valid stays valid.
+- Worked example of a capture (data-collection) release: [docs/capture-release.md](docs/capture-release.md) and
+  `docs/examples/capture_release/` (native payload with a read-only config file, `http` health, restart policy
+  `always`, rotation and retention as deployment parameters, captures in `FLEX_DATA_DIR`), checked against the
+  contracts and run on an engine with the process driver by `tests/integration/examples/test_capture_release.py`.
+- `tools/native_release.py release --descriptor FILE` publishes a release with its own descriptor (health, restart
+  policy, parameters, resources) instead of the minimal one.
+
 ### FE-3: the 2.0.0 gate (2.0.0rc1)
 
 - CP-5, CP-7 and CP-8 are versioned like the other connection points: machine-readable specs in the package
@@ -137,6 +156,7 @@ Every addition the freeze gate sees, and every re-recorded baseline, has a row h
 |---|---|---|---|
 | 2026-10-27 | FE-F1…FE-F6 | all | baseline of the 2.0.0 freeze, recorded on `fe-3/freeze-gate` from master `a2c02eb` (FE-1 move, FE-4 run state) plus the CP-5 / CP-8 specs of FE-3: the connection-point set the tag `flexengine-cp-v1alpha1` freezes |
 | 2026-10-27 | FE-F2, FE-F5 | `telemetry.v1.schema.json:/$defs/Metrics/properties/resources`, `telemetry.v1.schema.json:/$defs/Metrics/properties/deploymentResources`, `telemetry.v1.schema.json:/$defs/DeviceResources`, `telemetry.v1.schema.json:/$defs/DeploymentResourcesSample`, `telemetry.v1.schema.json:/$defs/WorkloadLogRecord`, `telemetry.v1.schema.json:/$defs/LogEvent/enum=observe.failed`, `driver-spi.v1.schema.json:/x-flex-spi/optional/resources`, `driver-spi.v1.schema.json:/x-flex-spi/optional/logs`, `driver-spi.v1.schema.json:/x-flex-spi/features/resources`, `driver-spi.v1.schema.json:/x-flex-spi/features/logs`, `driver-spi.v1.schema.json:/$defs/DeploymentResources`, `driver-spi.v1.schema.json:/$defs/WorkloadLogBatch`, `driver-spi.v1.schema.json:/$defs/WorkloadLogLine`, `schema.json:/properties/observe` | FE-5 (UM-4): device and per-deployment resources in the metrics, workload stdout/stderr in the local API's logs, the optional SPI members behind them and the `observe` settings (additions only) |
+| 2026-10-29 | FE-F2 | `descriptor.v1alpha1.schema.json:/properties/resources` | UE-C1 (flexClone): the descriptor's informational `resources` documented in the schema; no type or constraint, so no descriptor that was valid becomes invalid (addition only) |
 
 ### Coverage gate
 

@@ -1,0 +1,11 @@
+{
+ "source": {"kind": "file", "path": "/proc/loadavg"},
+ "defaults": {
+  "prefix": "cap",
+  "sample_period_s": 1.0,
+  "rotate_s": 3600.0,
+  "keep_files": 48,
+  "max_mb": 512.0,
+  "stale_s": 30.0
+ }
+}

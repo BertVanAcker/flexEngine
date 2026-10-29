@@ -186,6 +186,7 @@ Config blob (mediaType application/vnd.flex.node.descriptor.v1+json) of a flexNo
 | `x-flex-mcu` | [McuFacts](#descriptor-mcufacts) |  |  |
 | `parameters` | array of any |  | Module parameter declarations from the model (not yet checked against deployment parameters: EV-25). |
 | `ports` | array of any |  |  |
+| `resources` |  |  | Informational resource needs of the workload, owned by the release tool: `flex release` copies the module model's `spec.resources` (conventional keys: `cpu_cores`, CPU cores, fractional allowed; `memory_mb`, MiB; … |
 | `composite` | object or array |  | Members of a composite release (App Lab app, PLC bridge, system); checked by flexCloud against the model. |
 
 <a id="descriptor-healthprobe"></a>

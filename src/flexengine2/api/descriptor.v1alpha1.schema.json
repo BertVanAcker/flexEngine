@@ -34,6 +34,7 @@
     "x-flex-mcu": {"$ref": "#/$defs/McuFacts"},
     "parameters": {"type": "array", "description": "Module parameter declarations from the model (not yet checked against deployment parameters: EV-25)."},
     "ports": {"type": "array"},
+    "resources": {"description": "Informational resource needs of the workload, owned by the release tool: `flex release` copies the module model's `spec.resources` (conventional keys: `cpu_cores`, CPU cores, fractional allowed; `memory_mb`, MiB; `accelerator`, e.g. {kind: gpu, min_tops: 20}); other keys are carried unchanged (e.g. a disk estimate). The engine and every in-tree driver ignore it: nothing is reserved or limited (no docker/podman --cpus or --memory, no systemd CPUQuota= or MemoryMax=, no check against the device) and a release is never refused for it. Placement checks are the control plane's (flexCloud, `flex import-flexia --plan`); what a workload actually uses is reported as telemetry `deploymentResources` (UM-4). Untyped: any value is accepted, as before it was documented."},
     "composite": {"type": ["object", "array"], "description": "Members of a composite release (App Lab app, PLC bridge, system); checked by flexCloud against the model."}
   },
   "$defs": {

@@ -1,0 +1,33 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "kind": "DesiredState",
+ "deviceId": "edge-1",
+ "manifestVersion": 1,
+ "deployments": [
+  {
+   "apiVersion": "application.margo.org/v1alpha1",
+   "kind": "ApplicationDeployment",
+   "metadata": {"id": "capture", "name": "capture", "namespace": "default", "deviceId": "edge-1"},
+   "spec": {
+    "applicationId": "capture_logger",
+    "deploymentProfile": {
+     "type": "custom",
+     "components": [
+      {
+       "name": "capture_logger",
+       "properties": {
+        "repository": "oci://registry.example/flexnodes/capture_logger",
+        "revision": "1.0.0",
+        "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+       }
+      }
+     ]
+    },
+    "parameters": {"prefix": "line3", "sample_period_s": 1, "rotate_s": 3600, "keep_files": 48, "max_mb": 512}
+   },
+   "x-flex-driver": "native",
+   "x-flex-runtime": "systemd",
+   "x-flex-safetyClass": "none"
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+{
+ "apiVersion": "flex.dev/v1alpha1",
+ "kind": "FlexNodeDescriptor",
+ "module": "capture_logger",
+ "moduleVersion": "1.0.0",
+ "releaseVersion": "1.0.0",
+ "interfaceHash": null,
+ "language": "python",
+ "profiles": ["native"],
+ "safetyClass": "none",
+ "safetyClassSource": "declared: read-only collector, no write path to the source",
+ "health": {"type": "http", "port": "${FLEX_HEALTH_PORT}", "path": "/healthz", "periodSeconds": 0.5,
+            "successThreshold": 2, "timeoutSeconds": 30},
+ "restartPolicy": {"policy": "always", "maxRetries": 5, "restartSec": 2},
+ "parameters": [
+  {"name": "output_dir", "type": "string", "doc": "where the captures go (default: $FLEX_DATA_DIR)"},
+  {"name": "prefix", "type": "string", "doc": "capture file names <prefix>-<UTC start>.jsonl"},
+  {"name": "sample_period_s", "type": "number", "doc": "seconds between two samples"},
+  {"name": "rotate_s", "type": "number", "doc": "a new capture file every rotate_s seconds"},
+  {"name": "keep_files", "type": "integer", "doc": "retention: complete capture files kept"},
+  {"name": "max_mb", "type": "number", "doc": "retention: total size of the complete capture files (MiB)"},
+  {"name": "stale_s", "type": "number", "doc": "no sample this long: /healthz answers 503"}
+ ],
+ "ports": [],
+ "resources": {"cpu_cores": 0.1, "memory_mb": 64, "disk_mb": 512},
+ "source": {"tool": "docs/examples/capture_release (flexEngine)"}
+}
