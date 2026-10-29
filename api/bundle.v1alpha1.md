@@ -102,6 +102,22 @@ S4: only the signed descriptor can ask for a run option, and every value must al
 `ports` entries `[ip:]port[-port][/proto]`); anything else is refused at preflight (the previous version keeps
 running, FE-CTR-003/004, FE-CTR-PRE-003…014) and re-checked at apply. Ankaios refuses run options (FE-CTR-005).
 
+Descriptor `resources` (informational; descriptor schema `resources`): the workload's resource needs as the release
+tool states them. `flex release` copies the module model's `spec.resources`; other producers use the same keys:
+
+| Key | Unit | Meaning |
+|---|---|---|
+| `cpu_cores` | CPU cores (number, fractional allowed: `0.5`) | CPU the workload needs in normal operation |
+| `memory_mb` | MiB (number) | memory the workload needs |
+| `accelerator` | object, e.g. `{kind: gpu, min_tops: 20}` | an accelerator the workload needs |
+| any other key | the producer's | carried unchanged (e.g. a disk estimate) |
+
+No driver reads it: container (docker, podman, compose, Ankaios) passes no `--cpus` / `--memory`, native (process,
+systemd) writes no `CPUQuota=` / `MemoryMax=`, the other profiles ignore it too, and the engine never refuses a release
+for it. A limit the device must enforce is a runtime setting outside the release today; placement (does the workload
+fit the device's `resources` capabilities?) is the control plane's check (flexCloud, `flex import-flexia --plan`).
+What a workload really uses is reported per deployment as telemetry `deploymentResources` (UM-4).
+
 ## 3. Offline bundle (`bundle.tar`)
 
 Served by `GET /api/v1/devices/{id}/bundle` (and the admin variant); imported with `Engine.import_bundle` (later

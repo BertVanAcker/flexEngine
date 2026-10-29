@@ -193,3 +193,24 @@ def test_status_schema_lists_every_field_the_engine_reports():
     kws |= {"faultVisibleAt", "faultToHealthySeconds"}  # mcu failure_detail()
     kws |= {"traceparent", "correlationId"}  # obs/instrument.py
     assert kws <= props, kws - props
+
+
+@pytest.mark.parametrize("resources", [
+    {"cpu_cores": 0.5, "memory_mb": 128},                                       # the framework model's keys
+    {"cpu_cores": 2, "memory_mb": 1500, "accelerator": {"kind": "gpu", "min_tops": 20}},
+    {"cpu": 0.5, "memoryMB": 512, "diskGB": 20},                                # other producers' keys: carried
+    {}, "informational", None])                                                 # untyped: nothing was refused before
+def test_descriptor_resources_is_documented_and_never_refuses(resources):
+    """UE-C1: `resources` is in the descriptor schema (documented) without a type, so the addition made no
+    descriptor invalid; no engine or driver code reads it."""
+    prop = contracts.load("descriptor")["properties"]["resources"]
+    assert set(prop) == {"description"} and "cpu_cores" in prop["description"]
+    from flexengine2.testing.native_release import native_descriptor
+
+    desc = native_descriptor("capture", "1.0.0")
+    desc["resources"] = resources
+    assert contracts.errors("descriptor", desc) == []
+    readers = [p.relative_to(SRC) for p in SRC.rglob("*.py") if "testing" not in p.parts
+               and re.search(r"""(descriptor|desc|\.config)\b[^\n]*\[["']resources["']\]|get\(["']resources["']""",
+                             p.read_text())]
+    assert readers == [], f"the descriptor's resources are informational, but read in {readers}"
